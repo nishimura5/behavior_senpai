@@ -8,3 +8,7 @@ wheels/
 
 # venv
 .venv
+
+# src files
+*.mp4
+*.pt
