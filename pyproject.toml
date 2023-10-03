@@ -1,0 +1,21 @@
+[project]
+name = "python-senpai"
+version = "0.1.0"
+description = "A collection of Python code for performing behavioral analysis."
+authors = [
+    { name = "a5", email = "" }
+]
+dependencies = []
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
