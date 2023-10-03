@@ -5,7 +5,11 @@ description = "A collection of Python code for performing behavioral analysis."
 authors = [
     { name = "a5", email = "" }
 ]
-dependencies = []
+dependencies = [
+    "ultralytics>=8.0.191",
+    "opencv-python>=4.8.1.78",
+    "lapx>=0.5.4",
+]
 readme = "README.md"
 requires-python = ">= 3.8"
 
