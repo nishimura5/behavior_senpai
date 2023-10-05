@@ -9,11 +9,6 @@ total_frame_num = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-mp_drawing = mp.solutions.drawing_utils
-mph = mp.solutions.holistic
-fps = cap.get(cv2.CAP_PROP_FPS)
-out = cv2.VideoWriter('output.mp4', cv2.VideoWriter_fourcc('m', 'p', '4', 'v'), fps, (frame_width*2, frame_height*2))
-
 number_of_keypoints = {'face': 468, 'right_hand': 21, 'left_hand': 21}
 # データの初期化
 data_dict = {"frame": [], "member": [], "keypoint": [], "x": [], "y": [], "z": [], "timestamp": []}
@@ -21,30 +16,6 @@ for i in range(total_frame_num):
     ret, frame = cap.read()
     rgb_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = mp_holistic.process(rgb_img)
-
-    anno_img = cv2.resize(frame, (frame_width*2, frame_height*2), interpolation=cv2.INTER_CUBIC)
-    mp_drawing.draw_landmarks(
-        anno_img,
-        results.face_landmarks,
-        mph.FACEMESH_TESSELATION,
-        mp_drawing.DrawingSpec(color=(250, 0, 40), thickness=1, circle_radius=1),
-        mp_drawing.DrawingSpec(color=(200, 200, 200), thickness=1, circle_radius=0)
-        )
-    mp_drawing.draw_landmarks(
-        anno_img,
-        results.left_hand_landmarks,
-        mph.HAND_CONNECTIONS,
-        mp_drawing.DrawingSpec(color=(40, 40, 180), thickness=1, circle_radius=3),
-        mp_drawing.DrawingSpec(color=(150, 150, 121), thickness=1, circle_radius=0)
-        )
-    mp_drawing.draw_landmarks(
-        anno_img,
-        results.right_hand_landmarks,
-        mph.HAND_CONNECTIONS,
-        mp_drawing.DrawingSpec(color=(40, 180, 40), thickness=1, circle_radius=3),
-        mp_drawing.DrawingSpec(color=(150, 150, 121), thickness=1, circle_radius=0)
-        )
-    out.write(anno_img)
 
     timestamp = cap.get(cv2.CAP_PROP_POS_MSEC)
 
