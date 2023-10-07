@@ -20,7 +20,8 @@ def time_ticks(x, pos):
 
 
 if __name__ == "__main__":
-    src_df = pd.read_csv("dst.csv", index_col=["frame", "member", "keypoint"])
+    pkl_path = "taiso.pkl"
+    src_df = pd.read_csv(pkl_path)
     print(src_df)
 
     # 1人目の10番目のキーポイントのみ抽出

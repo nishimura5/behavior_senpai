@@ -1,3 +1,4 @@
+import os
 import random
 
 import cv2
@@ -77,14 +78,16 @@ class Annotate:
 
 if __name__ == "__main__":
     video_path = "taiso.mp4"
+    file_name = os.path.splitext(os.path.basename(video_path))[0]
+    pkl_path = f"{file_name}.pkl"
 
     # MP4の読み込み
     cap = cv2.VideoCapture(video_path)
 
     # さっきの結果の読み込み
-    src_df = pd.read_csv("dst.csv", index_col=["frame", "member", "keypoint"])
+    src_df = pd.read_pickle(pkl_path)
     total_frame_num = src_df.index.unique(level='frame').max() + 1
-    print(src_df)
+    print(src_df.attrs)
 
     anno = Annotate()
 

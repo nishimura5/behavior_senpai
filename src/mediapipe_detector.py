@@ -1,8 +1,14 @@
+import os
+
 import cv2
 import mediapipe as mp
 import pandas as pd
 
-cap = cv2.VideoCapture("cup.mp4")
+video_path = "cup.mp4"
+file_name = os.path.splitext(os.path.basename(video_path))[0]
+pkl_path = f"{file_name}.pkl"
+
+cap = cv2.VideoCapture(video_path)
 mp_holistic = mp.solutions.holistic.Holistic(model_complexity=2, refine_face_landmarks=True)
 
 total_frame_num = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -42,4 +48,5 @@ for i in range(total_frame_num):
 
 dst_df = pd.DataFrame(data_dict).set_index(["frame", "member", "keypoint"])
 print(dst_df)
-dst_df.to_csv("dst.csv")
+dst_df.attrs["model"] = "MediaPipe Holistic"
+dst_df.to_pickle(pkl_path)

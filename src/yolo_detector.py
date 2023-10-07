@@ -1,8 +1,14 @@
+import os
+
 import cv2
 from ultralytics import YOLO
 import pandas as pd
 
-cap = cv2.VideoCapture("taiso.mp4")
+video_path = "taiso.mp4"
+file_name = os.path.splitext(os.path.basename(video_path))[0]
+pkl_path = f"{file_name}.pkl"
+
+cap = cv2.VideoCapture(video_path)
 model = YOLO(model="yolov8x-pose-p6.pt")
 
 total_frame_num = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -38,4 +44,5 @@ for i in range(total_frame_num):
 
 dst_df = pd.DataFrame(data_dict).set_index(["frame", "member", "keypoint"])
 print(dst_df)
-dst_df.to_csv("dst.csv")
+dst_df.attrs["model"] = "YOLOv8 x-pose-p6"
+dst_df.to_pickle(pkl_path)
