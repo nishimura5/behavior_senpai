@@ -44,10 +44,9 @@ class YoloDetector:
                     data_dict["timestamp"].append(timestamp)
 
         self.dst_df = pd.DataFrame(data_dict).set_index(["frame", "member", "keypoint"])
-        self.dst_df.attrs["model"] = "YOLOv8 x-pose-p6"
 
-    def to_pickle(self):
-        self.dst_df.to_pickle(pkl_path)
+    def get_result(self):
+        return self.dst_df
 
 
 if __name__ == "__main__":
@@ -58,4 +57,8 @@ if __name__ == "__main__":
     cap = cv2.VideoCapture(video_path)
     detector = YoloDetector(cap)
     detector.detect()
-    detector.to_pickle()
+    result_df = detector.get_result()
+    result_df.attrs["model"] = "YOLOv8 x-pose-p6"
+
+    pkl_path = f"{file_name}.pkl"
+    result_df.to_pickle(pkl_path)

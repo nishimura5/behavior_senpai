@@ -47,18 +47,20 @@ class MediaPipeDetector:
                     data_dict["timestamp"].append(timestamp)
 
         self.dst_df = pd.DataFrame(data_dict).set_index(["frame", "member", "keypoint"])
-        self.dst_df.attrs["model"] = "MediaPipe Holistic"
 
-    def to_pickle(self):
-        self.dst_df.to_pickle(pkl_path)
+    def get_result(self):
+        return self.dst_df
 
 
 if __name__ == "__main__":
     video_path = "cup.mp4"
     file_name = os.path.splitext(os.path.basename(video_path))[0]
-    pkl_path = f"{file_name}.pkl"
 
     cap = cv2.VideoCapture(video_path)
     detector = MediaPipeDetector(cap)
     detector.detect()
-    detector.to_pickle()
+    result_df = detector.get_result()
+    result_df.attrs["model"] = "MediaPipe Holistic"
+
+    pkl_path = f"{file_name}.pkl"
+    result_df.to_pickle(pkl_path)
