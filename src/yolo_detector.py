@@ -4,7 +4,7 @@ import pandas as pd
 
 
 class YoloDetector:
-    def __init__(self, cap, show=False):
+    def __init__(self, cap, show=True):
         self.cap = cap
         self.model = YOLO(model="yolov8x-pose-p6.pt")
 

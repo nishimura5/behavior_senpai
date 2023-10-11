@@ -4,14 +4,18 @@ import pandas as pd
 
 
 class MediaPipeDetector:
-    def __init__(self, cap):
+    def __init__(self, cap, show=True):
         self.cap = cap
-        self.model = mp.solutions.holistic.Holistic(model_complexity=2, refine_face_landmarks=True)
+        self.mph = mp.solutions.holistic
+        self.model = self.mph.Holistic(model_complexity=2, refine_face_landmarks=True)
 
         self.total_frame_num = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         self.frame_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.frame_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.number_of_keypoints = {'face': 468, 'right_hand': 21, 'left_hand': 21}
+        self.show = show
+        if self.show is True:
+            self.drawing = mp.solutions.drawing_utils
 
     def detect(self):
         # データの初期化
@@ -20,15 +24,21 @@ class MediaPipeDetector:
             ret, frame = self.cap.read()
             rgb_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = self.model.process(rgb_img)
+            if self.show is True:
+                self._draw(frame, results)
+                cv2.imshow("dst", frame)
+                cv2.waitKey(1)
 
             timestamp = self.cap.get(cv2.CAP_PROP_POS_MSEC)
 
             # 検出結果の取り出し
             member_ids = ['face', 'right_hand', 'left_hand']
             for member_id in member_ids:
-                keypoints = getattr(results, f'{member_id}_landmarks').landmark
-                if keypoints is None:
+                landmarks = getattr(results, f'{member_id}_landmarks')
+                if landmarks is None:
                     continue
+                keypoints = landmarks.landmark
+
                 for k in range(self.number_of_keypoints[member_id]):
                     keypoint_id = k
                     x = float(keypoints[k].x * self.frame_width)
@@ -48,3 +58,26 @@ class MediaPipeDetector:
 
     def get_result(self):
         return self.dst_df
+
+    def _draw(self, anno_img, results):
+        self.drawing.draw_landmarks(
+            anno_img,
+            results.face_landmarks,
+            self.mph.FACEMESH_TESSELATION,
+            self.drawing.DrawingSpec(color=(250, 0, 50), thickness=1, circle_radius=1),
+            self.drawing.DrawingSpec(color=(180, 180, 180), thickness=1, circle_radius=1),
+        )
+        self.drawing.draw_landmarks(
+            anno_img,
+            results.right_hand_landmarks,
+            self.mph.HAND_CONNECTIONS,
+            self.drawing.DrawingSpec(color=(10, 190, 50), thickness=1, circle_radius=1),
+            self.drawing.DrawingSpec(color=(180, 180, 180), thickness=1, circle_radius=1),
+        )
+        self.drawing.draw_landmarks(
+            anno_img,
+            results.left_hand_landmarks,
+            self.mph.HAND_CONNECTIONS,
+            self.drawing.DrawingSpec(color=(10, 50, 200), thickness=1, circle_radius=1),
+            self.drawing.DrawingSpec(color=(180, 180, 180), thickness=1, circle_radius=1),
+        )
