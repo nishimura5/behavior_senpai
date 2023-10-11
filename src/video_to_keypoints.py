@@ -6,11 +6,13 @@ from yolo_detector import YoloDetector
 from mediapipe_detector import MediaPipeDetector
 
 model_name = "YOLOv8 x-pose-p6"
-#model_name = "MediaPipe Holistic"
+model_name = "MediaPipe Holistic"
 
-video_path = "taiso.mp4"
+video_path = os.path.abspath("cup.mp4")
 file_name = os.path.splitext(os.path.basename(video_path))[0]
-pkl_path = f"{file_name}.pkl"
+trk_dir = os.path.join(os.path.dirname(video_path), "trk")
+os.makedirs(trk_dir, exist_ok=True)
+pkl_path = os.path.join(trk_dir, f"{file_name}.pkl")
 
 cap = cv2.VideoCapture(video_path)
 
