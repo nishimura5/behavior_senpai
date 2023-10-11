@@ -55,6 +55,7 @@ class MediaPipeDetector:
                     data_dict["timestamp"].append(timestamp)
 
         self.dst_df = pd.DataFrame(data_dict).set_index(["frame", "member", "keypoint"])
+        cv2.destroyAllWindows()
 
     def get_result(self):
         return self.dst_df
