@@ -1,5 +1,3 @@
-import os
-
 import cv2
 import mediapipe as mp
 import pandas as pd
@@ -50,17 +48,3 @@ class MediaPipeDetector:
 
     def get_result(self):
         return self.dst_df
-
-
-if __name__ == "__main__":
-    video_path = "cup.mp4"
-    file_name = os.path.splitext(os.path.basename(video_path))[0]
-
-    cap = cv2.VideoCapture(video_path)
-    detector = MediaPipeDetector(cap)
-    detector.detect()
-    result_df = detector.get_result()
-    result_df.attrs["model"] = "MediaPipe Holistic"
-
-    pkl_path = f"{file_name}.pkl"
-    result_df.to_pickle(pkl_path)

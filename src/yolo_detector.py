@@ -1,5 +1,3 @@
-import os
-
 import cv2
 from ultralytics import YOLO
 import pandas as pd
@@ -47,18 +45,3 @@ class YoloDetector:
 
     def get_result(self):
         return self.dst_df
-
-
-if __name__ == "__main__":
-    video_path = "taiso.mp4"
-    file_name = os.path.splitext(os.path.basename(video_path))[0]
-    pkl_path = f"{file_name}.pkl"
-
-    cap = cv2.VideoCapture(video_path)
-    detector = YoloDetector(cap)
-    detector.detect()
-    result_df = detector.get_result()
-    result_df.attrs["model"] = "YOLOv8 x-pose-p6"
-
-    pkl_path = f"{file_name}.pkl"
-    result_df.to_pickle(pkl_path)
