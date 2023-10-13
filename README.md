@@ -7,7 +7,7 @@ YOLOv8とMediaPipe Holisticの推論結果をPKLファイルに保存し、Panda
 以下の動画([YouTube](https://youtu.be/3CYtbPIBzcI?si=NoCB__4hedZWYr4X))で、スクリプトのコーディングの一部始終を説明しているので併せてご覧ください。
 
 <p align="center">
-<a href="https://youtu.be/3CYtbPIBzcI?si=NoCB__4hedZWYr4X"><img src="https://i9.ytimg.com/vi_webp/3CYtbPIBzcI/maxresdefault.webp?v=65261c7e&sqp=CJzHmKkG&rs=AOn4CLDieDd1g-FOPfMLg92BPQjPBOcM3Q" width="500"></a>
+<a href="https://youtu.be/3CYtbPIBzcI?si=NoCB__4hedZWYr4X"><img src="http://img.youtube.com/vi/3CYtbPIBzcI/maxresdefault.jpg" width="500"></a>
 </p>
 
 ## スクリプト
