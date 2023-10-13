@@ -77,9 +77,9 @@ class Annotate:
 
 
 if __name__ == "__main__":
-    video_path = "taiso.mp4"
+    video_path = "manzai.mp4"
     file_name = os.path.splitext(os.path.basename(video_path))[0]
-    pkl_path = f"{file_name}.pkl"
+    pkl_path = f"trk/{file_name}.pkl"
 
     # MP4の読み込み
     cap = cv2.VideoCapture(video_path)

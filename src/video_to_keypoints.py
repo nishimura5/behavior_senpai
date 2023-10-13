@@ -3,11 +3,11 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 
-import cv2
-
 from yolo_detector import YoloDetector
 from mediapipe_detector import MediaPipeDetector
 import windows_and_mac
+import roi_by_click
+from video_cap_with_roi import RoiCap
 
 
 class App(tk.Frame):
@@ -41,6 +41,8 @@ class App(tk.Frame):
         self.video_path_label["text"] = self.video_path
 
     def exec_detector(self):
+        rcap = RoiCap(self.video_path)
+        roi_by_click.main(rcap)
         model_name = self.model_cbox.get()
 
         file_name = os.path.splitext(os.path.basename(self.video_path))[0]
@@ -48,17 +50,15 @@ class App(tk.Frame):
         os.makedirs(trk_dir, exist_ok=True)
         pkl_path = os.path.join(trk_dir, f"{file_name}.pkl")
 
-        cap = cv2.VideoCapture(self.video_path)
-
         if model_name == "YOLOv8 x-pose-p6":
-            detector = YoloDetector(cap)
+            detector = YoloDetector(rcap)
         elif model_name == "MediaPipe Holistic":
-            detector = MediaPipeDetector(cap)
+            detector = MediaPipeDetector(rcap)
 
-        detector.detect()
+        detector.detect(roi=True)
         result_df = detector.get_result()
 
-        ## attrsを埋め込み
+        # attrsを埋め込み
         result_df.attrs["model"] = model_name
 
         result_df.to_pickle(pkl_path)

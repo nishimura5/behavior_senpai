@@ -17,11 +17,14 @@ class MediaPipeDetector:
         if self.show is True:
             self.drawing = mp.solutions.drawing_utils
 
-    def detect(self):
+    def detect(self, roi=False):
         # データの初期化
         data_dict = {"frame": [], "member": [], "keypoint": [], "x": [], "y": [], "z": [], "timestamp": []}
         for i in range(self.total_frame_num):
-            ret, frame = self.cap.read()
+            if roi is True:
+                ret, frame = self.cap.get_roi_frame()
+            else:
+                ret, frame = self.cap.read()
             rgb_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = self.model.process(rgb_img)
             if self.show is True:
@@ -41,9 +44,14 @@ class MediaPipeDetector:
 
                 for k in range(self.number_of_keypoints[member_id]):
                     keypoint_id = k
-                    x = float(keypoints[k].x * self.frame_width)
-                    y = float(keypoints[k].y * self.frame_height)
-                    z = float(keypoints[k].z * self.frame_width)
+                    if roi is True:
+                        x = float(keypoints[k].x * self.cap.roi_width + self.cap.left_top_point[0])
+                        y = float(keypoints[k].y * self.cap.roi_height + self.cap.left_top_point[1])
+                        z = float(keypoints[k].z * self.cap.roi_width)
+                    else:
+                        x = float(keypoints[k].x * self.frame_width)
+                        y = float(keypoints[k].y * self.frame_height)
+                        z = float(keypoints[k].z * self.frame_width)
 
                     # データの詰め込み
                     data_dict["frame"].append(i)

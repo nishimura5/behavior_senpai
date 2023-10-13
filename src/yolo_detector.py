@@ -12,11 +12,14 @@ class YoloDetector:
         self.number_of_keypoints = 17
         self.show = show
 
-    def detect(self):
+    def detect(self, roi=False):
         # データの初期化
         data_dict = {"frame": [], "member": [], "keypoint": [], "x": [], "y": [], "conf": [], "timestamp": []}
         for i in range(self.total_frame_num):
-            ret, frame = self.cap.read()
+            if roi is True:
+                ret, frame = self.cap.get_roi_frame()
+            else:
+                ret, frame = self.cap.read()
             result = self.model.track(frame, verbose=False, persist=True, classes=0, show=self.show)
 
             timestamp = self.cap.get(cv2.CAP_PROP_POS_MSEC)
@@ -30,6 +33,9 @@ class YoloDetector:
                     keypoint_id = k
                     x = float(keypoints[k][0])
                     y = float(keypoints[k][1])
+                    if roi is True:
+                        x += self.cap.left_top_point[0]
+                        y += self.cap.left_top_point[1]
                     conf = float(keypoints[k][2])
 
                     # データの詰め込み
