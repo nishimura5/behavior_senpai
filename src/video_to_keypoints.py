@@ -6,7 +6,7 @@ from tkinter import filedialog
 from yolo_detector import YoloDetector
 from mediapipe_detector import MediaPipeDetector
 import windows_and_mac
-import video_cap_with_roi 
+import roi_cap
 
 
 class App(tk.Frame):
@@ -45,7 +45,7 @@ class App(tk.Frame):
         self.video_path_label["text"] = self.video_path
 
     def exec_detector(self):
-        rcap = video_cap_with_roi.RoiCap(self.video_path)
+        rcap = roi_cap.RoiCap(self.video_path)
         use_roi = self.roi_chk_val.get()
         if use_roi is True:
             rcap.click_roi()
