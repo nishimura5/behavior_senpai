@@ -48,7 +48,7 @@ class App(tk.Frame):
         rcap = video_cap_with_roi.RoiCap(self.video_path)
         use_roi = self.roi_chk_val.get()
         if use_roi is True:
-            video_cap_with_roi.click_roi(rcap)
+            rcap.click_roi()
         model_name = self.model_cbox.get()
 
         file_name = os.path.splitext(os.path.basename(self.video_path))[0]
