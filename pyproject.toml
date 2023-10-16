@@ -22,5 +22,8 @@ build-backend = "hatchling.build"
 managed = true
 dev-dependencies = []
 
+[tool.rye.scripts]
+detect = "python src/video_to_keypoints.py"
+
 [tool.hatch.metadata]
 allow-direct-references = true
