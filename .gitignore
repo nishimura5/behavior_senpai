@@ -12,3 +12,4 @@ wheels/
 # src files
 *.mp4
 *.pt
+trk/
