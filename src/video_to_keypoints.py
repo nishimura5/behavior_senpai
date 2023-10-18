@@ -66,6 +66,8 @@ class App(tk.Frame):
 
         # attrsを埋め込み
         result_df.attrs["model"] = model_name
+        result_df.attrs["width"] = rcap.width
+        result_df.attrs["heigt"] = rcap.height
 
         result_df.to_pickle(pkl_path)
 
