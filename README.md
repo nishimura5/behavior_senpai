@@ -4,10 +4,10 @@ YOLOv8とMediaPipe Holisticの推論結果をPKLファイルに保存するGUI�
 
 ## 動画
 
-以下の動画([YouTube](https://youtu.be/hE8ZoA8gETU?si=iDzTC7EPSqV6PfcA))で、スクリプトのコーディングの一部始終を説明しているので併せてご覧ください。
+以下の動画([YouTube](https://youtu.be/hE8ZoA8gETU?si=iDzTC7EPSqV6PfcA))で、アプリケーションの機能や構造を説明をしているので併せてご覧ください。
 
 <p align="center">
-<a href="https://youtu.be/hE8ZoA8gETU?si=iDzTC7EPSqV6PfcA"><img src="http://img.youtube.com/vi/3CYtbPIBzcI/maxresdefault.jpg" width="500"></a>
+<a href="https://youtu.be/hE8ZoA8gETU?si=iDzTC7EPSqV6PfcA"><img src="http://img.youtube.com/vi/hE8ZoA8gETU/mqdefault.jpg" width="300"></a>
 </p>
 
 ## スクリプト
