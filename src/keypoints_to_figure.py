@@ -6,7 +6,7 @@ from tkinter import filedialog
 import pandas as pd
 import cv2
 
-from keypoint_plotter import KeypointPlotter
+from trajectory_plotter import KeypointPlotter
 
 
 class App(tk.Frame):
