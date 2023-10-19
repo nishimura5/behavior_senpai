@@ -12,7 +12,9 @@ import seaborn as sns
 class KeypointPlotter:
     def __init__(self):
         dpi = 100
-        self.fig = plt.figure(figsize=(700/dpi, 700/dpi), dpi=dpi)
+        self.fig_width = 900
+        self.fig_height = 700
+        self.fig = plt.figure(figsize=(self.fig_width/dpi, self.fig_height/dpi), dpi=dpi)
 
     def pack(self, master):
 #        fig.canvas.mpl_connect("scroll_event", self.scroll_graph)
@@ -27,7 +29,7 @@ class KeypointPlotter:
     def draw(self, plot_df, member, keypoint, cap):
         self.cap = cap
         self.fig.clf()
-        gs = gridspec.GridSpec(2, 2, width_ratios=[1, 1], height_ratios=[1, 1])
+        gs = gridspec.GridSpec(2, 2, width_ratios=[self.fig_height, self.fig_width], height_ratios=[1, 1])
         traj_ax = self.fig.add_subplot(gs[1, 1])
         self.x_time_ax = self.fig.add_subplot(gs[0, 1], sharex=traj_ax)
         self.y_time_ax = self.fig.add_subplot(gs[1, 0], sharey=traj_ax)
@@ -38,16 +40,16 @@ class KeypointPlotter:
 
         self.x_time_ax.plot(self.plot_df['x'], self.plot_df['timestamp'], picker=5)
         self.x_time_ax.yaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
-        self.x_h = self.x_time_ax.axhline(0, color='black', lw=0.5)
+        self.x_h = self.x_time_ax.axhline(0, color='gray', lw=0.5)
         self.x_time_ax.invert_yaxis()
 
         self.y_time_ax.plot(self.plot_df['timestamp'], self.plot_df['y'], picker=5)
         self.y_time_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
-        self.y_v = self.y_time_ax.axvline(0, color='black', lw=0.5)
+        self.y_v = self.y_time_ax.axvline(0, color='gray', lw=0.5)
 
-        sns.kdeplot(data=self.plot_df, x="x", y="y", fill=True, alpha=0.6, ax=traj_ax)
-        self.traj_point, = traj_ax.plot(self.plot_df['x'], self.plot_df['y'], 'r.')
-        self.traj_img = traj_ax.imshow(np.zeros((height, width, 3), dtype=np.uint8), aspect='auto')
+        sns.kdeplot(data=self.plot_df, x="x", y="y", fill=True, alpha=0.7, ax=traj_ax)
+        self.traj_point, = traj_ax.plot(self.plot_df['x'], self.plot_df['y'], color="#02326f", marker='.')
+        self.traj_img = traj_ax.imshow(np.full((height, width, 3), 255, dtype=np.uint8), aspect='auto')
         self.traj_img.autoscale()
         traj_ax.set_xlim(0, width)
         traj_ax.set_ylim(0, height)
@@ -87,8 +89,9 @@ class KeypointPlotter:
         timestamp = row.iloc[int(len(row)/2)].timestamp
         self.traj_point.set_data(row.x, row.y)
 
-        self.cap.set(cv2.CAP_PROP_POS_MSEC, timestamp)
-        ok, frame = self.cap.read()
-        show_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        self.traj_img.set_data(show_img)
+        if self.cap is not None:
+            self.cap.set(cv2.CAP_PROP_POS_MSEC, timestamp)
+            ok, frame = self.cap.read()
+            show_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            self.traj_img.set_data(show_img)
         self.canvas.draw()
