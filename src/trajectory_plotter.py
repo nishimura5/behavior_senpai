@@ -9,7 +9,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 import seaborn as sns
 
 
-class KeypointPlotter:
+class TrajectoryPlotter:
     def __init__(self):
         dpi = 100
         self.fig_width = 900
@@ -17,7 +17,6 @@ class KeypointPlotter:
         self.fig = plt.figure(figsize=(self.fig_width/dpi, self.fig_height/dpi), dpi=dpi)
 
     def pack(self, master):
-#        fig.canvas.mpl_connect("scroll_event", self.scroll_graph)
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)
         self.canvas.mpl_connect("motion_notify_event", self._cross_line)
         self.canvas.mpl_connect("pick_event", self._click_graph)

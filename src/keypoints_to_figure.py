@@ -6,7 +6,7 @@ from tkinter import filedialog
 import pandas as pd
 import cv2
 
-from trajectory_plotter import KeypointPlotter
+from trajectory_plotter import TrajectoryPlotter
 
 
 class App(tk.Frame):
@@ -15,7 +15,7 @@ class App(tk.Frame):
         master.title("Keypoints to Figure")
         self.pack(padx=10, pady=10)
 
-        self.kp = KeypointPlotter()
+        self.traj = TrajectoryPlotter()
 
         load_frame = tk.Frame(self)
         load_frame.pack(pady=5)
@@ -37,7 +37,7 @@ class App(tk.Frame):
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
 
-        self.kp.pack(plot_frame)
+        self.traj.pack(plot_frame)
  
     def load_pkl(self):
         init_dir = os.path.abspath(os.path.dirname(__file__))
@@ -54,6 +54,7 @@ class App(tk.Frame):
         init_member = self.member_cbox.get()
         self.keypoint_cbox["values"] = self.src_df.loc[pd.IndexSlice[:, init_member, :], :].index.get_level_values("keypoint").unique().tolist()
 
+        # mp4のパスを取得
         file_name = os.path.splitext(os.path.basename(pkl_path))[0]
         self.video_path = os.path.join(os.path.dirname(pkl_path), os.pardir, f"{file_name}.mp4")
 
@@ -64,12 +65,12 @@ class App(tk.Frame):
         return cap
 
     def draw(self):
-        # mp4を探す
+        # mp4を読み込む
         cap = self.load_video(self.video_path)
 
         current_member = self.member_cbox.get()
         current_keypoint = self.keypoint_cbox.get()
-        self.kp.draw(self.src_df, current_member, current_keypoint, cap)
+        self.traj.draw(self.src_df, current_member, current_keypoint, cap)
 
     def _on_selected(self, event):
         current_member = self.member_cbox.get()
