@@ -4,6 +4,7 @@ from tkinter import ttk
 from tkinter import filedialog
 
 import pandas as pd
+import cv2
 
 from keypoint_plotter import KeypointPlotter
 
@@ -16,11 +17,11 @@ class App(tk.Frame):
 
         self.kp = KeypointPlotter()
 
-        load_pkl_frame = tk.Frame(self)
-        load_pkl_frame.pack(pady=5)
-        load_pkl_btn = ttk.Button(load_pkl_frame, text="Load Track", command=self.load_pkl)
+        load_frame = tk.Frame(self)
+        load_frame.pack(pady=5)
+        load_pkl_btn = ttk.Button(load_frame, text="Load Track", command=self.load_pkl)
         load_pkl_btn.pack(side=tk.LEFT)
-        self.pkl_path_label = ttk.Label(load_pkl_frame, text="No trk loaded")
+        self.pkl_path_label = ttk.Label(load_frame, text="No trk loaded")
         self.pkl_path_label.pack(side=tk.LEFT)
 
         setting_frame = tk.Frame(self)
@@ -30,8 +31,6 @@ class App(tk.Frame):
         self.member_cbox.bind("<<ComboboxSelected>>", self._on_selected)
         self.keypoint_cbox = ttk.Combobox(setting_frame, state='readonly', width=10)
         self.keypoint_cbox.pack(side=tk.LEFT, padx=5)
-        self.plot_style_cbox = ttk.Combobox(setting_frame, values=self.kp.plot_styles, state='readonly', width=10)
-        self.plot_style_cbox.pack(side=tk.LEFT, padx=5)
         draw_btn = ttk.Button(setting_frame, text="Draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT)
 
@@ -55,11 +54,22 @@ class App(tk.Frame):
         init_member = self.member_cbox.get()
         self.keypoint_cbox["values"] = self.src_df.loc[pd.IndexSlice[:, init_member, :], :].index.get_level_values("keypoint").unique().tolist()
 
+        file_name = os.path.splitext(os.path.basename(pkl_path))[0]
+        self.video_path = os.path.join(os.path.dirname(pkl_path), os.pardir, f"{file_name}.mp4")
+
+    def load_video(self, video_path):
+        cap = None
+        if os.path.exists(video_path) is True:
+            cap = cv2.VideoCapture(video_path)
+        return cap
+
     def draw(self):
+        # mp4を探す
+        cap = self.load_video(self.video_path)
+
         current_member = self.member_cbox.get()
         current_keypoint = self.keypoint_cbox.get()
-        plot_style = self.plot_style_cbox.get()
-        self.kp.draw(self.src_df, current_member, current_keypoint, plot_style)
+        self.kp.draw(self.src_df, current_member, current_keypoint, cap)
 
     def _on_selected(self, event):
         current_member = self.member_cbox.get()
