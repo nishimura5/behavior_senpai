@@ -1,5 +1,3 @@
-import tkinter as tk
-
 import pandas as pd
 import cv2
 import numpy as np
@@ -15,44 +13,49 @@ class TrajectoryPlotter:
         self.fig_width = 900
         self.fig_height = 700
         self.fig = plt.figure(figsize=(self.fig_width/dpi, self.fig_height/dpi), dpi=dpi)
+        self.fig.canvas.mpl_connect("motion_notify_event", self._gray_line)
+        self.fig.canvas.mpl_connect("pick_event", self._click_graph)
+
+        # axesのレイアウト設定
+        gs = gridspec.GridSpec(2, 2, width_ratios=[self.fig_height, self.fig_width], height_ratios=[1, 1])
+        self.traj_ax = self.fig.add_subplot(gs[1, 1])
+        self.x_time_ax = self.fig.add_subplot(gs[0, 1], sharex=self.traj_ax)
+        self.y_time_ax = self.fig.add_subplot(gs[1, 0], sharey=self.traj_ax)
+        self.x_h = None
+        self.y_v = None
 
     def pack(self, master):
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)
-        self.canvas.mpl_connect("motion_notify_event", self._cross_line)
-        self.canvas.mpl_connect("pick_event", self._click_graph)
-
         toolbar = NavigationToolbar2Tk(self.canvas, master)
         toolbar.pack()
-        self.canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.X, expand=False)
+        self.canvas.get_tk_widget().pack(expand=False)
 
     def draw(self, plot_df, member, keypoint, cap):
         self.cap = cap
-        self.fig.clf()
-        gs = gridspec.GridSpec(2, 2, width_ratios=[self.fig_height, self.fig_width], height_ratios=[1, 1])
-        traj_ax = self.fig.add_subplot(gs[1, 1])
-        self.x_time_ax = self.fig.add_subplot(gs[0, 1], sharex=traj_ax)
-        self.y_time_ax = self.fig.add_subplot(gs[1, 0], sharey=traj_ax)
+        self.plot_df = plot_df.loc[pd.IndexSlice[:, member, keypoint], :]
+        self.traj_ax.cla()
+        self.x_time_ax.cla()
+        self.y_time_ax.cla()
 
         width = plot_df.attrs["width"]
         height = plot_df.attrs["heigt"]
-        self.plot_df = plot_df.loc[pd.IndexSlice[:, member, keypoint], :]
-
+        # x座標時系列グラフ
         self.x_time_ax.plot(self.plot_df['x'], self.plot_df['timestamp'], picker=5)
         self.x_time_ax.yaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
-        self.x_h = self.x_time_ax.axhline(0, color='gray', lw=0.5)
         self.x_time_ax.invert_yaxis()
-
+        self.x_h = self.x_time_ax.axhline(0, color='gray', lw=0.5)
+        # y座標時系列グラフ
         self.y_time_ax.plot(self.plot_df['timestamp'], self.plot_df['y'], picker=5)
         self.y_time_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         self.y_v = self.y_time_ax.axvline(0, color='gray', lw=0.5)
-
-        sns.kdeplot(data=self.plot_df, x="x", y="y", fill=True, alpha=0.7, ax=traj_ax)
-        self.traj_point, = traj_ax.plot(self.plot_df['x'], self.plot_df['y'], color="#02326f", marker='.')
-        self.traj_img = traj_ax.imshow(np.full((height, width, 3), 255, dtype=np.uint8), aspect='auto')
+        # 軌跡グラフ
+        sns.kdeplot(data=self.plot_df, x="x", y="y", fill=True, alpha=0.7, ax=self.traj_ax)
+        self.traj_point, = self.traj_ax.plot([], [], color="#02326f", marker='.')
+        self.traj_img = self.traj_ax.imshow(np.full((height, width, 3), 255, dtype=np.uint8), aspect='auto')
         self.traj_img.autoscale()
-        traj_ax.set_xlim(0, width)
-        traj_ax.set_ylim(0, height)
-        traj_ax.invert_yaxis()
+        self.traj_ax.set_xlim(0, width)
+        self.traj_ax.set_ylim(0, height)
+        self.traj_ax.invert_yaxis()
 
         self.canvas.draw()
 
@@ -64,8 +67,8 @@ class TrajectoryPlotter:
         seconds = remain - (minutes * 60)
         return f'{int(hours)}:{int(minutes):02}:{int(seconds):02}'
 
-    def _cross_line(self, event):
-        if event.inaxes is None:
+    def _gray_line(self, event):
+        if event.inaxes is None or self.x_h is None or self.y_v is None:
             return
         x = event.xdata
         y = event.ydata

@@ -10,7 +10,7 @@ from trajectory_plotter import TrajectoryPlotter
 
 
 class App(tk.Frame):
-    def __init__(self, master, args):
+    def __init__(self, master):
         super().__init__(master)
         master.title("Keypoints to Figure")
         self.pack(padx=10, pady=10)
@@ -74,7 +74,10 @@ class App(tk.Frame):
 
     def _on_selected(self, event):
         current_member = self.member_cbox.get()
-        self.keypoint_cbox["values"] = self.src_df.loc[pd.IndexSlice[:, current_member, :], :].index.get_level_values("keypoint").unique().tolist()
+        # keypointの一覧を取得してコンボボックスにセット
+        idx = pd.IndexSlice[:, current_member, :]
+        keypoints = self.src_df.loc[idx, :].index.get_level_values("keypoint").unique().tolist()
+        self.keypoint_cbox["values"] = keypoints
         self.keypoint_cbox.current(0)
 
 
@@ -83,16 +86,12 @@ def quit(root):
     root.destroy()
 
 
-def main(args):
+def main():
     root = tk.Tk()
-    app = App(root, args)
+    app = App(root)
     root.protocol("WM_DELETE_WINDOW", lambda: quit(root))
     app.mainloop()
 
 
 if __name__ == "__main__":
-
-    args = None
-
-    main(args)
-    exit()
+    main()
