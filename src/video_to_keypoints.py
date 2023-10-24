@@ -10,7 +10,7 @@ import roi_cap
 
 
 class App(tk.Frame):
-    def __init__(self, master, args):
+    def __init__(self, master):
         super().__init__(master)
         master.title("Video to Keypoints")
         self.pack(padx=10, pady=10)
@@ -66,8 +66,8 @@ class App(tk.Frame):
 
         # attrsを埋め込み
         result_df.attrs["model"] = model_name
-        result_df.attrs["width"] = rcap.width
-        result_df.attrs["heigt"] = rcap.height
+        result_df.attrs["frame_size"] = (rcap.width, rcap.height)
+        result_df.attrs["video_name"] = os.path.basename(self.video_path)
 
         result_df.to_pickle(pkl_path)
 
@@ -77,16 +77,12 @@ def quit(root):
     root.destroy()
 
 
-def main(args):
+def main():
     root = tk.Tk()
-    app = App(root, args)
+    app = App(root)
     root.protocol("WM_DELETE_WINDOW", lambda: quit(root))
     app.mainloop()
 
 
 if __name__ == "__main__":
-
-    args = None
-
-    main(args)
-    exit()
+    main()
