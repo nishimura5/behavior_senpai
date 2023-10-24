@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import cv2
 import numpy as np
@@ -9,15 +11,15 @@ import seaborn as sns
 
 class TrajectoryPlotter:
     def __init__(self):
-        dpi = 100
-        self.fig_width = 900
-        self.fig_height = 700
-        self.fig = plt.figure(figsize=(self.fig_width/dpi, self.fig_height/dpi), dpi=dpi)
+        dpi = 72
+        fig_width = 900
+        fig_height = 700
+        self.fig = plt.figure(figsize=(fig_width/dpi, fig_height/dpi), dpi=dpi)
         self.fig.canvas.mpl_connect("motion_notify_event", self._gray_line)
         self.fig.canvas.mpl_connect("pick_event", self._click_graph)
 
         # axesのレイアウト設定
-        gs = gridspec.GridSpec(2, 2, width_ratios=[self.fig_height, self.fig_width], height_ratios=[1, 1])
+        gs = gridspec.GridSpec(2, 2, width_ratios=[fig_height, fig_width], height_ratios=[1, 1])
         self.traj_ax = self.fig.add_subplot(gs[1, 1])
         self.x_time_ax = self.fig.add_subplot(gs[0, 1], sharex=self.traj_ax)
         self.y_time_ax = self.fig.add_subplot(gs[1, 0], sharey=self.traj_ax)
@@ -30,15 +32,20 @@ class TrajectoryPlotter:
         toolbar.pack()
         self.canvas.get_tk_widget().pack(expand=False)
 
-    def draw(self, plot_df, member, keypoint, cap):
+    def draw(self, plot_df, member, keypoint, pkl_dir):
+        video_path = os.path.join(pkl_dir, os.pardir, plot_df.attrs["video_name"])
+        if os.path.exists(video_path) is True:
+            cap = cv2.VideoCapture(video_path)
+        else:
+            cap = None
         self.cap = cap
+
         self.plot_df = plot_df.loc[pd.IndexSlice[:, member, keypoint], :]
+        width, height = plot_df.attrs["frame_size"]
         self.traj_ax.cla()
         self.x_time_ax.cla()
         self.y_time_ax.cla()
 
-        width = plot_df.attrs["width"]
-        height = plot_df.attrs["heigt"]
         # x座標時系列グラフ
         self.x_time_ax.plot(self.plot_df['x'], self.plot_df['timestamp'], picker=5)
         self.x_time_ax.yaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
@@ -53,7 +60,6 @@ class TrajectoryPlotter:
         self.traj_point, = self.traj_ax.plot([], [], color="#02326f", marker='.')
         self.traj_img = self.traj_ax.imshow(np.full((height, width, 3), 255, dtype=np.uint8), aspect='auto')
         self.traj_img.autoscale()
-        self.traj_ax.set_xlim(0, width)
         self.traj_ax.set_ylim(0, height)
         self.traj_ax.invert_yaxis()
 

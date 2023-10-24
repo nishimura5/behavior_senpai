@@ -4,7 +4,6 @@ from tkinter import ttk
 from tkinter import filedialog
 
 import pandas as pd
-import cv2
 
 from trajectory_plotter import TrajectoryPlotter
 
@@ -54,23 +53,13 @@ class App(tk.Frame):
         init_member = self.member_cbox.get()
         self.keypoint_cbox["values"] = self.src_df.loc[pd.IndexSlice[:, init_member, :], :].index.get_level_values("keypoint").unique().tolist()
 
-        # mp4のパスを取得
-        file_name = os.path.splitext(os.path.basename(pkl_path))[0]
-        self.video_path = os.path.join(os.path.dirname(pkl_path), os.pardir, f"{file_name}.mp4")
-
-    def load_video(self, video_path):
-        cap = None
-        if os.path.exists(video_path) is True:
-            cap = cv2.VideoCapture(video_path)
-        return cap
+        # PKLが置かれているフォルダのパスを取得
+        self.pkl_dir = os.path.dirname(pkl_path)
 
     def draw(self):
-        # mp4を読み込む
-        cap = self.load_video(self.video_path)
-
         current_member = self.member_cbox.get()
         current_keypoint = self.keypoint_cbox.get()
-        self.traj.draw(self.src_df, current_member, current_keypoint, cap)
+        self.traj.draw(self.src_df, current_member, current_keypoint, self.pkl_dir)
 
     def _on_selected(self, event):
         current_member = self.member_cbox.get()
