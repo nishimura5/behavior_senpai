@@ -12,7 +12,7 @@
 <a href="https://youtu.be/FYrrFdX6A7s?si=FpTq_ExCCWz0PumD"><img src="http://img.youtube.com/vi/FYrrFdX6A7s/mqdefault.jpg" width="300"></a>
 </p>
 
- - [keypoints_to_figure.py](src/keyoints_to_figure.py): グラフ描画アプリ(下のラッパー)
+ - [keypoints_to_figure.py](src/keypoints_to_figure.py): グラフ描画アプリ(下のラッパー)
  - [trajectory_plotter.py](src/trajectory_plotter.py): PKLファイルのデータのグラフ描画
 
 ### 姿勢推定
