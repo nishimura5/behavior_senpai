@@ -19,7 +19,7 @@ class TrajectoryPlotter:
         self.fig.canvas.mpl_connect("pick_event", self._click_graph)
 
         # axesのレイアウト設定
-        gs = gridspec.GridSpec(2, 2, width_ratios=[fig_height, fig_width], height_ratios=[1, 1])
+        gs = gridspec.GridSpec(2, 2, width_ratios=[fig_height, fig_width], height_ratios=[1, 1], hspace=0.04, wspace=0.03)
         self.traj_ax = self.fig.add_subplot(gs[1, 1])
         self.x_time_ax = self.fig.add_subplot(gs[0, 1], sharex=self.traj_ax)
         self.y_time_ax = self.fig.add_subplot(gs[1, 0], sharey=self.traj_ax)
@@ -52,11 +52,16 @@ class TrajectoryPlotter:
         # x座標時系列グラフ
         self.x_time_ax.plot(self.plot_df['x'], self.plot_df['timestamp'], picker=5)
         self.x_time_ax.yaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
+        # tickをグラフの上部に表示
+        self.x_time_ax.set_xlabel('x(px)')
+        self.x_time_ax.xaxis.tick_top()
+        self.x_time_ax.xaxis.set_label_position('top')
         self.x_time_ax.invert_yaxis()
         self.x_h = self.x_time_ax.axhline(0, color='gray', lw=0.5)
         # y座標時系列グラフ
         self.y_time_ax.plot(self.plot_df['timestamp'], self.plot_df['y'], picker=5)
         self.y_time_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
+        self.y_time_ax.set_ylabel('y(px)')
         self.y_v = self.y_time_ax.axvline(0, color='gray', lw=0.5)
         # 軌跡グラフ
         sns.kdeplot(data=self.plot_df, x="x", y="y", fill=True, alpha=0.7, ax=self.traj_ax)
@@ -65,6 +70,8 @@ class TrajectoryPlotter:
         self.traj_img.autoscale()
         self.traj_ax.set_ylim(0, height)
         self.traj_ax.invert_yaxis()
+        self.traj_ax.xaxis.set_visible(False)
+        self.traj_ax.yaxis.set_visible(False)
 
         self.canvas.draw()
 

@@ -42,6 +42,7 @@ class RoiCap(cv2.VideoCapture):
         '''
         ret, frame = self.read()
         src_img = frame.copy()
+        cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
         cv2.imshow("frame", src_img)
         cv2.setMouseCallback("frame", self.mouse_callback)
 
