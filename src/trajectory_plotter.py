@@ -32,6 +32,12 @@ class TrajectoryPlotter:
         toolbar.pack()
         self.canvas.get_tk_widget().pack(expand=False)
 
+    def set_draw_param(self, kde_alpha, kde_adjust, kde_thresh, kde_levels):
+        self.kde_alpha = kde_alpha
+        self.kde_adjust = kde_adjust
+        self.kde_thresh = kde_thresh
+        self.kde_levels = kde_levels
+
     def draw(self, plot_df, member, keypoint, pkl_dir):
         video_path = os.path.join(pkl_dir, os.pardir, plot_df.attrs["video_name"])
         if os.path.exists(video_path) is True:
@@ -64,7 +70,10 @@ class TrajectoryPlotter:
         self.y_time_ax.set_ylabel('y(px)')
         self.y_v = self.y_time_ax.axvline(0, color='gray', lw=0.5)
         # 軌跡グラフ
-        sns.kdeplot(data=self.plot_df, x="x", y="y", fill=True, alpha=0.7, ax=self.traj_ax)
+        sns.kdeplot(
+            data=self.plot_df, x="x", y="y", fill=True,
+            alpha=self.kde_alpha, bw_adjust=self.kde_adjust, thresh=self.kde_thresh, levels=self.kde_levels,
+            ax=self.traj_ax)
         self.traj_point, = self.traj_ax.plot([], [], color="#02326f", marker='.')
         self.traj_img = self.traj_ax.imshow(np.full((height, width, 3), 255, dtype=np.uint8), aspect='auto')
         self.traj_img.autoscale()

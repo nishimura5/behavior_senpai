@@ -59,6 +59,7 @@ class App(tk.Frame):
     def draw(self):
         current_member = self.member_cbox.get()
         current_keypoint = self.keypoint_cbox.get()
+        self.traj.set_draw_param(kde_alpha=0.9, kde_adjust=0.4, kde_thresh=0.1, kde_levels=20)
         self.traj.draw(self.src_df, current_member, current_keypoint, self.pkl_dir)
 
     def _on_selected(self, event):
