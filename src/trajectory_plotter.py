@@ -35,7 +35,10 @@ class TrajectoryPlotter:
     def draw(self, plot_df, member, keypoint, pkl_dir):
         video_path = os.path.join(pkl_dir, os.pardir, plot_df.attrs["video_name"])
         if os.path.exists(video_path) is True:
-            cap = cv2.VideoCapture(video_path)
+            cap = cv2.VideoCapture(
+                video_path,
+                apiPreference=cv2.CAP_ANY,
+                params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
         else:
             cap = None
         self.cap = cap
