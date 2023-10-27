@@ -4,6 +4,18 @@ import random
 import cv2
 import pandas as pd
 
+def draw(src_img, result):
+    anno = Annotate()
+    anno.set_img(src_img)
+    result_keypoints = result[0].keypoints.data
+    result_boxes = result[0].boxes.data
+    for keypoints, boxes in zip(result_keypoints, result_boxes):
+        member = int(boxes[4])
+        anno.set_pose(keypoints)
+        anno.set_track(member)
+        dst_img = anno.draw()
+    return dst_img
+
 
 class Annotate:
     def set_pose(self, kps):

@@ -2,6 +2,7 @@ import cv2
 from ultralytics import YOLO
 import pandas as pd
 
+import yolo_drawer
 
 class YoloDetector:
     def __init__(self, cap, show=True):
@@ -20,9 +21,17 @@ class YoloDetector:
                 ret, frame = self.cap.get_roi_frame()
             else:
                 ret, frame = self.cap.read()
-            result = self.model.track(frame, verbose=False, persist=True, classes=0, show=self.show)
-
+            result = self.model.track(frame, verbose=False, persist=True, classes=0)
             timestamp = self.cap.get(cv2.CAP_PROP_POS_MSEC)
+
+            # 検出結果を描画、xキーで途中終了
+            if self.show is True:
+                yolo_drawer.draw(frame, result)
+                self._put_frame_pos(frame, i)
+                cv2.imshow("dst", frame)
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord('x'):
+                    break
 
             # 検出結果の取り出し
             result_keypoints = result[0].keypoints.data
@@ -52,3 +61,9 @@ class YoloDetector:
 
     def get_result(self):
         return self.dst_df
+
+    def _put_frame_pos(self, src_img, pos=0, font_size=2):
+        txt_font = cv2.FONT_HERSHEY_PLAIN
+        text_pos = (font_size*5, font_size*15)
+        cv2.putText(src_img, f"{pos}/{self.total_frame_num}", text_pos, txt_font, font_size, (0, 0, 0), font_size*3)
+        cv2.putText(src_img, f"{pos}/{self.total_frame_num}", text_pos, txt_font, font_size, (255, 255, 255), font_size)
