@@ -6,13 +6,14 @@ authors = [
     { name = "a5", email = "" }
 ]
 dependencies = [
-    "ultralytics>=8.0.191",
-    "opencv-python>=4.8.1.78",
+#    "torch>=1.8",
+    "ultralytics>=8.0",
+    "opencv-python>=4.8",
     "lapx>=0.5.4",
-    "mediapipe>=0.10.5",
+    "mediapipe>=0.10",
 ]
 readme = "README.md"
-requires-python = ">= 3.8"
+requires-python = ">= 3.11"
 
 [build-system]
 requires = ["hatchling"]
@@ -24,6 +25,11 @@ dev-dependencies = []
 
 [tool.rye.scripts]
 detect = "python src/video_to_keypoints.py"
+
+#[[tool.rye.sources]]
+#name = "torch"
+#url = "https://download.pytorch.org/whl/cu118"
+#type = "index"
 
 [tool.hatch.metadata]
 allow-direct-references = true
