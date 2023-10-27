@@ -33,6 +33,9 @@ class App(tk.Frame):
         draw_btn = ttk.Button(setting_frame, text="Draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT)
 
+        clear_btn = ttk.Button(setting_frame, text="Clear", command=self.clear)
+        clear_btn.pack(side=tk.LEFT)
+
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
 
@@ -66,6 +69,9 @@ class App(tk.Frame):
         current_keypoint = self.keypoint_cbox.get()
         self.traj.set_draw_param(kde_alpha=0.9, kde_adjust=0.4, kde_thresh=0.1, kde_levels=20)
         self.traj.draw(self.plot_df, current_member, current_keypoint, self.pkl_dir)
+
+    def clear(self):
+        self.traj.clear()
 
     def _on_selected(self, event):
         current_member = self.member_cbox.get()

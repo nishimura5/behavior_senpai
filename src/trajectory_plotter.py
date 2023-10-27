@@ -54,9 +54,13 @@ class TrajectoryPlotter:
         self.plot_df = plot_df.loc[pd.IndexSlice[:, member, keypoint], :]
         width, height = plot_df.attrs["frame_size"]
         self.traj_ax.cla()
-        self.x_time_ax.cla()
-        self.y_time_ax.cla()
-        self.dt_ax.cla()
+
+        if self.x_h is not None:
+            self.x_h.remove()
+        if self.y_v is not None:
+            self.y_v.remove()
+        if self.dt_v is not None:
+            self.dt_v.remove()
 
         # x座標時系列グラフ
         self.x_time_ax.plot(self.plot_df['x'], self.plot_df['timestamp'], picker=5)
@@ -89,10 +93,18 @@ class TrajectoryPlotter:
         self.traj_ax.yaxis.set_visible(False)
 
         # dtグラフ
-        self.dt_ax.plot(self.plot_df['timestamp'], self.plot_df['dt'])
+        self.dt_ax.plot(self.plot_df['timestamp'], self.plot_df['dt'], label=f'{member}_{keypoint}', picker=5)
         self.dt_ax.xaxis.set_visible(False)
+        self.dt_ax.legend(loc='upper right')
         self.dt_v = self.dt_ax.axvline(0, color='gray', lw=0.5)
 
+        self.canvas.draw()
+
+    def clear(self):
+        self.x_time_ax.cla()
+        self.y_time_ax.cla()
+        self.traj_ax.cla()
+        self.dt_ax.cla()
         self.canvas.draw()
 
     def _format_timedelta(self, x, pos):
