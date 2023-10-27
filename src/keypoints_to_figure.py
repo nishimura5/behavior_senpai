@@ -6,7 +6,7 @@ from tkinter import filedialog
 import pandas as pd
 
 from trajectory_plotter import TrajectoryPlotter
-
+import keypoints_proc
 
 class App(tk.Frame):
     def __init__(self, master):
@@ -44,14 +44,19 @@ class App(tk.Frame):
         self.pkl_path_label["text"] = pkl_path
         self.src_df = pd.read_pickle(pkl_path)
 
-        # memberとkeypointのインデックス値を文字列に変換
-        idx = self.src_df.index
-        self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
+        # dt(速さ)を計算してsrc_dfに追加
+        dt_df = keypoints_proc.calc_dt(self.src_df, 10)
+        self.plot_df = pd.concat([self.src_df, dt_df], axis=1)
+        self.plot_df.attrs = self.src_df.attrs
 
-        self.member_cbox["values"] = self.src_df.index.get_level_values("member").unique().tolist()
+        # memberとkeypointのインデックス値を文字列に変換
+        idx = self.plot_df.index
+        self.plot_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
+
+        self.member_cbox["values"] = self.plot_df.index.get_level_values("member").unique().tolist()
         self.member_cbox.current(0)
         init_member = self.member_cbox.get()
-        self.keypoint_cbox["values"] = self.src_df.loc[pd.IndexSlice[:, init_member, :], :].index.get_level_values("keypoint").unique().tolist()
+        self.keypoint_cbox["values"] = self.plot_df.loc[pd.IndexSlice[:, init_member, :], :].index.get_level_values("keypoint").unique().tolist()
 
         # PKLが置かれているフォルダのパスを取得
         self.pkl_dir = os.path.dirname(pkl_path)
@@ -60,13 +65,13 @@ class App(tk.Frame):
         current_member = self.member_cbox.get()
         current_keypoint = self.keypoint_cbox.get()
         self.traj.set_draw_param(kde_alpha=0.9, kde_adjust=0.4, kde_thresh=0.1, kde_levels=20)
-        self.traj.draw(self.src_df, current_member, current_keypoint, self.pkl_dir)
+        self.traj.draw(self.plot_df, current_member, current_keypoint, self.pkl_dir)
 
     def _on_selected(self, event):
         current_member = self.member_cbox.get()
         # keypointの一覧を取得してコンボボックスにセット
         idx = pd.IndexSlice[:, current_member, :]
-        keypoints = self.src_df.loc[idx, :].index.get_level_values("keypoint").unique().tolist()
+        keypoints = self.plot_df.loc[idx, :].index.get_level_values("keypoint").unique().tolist()
         self.keypoint_cbox["values"] = keypoints
         self.keypoint_cbox.current(0)
 
