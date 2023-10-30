@@ -40,7 +40,7 @@ class TrajectoryPlotter:
         self.kde_thresh = kde_thresh
         self.kde_levels = kde_levels
 
-    def draw(self, plot_df, member: str, keypoint: str, dt_span, pkl_dir):
+    def draw(self, plot_df, member: str, keypoint: str, dt_span: str, pkl_dir):
         video_path = os.path.join(pkl_dir, os.pardir, plot_df.attrs["video_name"])
         if os.path.exists(video_path) is True:
             cap = cv2.VideoCapture(
@@ -70,6 +70,8 @@ class TrajectoryPlotter:
         self.x_time_ax.xaxis.tick_top()
         self.x_time_ax.xaxis.set_label_position('top')
         self.x_time_ax.yaxis.tick_right()
+        time_max = self.plot_df['timestamp'].max()
+        self.x_time_ax.set_ylim(0, time_max)
         self.x_time_ax.invert_yaxis()
         self.x_h = self.x_time_ax.axhline(0, color='gray', lw=0.5)
 
@@ -87,14 +89,14 @@ class TrajectoryPlotter:
         self.traj_point, = self.traj_ax.plot([], [], color="#02326f", marker='.')
         self.traj_img = self.traj_ax.imshow(np.full((height, width, 3), 255, dtype=np.uint8), aspect='auto')
         self.traj_img.autoscale()
-        self.traj_ax.set_ylim(0, height)
-        self.traj_ax.invert_yaxis()
         self.traj_ax.xaxis.set_visible(False)
         self.traj_ax.yaxis.set_visible(False)
 
         # dtグラフ
-        self.dt_ax.plot(self.plot_df['timestamp'], self.plot_df[f'dt_{dt_span}'], label=f'{member}_{keypoint}', picker=5)
+        nan_shift = int(int(dt_span)/2) - 1
+        self.dt_ax.plot(self.plot_df['timestamp'], self.plot_df[f'dt_{dt_span}'].shift(-nan_shift), label=f'{member}_{keypoint}', picker=5)
         self.dt_ax.xaxis.set_visible(False)
+        self.dt_ax.set_ylabel('dt')
         self.dt_ax.legend(loc='upper right')
         self.dt_v = self.dt_ax.axvline(0, color='gray', lw=0.5)
 
