@@ -40,7 +40,7 @@ class TrajectoryPlotter:
         self.kde_thresh = kde_thresh
         self.kde_levels = kde_levels
 
-    def draw(self, plot_df, member, keypoint, pkl_dir):
+    def draw(self, plot_df, member: str, keypoint: str, dt_span, pkl_dir):
         video_path = os.path.join(pkl_dir, os.pardir, plot_df.attrs["video_name"])
         if os.path.exists(video_path) is True:
             cap = cv2.VideoCapture(
@@ -93,7 +93,7 @@ class TrajectoryPlotter:
         self.traj_ax.yaxis.set_visible(False)
 
         # dtグラフ
-        self.dt_ax.plot(self.plot_df['timestamp'], self.plot_df['dt'], label=f'{member}_{keypoint}', picker=5)
+        self.dt_ax.plot(self.plot_df['timestamp'], self.plot_df[f'dt_{dt_span}'], label=f'{member}_{keypoint}', picker=5)
         self.dt_ax.xaxis.set_visible(False)
         self.dt_ax.legend(loc='upper right')
         self.dt_v = self.dt_ax.axvline(0, color='gray', lw=0.5)

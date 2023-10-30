@@ -48,7 +48,8 @@ class App(tk.Frame):
         self.src_df = pd.read_pickle(pkl_path)
 
         # dt(速さ)を計算してsrc_dfに追加
-        dt_df = keypoints_proc.calc_dt(self.src_df, 10)
+        self.dt_span = 10
+        dt_df = keypoints_proc.calc_dt(self.src_df, self.dt_span)
         self.plot_df = pd.concat([self.src_df, dt_df], axis=1)
         self.plot_df.attrs = self.src_df.attrs
 
@@ -68,7 +69,7 @@ class App(tk.Frame):
         current_member = self.member_cbox.get()
         current_keypoint = self.keypoint_cbox.get()
         self.traj.set_draw_param(kde_alpha=0.9, kde_adjust=0.4, kde_thresh=0.1, kde_levels=20)
-        self.traj.draw(self.plot_df, current_member, current_keypoint, self.pkl_dir)
+        self.traj.draw(self.plot_df, current_member, current_keypoint, self.dt_span, self.pkl_dir)
 
     def clear(self):
         self.traj.clear()
