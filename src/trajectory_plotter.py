@@ -118,7 +118,7 @@ class TrajectoryPlotter:
         return f'{int(hours)}:{int(minutes):02}:{int(seconds):02}'
 
     def _gray_line(self, event):
-        if event.inaxes is None or self.x_h is None or self.y_v is None:
+        if event.inaxes is None or self.x_h is None or self.y_v is None or self.dt_v is None:
             return
         x = event.xdata
         y = event.ydata
@@ -127,6 +127,10 @@ class TrajectoryPlotter:
             self.y_v.set_xdata(y)
             self.dt_v.set_xdata(y)
         elif event.inaxes == self.y_time_ax:
+            self.x_h.set_ydata(x)
+            self.y_v.set_xdata(x)
+            self.dt_v.set_xdata(x)
+        elif event.inaxes == self.dt_ax:
             self.x_h.set_ydata(x)
             self.y_v.set_xdata(x)
             self.dt_v.set_xdata(x)

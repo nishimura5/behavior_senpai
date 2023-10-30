@@ -8,6 +8,7 @@ import pandas as pd
 from trajectory_plotter import TrajectoryPlotter
 import keypoints_proc
 
+
 class App(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
@@ -15,6 +16,7 @@ class App(tk.Frame):
         self.pack(padx=10, pady=10)
 
         self.traj = TrajectoryPlotter()
+        self.current_dt_span = None
 
         load_frame = tk.Frame(self)
         load_frame.pack(pady=5)
@@ -33,7 +35,7 @@ class App(tk.Frame):
         dt_span_label = ttk.Label(setting_frame, text="diff period:")
         dt_span_label.pack(side=tk.LEFT)
         self.dt_span_entry = ttk.Entry(setting_frame, width=5, validate="key", validatecommand=(self.register(self._validate), "%P"))
-        self.dt_span_entry.insert(tk.END, "10")
+        self.dt_span_entry.insert(tk.END, '10')
         self.dt_span_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         draw_btn = ttk.Button(setting_frame, text="Draw", command=self.draw)
@@ -54,8 +56,6 @@ class App(tk.Frame):
         self.src_df = pd.read_pickle(pkl_path)
 
         combo_df = self.src_df
-        print(combo_df)
-
         # memberとkeypointのインデックス値を文字列に変換
         idx = combo_df.index
         combo_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
@@ -74,9 +74,11 @@ class App(tk.Frame):
 
         # dt(速さ)を計算してsrc_dfに追加
         dt_span = self.dt_span_entry.get()
-        dt_df = keypoints_proc.calc_dt(self.src_df, int(dt_span))
-        self.plot_df = pd.concat([self.src_df, dt_df], axis=1)
-        self.plot_df.attrs = self.src_df.attrs
+        if self.current_dt_span != dt_span:
+            dt_df = keypoints_proc.calc_dt(self.src_df, int(dt_span))
+            self.plot_df = pd.concat([self.src_df, dt_df], axis=1)
+            self.plot_df.attrs = self.src_df.attrs
+            self.current_dt_span = dt_span
 
         # memberとkeypointのインデックス値を文字列に変換
         idx = self.plot_df.index
@@ -98,6 +100,7 @@ class App(tk.Frame):
 
     def _validate(self, text):
         return text.isdigit()
+
 
 def quit(root):
     root.quit()
