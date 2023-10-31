@@ -40,7 +40,7 @@ class TrajectoryPlotter:
         self.kde_thresh = kde_thresh
         self.kde_levels = kde_levels
 
-    def draw(self, plot_df, member: str, keypoint: str, dt_span: str, pkl_dir):
+    def draw(self, plot_df, member: str, keypoint: str, dt_span: int, thinning: int, pkl_dir: str):
         video_path = os.path.join(pkl_dir, os.pardir, plot_df.attrs["video_name"])
         if os.path.exists(video_path) is True:
             cap = cv2.VideoCapture(
@@ -93,8 +93,9 @@ class TrajectoryPlotter:
         self.traj_ax.yaxis.set_visible(False)
 
         # dtグラフ
-        nan_shift = int(int(dt_span)/2) - 1
-        self.dt_ax.plot(self.plot_df['timestamp'], self.plot_df[f'dt_{dt_span}'].shift(-nan_shift), label=f'{member}_{keypoint}', picker=5)
+        nan_shift = int((dt_span - thinning)/2) - 1
+        label = f"{member}_{keypoint} (dt={dt_span}, thinning={thinning})"
+        self.dt_ax.plot(self.plot_df['timestamp'], self.plot_df[f'dt_{dt_span}'].shift(-nan_shift), label=label, picker=5)
         self.dt_ax.xaxis.set_visible(False)
         self.dt_ax.set_ylabel('dt')
         self.dt_ax.legend(loc='upper right')
@@ -144,6 +145,8 @@ class TrajectoryPlotter:
             left_ind = 0
 
         row = self.plot_df.iloc[left_ind:right_ind, :]
+        if row.empty:
+            return
         timestamp = row.iloc[int(len(row)/2)].timestamp
         self.traj_point.set_data(row.x, row.y)
 

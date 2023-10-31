@@ -32,11 +32,18 @@ class App(tk.Frame):
         self.member_cbox.bind("<<ComboboxSelected>>", self._on_selected)
         self.keypoint_cbox = ttk.Combobox(setting_frame, state='readonly', width=10)
         self.keypoint_cbox.pack(side=tk.LEFT, padx=5)
+ 
         dt_span_label = ttk.Label(setting_frame, text="diff period:")
         dt_span_label.pack(side=tk.LEFT)
         self.dt_span_entry = ttk.Entry(setting_frame, width=5, validate="key", validatecommand=(self.register(self._validate), "%P"))
         self.dt_span_entry.insert(tk.END, '10')
         self.dt_span_entry.pack(side=tk.LEFT, padx=(0, 5))
+
+        thinning_label = ttk.Label(setting_frame, text="thinning:")
+        thinning_label.pack(side=tk.LEFT)
+        self.thinning_entry = ttk.Entry(setting_frame, width=5, validate="key", validatecommand=(self.register(self._validate), "%P"))
+        self.thinning_entry.insert(tk.END, '0')
+        self.thinning_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         draw_btn = ttk.Button(setting_frame, text="Draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT)
@@ -77,24 +84,35 @@ class App(tk.Frame):
         if self.current_dt_span != dt_span:
             dt_df = keypoints_proc.calc_dt(self.src_df, int(dt_span))
             self.plot_df = pd.concat([self.src_df, dt_df], axis=1)
-            self.plot_df.attrs = self.src_df.attrs
             self.current_dt_span = dt_span
 
+        # thinningの値だけframeを間引く
+        thinning = self.thinning_entry.get()
+        if int(thinning) > 1:
+            frames = self.src_df.index.get_level_values(0).unique().tolist()
+            frames = frames[::int(thinning)]
+            plot_df = self.plot_df[self.src_df.index.get_level_values(0).isin(frames)]
+        else:
+            plot_df = self.plot_df
+
+        plot_df.attrs = self.src_df.attrs
+
         # memberとkeypointのインデックス値を文字列に変換
-        idx = self.plot_df.index
-        self.plot_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
+        idx = plot_df.index
+        plot_df.index = plot_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
         self.traj.set_draw_param(kde_alpha=0.9, kde_adjust=0.4, kde_thresh=0.1, kde_levels=20)
-        self.traj.draw(self.plot_df, current_member, current_keypoint, dt_span, self.pkl_dir)
+        self.traj.draw(plot_df, current_member, current_keypoint, int(dt_span), int(thinning), self.pkl_dir)
 
     def clear(self):
         self.traj.clear()
+        self.current_dt_span = None
 
     def _on_selected(self, event):
         current_member = self.member_cbox.get()
         # keypointの一覧を取得してコンボボックスにセット
         idx = pd.IndexSlice[:, current_member, :]
-        keypoints = self.plot_df.loc[idx, :].index.get_level_values("keypoint").unique().tolist()
+        keypoints = self.src_df.loc[idx, :].index.get_level_values("keypoint").unique().tolist()
         self.keypoint_cbox["values"] = keypoints
         self.keypoint_cbox.current(0)
 
