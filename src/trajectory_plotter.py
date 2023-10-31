@@ -23,7 +23,7 @@ class TrajectoryPlotter:
         self.traj_ax = self.fig.add_subplot(gs[1, 1])
         self.x_time_ax = self.fig.add_subplot(gs[0, 1], sharex=self.traj_ax)
         self.y_time_ax = self.fig.add_subplot(gs[1, 0], sharey=self.traj_ax)
-        self.dt_ax = self.fig.add_subplot(gs[0, 0], sharex=self.y_time_ax)
+        self.speed_ax = self.fig.add_subplot(gs[0, 0], sharex=self.y_time_ax)
         self.x_h = None
         self.y_v = None
         self.dt_v = None
@@ -95,11 +95,11 @@ class TrajectoryPlotter:
         # dtグラフ
         nan_shift = int((dt_span - thinning)/2) - 1
         label = f"{member}_{keypoint} (dt={dt_span}, thinning={thinning})"
-        self.dt_ax.plot(self.plot_df['timestamp'], self.plot_df[f'dt_{dt_span}'].shift(-nan_shift), label=label, picker=5)
-        self.dt_ax.xaxis.set_visible(False)
-        self.dt_ax.set_ylabel('dt')
-        self.dt_ax.legend(loc='upper right')
-        self.dt_v = self.dt_ax.axvline(0, color='gray', lw=0.5)
+        self.speed_ax.plot(self.plot_df['timestamp'], self.plot_df[f'dt_{dt_span}'].shift(-nan_shift), label=label, picker=5)
+        self.speed_ax.xaxis.set_visible(False)
+        self.speed_ax.set_ylabel('dt')
+        self.speed_ax.legend(loc='upper right')
+        self.dt_v = self.speed_ax.axvline(0, color='gray', lw=0.5)
 
         self.canvas.draw()
 
@@ -107,7 +107,7 @@ class TrajectoryPlotter:
         self.x_time_ax.cla()
         self.y_time_ax.cla()
         self.traj_ax.cla()
-        self.dt_ax.cla()
+        self.speed_ax.cla()
         self.canvas.draw()
 
     def _format_timedelta(self, x, pos):
@@ -131,7 +131,7 @@ class TrajectoryPlotter:
             self.x_h.set_ydata(x)
             self.y_v.set_xdata(x)
             self.dt_v.set_xdata(x)
-        elif event.inaxes == self.dt_ax:
+        elif event.inaxes == self.speed_ax:
             self.x_h.set_ydata(x)
             self.y_v.set_xdata(x)
             self.dt_v.set_xdata(x)

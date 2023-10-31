@@ -82,8 +82,8 @@ class App(tk.Frame):
         # dt(速さ)を計算してsrc_dfに追加
         dt_span = self.dt_span_entry.get()
         if self.current_dt_span != dt_span:
-            dt_df = keypoints_proc.calc_dt(self.src_df, int(dt_span))
-            self.plot_df = pd.concat([self.src_df, dt_df], axis=1)
+            speed_df = keypoints_proc.calc_speed(self.src_df, int(dt_span))
+            self.src_speed_df = pd.concat([self.src_df, speed_df], axis=1)
             self.current_dt_span = dt_span
 
         # thinningの値だけframeを間引く
@@ -91,9 +91,9 @@ class App(tk.Frame):
         if int(thinning) > 1:
             frames = self.src_df.index.get_level_values(0).unique().tolist()
             frames = frames[::int(thinning)]
-            plot_df = self.plot_df[self.src_df.index.get_level_values(0).isin(frames)]
+            plot_df = self.src_speed_df[self.src_df.index.get_level_values(0).isin(frames)]
         else:
-            plot_df = self.plot_df
+            plot_df = self.src_speed_df
 
         plot_df.attrs = self.src_df.attrs
 

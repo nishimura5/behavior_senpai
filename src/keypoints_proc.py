@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 
-def calc_dt(src_df, step_frame):
+def calc_speed(src_df, step_frame):
     diff_df = src_df.groupby(level=['member', 'keypoint']).diff(step_frame)**2
     diff_df = pd.DataFrame(np.sqrt(diff_df['x'] + diff_df['y']), columns=[f'dt_{step_frame}'])
     return diff_df
