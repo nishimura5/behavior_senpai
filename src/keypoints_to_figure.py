@@ -88,12 +88,7 @@ class App(tk.Frame):
 
         # thinningの値だけframeを間引く
         thinning = self.thinning_entry.get()
-        if int(thinning) > 1:
-            frames = self.src_df.index.get_level_values(0).unique().tolist()
-            frames = frames[::int(thinning)]
-            plot_df = self.src_speed_df[self.src_df.index.get_level_values(0).isin(frames)]
-        else:
-            plot_df = self.src_speed_df
+        plot_df = keypoints_proc.thinning(self.src_speed_df, int(thinning))
 
         plot_df.attrs = self.src_df.attrs
 
