@@ -47,6 +47,11 @@ if __name__ == "__main__":
                 data['y'].append(np.cos(f * 2 * np.pi / 1000) * 50 + 50)
                 data['timestamp'].append(f)
     test_df = pd.DataFrame(data).set_index(['frame', 'member', 'keypoint'])
+
+    # テストデータをpkl出力
+#    test_df.attrs['video_name'] = 'test.mp4'
+#    test_df.attrs['frame_size'] = (100, 100)
+#    test_df.to_pickle('test.pkl')
     
     # calc_speed
     dt_span = 10
@@ -60,7 +65,6 @@ if __name__ == "__main__":
     # グラフ描画
     fig, ax = plt.subplots(3, 1)
     plot_df = test_speed_df.loc[pd.IndexSlice[:, 'test1', '1'], :]
-    print(plot_df)
     # テストデータ
     ax[0].plot(plot_df['timestamp'], plot_df['x'], label='x')
     ax[0].plot(plot_df['timestamp'], plot_df['y'], label='y')
