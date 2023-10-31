@@ -14,6 +14,7 @@
 
  - [keypoints_to_figure.py](src/keypoints_to_figure.py): グラフ描画アプリ(下のラッパー)
  - [trajectory_plotter.py](src/trajectory_plotter.py): PKLファイルのデータのグラフ描画
+ - [keypoints_proc.py](src/keypoints_proc.py): 時系列座標データに対する諸計算
 
 ### 姿勢推定
 以下の動画([YouTube](https://youtu.be/hE8ZoA8gETU?si=iDzTC7EPSqV6PfcA))で、アプリケーションの機能や構造を説明をしているので併せてご覧ください。
@@ -30,4 +31,3 @@
 ### その他
  - [mediapipe_drawer.py](src/mediapipe_drawer.py): PKLファイルを読み込んでMediaPipe Holisticの推論結果を動画に描画
  - [yolo_drawer.py](src/yolo_drawer.py): PKLファイルを読み込んでYOLOv8の推論結果を動画に描画
- - [yolo_plotter.py](src/yolo_plotter.py): PKLファイルを読み込んで推論結果を時系列グラフにプロット
