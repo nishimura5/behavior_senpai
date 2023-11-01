@@ -10,7 +10,7 @@ def calc_speed(src_df, step_frame: int):
     dy = y(t) - y(t - step_frame)
     '''
     diff_df = src_df.groupby(level=['member', 'keypoint']).diff(step_frame)**2
-    speed_df = pd.DataFrame(np.sqrt(diff_df['x'] + diff_df['y']), columns=[f'dt_{step_frame}'])
+    speed_df = pd.DataFrame(np.sqrt(diff_df['x'] + diff_df['y']) / step_frame, columns=[f'dt_{step_frame}'])
     return speed_df
 
 
@@ -33,7 +33,8 @@ if __name__ == "__main__":
     pd.set_option("display.max_rows", 100)
 
     # テストデータ生成
-    frames = range(1, 1001)
+    frame_num = 1000
+    frames = range(frame_num)
     members = ['test1', 'test2'] 
     keypoints = [f'{i}' for i in range(1, 11)]
     data = {'frame': [], 'member': [], 'keypoint': [], 'x': [], 'y': [], 'timestamp': []}
@@ -43,8 +44,8 @@ if __name__ == "__main__":
                 data['frame'].append(f)
                 data['member'].append(m)
                 data['keypoint'].append(k)
-                data['x'].append(np.sin(f * 2 * np.pi / 1000) * 50 + 50)
-                data['y'].append(np.cos(f * 2 * np.pi / 1000) * 50 + 50)
+                data['x'].append(np.sin(2 * np.pi * f / frame_num) * 500 + 50)
+                data['y'].append(np.cos(2 * np.pi * f / frame_num) * 500 + 50)
                 data['timestamp'].append(f)
     test_df = pd.DataFrame(data).set_index(['frame', 'member', 'keypoint'])
 
@@ -74,6 +75,7 @@ if __name__ == "__main__":
     ax[1].plot(plot_df['timestamp'], plot_df[f'dt_{dt_span}'], label='speed')
     ax[1].set_ylim(0, 5)
     ax[1].set_ylabel(f'speed ({dt_span})')
+    ax[1].axhline(np.pi, color='gray', lw=0.5)
     # thinning
     ax[2].plot(thinned_df['timestamp'], thinned_df['x'], label='x')
     ax[2].plot(thinned_df['timestamp'], thinned_df['y'], label='y')
