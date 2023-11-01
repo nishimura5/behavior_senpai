@@ -44,8 +44,8 @@ if __name__ == "__main__":
                 data['frame'].append(f)
                 data['member'].append(m)
                 data['keypoint'].append(k)
-                data['x'].append(np.sin(2 * np.pi * f / frame_num) * 500 + 50)
-                data['y'].append(np.cos(2 * np.pi * f / frame_num) * 500 + 50)
+                data['x'].append(np.sin(2 * np.pi * f / frame_num) * 500 + 500)
+                data['y'].append(np.cos(2 * np.pi * f / frame_num) * 500 + 500)
                 data['timestamp'].append(f)
     test_df = pd.DataFrame(data).set_index(['frame', 'member', 'keypoint'])
 
