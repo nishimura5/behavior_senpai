@@ -27,8 +27,8 @@ class App(tk.Frame):
         self.model_cbox = ttk.Combobox(middle_btn_frame, values=["YOLOv8 x-pose-p6", "MediaPipe Holistic"], state='readonly')
         self.model_cbox.pack(side=tk.LEFT, padx=15)
         self.roi_chk_val = tk.BooleanVar()
-        self.roi_chk = ttk.Checkbutton(middle_btn_frame, text="ROI", variable=self.roi_chk_val)
-        self.roi_chk.pack(side=tk.LEFT)
+        roi_chk = ttk.Checkbutton(middle_btn_frame, text="ROI", variable=self.roi_chk_val)
+        roi_chk.pack(side=tk.LEFT)
 
         bottom_btn_frame = tk.Frame(self)
         bottom_btn_frame.pack(pady=10)
