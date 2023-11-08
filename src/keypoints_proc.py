@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import sklearn as sk
+import sklearn.metrics.pairwise
 
 
 def calc_speed(src_df, step_frame: int):
@@ -25,6 +27,18 @@ def thinning(src_df, thinning: int):
     frames = frames[::thinning]
     thinned_df = src_df[src_df.index.get_level_values(0).isin(frames)]
     return thinned_df
+
+
+def calc_recurrence(src_df, threshold):
+    '''
+    recurrence plotを計算する
+    src_dfのカラム数は1であること
+    '''
+    src_df = src_df.round(decimals=2)
+
+    d = sk.metrics.pairwise.pairwise_distances(src_df)
+    d = (d > threshold).astype(int)
+    return d
 
 
 if __name__ == "__main__":
