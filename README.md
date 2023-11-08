@@ -7,9 +7,9 @@
 ## スクリプト
 
 ### グラフ描画
-以下の動画([YouTube](https://youtu.be/FYrrFdX6A7s?si=FpTq_ExCCWz0PumD))で、アプリケーションの機能や構造を説明をしているので併せてご覧ください。
+以下の動画([YouTube](https://youtu.be/c38UHrECGJA?si=k946YKvBmVXjrG8v))で、アプリケーションの機能や構造を説明をしているので併せてご覧ください。
 <p align="center">
-<a href="https://youtu.be/FYrrFdX6A7s?si=FpTq_ExCCWz0PumD"><img src="http://img.youtube.com/vi/FYrrFdX6A7s/mqdefault.jpg" width="300"></a>
+<a href="https://youtu.be/c38UHrECGJA?si=k946YKvBmVXjrG8v"><img src="http://img.youtube.com/vi/c38UHrECGJA/mqdefault.jpg" width="300"></a>
 </p>
 
  - [keypoints_to_figure.py](src/keypoints_to_figure.py): グラフ描画アプリ(下のラッパー)
