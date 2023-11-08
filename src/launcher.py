@@ -29,13 +29,25 @@ class App(tk.Frame):
         k2r_button.pack(side=tk.TOP, pady=5)
 
     def launch_v2k(self):
-        v2k.main()
+        dlg_modal = tk.Toplevel(self)
+        dlg_modal.focus_set()
+        dlg_modal.transient(self.master)
+        v2k.App(dlg_modal)
+        self.wait_window(dlg_modal)  
 
     def launch_k2f(self):
-        k2f.main()
+        dlg_modal = tk.Toplevel(self)
+        dlg_modal.focus_set()
+        dlg_modal.transient(self.master)
+        k2f.App(dlg_modal)
+        self.wait_window(dlg_modal)  
 
     def launch_k2r(self):
-        k2r.main()
+        dlg_modal = tk.Toplevel(self)
+        dlg_modal.focus_set()
+        dlg_modal.transient(self.master)
+        k2r.App(dlg_modal)
+        self.wait_window(dlg_modal)  
 
 
 def quit(root):
