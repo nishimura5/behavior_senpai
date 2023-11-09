@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-import sklearn as sk
-import sklearn.metrics.pairwise
+from sklearn.metrics.pairwise import pairwise_distances
+from sklearn.decomposition import PCA
 
 
 def calc_speed(src_df, step_frame: int):
@@ -29,16 +29,27 @@ def thinning(src_df, thinning: int):
     return thinned_df
 
 
-def calc_recurrence(src_df, tar_col, tar_member, tar_keypoint, threshold):
+def pca(src_df, members: list, keypoints: list, tar_cols: list):
+    '''
+    src_dfのtar_colsを次元削減する
+    '''
+    tar_df = src_df.loc[pd.IndexSlice[:, members, keypoints], [*tar_cols, 'timestamp']].dropna()
+
+    pca = PCA(n_components=1)
+    pca.fit(tar_df[tar_cols])
+    reduced_arr = pca.transform(tar_df[tar_cols])
+    timestamps = tar_df['timestamp'].values
+    return reduced_arr, timestamps
+
+
+def calc_recurrence(src_arr, threshold: float):
     '''
     recurrence plotを計算する
     '''
-    tar_df = src_df.loc[pd.IndexSlice[:, tar_member, tar_keypoint], [tar_col, 'timestamp']].dropna()
-    tar_arr = tar_df[tar_col].values.reshape(-1, 1)
-    distance_mat = sk.metrics.pairwise.pairwise_distances(tar_arr)
+    distance_mat = pairwise_distances(src_arr)
+    print(distance_mat.max())
     bin_mat = (distance_mat > threshold).astype(int)
-    timestamps = tar_df['timestamp'].values
-    return bin_mat, timestamps
+    return bin_mat
 
 
 if __name__ == "__main__":
@@ -65,9 +76,9 @@ if __name__ == "__main__":
 
     # テストデータをpkl出力
 #    test_df.attrs['video_name'] = 'test.mp4'
-#    test_df.attrs['frame_size'] = (100, 100)
+#    test_df.attrs['frame_size'] = (500, 500)
 #    test_df.to_pickle('test.pkl')
-    
+
     # calc_speed
     dt_span = 10
     speed_df = calc_speed(test_df, dt_span)
