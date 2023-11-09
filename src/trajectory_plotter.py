@@ -92,12 +92,12 @@ class TrajectoryPlotter:
         self.traj_ax.xaxis.set_visible(False)
         self.traj_ax.yaxis.set_visible(False)
 
-        # dtグラフ
+        # speedグラフ
         nan_shift = int((dt_span - thinning)/2) - 1
-        label = f"{member}_{keypoint} (dt={dt_span}, thinning={thinning})"
-        self.speed_ax.plot(self.plot_df['timestamp'], self.plot_df[f'dt_{dt_span}'].shift(-nan_shift), label=label, picker=5)
+        label = f"{member}_{keypoint} (speed={dt_span}, thinning={thinning})"
+        self.speed_ax.plot(self.plot_df['timestamp'], self.plot_df[f'spd_{dt_span}'].shift(-nan_shift), label=label, picker=5)
         self.speed_ax.xaxis.set_visible(False)
-        self.speed_ax.set_ylabel('dt')
+        self.speed_ax.set_ylabel('speed')
         self.speed_ax.legend(loc='upper right')
         self.dt_v = self.speed_ax.axvline(0, color='gray', lw=0.5)
 

@@ -53,7 +53,7 @@ class App(tk.Frame):
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
 
-        # dt(速さ)を計算してsrc_dfに追加
+        # speedを計算してsrc_dfに追加
         dt_span = self.proc_options.get_dt_span()
         if self.current_dt_span != dt_span:
             speed_df = keypoints_proc.calc_speed(self.src_df, int(dt_span))

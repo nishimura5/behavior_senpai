@@ -79,11 +79,12 @@ class App(tk.Frame):
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
 
-        # dt(速さ)を計算してsrc_dfに追加
+        # speedとaccelerationを計算してsrc_dfに追加
         dt_span = self.proc_options.get_dt_span()
         if self.current_dt_span != dt_span:
             speed_df = keypoints_proc.calc_speed(self.src_df, int(dt_span))
-            self.src_speed_df = pd.concat([self.src_df, speed_df], axis=1)
+            acc_df = keypoints_proc.calc_acceleration(speed_df, int(dt_span))
+            self.src_speed_df = pd.concat([self.src_df, speed_df, acc_df], axis=1)
             self.current_dt_span = dt_span
 
         # thinningの値だけframeを間引く
@@ -107,7 +108,7 @@ class App(tk.Frame):
             plot_df,
             members=[current_member],
             keypoints=[current_keypoint],
-            tar_cols=['x', 'y', f'dt_{dt_span}'])
+            tar_cols=['x', 'y', f'spd_{dt_span}'])
 
         threshold = self.eps_entry.get()
         recu_mat = keypoints_proc.calc_recurrence(reduced_arr, threshold=float(threshold))

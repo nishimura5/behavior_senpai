@@ -7,13 +7,22 @@ from sklearn.decomposition import PCA
 def calc_speed(src_df, step_frame: int):
     '''
     src_dfの各keypointの速さを計算する
-    speed = sqrt(dx^2 + dy^2)
+    speed = sqrt(dx^2 + dy^2) / t
     dx = x(t) - x(t - step_frame)
     dy = y(t) - y(t - step_frame)
     '''
     diff_df = src_df.groupby(level=['member', 'keypoint']).diff(step_frame)**2
-    speed_df = pd.DataFrame(np.sqrt(diff_df['x'] + diff_df['y']) / step_frame, columns=[f'dt_{step_frame}'])
+    speed_df = pd.DataFrame(np.sqrt(diff_df['x'] + diff_df['y']) / step_frame, columns=[f'spd_{step_frame}'])
     return speed_df
+
+
+def calc_acceleration(speed_df, step_frame: int):
+    '''
+    speed_dfの各keypointの加速度を計算する
+    '''
+    diff_df = speed_df.groupby(level=['member', 'keypoint']).diff(step_frame)
+    acc_df = pd.DataFrame(diff_df[f'spd_{step_frame}'] / step_frame).rename(columns={f'spd_{step_frame}': f'acc_{step_frame}'})
+    return acc_df
 
 
 def thinning(src_df, thinning: int):
@@ -79,17 +88,20 @@ if __name__ == "__main__":
 #    test_df.attrs['frame_size'] = (500, 500)
 #    test_df.to_pickle('test.pkl')
 
-    # calc_speed
+    # calc_speed, calc_acceleration
     dt_span = 10
     speed_df = calc_speed(test_df, dt_span)
-    test_speed_df = pd.concat([test_df, speed_df], axis=1)
+    acc_df = calc_acceleration(speed_df, dt_span)
+
+    print(acc_df)
+    test_speed_df = pd.concat([test_df, speed_df, acc_df], axis=1)
 
     # thinning
     thinning_val = 140
     thinned_df = thinning(test_speed_df, thinning_val)
 
     # グラフ描画
-    fig, ax = plt.subplots(3, 1)
+    fig, ax = plt.subplots(4, 1)
     plot_df = test_speed_df.loc[pd.IndexSlice[:, 'test1', '1'], :]
     # テストデータ
     ax[0].plot(plot_df['timestamp'], plot_df['x'], label='x')
@@ -97,13 +109,17 @@ if __name__ == "__main__":
     ax[0].set_ylabel('x, y')
     ax[0].legend()
     # speed
-    ax[1].plot(plot_df['timestamp'], plot_df[f'dt_{dt_span}'], label='speed')
+    ax[1].plot(plot_df['timestamp'], plot_df[f'spd_{dt_span}'], label='speed')
     ax[1].set_ylim(0, 5)
     ax[1].set_ylabel(f'speed ({dt_span})')
     ax[1].axhline(np.pi, color='gray', lw=0.5)
+    # acceleration
+    ax[2].plot(plot_df['timestamp'], plot_df[f'acc_{dt_span}'], label='acceleration')
+    ax[2].set_ylim(-5, 5)
+    ax[2].set_ylabel(f'acceleration ({dt_span})')
     # thinning
-    ax[2].plot(thinned_df['timestamp'], thinned_df['x'], label='x')
-    ax[2].plot(thinned_df['timestamp'], thinned_df['y'], label='y')
-    ax[2].set_ylabel(f'x, y ({thinning_val})')
+    ax[3].plot(thinned_df['timestamp'], thinned_df['x'], label='x')
+    ax[3].plot(thinned_df['timestamp'], thinned_df['y'], label='y')
+    ax[3].set_ylabel(f'x, y ({thinning_val})')
 
     plt.show()
