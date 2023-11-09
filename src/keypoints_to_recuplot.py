@@ -108,7 +108,7 @@ class App(tk.Frame):
             plot_df,
             members=[current_member],
             keypoints=[current_keypoint],
-            tar_cols=['x', 'y', f'spd_{dt_span}'])
+            tar_cols=['x', 'y', f'spd_{dt_span}', f'acc_{dt_span}'])
 
         threshold = self.eps_entry.get()
         recu_mat = keypoints_proc.calc_recurrence(reduced_arr, threshold=float(threshold))
