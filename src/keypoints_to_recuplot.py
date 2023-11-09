@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-import numpy as np
 
 from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions
 from recurrence_plotter import RecurrencePlotter
@@ -33,6 +32,15 @@ class App(tk.Frame):
         setting_frame = tk.Frame(self)
         setting_frame.pack(pady=5)
 
+        caption_time = tk.Label(setting_frame, text='time:')
+        caption_time.pack(side=tk.LEFT, padx=(10, 0))
+        self.time_min_entry = ttk.Entry(setting_frame, width=12)
+        self.time_min_entry.pack(side=tk.LEFT)
+        nyoro_time = tk.Label(setting_frame, text='～')
+        nyoro_time.pack(side=tk.LEFT, padx=1)
+        self.time_max_entry = ttk.Entry(setting_frame, width=12)
+        self.time_max_entry.pack(side=tk.LEFT, padx=(0, 5))
+
         eps_label = ttk.Label(setting_frame, text="threshold:")
         eps_label.pack(side=tk.LEFT)
         self.eps_entry = ttk.Entry(setting_frame, width=5, validate="key", validatecommand=(self.register(self._validate), "%P"))
@@ -49,9 +57,11 @@ class App(tk.Frame):
         plot_frame.pack(pady=5)
 
         self.recu.pack(plot_frame)
+
+        self.load_pkl()
  
     def load_pkl(self):
-        pkl_path = self.pkl_selector.pkl_path
+        pkl_path = self.pkl_selector.get_trk_path()
         self.src_df = pd.read_pickle(pkl_path)
 
         self.member_keypoints_combos.set_df(self.src_df)
@@ -59,6 +69,12 @@ class App(tk.Frame):
         # PKLが置かれているフォルダのパスを取得
         self.pkl_dir = os.path.dirname(pkl_path)
         self.current_dt_span = None
+
+        # timestampの範囲を取得
+        self.time_min_entry.delete(0, tk.END)
+        self.time_min_entry.insert(tk.END, self._msec_to_timedelta(self.src_df["timestamp"].min()))
+        self.time_max_entry.delete(0, tk.END)
+        self.time_max_entry.insert(tk.END, self._msec_to_timedelta(self.src_df["timestamp"].max()))
 
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
@@ -73,6 +89,13 @@ class App(tk.Frame):
         # thinningの値だけframeを間引く
         thinning = self.proc_options.get_thinning()
         plot_df = keypoints_proc.thinning(self.src_speed_df, int(thinning))
+
+        # timestampの範囲を抽出
+        time_min = self.time_min_entry.get()
+        time_max = self.time_max_entry.get()
+        time_min_msec = self._timedelta_to_msec(time_min)
+        time_max_msec = self._timedelta_to_msec(time_max)
+        plot_df = plot_df.loc[plot_df["timestamp"].between(time_min_msec, time_max_msec), :]
 
         video_path = os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"])
 
@@ -93,6 +116,20 @@ class App(tk.Frame):
     def clear(self):
         self.recu.clear()
         self.current_dt_span = None
+
+    def _msec_to_timedelta(self, msec):
+        sec = msec / 1000
+        hours = sec // 3600
+        remain = sec - (hours*3600)
+        minutes = remain // 60
+        seconds = remain - (minutes * 60)
+        return f'{int(hours)}:{int(minutes):02}:{int(seconds):02}'
+
+    def _timedelta_to_msec(self, timedelta):
+        # strをtimedeltaに変換
+        timedelta = pd.to_timedelta(timedelta)
+        sec = timedelta.total_seconds()
+        return sec * 1000
 
     def _validate(self, text):
         return text.replace(".", "").isdigit()

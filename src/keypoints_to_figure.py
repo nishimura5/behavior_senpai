@@ -38,8 +38,10 @@ class App(tk.Frame):
 
         self.traj.pack(plot_frame)
  
+        self.load_pkl()
+
     def load_pkl(self):
-        pkl_path = self.pkl_selector.pkl_path
+        pkl_path = self.pkl_selector.get_trk_path()
         self.src_df = pd.read_pickle(pkl_path)
 
         self.member_keypoints_combos.set_df(self.src_df)

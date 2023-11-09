@@ -1,4 +1,6 @@
+import sys
 import os
+import pickle
 import tkinter as tk
 from tkinter import ttk
 
@@ -8,20 +10,33 @@ import pandas as pd
 class PklSelector(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
+        # 一時ファイルからtrkのパスを取得
+        tmp = TempFile()
+        self.data = tmp.load()
+        self.trk_path = self.data['trk_path']
+ 
         self.load_pkl_btn = ttk.Button(master, text="Load Track")
         self.load_pkl_btn.pack(side=tk.LEFT)
         self.pkl_path_label = ttk.Label(master, text="No trk loaded")
         self.pkl_path_label.pack(side=tk.LEFT)
-    
+
+        if self.trk_path != '':
+            self.pkl_path_label["text"] = self.trk_path
+  
     def _load_pkl(self):
-        init_dir = os.path.abspath(os.path.dirname(__file__))
-        pkl_path = tk.filedialog.askopenfilename(initialdir=init_dir, title="Select pkl file", filetypes=[("pkl files", "*.pkl")])
-        if pkl_path:
-            self.pkl_path = pkl_path
-            self.pkl_path_label["text"] = pkl_path
+        init_dir = os.path.abspath(self.trk_path)
+        self.trk_path = tk.filedialog.askopenfilename(initialdir=init_dir, title="Select pkl file", filetypes=[("pkl files", "*.pkl")])
+        if self.trk_path:
+            self.pkl_path_label["text"] = self.trk_path
+            tmp = TempFile()
+            self.data['trk_path'] = self.trk_path
+            tmp.save(self.data)
         else:
-            self.pkl_path = None
+            self.trk_path = ''
             self.pkl_path_label["text"] = "No trk loaded"
+
+    def get_trk_path(self):
+        return self.trk_path
 
     def set_command(self, cmd):
         self.load_pkl_btn["command"] = lambda: [self._load_pkl(), cmd()]
@@ -88,3 +103,34 @@ class ProcOptions(tk.Frame):
     def _validate(self, text):
         return (text.isdigit() or text == "")
 
+
+class TempFile:
+    def __init__(self):
+        self.data = {'trk_path': ''}
+
+        file_name = 'temp.pkl'
+        self.file_path = os.path.join(self._find_data_dir(), file_name)
+        self.load()
+
+    def save(self, data):
+        self.data = data
+        with open(self.file_path, 'wb') as f:
+            pickle.dump(self.data, f)
+
+    def load(self):
+        res = self.data
+        if os.path.exists(self.file_path) is True:
+            with open(self.file_path, 'rb') as f:
+                self.data = pickle.load(f)
+                res = self.data
+        return res
+
+    def _find_data_dir(self):
+        if getattr(sys, "frozen", False):
+            # The application is frozen
+            datadir = os.path.dirname(sys.executable)
+        else:
+            # The application is not frozen
+            # Change this bit to match where you store your data files:
+            datadir = os.path.dirname(__file__)
+        return datadir
