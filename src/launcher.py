@@ -31,23 +31,24 @@ class App(tk.Frame):
     def launch_v2k(self):
         dlg_modal = tk.Toplevel(self)
         dlg_modal.focus_set()
+        dlg_modal.grab_set()
         dlg_modal.transient(self.master)
         v2k.App(dlg_modal)
-        self.wait_window(dlg_modal)  
+        self.wait_window(dlg_modal) 
 
     def launch_k2f(self):
         dlg_modal = tk.Toplevel(self)
         dlg_modal.focus_set()
         dlg_modal.transient(self.master)
         k2f.App(dlg_modal)
-        self.wait_window(dlg_modal)  
+        self.wait_window(dlg_modal) 
 
     def launch_k2r(self):
         dlg_modal = tk.Toplevel(self)
         dlg_modal.focus_set()
         dlg_modal.transient(self.master)
         k2r.App(dlg_modal)
-        self.wait_window(dlg_modal)  
+        self.wait_window(dlg_modal) 
 
 
 def quit(root):

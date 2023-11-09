@@ -86,5 +86,5 @@ class ProcOptions(tk.Frame):
         return self.thinning_entry.get()
 
     def _validate(self, text):
-        return text.isdigit()
+        return (text.isdigit() or text == "")
 

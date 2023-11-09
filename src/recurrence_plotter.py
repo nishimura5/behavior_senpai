@@ -70,7 +70,7 @@ class RecurrencePlotter:
         if show_img.shape[0] > 1000:
             resize_height = 1000
             resize_width = int(show_img.shape[1] * resize_height / show_img.shape[0])
-        show_img = cv2.resize(show_img, (resize_width, resize_height))
+            show_img = cv2.resize(show_img, (resize_width, resize_height))
         if ret is True:
             cv2.imshow("frame", show_img)
             cv2.waitKey(1)
