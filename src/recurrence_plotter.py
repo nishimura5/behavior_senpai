@@ -34,7 +34,6 @@ class RecurrencePlotter:
             cap = None
         self.cap = cap
         self.timestamps = timestamps
-
         self.recu_ax.imshow(plot_mat, cmap="gray")
         self.recu_ax.invert_yaxis()
         self.recu_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
@@ -62,9 +61,11 @@ class RecurrencePlotter:
         y = event.ydata
         if x is None or y is None:
             return
-        self.cap.set(cv2.CAP_PROP_POS_FRAMES, int(x))
+        x_msec = self.timestamps[int(event.xdata)]
+        y_msec = self.timestamps[int(event.ydata)]
+        self.cap.set(cv2.CAP_PROP_POS_MSEC, x_msec)
         ret, frame_x = self.cap.read()
-        self.cap.set(cv2.CAP_PROP_POS_FRAMES, int(y))
+        self.cap.set(cv2.CAP_PROP_POS_MSEC, y_msec)
         ret, frame_y = self.cap.read()
         show_img = cv2.vconcat([frame_x, frame_y])
         if show_img.shape[0] > 1000:
