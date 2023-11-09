@@ -29,16 +29,16 @@ def thinning(src_df, thinning: int):
     return thinned_df
 
 
-def calc_recurrence(src_df, threshold):
+def calc_recurrence(src_df, tar_col, tar_member, tar_keypoint, threshold):
     '''
     recurrence plotを計算する
-    src_dfのカラム数は1であること
     '''
-    src_df = src_df.round(decimals=2)
-
-    d = sk.metrics.pairwise.pairwise_distances(src_df)
-    d = (d > threshold).astype(int)
-    return d
+    tar_df = src_df.loc[pd.IndexSlice[:, tar_member, tar_keypoint], [tar_col, 'timestamp']].dropna()
+    tar_arr = tar_df[tar_col].values.reshape(-1, 1)
+    distance_mat = sk.metrics.pairwise.pairwise_distances(tar_arr)
+    bin_mat = (distance_mat > threshold).astype(int)
+    timestamps = tar_df['timestamp'].values
+    return bin_mat, timestamps
 
 
 if __name__ == "__main__":

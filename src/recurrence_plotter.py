@@ -2,7 +2,7 @@ import os
 
 import cv2
 import matplotlib.pyplot as plt
-from matplotlib import gridspec
+from matplotlib import ticker, gridspec
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 
@@ -15,7 +15,7 @@ class RecurrencePlotter:
         self.fig.canvas.mpl_connect("button_press_event", self._click_graph)
 
         # axesのレイアウト設定
-        gs = gridspec.GridSpec(1, 1, hspace=0.05, wspace=0.05)
+        gs = gridspec.GridSpec(1, 1)
         self.recu_ax = self.fig.add_subplot(gs[0, 0])
  
     def pack(self, master):
@@ -24,7 +24,7 @@ class RecurrencePlotter:
         toolbar.pack()
         self.canvas.get_tk_widget().pack(expand=False)
 
-    def draw(self, plot_df, member: str, keypoint: str, dt_span: int, thinning: int, video_path: str):
+    def draw(self, plot_mat, timestamps, video_path: str):
         if os.path.exists(video_path) is True:
             cap = cv2.VideoCapture(
                 video_path,
@@ -33,14 +33,29 @@ class RecurrencePlotter:
         else:
             cap = None
         self.cap = cap
+        self.timestamps = timestamps
 
-        self.recu_ax.imshow(plot_df, cmap="gray")
+        self.recu_ax.imshow(plot_mat, cmap="gray")
         self.recu_ax.invert_yaxis()
+        self.recu_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
+        self.recu_ax.yaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
+
         self.canvas.draw()
 
     def clear(self):
         self.recu_ax.cla()
         self.canvas.draw()
+
+    def _format_timedelta(self, x, pos):
+        if int(x) >= len(self.timestamps):
+            return ""
+        x = self.timestamps[int(x)]
+        sec = x / 1000
+        hours = sec // 3600
+        remain = sec - (hours*3600)
+        minutes = remain // 60
+        seconds = remain - (minutes * 60)
+        return f'{int(hours)}:{int(minutes):02}:{int(seconds):02}'
 
     def _click_graph(self, event):
         x = event.xdata
@@ -52,6 +67,10 @@ class RecurrencePlotter:
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, int(y))
         ret, frame_y = self.cap.read()
         show_img = cv2.vconcat([frame_x, frame_y])
+        if show_img.shape[0] > 1000:
+            resize_height = 1000
+            resize_width = int(show_img.shape[1] * resize_height / show_img.shape[0])
+        show_img = cv2.resize(show_img, (resize_width, resize_height))
         if ret is True:
             cv2.imshow("frame", show_img)
             cv2.waitKey(1)

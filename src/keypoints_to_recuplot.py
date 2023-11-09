@@ -81,10 +81,13 @@ class App(tk.Frame):
         plot_df.index = plot_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
         threshold = self.eps_entry.get()
-        plot_df = plot_df.loc[pd.IndexSlice[:, current_member, current_keypoint], [f'dt_{dt_span}']].dropna()
-        recu_arr = keypoints_proc.calc_recurrence(plot_df, threshold=float(threshold))
-
-        self.recu.draw(recu_arr, current_member, current_keypoint, int(dt_span), int(thinning), video_path)
+        recu_mat, timestamps = keypoints_proc.calc_recurrence(
+            plot_df,
+            tar_col=f'dt_{dt_span}',
+            tar_member=current_member,
+            tar_keypoint=current_keypoint,
+            threshold=float(threshold))
+        self.recu.draw(recu_mat, timestamps, video_path)
 
     def clear(self):
         self.recu.clear()
