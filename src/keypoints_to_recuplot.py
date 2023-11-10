@@ -7,7 +7,7 @@ import pandas as pd
 from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions
 from recurrence_plotter import RecurrencePlotter
 import keypoints_proc
-
+import time_format
 
 class App(tk.Frame):
     def __init__(self, master):
@@ -72,9 +72,9 @@ class App(tk.Frame):
 
         # timestampの範囲を取得
         self.time_min_entry.delete(0, tk.END)
-        self.time_min_entry.insert(tk.END, self._msec_to_timedelta(self.src_df["timestamp"].min()))
+        self.time_min_entry.insert(tk.END, time_format.msec_to_timestr(self.src_df["timestamp"].min()))
         self.time_max_entry.delete(0, tk.END)
-        self.time_max_entry.insert(tk.END, self._msec_to_timedelta(self.src_df["timestamp"].max()))
+        self.time_max_entry.insert(tk.END, time_format.msec_to_timestr(self.src_df["timestamp"].max()))
 
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
@@ -120,14 +120,6 @@ class App(tk.Frame):
     def clear(self):
         self.recu.clear()
         self.current_dt_span = None
-
-    def _msec_to_timedelta(self, msec):
-        sec = msec / 1000
-        hours = sec // 3600
-        remain = sec - (hours*3600)
-        minutes = remain // 60
-        seconds = remain - (minutes * 60)
-        return f'{int(hours)}:{int(minutes):02}:{int(seconds):02}'
 
     def _timedelta_to_msec(self, timedelta):
         # strをtimedeltaに変換

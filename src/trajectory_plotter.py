@@ -8,6 +8,8 @@ from matplotlib import ticker, gridspec
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import seaborn as sns
 
+import time_format
+
 
 class TrajectoryPlotter:
     def __init__(self):
@@ -111,12 +113,7 @@ class TrajectoryPlotter:
         self.canvas.draw()
 
     def _format_timedelta(self, x, pos):
-        sec = x / 1000
-        hours = sec // 3600
-        remain = sec - (hours*3600)
-        minutes = remain // 60
-        seconds = remain - (minutes * 60)
-        return f'{int(hours)}:{int(minutes):02}:{int(seconds):02}'
+        return time_format.msec_to_timestr(x)
 
     def _gray_line(self, event):
         if event.inaxes is None or self.x_h is None or self.y_v is None or self.dt_v is None:
@@ -149,7 +146,7 @@ class TrajectoryPlotter:
             return
         timestamp = row.iloc[int(len(row)/2)].timestamp
         self.traj_point.set_data(row.x, row.y)
-
+        time_format.copy_to_clipboard(timestamp)
         if self.cap is not None:
             self.cap.set(cv2.CAP_PROP_POS_MSEC, timestamp)
             ok, frame = self.cap.read()

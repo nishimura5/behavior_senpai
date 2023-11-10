@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib import ticker, gridspec
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
+import time_format
+
 
 class RecurrencePlotter:
     def __init__(self):
@@ -49,29 +51,22 @@ class RecurrencePlotter:
         if int(x) >= len(self.timestamps):
             return ""
         x = self.timestamps[int(x)]
-        sec = x / 1000
-        hours = sec // 3600
-        remain = sec - (hours*3600)
-        minutes = remain // 60
-        seconds = remain - (minutes * 60)
-        return f'{int(hours)}:{int(minutes):02}:{int(seconds):02}'
+        return time_format.msec_to_timestr(x)
 
     def _click_graph(self, event):
         x = event.xdata
         y = event.ydata
         if x is None or y is None:
             return
-        x_msec = self.timestamps[int(event.xdata)]
-        y_msec = self.timestamps[int(event.ydata)]
-        self.cap.set(cv2.CAP_PROP_POS_MSEC, x_msec)
-        ret, frame_x = self.cap.read()
-        self.cap.set(cv2.CAP_PROP_POS_MSEC, y_msec)
-        ret, frame_y = self.cap.read()
-        show_img = cv2.vconcat([frame_x, frame_y])
-        if show_img.shape[0] > 1000:
-            resize_height = 1000
-            resize_width = int(show_img.shape[1] * resize_height / show_img.shape[0])
-            show_img = cv2.resize(show_img, (resize_width, resize_height))
-        if ret is True:
-            cv2.imshow("frame", show_img)
-            cv2.waitKey(1)
+        timestamp = self.timestamps[int(event.xdata)]
+        time_format.copy_to_clipboard(timestamp)
+        if self.cap is not None:
+            self.cap.set(cv2.CAP_PROP_POS_MSEC, timestamp)
+            ret, frame = self.cap.read()
+            if frame.shape[0] > 1000:
+                resize_height = 1000
+                resize_width = int(frame.shape[1] * resize_height / frame.shape[0])
+                frame = cv2.resize(frame, (resize_width, resize_height))
+            if ret is True:
+                cv2.imshow("frame", frame)
+                cv2.waitKey(1)
