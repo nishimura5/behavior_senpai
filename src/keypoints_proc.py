@@ -7,7 +7,7 @@ from sklearn.decomposition import PCA
 def calc_speed(src_df, step_frame: int):
     '''
     src_dfの各keypointの速さを計算する
-    speed = sqrt(dx^2 + dy^2) / t
+    speed = sqrt(dx^2 + dy^2) / step_frame
     dx = x(t) - x(t - step_frame)
     dy = y(t) - y(t - step_frame)
     '''
@@ -40,6 +40,7 @@ def thinning(src_df, thinning: int):
 
 def pca(src_df, members: list, keypoints: list, tar_cols: list):
     '''
+    PCA: principal component analysis(主成分分析)
     src_dfのtar_colsを次元削減する
     '''
     tar_df = src_df.loc[pd.IndexSlice[:, members, keypoints], [*tar_cols, 'timestamp']].dropna()
@@ -57,8 +58,11 @@ def calc_recurrence(src_arr, threshold: float):
     '''
     distance_mat = pairwise_distances(src_arr)
     print(distance_mat.max())
-    bin_mat = (distance_mat > threshold).astype(int)
-    return bin_mat
+    if threshold == 0:
+        dst_mat = distance_mat
+    else:
+        dst_mat = (distance_mat > threshold).astype(int)
+    return dst_mat
 
 
 if __name__ == "__main__":
@@ -92,8 +96,6 @@ if __name__ == "__main__":
     dt_span = 10
     speed_df = calc_speed(test_df, dt_span)
     acc_df = calc_acceleration(speed_df, dt_span)
-
-    print(acc_df)
     test_speed_df = pd.concat([test_df, speed_df, acc_df], axis=1)
 
     # thinning

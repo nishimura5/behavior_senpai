@@ -111,6 +111,9 @@ class App(tk.Frame):
             tar_cols=['x', 'y', f'spd_{dt_span}', f'acc_{dt_span}'])
 
         threshold = self.eps_entry.get()
+        if threshold == "":
+            self.eps_entry.insert(tk.END, '0')
+            threshold = self.eps_entry.get()
         recu_mat = keypoints_proc.calc_recurrence(reduced_arr, threshold=float(threshold))
         self.recu.draw(recu_mat, timestamps, video_path)
 
@@ -133,7 +136,7 @@ class App(tk.Frame):
         return sec * 1000
 
     def _validate(self, text):
-        return text.replace(".", "").isdigit()
+        return (text.replace(".", "").isdigit() or text == "")
 
 
 def quit(root):
