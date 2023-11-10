@@ -3,6 +3,7 @@ import os
 import pickle
 import tkinter as tk
 from tkinter import ttk
+from tkinter import filedialog
 
 import pandas as pd
 
@@ -25,7 +26,7 @@ class PklSelector(tk.Frame):
   
     def _load_pkl(self):
         init_dir = os.path.abspath(self.trk_path)
-        self.trk_path = tk.filedialog.askopenfilename(initialdir=init_dir, title="Select pkl file", filetypes=[("pkl files", "*.pkl")])
+        self.trk_path = filedialog.askopenfilename(initialdir=init_dir, title="Select pkl file", filetypes=[("pkl files", "*.pkl")])
         if self.trk_path:
             self.pkl_path_label["text"] = self.trk_path
             tmp = TempFile()

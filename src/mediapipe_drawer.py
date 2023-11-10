@@ -1,24 +1,35 @@
 import os
+import random
 
 import cv2
 import pandas as pd
 
 
 class Annotate:
-    def set_keypoints(self, kps):
+    def set_pose(self, kps):
         self.kps = [(int(kps[i][0]), int(kps[i][1])) for i in range(len(kps))]
+        self.line_color = (random.randint(180, 250), random.randint(180, 250), random.randint(180, 250))
+
+    def set_track(self, member):
+        self.member = member
 
     def set_img(self, src_img):
         self.dst_img = src_img
 
-    def draw(self, member):
+    def draw(self):
+        if self.member in ["right_hand", "left_hand"]:
+            cv2.line(self.dst_img, self.kps[0], self.kps[5], self.line_color, 1, cv2.LINE_AA)
+            cv2.line(self.dst_img, self.kps[5], self.kps[9], self.line_color, 1, cv2.LINE_AA)
+            cv2.line(self.dst_img, self.kps[9], self.kps[13], self.line_color, 1, cv2.LINE_AA)
+            cv2.line(self.dst_img, self.kps[13], self.kps[17], self.line_color, 1, cv2.LINE_AA)
+            cv2.line(self.dst_img, self.kps[17], self.kps[0], self.line_color, 1, cv2.LINE_AA)
         for i in range(len(self.kps)):
-            if member == "right_hand":
-                cv2.circle(self.dst_img, self.kps[i], 3, (50, 250, 50), -1)
-            elif member == "left_hand":
-                cv2.circle(self.dst_img, self.kps[i], 3, (250, 70, 70), -1)
+            if self.member in ["right_hand", "left_hand"]:
+                cv2.circle(self.dst_img, self.kps[i], 2, (50, 250, 50), -1)
+            elif self.member == "face":
+                cv2.circle(self.dst_img, self.kps[i], 1, (150, 50, 150), -1)
             else:
-                cv2.circle(self.dst_img, self.kps[i], 1, (50, 50, 250), -1)
+                cv2.circle(self.dst_img, self.kps[i], 1, (150, 50, 150), -1)
 
         return self.dst_img
 
@@ -49,7 +60,8 @@ if __name__ == "__main__":
             keypoints = src_df.loc[pd.IndexSlice[i, member, :], :]
             kp_ids = keypoints.index.unique(level='keypoint')
             kps = keypoints.to_numpy()
-            anno.set_keypoints(kps)
+            anno.set_pose(kps)
+            anno.set_track(member)
 
             dst_img = anno.draw(member)
         cv2.imshow("dst", dst_img)
