@@ -9,6 +9,9 @@ wheels/
 # venv
 .venv
 
+# mac
+.DS_Store
+
 # src files
 *.mp4
 *.pt
