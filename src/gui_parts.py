@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 import pickle
 import tkinter as tk
 from tkinter import ttk
@@ -103,6 +104,36 @@ class ProcOptions(tk.Frame):
 
     def _validate(self, text):
         return (text.isdigit() or text == "")
+
+
+class TimeSpanEntry(ttk.Frame):
+    def __init__(self, master):
+        super().__init__(master)
+        vcmd = (self.register(self._validate), '%P')
+        invcmd = (self.register(self._invalid_start), '%P')
+        self.time_start_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)
+        self.time_start_entry.pack(side=tk.LEFT, padx=0)
+        nyoro_time = tk.Label(master, text='～')
+        nyoro_time.pack(side=tk.LEFT, padx=1)
+        invcmd = (self.register(self._invalid_end), '%P')
+        self.time_end_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)
+        self.time_end_entry.pack(side=tk.LEFT, padx=0)
+
+    def get_start_end(self):
+        start_val = self.time_start_entry.get()
+        end_val = self.time_end_entry.get()
+        return start_val, end_val
+
+    def _validate(self, text):
+        p = r'\d+:(([0-5][0-9])|([0-9])):(([0-5][0-9])|([0-9])).[0-9]{3}$'
+        m = re.match(p, text)
+        return m is not None
+
+    def _invalid_start(self, text):
+        self.time_start_entry.delete(0, tk.END)
+
+    def _invalid_end(self, text):
+        self.time_end_entry.delete(0, tk.END)
 
 
 class TempFile:

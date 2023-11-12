@@ -1,27 +1,29 @@
-import os
 import tkinter as tk
 from tkinter import ttk
-import re
 
 import pandas as pd
 
+from gui_parts import PklSelector, TimeSpanEntry
 import time_format
 
 
 class App(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
-        master.title("Scene table")
+        master.title("Scene Table")
         self.pack(padx=10, pady=10)
+
+        load_frame = tk.Frame(self)
+        self.pkl_selector = PklSelector(load_frame)
+        load_frame.pack(pady=5)
+        self.pkl_selector.set_command(cmd=self.load_pkl)
 
         entry_frame = ttk.Frame(self)
         entry_frame.pack(pady=5)
-        self.time_entry = TimeEntry(entry_frame)
+        self.time_entry = TimeSpanEntry(entry_frame)
         self.time_entry.pack()
         add_btn = ttk.Button(entry_frame, text="add", command=self._add_row)
         add_btn.pack(side=tk.LEFT, padx=(10, 0))
-
-        self.rows = {'start': [], 'end': [], 'duration': []}
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
@@ -33,8 +35,30 @@ class App(tk.Frame):
 
         self.tree.pack()
 
-        delete_btn = ttk.Button(tree_frame, text="Delete Selected", command=self._delete_selected)
-        delete_btn.pack()
+        control_frame = ttk.Frame(self)
+        control_frame.pack(pady=5)
+        delete_btn = ttk.Button(control_frame, text="Delete Selected", command=self._delete_selected)
+        delete_btn.pack(side=tk.LEFT)
+        update_btn = ttk.Button(control_frame, text="Update", command=self._update)
+        update_btn.pack(side=tk.LEFT, padx=(10, 0))
+
+        self.load_pkl()
+
+    def load_pkl(self):
+        pkl_path = self.pkl_selector.get_trk_path()
+        self.src_df = pd.read_pickle(pkl_path)
+        
+        if 'scene_table' not in self.src_df.attrs.keys():
+            return
+        
+        scene_table = self.src_df.attrs['scene_table']
+        # self.treeをクリアしてattrs['scene_table']の値を入れる
+        for item in self.tree.get_children(''):
+            self.tree.delete(item)
+        for start, end in zip(scene_table['start'], scene_table['end']):
+            duration = pd.to_timedelta(end) - pd.to_timedelta(start)
+            duration_str = time_format.timedelta_to_str(duration)
+            self.tree.insert("", "end", values=(start, end, duration_str))
 
     def _add_row(self):
         start_time, end_time = self.time_entry.get_start_end()
@@ -48,7 +72,7 @@ class App(tk.Frame):
 
         duration_str = time_format.timedelta_to_str(duration)
         start_str = time_format.timedelta_to_str(start_td)
-        end_str = time_format.timedelta_to_str(end_td)\
+        end_str = time_format.timedelta_to_str(end_td)
 
         # 重複していたらaddしない
         tar_list = [k for k in self.tree.get_children('')]
@@ -71,35 +95,14 @@ class App(tk.Frame):
         for item in selected:
             self.tree.delete(item)
 
+    def _update(self):
+        scene_table = {'start': [], 'end': []}
+        for item in self.tree.get_children(''):
+            scene_table['start'].append(self.tree.item(item)['values'][0])
+            scene_table['end'].append(self.tree.item(item)['values'][1])
 
-class TimeEntry(ttk.Frame):
-    def __init__(self, master):
-        super().__init__(master)
-        vcmd = (self.register(self._validate), '%P')
-        invcmd = (self.register(self._invalid_start), '%P')
-        self.time_start_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)
-        self.time_start_entry.pack(side=tk.LEFT, padx=0)
-        nyoro_time = tk.Label(master, text='～')
-        nyoro_time.pack(side=tk.LEFT, padx=1)
-        invcmd = (self.register(self._invalid_end), '%P')
-        self.time_end_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)
-        self.time_end_entry.pack(side=tk.LEFT, padx=0)
-
-    def get_start_end(self):
-        start_val = self.time_start_entry.get()
-        end_val = self.time_end_entry.get()
-        return start_val, end_val
-
-    def _validate(self, text):
-        p = r'\d+:(([0-5][0-9])|([0-9])):(([0-5][0-9])|([0-9])).[0-9]{3}$'
-        m = re.match(p, text)
-        return m is not None
-
-    def _invalid_start(self, text):
-        self.time_start_entry.delete(0, tk.END)
-
-    def _invalid_end(self, text):
-        self.time_end_entry.delete(0, tk.END)
+        self.src_df.attrs['scene_table'] = scene_table
+        self.src_df.to_pickle(self.pkl_selector.get_trk_path())
 
 
 def quit(root):
