@@ -113,11 +113,13 @@ class TimeSpanEntry(ttk.Frame):
         invcmd = (self.register(self._invalid_start), '%P')
         self.time_start_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)
         self.time_start_entry.pack(side=tk.LEFT, padx=0)
+        self.time_start_entry.bind("<FocusIn>", self._select_all)
         nyoro_time = tk.Label(master, text='～')
         nyoro_time.pack(side=tk.LEFT, padx=1)
         invcmd = (self.register(self._invalid_end), '%P')
         self.time_end_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)
         self.time_end_entry.pack(side=tk.LEFT, padx=0)
+        self.time_end_entry.bind("<FocusIn>", self._select_all)
 
     def get_start_end(self):
         start_val = self.time_start_entry.get()
@@ -129,6 +131,9 @@ class TimeSpanEntry(ttk.Frame):
         self.time_start_entry.insert(tk.END, start)
         self.time_end_entry.delete(0, tk.END)
         self.time_end_entry.insert(tk.END, end)
+
+    def _select_all(self, event):
+        event.widget.select_range(0, tk.END)
 
     def _validate(self, text):
         p = r'\d+:(([0-5][0-9])|([0-9])):(([0-5][0-9])|([0-9])).[0-9]{3}$'
