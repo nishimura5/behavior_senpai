@@ -144,11 +144,11 @@ class TrajectoryPlotter:
         row = self.plot_df.iloc[left_ind:right_ind, :]
         if row.empty:
             return
-        timestamp = row.iloc[int(len(row)/2)].timestamp
+        timestamp_msec = row.iloc[int(len(row)/2)].timestamp
         self.traj_point.set_data(row.x, row.y)
-        time_format.copy_to_clipboard(timestamp)
+        time_format.copy_to_clipboard(timestamp_msec)
         if self.cap is not None:
-            self.cap.set(cv2.CAP_PROP_POS_MSEC, timestamp)
+            self.cap.set(cv2.CAP_PROP_POS_MSEC, timestamp_msec)
             ok, frame = self.cap.read()
             show_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             self.traj_img.set_data(show_img)

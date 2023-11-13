@@ -124,6 +124,12 @@ class TimeSpanEntry(ttk.Frame):
         end_val = self.time_end_entry.get()
         return start_val, end_val
 
+    def update_entry(self, start, end):
+        self.time_start_entry.delete(0, tk.END)
+        self.time_start_entry.insert(tk.END, start)
+        self.time_end_entry.delete(0, tk.END)
+        self.time_end_entry.insert(tk.END, end)
+
     def _validate(self, text):
         p = r'\d+:(([0-5][0-9])|([0-9])):(([0-5][0-9])|([0-9])).[0-9]{3}$'
         m = re.match(p, text)

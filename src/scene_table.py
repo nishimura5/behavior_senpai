@@ -39,7 +39,7 @@ class App(tk.Frame):
         control_frame.pack(pady=5)
         delete_btn = ttk.Button(control_frame, text="Delete Selected", command=self._delete_selected)
         delete_btn.pack(side=tk.LEFT)
-        update_btn = ttk.Button(control_frame, text="Update", command=self._update)
+        update_btn = ttk.Button(control_frame, text="Write to Track", command=self._update)
         update_btn.pack(side=tk.LEFT, padx=(10, 0))
 
         self.load_pkl()

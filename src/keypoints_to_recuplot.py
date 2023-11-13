@@ -4,10 +4,11 @@ from tkinter import ttk
 
 import pandas as pd
 
-from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions
+from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions, TimeSpanEntry
 from recurrence_plotter import RecurrencePlotter
 import keypoints_proc
 import time_format
+
 
 class App(tk.Frame):
     def __init__(self, master):
@@ -34,12 +35,8 @@ class App(tk.Frame):
 
         caption_time = tk.Label(setting_frame, text='time:')
         caption_time.pack(side=tk.LEFT, padx=(10, 0))
-        self.time_min_entry = ttk.Entry(setting_frame, width=12)
-        self.time_min_entry.pack(side=tk.LEFT)
-        nyoro_time = tk.Label(setting_frame, text='～')
-        nyoro_time.pack(side=tk.LEFT, padx=1)
-        self.time_max_entry = ttk.Entry(setting_frame, width=12)
-        self.time_max_entry.pack(side=tk.LEFT, padx=(0, 5))
+        self.time_span_entry = TimeSpanEntry(setting_frame)
+        self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         eps_label = ttk.Label(setting_frame, text="threshold:")
         eps_label.pack(side=tk.LEFT)
@@ -71,11 +68,11 @@ class App(tk.Frame):
         self.current_dt_span = None
 
         # timestampの範囲を取得
-        self.time_min_entry.delete(0, tk.END)
-        self.time_min_entry.insert(tk.END, time_format.msec_to_timestr(self.src_df["timestamp"].min()))
-        self.time_max_entry.delete(0, tk.END)
-        self.time_max_entry.insert(tk.END, time_format.msec_to_timestr(self.src_df["timestamp"].max()))
-
+        self.time_span_entry.update_entry(
+            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].min()),
+            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].max())
+        )
+        
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
 
@@ -92,8 +89,7 @@ class App(tk.Frame):
         plot_df = keypoints_proc.thinning(self.src_speed_df, int(thinning))
 
         # timestampの範囲を抽出
-        time_min = self.time_min_entry.get()
-        time_max = self.time_max_entry.get()
+        time_min, time_max = self.time_span_entry.get_start_end()
         time_min_msec = self._timedelta_to_msec(time_min)
         time_max_msec = self._timedelta_to_msec(time_max)
         plot_df = plot_df.loc[plot_df["timestamp"].between(time_min_msec, time_max_msec), :]

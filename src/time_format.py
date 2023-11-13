@@ -30,5 +30,4 @@ def timedelta_to_str(td):
 
 
 def copy_to_clipboard(msec):
-    # pyperclip.copy(msec_to_timestr(msec))
-    pyperclip.copy(f"{msec:.0f}")
+    pyperclip.copy(msec_to_timestr_with_fff(msec))

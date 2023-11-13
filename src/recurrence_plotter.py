@@ -51,20 +51,21 @@ class RecurrencePlotter:
         if int(x) >= len(self.timestamps):
             return ""
         x = self.timestamps[int(x)]
-        return time_format.msec_to_timestr(x)
+        return time_format.msec_to_timestr_with_fff(x)
 
     def _click_graph(self, event):
         x = event.xdata
         y = event.ydata
         if x is None or y is None:
             return
-        timestamp = self.timestamps[int(event.xdata)]
-        time_format.copy_to_clipboard(timestamp)
+        timestamp_msec = self.timestamps[int(event.xdata)]
+
+        time_format.copy_to_clipboard(timestamp_msec)
         if self.cap is not None:
-            self.cap.set(cv2.CAP_PROP_POS_MSEC, timestamp)
+            self.cap.set(cv2.CAP_PROP_POS_MSEC, timestamp_msec)
             ret, frame = self.cap.read()
-            if frame.shape[0] > 1000:
-                resize_height = 1000
+            if frame.shape[0] >= 1080:
+                resize_height = 720
                 resize_width = int(frame.shape[1] * resize_height / frame.shape[0])
                 frame = cv2.resize(frame, (resize_width, resize_height))
             if ret is True:
