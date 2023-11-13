@@ -23,10 +23,14 @@ build-backend = "hatchling.build"
 
 [tool.rye]
 managed = true
-dev-dependencies = []
+dev-dependencies = [
+    "pip-licenses>=4.3.3",
+]
 
 [tool.rye.scripts]
 detect = "python src/video_to_keypoints.py"
+launcher = "python src/launcher.py"
+lic = "pip-licenses --order=license -u -l --no-license-path --format=json --output-file license.json"
 
 #[[tool.rye.sources]]
 #name = "torch"
