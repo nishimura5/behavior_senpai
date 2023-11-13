@@ -1,10 +1,44 @@
 # python-senpai
 
+python-senpaiは、行動分析と行動観察を行うためのアプリケーションです。また、開発を通じてPythonでのコーディングやデータ解析を学ぶためのプロジェクトです。Pythonの基礎(if文やfor文、リスト内包表記、classあたりを指します)を習得した方が、実用的なアプリケーションの開発に挑戦するための足掛かりにできるよう構成しています。とりわけ以下のライブラリの使用方法について学習することができます。
+
+ - PandasのMultiIndex
+ - Matplotlib
+ - OpenCV(cv2)のVideoCapture
+
+## Requirement
+
+python-senpaiはWindows11(22H2)上の[Rye](https://rye-up.com)で構築したPython環境で開発と動作確認をおこなっています。使用しているライブラリ等については[pyproject.toml](pyproject.toml)等を参照してください。
+
+現在、macOS上のRyeで環境構築して実行すると以下のエラーが発生することを確認しています。
+
+```
+ImportError: module '_tkinter' has no attribute '__file__'
+```
+
+ただし、macOS上のAnaconda等で環境構築して実行するとこのエラーは発生しないことも確認しています。
+
+## Usage
+
+ryeを使用する場合はこのリポジトリをclone後に以下を実行することで環境構築が実行されます。CUDAを有効にする場合は事前に[pyproject.toml](pyproject.toml)内のコメントアウトを外してください。
+
+```
+rye sync
+```
+
+pipでインストールできるライブラリのみを使用しているので、rye以外の方法（Anacondaなど）でも環境を構築することが可能です。
+
+環境構築後は[launcher.py](src/launcher.py)を実行することでアプリケーションが起動します。
+
+```
+rye run python src/launcher.py
+```
+
+## スクリプト
+
 このリポジトリは以下のアプリケーションを含みます
  - video_to_keypoints.py: YOLOv8とMediaPipe Holisticによる姿勢推定とその結果をPKLファイルに保存するアプリ。
  - keypoints_to_figure.py: 上記がアプリが出力したPKLファイルのデータをグラフ描画するアプリ
-
-## スクリプト
 
 ### グラフ描画
 以下の動画([YouTube](https://youtu.be/c38UHrECGJA?si=k946YKvBmVXjrG8v))で、アプリケーションの機能や構造を説明をしているので併せてご覧ください。
