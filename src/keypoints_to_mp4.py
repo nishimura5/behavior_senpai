@@ -85,7 +85,7 @@ class App(tk.Frame):
             frame = cv2.resize(frame, size)
             anno.set_img(frame)
             # out_dfにi, current_member, current_keypointの組み合わせがない場合はスキップ
-            if (i, current_member, current_keypoint) in out_df.index:
+            if (i, current_member, current_keypoint) in out_df.loc[pd.IndexSlice[i, current_member, :], :].index:
                 keypoints = out_df.loc[pd.IndexSlice[i, current_member, :], :] * scale
                 kps = keypoints.to_numpy()
                 anno.set_pose(kps)
