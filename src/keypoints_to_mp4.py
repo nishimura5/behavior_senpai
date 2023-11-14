@@ -77,6 +77,7 @@ class App(tk.Frame):
             anno = mediapipe_drawer.Annotate()
 
         total_frame_num = out_df.index.unique(level='frame').max() + 1
+        indexes = out_df.sort_index().index
         for i in range(total_frame_num):
             if cap is not None:
                 ret, frame = cap.read()
@@ -85,7 +86,7 @@ class App(tk.Frame):
             frame = cv2.resize(frame, size)
             anno.set_img(frame)
             # out_dfにi, current_member, current_keypointの組み合わせがない場合はスキップ
-            if (i, current_member, current_keypoint) in out_df.loc[pd.IndexSlice[i, current_member, :], :].index:
+            if (i, current_member, current_keypoint) in indexes:
                 keypoints = out_df.loc[pd.IndexSlice[i, current_member, :], :] * scale
                 kps = keypoints.to_numpy()
                 anno.set_pose(kps)
