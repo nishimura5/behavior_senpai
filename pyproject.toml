@@ -6,7 +6,7 @@ authors = [
     { name = "a5", email = "" }
 ]
 dependencies = [
-    #    "torch~=1.8",
+    "torch>=2.1",
     "ultralytics~=8.0",
     "opencv-python~=4.8",
     "lapx~=0.5.4",
@@ -32,10 +32,10 @@ detect = "python src/video_to_keypoints.py"
 launcher = "python src/launcher.py"
 lic = "pip-licenses --order=license -u -l --no-license-path --format=json --output-file license.json"
 
-#[[tool.rye.sources]]
-#name = "torch"
-#url = "https://download.pytorch.org/whl/cu118"
-#type = "index"
+[[tool.rye.sources]]
+name = "torch"
+url = "https://download.pytorch.org/whl/cu118"
+type = "index"
 
 [tool.hatch.metadata]
 allow-direct-references = true
