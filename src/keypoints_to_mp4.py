@@ -88,8 +88,8 @@ class App(tk.Frame):
             if (i, current_member, current_keypoint) in out_df.index:
                 keypoints = out_df.loc[pd.IndexSlice[i, current_member, :], :] * scale
                 kps = keypoints.to_numpy()
-                anno.set_track(current_member)
                 anno.set_pose(kps)
+                anno.set_track(current_member)
                 dst_img = anno.draw()
             else:
                 dst_img = frame
