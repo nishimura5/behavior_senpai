@@ -8,6 +8,7 @@ wheels/
 
 # venv
 .venv
+*.lock
 
 # mac
 .DS_Store
