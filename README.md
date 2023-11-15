@@ -3,20 +3,14 @@
 python-senpaiは、行動分析と行動観察を行うためのアプリケーションです。また、開発を通じてPythonでのコーディングやデータ解析を学ぶためのプロジェクトです。Pythonの基礎(if文やfor文、リスト内包表記、classあたりを指します)を習得した方が、実用的なアプリケーションの開発に挑戦するための足掛かりにできるよう構成しています。とりわけ以下のライブラリの使用方法について学習することができます。
 
  - PandasのMultiIndex
- - Matplotlib
+ - Matplotlibでの時系列データ描画
  - OpenCV(cv2)のVideoCapture
 
 ## Requirement
 
 python-senpaiはWindows11(22H2)上の[Rye](https://rye-up.com)で構築したPython環境で開発と動作確認をおこなっています。使用しているライブラリ等については[pyproject.toml](pyproject.toml)等を参照してください。
 
-現在、macOS上のRyeで環境構築して実行すると以下のエラーが発生することを確認しています。
-
-```
-ImportError: module '_tkinter' has no attribute '__file__'
-```
-
-ただし、macOS上のAnaconda等で環境構築して実行するとこのエラーは発生しないことも確認しています。
+現在、macOS上のRyeで環境構築して実行するとmatplotlib.backends.backend_tkaggのimportに失敗することを確認しています。そこで、backend_tkaggのimportに失敗したとき用の分岐を設けています。本件が該当するコードは[trajectory_plotter.py](src/trajectory_plotter.py)と[recurrence_plotter.py](src/recurrence_plotter.py)です。
 
 ## Usage
 
@@ -33,6 +27,8 @@ pipでインストールできるライブラリのみを使用しているの�
 ```
 rye run python src/launcher.py
 ```
+
+MediaPipe(YOLOも？)による推論を複数の動画ファイルに対して連続実行すると、2回目以降にメモリアクセス違反でクラッシュしてしまう現象を確認しているため、[detector_proc.py](src/detector_proc.py)をsubprocessで実行する方式としています。
 
 ## スクリプト
 
