@@ -5,23 +5,29 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import ticker, gridspec
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import seaborn as sns
+
+try:
+    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+except ImportError:
+    # 環境によってはtkaggが使えないことがあるのでその対策
+    USE_TKAGG = False
+else:
+    USE_TKAGG = True 
 
 import time_format
 
 
 class TrajectoryPlotter:
-    def __init__(self):
-        dpi = 72
-        fig_width = 900
-        fig_height = 700
-        self.fig = plt.figure(figsize=(fig_width/dpi, fig_height/dpi), dpi=dpi)
+    def __init__(self, fig_size: tuple, dpi=72):
+        self.dpi = dpi
+        self.fig_size = fig_size
+        self.fig = plt.figure(figsize=self.fig_size, dpi=self.dpi)
         self.fig.canvas.mpl_connect("motion_notify_event", self._gray_line)
         self.fig.canvas.mpl_connect("pick_event", self._click_graph)
 
         # axesのレイアウト設定
-        gs = gridspec.GridSpec(2, 2, width_ratios=[fig_height, fig_width], height_ratios=[1, 1], hspace=0.04, wspace=0.03)
+        gs = gridspec.GridSpec(2, 2, width_ratios=self.fig_size, height_ratios=[1, 1], hspace=0.04, wspace=0.03)
         self.traj_ax = self.fig.add_subplot(gs[1, 1])
         self.x_time_ax = self.fig.add_subplot(gs[0, 1], sharex=self.traj_ax)
         self.y_time_ax = self.fig.add_subplot(gs[1, 0], sharey=self.traj_ax)
@@ -31,10 +37,15 @@ class TrajectoryPlotter:
         self.dt_v = None
 
     def pack(self, master):
-        self.canvas = FigureCanvasTkAgg(self.fig, master=master)
-        toolbar = NavigationToolbar2Tk(self.canvas, master)
-        toolbar.pack()
-        self.canvas.get_tk_widget().pack(expand=False)
+        if USE_TKAGG is True:
+            self.canvas = FigureCanvasTkAgg(self.fig, master=master)
+            toolbar = NavigationToolbar2Tk(self.canvas, master)
+            toolbar.pack()
+            self.canvas.get_tk_widget().pack(expand=False)
+        else:
+            # TKAggが使えない場合はplt.show()を使う
+            self.canvas = self.fig.canvas
+            plt.show(block=False)
 
     def set_draw_param(self, kde_alpha, kde_adjust, kde_thresh, kde_levels):
         self.kde_alpha = kde_alpha
@@ -103,7 +114,8 @@ class TrajectoryPlotter:
         self.speed_ax.legend(loc='upper right')
         self.dt_v = self.speed_ax.axvline(0, color='gray', lw=0.5)
 
-        self.canvas.draw()
+        print(self.fig)
+        self.canvas.draw_idle()
 
     def clear(self):
         self.x_time_ax.cla()

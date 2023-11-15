@@ -16,7 +16,7 @@ class App(tk.Frame):
         master.title("Keypoints to Recuplot")
         self.pack(padx=10, pady=10)
 
-        self.recu = RecurrencePlotter()
+        self.recu = RecurrencePlotter(fig_size=(900/72, 700/72), dpi=72)
 
         load_frame = tk.Frame(self)
         load_frame.pack(pady=5)

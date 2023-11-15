@@ -15,7 +15,7 @@ class App(tk.Frame):
         master.title("Keypoints to Figure")
         self.pack(padx=10, pady=10)
 
-        self.traj = TrajectoryPlotter()
+        self.traj = TrajectoryPlotter(fig_size=(900/72, 700/72), dpi=72)
 
         load_frame = tk.Frame(self)
         self.pkl_selector = PklSelector(load_frame)

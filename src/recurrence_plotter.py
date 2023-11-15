@@ -3,17 +3,23 @@ import os
 import cv2
 import matplotlib.pyplot as plt
 from matplotlib import ticker, gridspec
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+
+try:
+    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+except ImportError:
+    # 環境によってはtkaggが使えないことがあるのでその対策
+    USE_TKAGG = False
+else:
+    USE_TKAGG = True
 
 import time_format
 
 
 class RecurrencePlotter:
-    def __init__(self):
-        dpi = 72
-        fig_width = 700
-        fig_height = 700
-        self.fig = plt.figure(figsize=(fig_width/dpi, fig_height/dpi), dpi=dpi)
+    def __init__(self, fig_size: tuple, dpi=72):
+        self.dpi = dpi
+        self.fig_size = fig_size
+        self.fig = plt.figure(figsize=self.fig_size, dpi=self.dpi)
         self.fig.canvas.mpl_connect("button_press_event", self._click_graph)
 
         # axesのレイアウト設定
@@ -21,10 +27,15 @@ class RecurrencePlotter:
         self.recu_ax = self.fig.add_subplot(gs[0, 0])
  
     def pack(self, master):
-        self.canvas = FigureCanvasTkAgg(self.fig, master=master)
-        toolbar = NavigationToolbar2Tk(self.canvas, master)
-        toolbar.pack()
-        self.canvas.get_tk_widget().pack(expand=False)
+        if USE_TKAGG is True:
+            self.canvas = FigureCanvasTkAgg(self.fig, master=master)
+            toolbar = NavigationToolbar2Tk(self.canvas, master)
+            toolbar.pack()
+            self.canvas.get_tk_widget().pack(expand=False)
+        else:
+            # TKAggが使えない場合はplt.show()を使う
+            self.canvas = self.fig.canvas
+            plt.show(block=False)
 
     def draw(self, plot_mat, timestamps, video_path: str):
         if os.path.exists(video_path) is True:
