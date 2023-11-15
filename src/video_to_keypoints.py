@@ -2,6 +2,7 @@ import os
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
+import glob
 
 from yolo_detector import YoloDetector
 from mediapipe_detector import MediaPipeDetector
@@ -15,22 +16,35 @@ class App(tk.Frame):
         master.title("Video to Keypoints")
         self.pack(padx=10, pady=10)
 
-        top_btn_frame = tk.Frame(self)
+        self.video_path = ""
+        self.folder_path = ""
+
+        # bat処理モード
+        self.bat_chk_val = tk.BooleanVar()
+        self.bat_chk_val.set(False)
+        bat_mode_frame = ttk.Frame(self)
+        bat_mode_frame.pack(side=tk.TOP)
+        bat_chk = ttk.Checkbutton(bat_mode_frame, text="Bat mode", variable=self.bat_chk_val)
+        bat_chk.pack(side=tk.LEFT)
+        self.bat_chk_val.trace("w", self._on_bat_mode_changed)
+ 
+        # ファイル/フォルダ選択
+        top_btn_frame = ttk.Frame(self)
         top_btn_frame.pack(pady=10)
         select_video_btn = ttk.Button(top_btn_frame, text="Select video", command=self.select_video)
         select_video_btn.pack(side=tk.LEFT)
         self.video_path_label = ttk.Label(top_btn_frame, text="No video selected")
         self.video_path_label.pack(side=tk.LEFT)
 
-        middle_btn_frame = tk.Frame(self)
+        middle_btn_frame = ttk.Frame(self)
         middle_btn_frame.pack()
         self.model_cbox = ttk.Combobox(middle_btn_frame, values=["YOLOv8 x-pose-p6", "MediaPipe Holistic"], state='readonly')
         self.model_cbox.pack(side=tk.LEFT, padx=15)
         self.roi_chk_val = tk.BooleanVar()
-        roi_chk = ttk.Checkbutton(middle_btn_frame, text="ROI", variable=self.roi_chk_val)
-        roi_chk.pack(side=tk.LEFT)
+        self.roi_chk = ttk.Checkbutton(middle_btn_frame, text="ROI", variable=self.roi_chk_val)
+        self.roi_chk.pack(side=tk.LEFT)
 
-        bottom_btn_frame = tk.Frame(self)
+        bottom_btn_frame = ttk.Frame(self)
         bottom_btn_frame.pack(pady=10)
         open_btn = ttk.Button(bottom_btn_frame, text="Open", command=lambda: windows_and_mac.open_file(self.video_path))
         open_btn.pack(side=tk.LEFT)
@@ -41,10 +55,31 @@ class App(tk.Frame):
 
     def select_video(self):
         init_dir = os.path.abspath(os.path.dirname(__file__))
-        self.video_path = filedialog.askopenfilename(initialdir=init_dir)
-        self.video_path_label["text"] = self.video_path
+        if self.bat_chk_val.get() is True:
+            self.folder_path = filedialog.askdirectory(initialdir=init_dir)
+            if self.folder_path:
+                self.video_path_label["text"] = self.folder_path
+        else:
+            self.video_path = filedialog.askopenfilename(initialdir=init_dir)
+            if self.video_path:
+                self.video_path_label["text"] = self.video_path
 
     def exec_detector(self):
+        if self.bat_chk_val.get() is True:
+            self.exec_folder()
+        else:
+            self.exec_video()
+
+    def exec_folder(self):
+        video_paths = glob.glob(os.path.join(self.folder_path, "*.mp4"))
+        for video_path in video_paths:
+            print(f"executing {video_path}")
+            self.video_path = video_path
+            self.exec_video()
+            print("finished")
+
+    def exec_video(self):
+        # 動画の読み込み
         rcap = roi_cap.RoiCap(self.video_path)
         use_roi = self.roi_chk_val.get()
         if use_roi is True:
@@ -56,13 +91,16 @@ class App(tk.Frame):
         os.makedirs(trk_dir, exist_ok=True)
         pkl_path = os.path.join(trk_dir, f"{file_name}.pkl")
 
+        # モデルの初期化
+        model_name = self.model_cbox.get()
         if model_name == "YOLOv8 x-pose-p6":
-            detector = YoloDetector(rcap)
+            self.model = YoloDetector()
         elif model_name == "MediaPipe Holistic":
-            detector = MediaPipeDetector(rcap)
+            self.model = MediaPipeDetector()
 
-        detector.detect(roi=use_roi)
-        result_df = detector.get_result()
+        self.model.set_cap(rcap)
+        self.model.detect(roi=use_roi)
+        result_df = self.model.get_result()
 
         # attrsを埋め込み
         result_df.attrs["model"] = model_name
@@ -70,6 +108,17 @@ class App(tk.Frame):
         result_df.attrs["video_name"] = os.path.basename(self.video_path)
 
         result_df.to_pickle(pkl_path)
+        rcap.release()
+
+    def _on_bat_mode_changed(self, *args):
+        if self.bat_chk_val.get() is True:
+            self.video_path_label["text"] = "No folder selected"
+            self.folder_path = ""
+            self.roi_chk_val.set(False)
+            self.roi_chk["state"] = "disabled"
+        else:
+            self.video_path_label["text"] = "No video selected"
+            self.video_path = ""
 
 
 def quit(root):

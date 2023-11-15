@@ -4,19 +4,21 @@ import pandas as pd
 
 
 class MediaPipeDetector:
-    def __init__(self, cap, show=True):
-        self.cap = cap
+    def __init__(self, show=True):
         self.mph = mp.solutions.holistic
         self.model = self.mph.Holistic(model_complexity=2, refine_face_landmarks=True)
 
-        self.total_frame_num = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.frame_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.frame_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.number_of_keypoints = {'face': 468, 'right_hand': 21, 'left_hand': 21}
         self.show = show
         if self.show is True:
             self.drawing = mp.solutions.drawing_utils
 
+    def set_cap(self, cap):
+        self.cap = cap
+        self.total_frame_num = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.frame_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.frame_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+ 
     def detect(self, roi=False):
         # データの初期化
         data_dict = {"frame": [], "member": [], "keypoint": [], "x": [], "y": [], "z": [], "timestamp": []}

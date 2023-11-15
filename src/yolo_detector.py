@@ -4,14 +4,17 @@ import pandas as pd
 
 import yolo_drawer
 
+
 class YoloDetector:
-    def __init__(self, cap, show=True):
-        self.cap = cap
+    def __init__(self, show=True):
         self.model = YOLO(model="yolov8x-pose-p6.pt")
 
-        self.total_frame_num = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         self.number_of_keypoints = 17
         self.show = show
+
+    def set_cap(self, cap):
+        self.cap = cap
+        self.total_frame_num = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     def detect(self, roi=False):
         # データの初期化
@@ -21,7 +24,12 @@ class YoloDetector:
                 ret, frame = self.cap.get_roi_frame()
             else:
                 ret, frame = self.cap.read()
-            result = self.model.track(frame, verbose=False, persist=True, classes=0)
+            
+            # 動画が変わるとpersist=Trueのときにエラーが出るので、persist=Falseにする
+            if i == 0:
+                result = self.model.track(frame, verbose=False, persist=False, classes=0)
+            else:
+                result = self.model.track(frame, verbose=False, persist=True, classes=0)
             timestamp = self.cap.get(cv2.CAP_PROP_POS_MSEC)
 
             # 検出結果を描画、xキーで途中終了
