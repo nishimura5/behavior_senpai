@@ -25,11 +25,7 @@ class YoloDetector:
             else:
                 ret, frame = self.cap.read()
             
-            # 動画が変わるとpersist=Trueのときにエラーが出るので、persist=Falseにする
-            if i == 0:
-                result = self.model.track(frame, verbose=False, persist=False, classes=0)
-            else:
-                result = self.model.track(frame, verbose=False, persist=True, classes=0)
+            result = self.model.track(frame, verbose=False, persist=True, classes=0)
             timestamp = self.cap.get(cv2.CAP_PROP_POS_MSEC)
 
             # 検出結果を描画、xキーで途中終了

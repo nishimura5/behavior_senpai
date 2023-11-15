@@ -3,11 +3,9 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 import glob
+import subprocess
 
-from yolo_detector import YoloDetector
-from mediapipe_detector import MediaPipeDetector
 import windows_and_mac
-import roi_cap
 
 
 class App(tk.Frame):
@@ -76,39 +74,21 @@ class App(tk.Frame):
             print(f"executing {video_path}")
             self.video_path = video_path
             self.exec_video()
-            print("finished")
 
     def exec_video(self):
-        # 動画の読み込み
-        rcap = roi_cap.RoiCap(self.video_path)
+        '''
+        detector_proc.pyを実行
+        連続実行するとmediapipeがNULLポインタ参照で落ちるので回避策としてsubprocessを使用
+        '''
+        if self.video_path == "":
+            return
+        model_name = self.model_cbox.get()
         use_roi = self.roi_chk_val.get()
+        script_path = os.path.join(os.path.dirname(__file__), "detector_proc.py")
+        cmd = f"python {script_path} --model_name \"{model_name}\" --video_path \"{self.video_path}\""
         if use_roi is True:
-            rcap.click_roi()
-        model_name = self.model_cbox.get()
-
-        file_name = os.path.splitext(os.path.basename(self.video_path))[0]
-        trk_dir = os.path.join(os.path.dirname(self.video_path), "trk")
-        os.makedirs(trk_dir, exist_ok=True)
-        pkl_path = os.path.join(trk_dir, f"{file_name}.pkl")
-
-        # モデルの初期化
-        model_name = self.model_cbox.get()
-        if model_name == "YOLOv8 x-pose-p6":
-            self.model = YoloDetector()
-        elif model_name == "MediaPipe Holistic":
-            self.model = MediaPipeDetector()
-
-        self.model.set_cap(rcap)
-        self.model.detect(roi=use_roi)
-        result_df = self.model.get_result()
-
-        # attrsを埋め込み
-        result_df.attrs["model"] = model_name
-        result_df.attrs["frame_size"] = (rcap.width, rcap.height)
-        result_df.attrs["video_name"] = os.path.basename(self.video_path)
-
-        result_df.to_pickle(pkl_path)
-        rcap.release()
+            cmd += " --use_roi"
+        subprocess.run(cmd, shell=True)
 
     def _on_bat_mode_changed(self, *args):
         if self.bat_chk_val.get() is True:
@@ -119,6 +99,7 @@ class App(tk.Frame):
         else:
             self.video_path_label["text"] = "No video selected"
             self.video_path = ""
+            self.roi_chk["state"] = "enabled"
 
 
 def quit(root):
