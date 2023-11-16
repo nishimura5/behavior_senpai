@@ -24,6 +24,12 @@ class App(tk.Frame):
 
         setting_frame = tk.Frame(self)
         setting_frame.pack(pady=5)
+        # allのチェックボックス
+        self.draw_all_chk_val = tk.BooleanVar()
+        self.draw_all_chk_val.set(False)
+        all_check = ttk.Checkbutton(setting_frame, text="draw all", variable=self.draw_all_chk_val)
+        all_check.pack(side=tk.LEFT)
+
         self.member_keypoints_combos = MemberKeypointComboboxes(setting_frame)
 
         draw_btn = ttk.Button(setting_frame, text="Export", command=self.export)
@@ -58,18 +64,24 @@ class App(tk.Frame):
                 video_path,
                 apiPreference=cv2.CAP_ANY,
                 params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
+            fps = cap.get(cv2.CAP_PROP_FPS)
         else:
             cap = None
+            fps = 30
 
         scale = 0.5
 
         # VideoWriter
         file_name = os.path.splitext(self.src_df.attrs['video_name'])[0]
-        out_file_path = os.path.join(self.pkl_dir, f'{file_name}_{current_member}.mp4')
+        if self.draw_all_chk_val.get() is True:
+            suffix = "all"
+        else:
+            suffix = f"{current_member}_{current_keypoint}"
+        out_file_path = os.path.join(self.pkl_dir, f'{file_name}_{suffix}.mp4')
         fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
         size = self.src_df.attrs['frame_size']
         size = (int(size[0] * scale), int(size[1] * scale))
-        out = cv2.VideoWriter(out_file_path, fourcc, 30, size, params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
+        out = cv2.VideoWriter(out_file_path, fourcc, fps, size, params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
 
         if self.src_df.attrs['model'] == "YOLOv8 x-pose-p6":
             anno = yolo_drawer.Annotate()
@@ -85,13 +97,15 @@ class App(tk.Frame):
                 frame = np.zeros((size[1], size[0], 3), dtype=np.uint8)
             frame = cv2.resize(frame, size)
             anno.set_img(frame)
+            # draw_allなら全員の姿勢を描画
+            if self.draw_all_chk_val.get() is True:
+                for member in indexes.levels[1]:
+                    dst_img = self._draw(i, member, current_keypoint, indexes, anno, scale)
+                if dst_img is None:
+                    dst_img = frame
             # out_dfにi, current_member, current_keypointの組み合わせがない場合はスキップ
-            if (i, current_member, current_keypoint) in indexes:
-                keypoints = out_df.loc[pd.IndexSlice[i, current_member, :], :] * scale
-                kps = keypoints.to_numpy()
-                anno.set_pose(kps)
-                anno.set_track(current_member)
-                dst_img = anno.draw()
+            elif (i, current_member, current_keypoint) in indexes:
+                dst_img = self._draw(i, current_member, current_keypoint, indexes, anno, scale)
             else:
                 dst_img = frame
             cv2.imshow("dst", dst_img)
@@ -99,6 +113,16 @@ class App(tk.Frame):
             out.write(frame)
         cv2.destroyAllWindows()
         out.release()
+
+    def _draw(self, frame, member, keypoint, all_indexes, anno, scale):
+        if (frame, member, keypoint) not in all_indexes:
+            return None
+        keypoints = self.src_df.loc[pd.IndexSlice[frame, member, :], :] * scale
+        kps = keypoints.to_numpy()
+        anno.set_pose(kps)
+        anno.set_track(member)
+        dst_img = anno.draw()
+        return dst_img
 
 
 def quit(root):
