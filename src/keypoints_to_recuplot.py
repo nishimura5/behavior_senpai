@@ -11,6 +11,16 @@ import time_format
 
 
 class App(tk.Frame):
+    """
+    リカレンスプロット(Recurrence Plot)を描画するためのGUIです。
+    以下の機能を有します
+     - Trackファイルを選択して読み込む機能
+     - 描画するmemberとkeypointを指定する機能
+     - 速さ計算と間引き処理を行う機能
+     - 計算対象の時間帯の指定を行う機能
+     - Recurrence Plotの閾値を指定して、計算する機能
+     - 以上の処理で得られたデータをRecurrencePlotterに渡す機能
+    """
     def __init__(self, master):
         super().__init__(master)
         master.title("Keypoints to Recuplot")

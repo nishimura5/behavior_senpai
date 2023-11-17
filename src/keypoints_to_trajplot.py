@@ -10,6 +10,14 @@ import keypoints_proc
 
 
 class App(tk.Frame):
+    """
+    軌跡の時系列グラフ(Trajectory Plot)を描画するためのGUIです。
+    以下の機能を有します
+     - Trackファイルを選択して読み込む機能
+     - 描画するmemberとkeypointを指定する機能
+     - 速さ計算と間引き処理を行う機能
+     - 以上の処理で得られたデータをTrajectoryPlotterに渡す機能
+    """
     def __init__(self, master):
         super().__init__(master)
         master.title("Keypoints to Trajectory Plot")
