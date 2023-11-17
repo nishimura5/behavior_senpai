@@ -26,8 +26,8 @@ class App(tk.Frame):
         self.traj = TrajectoryPlotter(fig_size=(900/72, 700/72), dpi=72)
 
         load_frame = tk.Frame(self)
-        self.pkl_selector = PklSelector(load_frame)
         load_frame.pack(pady=5)
+        self.pkl_selector = PklSelector(load_frame)
         self.pkl_selector.set_command(cmd=self.load_pkl)
 
         setting_frame = tk.Frame(self)
@@ -73,6 +73,7 @@ class App(tk.Frame):
         plot_df = keypoints_proc.thinning(self.src_speed_df, int(thinning))
 
         plot_df.attrs = self.src_df.attrs
+        print(type(plot_df.attrs))
 
         # memberとkeypointのインデックス値を文字列に変換
         idx = plot_df.index

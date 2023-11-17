@@ -23,20 +23,18 @@ class App(tk.Frame):
     """
     def __init__(self, master):
         super().__init__(master)
-        master.title("Keypoints to Recuplot")
+        master.title("Keypoints to Recurrence Plot")
         self.pack(padx=10, pady=10)
 
         self.recu = RecurrencePlotter(fig_size=(900/72, 700/72), dpi=72)
 
         load_frame = tk.Frame(self)
         load_frame.pack(pady=5)
-
         self.pkl_selector = PklSelector(load_frame)
         self.pkl_selector.set_command(cmd=self.load_pkl)
 
         proc_frame = tk.Frame(self)
         proc_frame.pack(pady=5)
-
         self.member_keypoints_combos = MemberKeypointComboboxes(proc_frame)
         self.proc_options = ProcOptions(proc_frame)
 
