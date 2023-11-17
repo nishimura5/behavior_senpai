@@ -3,12 +3,12 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-import numpy as np
 import cv2
 
 from gui_parts import PklSelector, MemberKeypointComboboxes
 import yolo_drawer
 import mediapipe_drawer
+import vcap
 
 
 class App(tk.Frame):
@@ -53,23 +53,19 @@ class App(tk.Frame):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
 
         out_df = self.src_df
-        # memberとkeypointのインデックス値を文字列に変換
-        idx = out_df.index
-        out_df.index = out_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
-        # VideoCapture
-        video_path = os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs['video_name'])
-        if os.path.exists(video_path) is True:
-            cap = cv2.VideoCapture(
-                video_path,
-                apiPreference=cv2.CAP_ANY,
-                params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
+        cap = vcap.VideoCap(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
+        if cap.isOpened() is True:
             fps = cap.get(cv2.CAP_PROP_FPS)
         else:
-            cap = None
+            cap.set_frame_size(self.src_df.attrs["frame_size"])
             fps = 30
 
         scale = 0.5
+
+        # memberとkeypointのインデックス値を文字列に変換
+        idx = out_df.index
+        out_df.index = out_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
         # VideoWriter
         file_name = os.path.splitext(self.src_df.attrs['video_name'])[0]
@@ -91,10 +87,7 @@ class App(tk.Frame):
         total_frame_num = out_df.index.unique(level='frame').max() + 1
         indexes = out_df.sort_index().index
         for i in range(total_frame_num):
-            if cap is not None:
-                ret, frame = cap.read()
-            if cap is None or ret is False:
-                frame = np.zeros((size[1], size[0], 3), dtype=np.uint8)
+            frame = cap.read_anyway()
             frame = cv2.resize(frame, size)
             anno.set_img(frame)
             # draw_allなら全員の姿勢を描画

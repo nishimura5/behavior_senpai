@@ -1,7 +1,43 @@
 import os
 
 import cv2
+import numpy as np
 
+
+class VideoCap(cv2.VideoCapture):
+    def __init__(self, video_path):
+        super().__init__(
+            video_path,
+            apiPreference=cv2.CAP_ANY,
+            params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
+ 
+        self.frame_size = (int(self.get(cv2.CAP_PROP_FRAME_WIDTH)), int(self.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+
+    def read_at(self, msec, rgb=False):
+        '''
+        ミリ秒を指定してreadする
+        '''
+        self.set(cv2.CAP_PROP_POS_MSEC, msec)
+        ok, frame = self.read()
+        if ok is True and rgb is True:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        return ok, frame
+
+    def read_anyway(self):
+        '''
+        readに失敗したら黒画像を返す
+        '''
+        ok, frame = self.read()
+        if ok is False:
+            frame = np.zeros((self.frame_size[1], self.frame_size[0], 3), dtype=np.uint8)
+        return frame
+ 
+    def get_frame_size(self):
+        return self.frame_size
+    
+    def set_frame_size(self, frame_size):
+        self.frame_size = frame_size
+ 
 
 class RoiCap(cv2.VideoCapture):
     def __init__(self, video_path):

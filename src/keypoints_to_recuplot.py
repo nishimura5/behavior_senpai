@@ -8,6 +8,7 @@ from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions, TimeSp
 from recurrence_plotter import RecurrencePlotter
 import keypoints_proc
 import time_format
+import vcap
 
 
 class App(tk.Frame):
@@ -102,7 +103,7 @@ class App(tk.Frame):
         time_max_msec = self._timedelta_to_msec(time_max)
         plot_df = plot_df.loc[plot_df["timestamp"].between(time_min_msec, time_max_msec), :]
 
-        video_path = os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"])
+        cap = vcap.VideoCap(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
 
         # memberとkeypointのインデックス値を文字列に変換
         idx = plot_df.index
@@ -119,7 +120,7 @@ class App(tk.Frame):
             self.eps_entry.insert(tk.END, '0')
             threshold = self.eps_entry.get()
         recu_mat = keypoints_proc.calc_recurrence(reduced_arr, threshold=float(threshold))
-        self.recu.draw(recu_mat, timestamps, video_path)
+        self.recu.draw(recu_mat, timestamps, cap)
 
     def clear(self):
         self.recu.clear()

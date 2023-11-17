@@ -7,6 +7,7 @@ import pandas as pd
 from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions
 from trajectory_plotter import TrajectoryPlotter
 import keypoints_proc
+import vcap
 
 
 class App(tk.Frame):
@@ -72,15 +73,16 @@ class App(tk.Frame):
         thinning = self.proc_options.get_thinning()
         plot_df = keypoints_proc.thinning(self.src_speed_df, int(thinning))
 
-        plot_df.attrs = self.src_df.attrs
-        print(type(plot_df.attrs))
+        cap = vcap.VideoCap(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
+        if cap.isOpened() is False:
+            cap.set_frame_size(self.src_df.attrs["frame_size"])
 
         # memberとkeypointのインデックス値を文字列に変換
         idx = plot_df.index
         plot_df.index = plot_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
         self.traj.set_draw_param(kde_alpha=0.9, kde_adjust=0.4, kde_thresh=0.1, kde_levels=20)
-        self.traj.draw(plot_df, current_member, current_keypoint, int(dt_span), int(thinning), self.pkl_dir)
+        self.traj.draw(plot_df, current_member, current_keypoint, int(dt_span), int(thinning), cap)
 
     def clear(self):
         self.traj.clear()

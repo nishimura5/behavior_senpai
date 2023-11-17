@@ -1,7 +1,4 @@
-import os
-
 import pandas as pd
-import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import ticker, gridspec
@@ -53,19 +50,11 @@ class TrajectoryPlotter:
         self.kde_thresh = kde_thresh
         self.kde_levels = kde_levels
 
-    def draw(self, plot_df, member: str, keypoint: str, dt_span: int, thinning: int, pkl_dir: str):
-        video_path = os.path.join(pkl_dir, os.pardir, plot_df.attrs["video_name"])
-        if os.path.exists(video_path) is True:
-            cap = cv2.VideoCapture(
-                video_path,
-                apiPreference=cv2.CAP_ANY,
-                params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
-        else:
-            cap = None
-        self.cap = cap
+    def draw(self, plot_df, member: str, keypoint: str, dt_span: int, thinning: int, vcap):
+        self.vcap = vcap
 
         self.plot_df = plot_df.loc[pd.IndexSlice[:, member, keypoint], :]
-        width, height = plot_df.attrs["frame_size"]
+        width, height = self.vcap.get_frame_size()
         self.traj_ax.cla()
 
         if self.x_h is not None:
@@ -159,9 +148,7 @@ class TrajectoryPlotter:
         timestamp_msec = row.iloc[int(len(row)/2)].timestamp
         self.traj_point.set_data(row.x, row.y)
         time_format.copy_to_clipboard(timestamp_msec)
-        if self.cap is not None:
-            self.cap.set(cv2.CAP_PROP_POS_MSEC, timestamp_msec)
-            ok, frame = self.cap.read()
-            show_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            self.traj_img.set_data(show_img)
+        if self.vcap.isOpened() is True:
+            ok, frame = self.vcap.read_at(timestamp_msec, rgb=True)
+            self.traj_img.set_data(frame)
         self.canvas.draw()

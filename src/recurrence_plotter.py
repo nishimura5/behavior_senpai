@@ -1,5 +1,3 @@
-import os
-
 import cv2
 import matplotlib.pyplot as plt
 from matplotlib import ticker, gridspec
@@ -37,15 +35,8 @@ class RecurrencePlotter:
             self.canvas = self.fig.canvas
             plt.show(block=False)
 
-    def draw(self, plot_mat, timestamps, video_path: str):
-        if os.path.exists(video_path) is True:
-            cap = cv2.VideoCapture(
-                video_path,
-                apiPreference=cv2.CAP_ANY,
-                params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
-        else:
-            cap = None
-        self.cap = cap
+    def draw(self, plot_mat, timestamps, vcap):
+        self.vcap = vcap
         self.timestamps = timestamps
         self.recu_ax.imshow(plot_mat, cmap="gray")
         self.recu_ax.invert_yaxis()
@@ -72,13 +63,14 @@ class RecurrencePlotter:
         timestamp_msec = self.timestamps[int(event.xdata)]
 
         time_format.copy_to_clipboard(timestamp_msec)
-        if self.cap is not None:
-            self.cap.set(cv2.CAP_PROP_POS_MSEC, timestamp_msec)
-            ret, frame = self.cap.read()
-            if frame.shape[0] >= 1080:
-                resize_height = 720
-                resize_width = int(frame.shape[1] * resize_height / frame.shape[0])
-                frame = cv2.resize(frame, (resize_width, resize_height))
-            if ret is True:
-                cv2.imshow("frame", frame)
-                cv2.waitKey(1)
+        if self.vcap.isOpened() is False:
+            return
+
+        ret, frame = self.vcap.read_at(timestamp_msec)
+        if frame.shape[0] >= 1080:
+            resize_height = 720
+            resize_width = int(frame.shape[1] * resize_height / frame.shape[0])
+            frame = cv2.resize(frame, (resize_width, resize_height))
+        if ret is True:
+            cv2.imshow("frame", frame)
+            cv2.waitKey(1)
