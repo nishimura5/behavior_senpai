@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 import glob
+import datetime
 import subprocess
 
 import windows_and_mac
@@ -71,9 +72,10 @@ class App(tk.Frame):
     def exec_folder(self):
         video_paths = glob.glob(os.path.join(self.folder_path, "*.mp4"))
         for video_path in video_paths:
-            print(f"executing {video_path}")
+            print(f"{datetime.datetime.now()} {video_path}")
             self.video_path = video_path
             self.exec_video()
+        print(f"{datetime.datetime.now()} Done")
 
     def exec_video(self):
         '''

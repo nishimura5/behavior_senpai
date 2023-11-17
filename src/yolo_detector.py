@@ -31,6 +31,10 @@ class YoloDetector:
             # 検出結果を描画、xキーで途中終了
             if self.show is True:
                 yolo_drawer.draw(frame, result)
+                if frame.shape[0] >= 1080:
+                    resize_height = 720
+                    resize_width = int(frame.shape[1] * resize_height / frame.shape[0])
+                    frame = cv2.resize(frame, (resize_width, resize_height))
                 self._put_frame_pos(frame, i)
                 cv2.imshow("dst", frame)
                 key = cv2.waitKey(1) & 0xFF
