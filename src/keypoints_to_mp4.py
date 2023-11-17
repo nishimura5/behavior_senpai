@@ -101,8 +101,6 @@ class App(tk.Frame):
             if self.draw_all_chk_val.get() is True:
                 for member in indexes.levels[1]:
                     dst_img = self._draw(i, member, current_keypoint, indexes, anno, scale)
-                if dst_img is None:
-                    dst_img = frame
             # out_dfにi, current_member, current_keypointの組み合わせがない場合はスキップ
             elif (i, current_member, current_keypoint) in indexes:
                 dst_img = self._draw(i, current_member, current_keypoint, indexes, anno, scale)
@@ -115,8 +113,12 @@ class App(tk.Frame):
         out.release()
 
     def _draw(self, frame, member, keypoint, all_indexes, anno, scale):
-        if (frame, member, keypoint) not in all_indexes:
-            return None
+        if keypoint == '':
+            if (frame, member) not in all_indexes.droplevel(2):
+                return frame
+        else:
+            if (frame, member, keypoint) not in all_indexes:
+                return frame
         keypoints = self.src_df.loc[pd.IndexSlice[frame, member, :], :] * scale
         kps = keypoints.to_numpy()
         anno.set_pose(kps)
