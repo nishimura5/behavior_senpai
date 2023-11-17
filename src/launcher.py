@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import video_to_keypoints as v2k
-import keypoints_to_figure as k2f
+import keypoints_to_trajplot as k2t
 import keypoints_to_mp4 as k2m
 import keypoints_to_recuplot as k2r
 import scene_table
@@ -27,7 +27,7 @@ class App(tk.Frame):
         k2m_button.pack(side=tk.TOP, pady=5)
 
         # keypoints_to_figureのボタン 
-        k2f_button = ttk.Button(buttons_frame, text="keypoints_to_figure.py", command=lambda: self.launch_window(k2f.App))
+        k2f_button = ttk.Button(buttons_frame, text="keypoints_to_trajplot.py", command=lambda: self.launch_window(k2t.App))
         k2f_button.pack(side=tk.TOP, pady=5)
 
         # keypoints_to_recuplotのボタン

@@ -12,7 +12,7 @@ import keypoints_proc
 class App(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
-        master.title("Keypoints to Figure")
+        master.title("Keypoints to Trajectory Plot")
         self.pack(padx=10, pady=10)
 
         self.traj = TrajectoryPlotter(fig_size=(900/72, 700/72), dpi=72)
