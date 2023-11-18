@@ -9,6 +9,7 @@ import vcap
 def exec(model_name, video_path, use_roi=False):
     # 動画の読み込み
     rcap = vcap.RoiCap(video_path)
+
     if use_roi is True:
         rcap.click_roi()
 
