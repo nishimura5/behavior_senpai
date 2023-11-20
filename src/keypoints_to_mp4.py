@@ -105,14 +105,14 @@ class App(tk.Frame):
         cv2.destroyAllWindows()
         out.release()
 
-    def _draw(self, frame, member, keypoint, all_indexes, anno, scale):
+    def _draw(self, frame_num, member, keypoint, all_indexes, anno, scale):
         if keypoint == '':
-            if (frame, member) not in all_indexes.droplevel(2):
-                return frame
+            if (frame_num, member) not in all_indexes.droplevel(2):
+                return anno.dst_img
         else:
-            if (frame, member, keypoint) not in all_indexes:
-                return frame
-        keypoints = self.src_df.loc[pd.IndexSlice[frame, member, :], :] * scale
+            if (frame_num, member, keypoint) not in all_indexes:
+                return anno.dst_img
+        keypoints = self.src_df.loc[pd.IndexSlice[frame_num, member, :], :] * scale
         kps = keypoints.to_numpy()
         anno.set_pose(kps)
         anno.set_track(member)

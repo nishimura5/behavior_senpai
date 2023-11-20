@@ -45,7 +45,7 @@ class Annotate:
         self.id = trk
 
     def set_img(self, src_img):
-        self.dst_img = src_img
+        self.dst_img = src_img.copy()
 
     # poseを描画
     def draw(self):
