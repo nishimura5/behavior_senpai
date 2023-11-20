@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
+import numpy as np
 
 from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions
 from trajectory_plotter import TrajectoryPlotter
@@ -53,6 +54,9 @@ class App(tk.Frame):
         pkl_path = self.pkl_selector.get_trk_path()
         self.src_df = pd.read_pickle(pkl_path)
 
+        self.src_df['x'] = np.where(self.src_df['x'] == 0, np.nan, self.src_df['x'])
+        self.src_df['y'] = np.where(self.src_df['y'] == 0, np.nan, self.src_df['y'])
+ 
         self.member_keypoints_combos.set_df(self.src_df)
 
         # PKLが置かれているフォルダのパスを取得
