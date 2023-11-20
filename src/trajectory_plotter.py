@@ -54,6 +54,7 @@ class TrajectoryPlotter:
         self.vcap = vcap
 
         self.plot_df = plot_df.loc[pd.IndexSlice[:, member, keypoint], :]
+        plot_len = len(self.plot_df['x'])
         width, height = self.vcap.get_frame_size()
         self.traj_ax.cla()
 
@@ -84,10 +85,13 @@ class TrajectoryPlotter:
         self.y_v = self.y_time_ax.axvline(0, color='gray', lw=0.5)
 
         # 軌跡グラフ
-        sns.kdeplot(
-            data=self.plot_df, x="x", y="y", fill=True,
-            alpha=self.kde_alpha, bw_adjust=self.kde_adjust, thresh=self.kde_thresh, levels=self.kde_levels,
-            ax=self.traj_ax)
+        if plot_len > 10:
+            sns.kdeplot(
+                data=self.plot_df, x="x", y="y", fill=True,
+                alpha=self.kde_alpha, bw_adjust=self.kde_adjust, thresh=self.kde_thresh, levels=self.kde_levels,
+                ax=self.traj_ax)
+        else:
+            print(plot_len)
         self.traj_point, = self.traj_ax.plot([], [], color="#02326f", marker='.')
         self.traj_img = self.traj_ax.imshow(np.full((height, width, 3), 255, dtype=np.uint8), aspect='auto')
         self.traj_img.autoscale()
@@ -103,8 +107,8 @@ class TrajectoryPlotter:
         self.speed_ax.legend(loc='upper right')
         self.dt_v = self.speed_ax.axvline(0, color='gray', lw=0.5)
 
+        self.canvas.draw()
         print(self.fig)
-        self.canvas.draw_idle()
 
     def clear(self):
         self.x_time_ax.cla()
