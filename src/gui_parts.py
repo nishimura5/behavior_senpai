@@ -14,8 +14,8 @@ class PklSelector(tk.Frame):
         super().__init__(master)
         # 一時ファイルからtrkのパスを取得
         tmp = TempFile()
-        self.data = tmp.load()
-        self.trk_path = self.data['trk_path']
+        data = tmp.load()
+        self.trk_path = data['trk_path']
  
         self.load_pkl_btn = ttk.Button(master, text="Load Track")
         self.load_pkl_btn.pack(side=tk.LEFT)
@@ -31,8 +31,9 @@ class PklSelector(tk.Frame):
         if self.trk_path:
             self.pkl_path_label["text"] = self.trk_path
             tmp = TempFile()
-            self.data['trk_path'] = self.trk_path
-            tmp.save(self.data)
+            data = tmp.load()
+            data['trk_path'] = self.trk_path
+            tmp.save(data)
         else:
             self.trk_path = ''
             self.pkl_path_label["text"] = "No trk loaded"
@@ -83,24 +84,37 @@ class MemberKeypointComboboxes(tk.Frame):
 class ProcOptions(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
+        # 一時ファイルからdt_spanとthinningを取得
+        tmp = TempFile()
+        data = tmp.load()
  
         dt_span_label = ttk.Label(master, text="diff period:")
         dt_span_label.pack(side=tk.LEFT)
         self.dt_span_entry = ttk.Entry(master, width=5, validate="key", validatecommand=(self.register(self._validate), "%P"))
-        self.dt_span_entry.insert(tk.END, '10')
+        self.dt_span_entry.insert(tk.END, data['dt_span'])
         self.dt_span_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         thinning_label = ttk.Label(master, text="thinning:")
         thinning_label.pack(side=tk.LEFT)
         self.thinning_entry = ttk.Entry(master, width=5, validate="key", validatecommand=(self.register(self._validate), "%P"))
-        self.thinning_entry.insert(tk.END, '0')
+        self.thinning_entry.insert(tk.END, data['thinning'])
         self.thinning_entry.pack(side=tk.LEFT, padx=(0, 5))
 
     def get_dt_span(self):
-        return self.dt_span_entry.get()
+        tmp = TempFile()
+        data = tmp.load()
+        dt_span = self.dt_span_entry.get()
+        data['dt_span'] = dt_span
+        tmp.save(data)
+        return dt_span
     
     def get_thinning(self):
-        return self.thinning_entry.get()
+        tmp = TempFile()
+        data = tmp.load()
+        thinning = self.thinning_entry.get()
+        data['thinning'] = thinning
+        tmp.save(data)
+        return thinning
 
     def _validate(self, text):
         return (text.isdigit() or text == "")
@@ -149,7 +163,7 @@ class TimeSpanEntry(ttk.Frame):
 
 class TempFile:
     def __init__(self):
-        self.data = {'trk_path': ''}
+        self.data = {'trk_path': '', 'dt_span': 10, 'thinning': 0}
 
         file_name = 'temp.pkl'
         self.file_path = os.path.join(self._find_data_dir(), file_name)
