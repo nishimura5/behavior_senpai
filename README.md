@@ -27,16 +27,21 @@ pipでインストールできるライブラリのみを使用しているの�
 環境構築後は[launcher.py](src/launcher.py)を実行することでアプリケーションが起動します。
 
 ```
-rye run python src/launcher.py
+python src/launcher.py
+or
+rye run launcher
 ```
 
 MediaPipe(YOLOも？)による推論を複数の動画ファイルに対して連続実行すると、2回目以降にメモリアクセス違反でクラッシュしてしまう現象を確認しているため、[detector_proc.py](src/detector_proc.py)をsubprocessで実行する方式としています。
 
-## スクリプト
+## Applications
 
-このリポジトリは以下のアプリケーションを含みます
- - video_to_keypoints.py: YOLOv8とMediaPipe Holisticによる姿勢推定とその結果をPKLファイルに保存するアプリ。
- - keypoints_to_figure.py: 上記がアプリが出力したPKLファイルのデータをグラフ描画するアプリ
+このプロジェクトでは、以下の独立したアプリケーションをlauncher.pyが呼び出す構成になっています。
+ - [video_to_keypoints.py](src/video_to_keypoints.py)
+ - [keypoints_to_mp4.py](src/keypoints_to_mp4.py)
+ - [keypoints_to_trajplot.py](src/keypoints_to_trajplot.py)
+ - [keypoints_to_recuplot.py](src/keypoints_to_recuplot.py)
+ - [scene_table.py](src/scene_table.py)
 
 ### グラフ描画
 以下の動画([YouTube](https://youtu.be/c38UHrECGJA?si=k946YKvBmVXjrG8v))で、アプリケーションの機能や構造を説明をしているので併せてご覧ください。
