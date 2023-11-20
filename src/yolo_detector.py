@@ -64,6 +64,7 @@ class YoloDetector:
                     data_dict["conf"].append(conf)
                     data_dict["timestamp"].append(timestamp)
 
+        # memberとkeypointはここではintで保持する、indexでソートしたくなるかもしれないので
         self.dst_df = pd.DataFrame(data_dict).set_index(["frame", "member", "keypoint"])
         cv2.destroyAllWindows()
 

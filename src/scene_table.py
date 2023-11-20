@@ -8,6 +8,10 @@ import time_format
 
 
 class App(tk.Frame):
+    """
+    Trackファイルに保存するDataFrameのattrs['scene_table']を編集するためのGUIです。
+    H:MM:SS.fffの形式でstartとendを入力してaddボタンを押すと、tree_viewに追加されます。
+    """
     def __init__(self, master):
         super().__init__(master)
         master.title("Scene Table")
