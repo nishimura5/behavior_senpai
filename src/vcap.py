@@ -36,6 +36,9 @@ class VideoCap(cv2.VideoCapture):
         return self.frame_size
     
     def set_frame_size(self, frame_size):
+        '''
+        read_anyway()を見越してフレームのwidthとheightをsetする(resizeはしない)
+        '''
         self.frame_size = frame_size
  
 

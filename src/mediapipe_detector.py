@@ -68,6 +68,7 @@ class MediaPipeDetector:
                     data_dict["z"].append(z)
                     data_dict["timestamp"].append(timestamp)
 
+        # keypointはここではintで保持する、indexでソートしたくなるかもしれないので
         self.dst_df = pd.DataFrame(data_dict).set_index(["frame", "member", "keypoint"])
         cv2.destroyAllWindows()
 
