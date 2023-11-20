@@ -1,4 +1,5 @@
 import cv2
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import ticker, gridspec
 
@@ -7,6 +8,8 @@ try:
 except ImportError:
     # 環境によってはtkaggが使えないことがあるのでその対策
     USE_TKAGG = False
+    # 代わりのバックエンドを指定
+    matplotlib.use('Qt5Agg')
 else:
     USE_TKAGG = True
 

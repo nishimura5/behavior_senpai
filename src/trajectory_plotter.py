@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import ticker, gridspec
 import seaborn as sns
@@ -9,6 +10,8 @@ try:
 except ImportError:
     # 環境によってはtkaggが使えないことがあるのでその対策
     USE_TKAGG = False
+    # 代わりのバックエンドを指定
+    matplotlib.use('Qt5Agg')
 else:
     USE_TKAGG = True 
 
@@ -40,6 +43,8 @@ class TrajectoryPlotter:
             toolbar.pack()
             self.canvas.get_tk_widget().pack(expand=False)
         else:
+            print(f"Interactive mode: {matplotlib.is_interactive()}")
+            print(f"matplotlib backend: {matplotlib.rcParams['backend']}")
             # TKAggが使えない場合はplt.show()を使う
             self.canvas = self.fig.canvas
             plt.show(block=False)
@@ -104,7 +109,7 @@ class TrajectoryPlotter:
         self.dt_v = self.speed_ax.axvline(0, color='gray', lw=0.5)
 
         print(self.fig)
-        self.canvas.draw_idle()
+        self.canvas.draw()
 
     def clear(self):
         self.x_time_ax.cla()
