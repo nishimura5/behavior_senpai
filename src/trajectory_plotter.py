@@ -112,7 +112,7 @@ class TrajectoryPlotter:
         self.speed_ax.legend(loc='upper right')
         self.dt_v = self.speed_ax.axvline(0, color='gray', lw=0.5)
 
-        self.canvas.draw()
+        self.canvas.draw_idle()
         print(self.fig)
 
     def clear(self):
@@ -120,7 +120,7 @@ class TrajectoryPlotter:
         self.y_time_ax.cla()
         self.traj_ax.cla()
         self.speed_ax.cla()
-        self.canvas.draw()
+        self.canvas.draw_idle()
 
     def _format_timedelta(self, x, pos):
         return time_format.msec_to_timestr(x)
@@ -142,7 +142,7 @@ class TrajectoryPlotter:
             self.x_h.set_ydata(x)
             self.y_v.set_xdata(x)
             self.dt_v.set_xdata(x)
-        self.canvas.draw()
+        self.canvas.draw_idle()
 
     def _click_graph(self, event):
         center_ind = event.ind[int(len(event.ind)/2)]
@@ -160,4 +160,4 @@ class TrajectoryPlotter:
         if self.vcap.isOpened() is True:
             ok, frame = self.vcap.read_at(timestamp_msec, rgb=True)
             self.traj_img.set_data(frame)
-        self.canvas.draw()
+        self.canvas.draw_idle()
