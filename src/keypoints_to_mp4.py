@@ -101,7 +101,7 @@ class App(tk.Frame):
                 dst_img = frame
             cv2.imshow("dst", dst_img)
             cv2.waitKey(1)
-            out.write(frame)
+            out.write(dst_img)
         cv2.destroyAllWindows()
         out.release()
 
