@@ -3,11 +3,14 @@ from tkinter import ttk
 
 import pandas as pd
 
-from gui_parts import PklSelector, TimeSpanEntry
+from gui_parts import PklSelector
 import time_format
 
 
 class App(ttk.Frame):
+    """
+    Trackファイルに保存するDataFrameのmemberインデックスを編集するためのGUIです。
+    """
     def __init__(self, master):
         super().__init__(master)
         master.title("Member Table")
