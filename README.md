@@ -36,11 +36,12 @@ MediaPipe(YOLOも？)による推論を複数の動画ファイルに対して�
 
 ## Applications
 
-このプロジェクトでは、以下の独立したアプリケーションをlauncher.pyが呼び出す構成になっています。
+このプロジェクトでは、以下のそれぞれ独立したアプリケーションをlauncher.pyが呼び出す構成になっています。
  - [video_to_keypoints.py](src/video_to_keypoints.py)
  - [keypoints_to_mp4.py](src/keypoints_to_mp4.py)
  - [keypoints_to_trajplot.py](src/keypoints_to_trajplot.py)
  - [keypoints_to_recuplot.py](src/keypoints_to_recuplot.py)
+ - [member_table.py](src/member_table.py)
  - [scene_table.py](src/scene_table.py)
 
 ### グラフ描画
