@@ -19,7 +19,7 @@ class PklSelector(tk.Frame):
  
         self.load_pkl_btn = ttk.Button(master, text="Load Track")
         self.load_pkl_btn.pack(side=tk.LEFT)
-        self.pkl_path_label = ttk.Label(master, text="No trk loaded")
+        self.pkl_path_label = ttk.Label(master, text="No Track file loaded")
         self.pkl_path_label.pack(side=tk.LEFT)
 
         if self.trk_path != '':
@@ -27,7 +27,7 @@ class PklSelector(tk.Frame):
   
     def _load_pkl(self):
         init_dir = os.path.abspath(self.trk_path)
-        self.trk_path = filedialog.askopenfilename(initialdir=init_dir, title="Select pkl file", filetypes=[("pkl files", "*.pkl")])
+        self.trk_path = filedialog.askopenfilename(initialdir=init_dir, title="Select Track file", filetypes=[("pkl files", "*.pkl")])
         if self.trk_path:
             self.pkl_path_label["text"] = self.trk_path
             tmp = TempFile()
@@ -36,7 +36,7 @@ class PklSelector(tk.Frame):
             tmp.save(data)
         else:
             self.trk_path = ''
-            self.pkl_path_label["text"] = "No trk loaded"
+            self.pkl_path_label["text"] = "No Track file loaded"
 
     def get_trk_path(self):
         return self.trk_path
