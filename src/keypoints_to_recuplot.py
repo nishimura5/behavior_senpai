@@ -81,6 +81,8 @@ class App(tk.Frame):
             time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].min()),
             time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].max())
         )
+
+        self.recu.set_vcap(vcap.VideoCap(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"])))
         
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
@@ -103,8 +105,6 @@ class App(tk.Frame):
         time_max_msec = self._timedelta_to_msec(time_max)
         plot_df = plot_df.loc[plot_df["timestamp"].between(time_min_msec, time_max_msec), :]
 
-        cap = vcap.VideoCap(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
-
         # memberとkeypointのインデックス値を文字列に変換
         idx = plot_df.index
         plot_df.index = plot_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
@@ -120,7 +120,7 @@ class App(tk.Frame):
             self.eps_entry.insert(tk.END, '0')
             threshold = self.eps_entry.get()
         recu_mat = keypoints_proc.calc_recurrence(reduced_arr, threshold=float(threshold))
-        self.recu.draw(recu_mat, timestamps, cap)
+        self.recu.draw(recu_mat, timestamps)
 
     def clear(self):
         self.recu.clear()

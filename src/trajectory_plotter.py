@@ -55,9 +55,10 @@ class TrajectoryPlotter:
         self.kde_thresh = kde_thresh
         self.kde_levels = kde_levels
 
-    def draw(self, plot_df, member: str, keypoint: str, dt_span: int, thinning: int, vcap):
+    def set_vcap(self, vcap):
         self.vcap = vcap
 
+    def draw(self, plot_df, member: str, keypoint: str, dt_span: int, thinning: int):
         self.plot_df = plot_df.loc[pd.IndexSlice[:, member, keypoint], :]
         plot_len = len(self.plot_df['x'])
         width, height = self.vcap.get_frame_size()
