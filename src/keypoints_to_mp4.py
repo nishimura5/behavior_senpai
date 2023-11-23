@@ -49,6 +49,8 @@ class App(tk.Frame):
         # PKLが置かれているフォルダのパスを取得
         self.pkl_dir = os.path.dirname(pkl_path)
 
+        self.pkl_selector.set_prev_next(self.src_df.attrs)
+
     def export(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
 
