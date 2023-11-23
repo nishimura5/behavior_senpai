@@ -84,10 +84,11 @@ class App(tk.Frame):
 
         self.pkl_selector.set_prev_next(self.src_df.attrs)
 
-        cap = vcap.VideoCap(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
-        if cap.isOpened() is False:
-            cap.set_frame_size(self.src_df.attrs["frame_size"])
-        self.recu.set_vcap(cap)
+        self.cap.release()
+        self.cap = vcap.VideoCap(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
+        if self.cap.isOpened() is False:
+            self.cap.set_frame_size(self.src_df.attrs["frame_size"])
+        self.recu.set_vcap(self.cap)
         
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
