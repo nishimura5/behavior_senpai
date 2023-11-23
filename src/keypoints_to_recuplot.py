@@ -82,7 +82,12 @@ class App(tk.Frame):
             time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].max())
         )
 
-        self.recu.set_vcap(vcap.VideoCap(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"])))
+        self.pkl_selector.set_prev_next(self.src_df.attrs)
+
+        cap = vcap.VideoCap(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
+        if cap.isOpened() is False:
+            cap.set_frame_size(self.src_df.attrs["frame_size"])
+        self.recu.set_vcap(cap)
         
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()

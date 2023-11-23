@@ -63,6 +63,8 @@ class App(tk.Frame):
         self.pkl_dir = os.path.dirname(pkl_path)
         self.current_dt_span = None
 
+        self.pkl_selector.set_prev_next(self.src_df.attrs)
+
         cap = vcap.VideoCap(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
         if cap.isOpened() is False:
             cap.set_frame_size(self.src_df.attrs["frame_size"])

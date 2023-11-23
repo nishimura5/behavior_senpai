@@ -16,7 +16,12 @@ class PklSelector(tk.Frame):
         tmp = TempFile()
         data = tmp.load()
         self.trk_path = data['trk_path']
- 
+
+        self.prev_pkl_btn = ttk.Button(master, text="<", width=1, state=tk.DISABLED)
+        self.prev_pkl_btn.pack(side=tk.LEFT)
+        self.next_pkl_btn = ttk.Button(master, text=">", width=1, state=tk.DISABLED)
+        self.next_pkl_btn.pack(side=tk.LEFT, padx=(0, 10))
+
         self.load_pkl_btn = ttk.Button(master, text="Load Track")
         self.load_pkl_btn.pack(side=tk.LEFT)
         self.pkl_path_label = ttk.Label(master, text="No Track file loaded")
@@ -24,10 +29,13 @@ class PklSelector(tk.Frame):
 
         if self.trk_path != '':
             self.pkl_path_label["text"] = self.trk_path
-  
-    def _load_pkl(self):
-        init_dir = os.path.abspath(self.trk_path)
+
+    def _select_trk(self):
+        init_dir = os.path.dirname(os.path.abspath(self.trk_path))
         self.trk_path = filedialog.askopenfilename(initialdir=init_dir, title="Select Track file", filetypes=[("pkl files", "*.pkl")])
+        self._load_pkl()
+
+    def _load_pkl(self):
         if self.trk_path:
             self.pkl_path_label["text"] = self.trk_path
             tmp = TempFile()
@@ -38,11 +46,36 @@ class PklSelector(tk.Frame):
             self.trk_path = ''
             self.pkl_path_label["text"] = "No Track file loaded"
 
+    def set_prev_next(self, attr_dict):
+        dir_path = os.path.dirname(self.trk_path)
+        if 'prev' in attr_dict and attr_dict['prev'] != '' and attr_dict['prev'] is not None:
+            self.prev_pkl_btn["state"] = tk.NORMAL
+            self.prev_path = os.path.join(dir_path, attr_dict['prev'])
+        else:
+            self.prev_path = ''
+            self.prev_pkl_btn["state"] = tk.DISABLED
+        if 'next' in attr_dict and attr_dict['next'] != '' and attr_dict['next'] is not None:
+            self.next_path = os.path.join(dir_path, attr_dict['next'])
+            self.next_pkl_btn["state"] = tk.NORMAL
+        else:
+            self.next_path = ''
+            self.next_pkl_btn["state"] = tk.DISABLED
+
+    def _load_prev_pkl(self):
+        self.trk_path = self.prev_path
+        self._load_pkl()
+
+    def _load_next_pkl(self):
+        self.trk_path = self.next_path
+        self._load_pkl()
+
     def get_trk_path(self):
         return self.trk_path
 
     def set_command(self, cmd):
-        self.load_pkl_btn["command"] = lambda: [self._load_pkl(), cmd()]
+        self.load_pkl_btn["command"] = lambda: [self._select_trk(), cmd()]
+        self.prev_pkl_btn["command"] = lambda: [self._load_prev_pkl(), cmd()]
+        self.next_pkl_btn["command"] = lambda: [self._load_next_pkl(), cmd()]
 
 
 class MemberKeypointComboboxes(tk.Frame):
