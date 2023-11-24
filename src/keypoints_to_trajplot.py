@@ -26,6 +26,7 @@ class App(tk.Frame):
         self.pack(padx=10, pady=10)
 
         self.traj = TrajectoryPlotter(fig_size=(900/72, 700/72), dpi=72)
+        self.cap = None
 
         load_frame = tk.Frame(self)
         load_frame.pack(pady=5)
@@ -65,7 +66,8 @@ class App(tk.Frame):
 
         self.pkl_selector.set_prev_next(self.src_df.attrs)
 
-        self.cap.release()
+        if self.cap is not None:
+            self.cap.release()
         self.cap = vcap.VideoCap(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
         if self.cap.isOpened() is False:
             self.cap.set_frame_size(self.src_df.attrs["frame_size"])
