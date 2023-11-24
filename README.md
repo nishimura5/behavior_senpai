@@ -28,7 +28,9 @@ pipでインストールできるライブラリのみを使用しているの�
 
 ```
 python src/launcher.py
+```
 or
+```
 rye run launcher
 ```
 
@@ -38,6 +40,7 @@ MediaPipe(YOLOも？)による推論を複数の動画ファイルに対して�
 
 このプロジェクトでは、以下のそれぞれ独立したアプリケーションをlauncher.pyが呼び出す構成になっています。
  - [video_to_keypoints.py](src/video_to_keypoints.py)
+ - [track_list.py](src/track_list.py)
  - [keypoints_to_mp4.py](src/keypoints_to_mp4.py)
  - [keypoints_to_trajplot.py](src/keypoints_to_trajplot.py)
  - [keypoints_to_recuplot.py](src/keypoints_to_recuplot.py)
