@@ -1,14 +1,13 @@
 import os
-import sys
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 import glob
-import pickle
 
 import pandas as pd
 
 from gui_parts import TempFile
+import windows_and_mac
 
 
 class App(ttk.Frame):
@@ -65,6 +64,11 @@ class App(ttk.Frame):
         self.tree.bind("<<TreeviewSelect>>", self._on_select)
 
         self.tree.pack()
+
+        bottom_btn_frame = ttk.Frame(self)
+        bottom_btn_frame.pack(pady=10)
+        open_btn = ttk.Button(bottom_btn_frame, text="Open", command=self._open_video)
+        open_btn.pack(side=tk.LEFT)
 
         if self.folder_path != '':
             self.load_folder()
@@ -132,6 +136,11 @@ class App(ttk.Frame):
         tar_list.sort()
         for index, (val_take, val_part, k) in enumerate(tar_list):
             tv.move(k, '', index)
+
+    def _open_video(self):
+        video_file_name = self.tree.item(self.tree.selection()[0])['values'][4]
+        video_path = os.path.join(self.folder_path, os.pardir, video_file_name)
+        windows_and_mac.open_file(video_path)
 
     # pklを上書きする
     def overwrite(self):
