@@ -214,6 +214,21 @@ class TempFile:
                 self.data = pickle.load(f)
                 res = self.data
         return res
+    
+    def get_window_size(self):
+        if 'width' not in self.data.keys() or self.data['width'] == '':
+            width = 900
+        else:
+            width = int(self.data['width'])
+        if 'height' not in self.data.keys() or self.data['height'] == '':
+            height = 700
+        else:
+            height = int(self.data['height'])
+        if 'dpi' not in self.data.keys() or self.data['dpi'] == '':
+            dpi = 72
+        else:
+            dpi = int(self.data['dpi'])
+        return width, height, dpi
 
     def _find_data_dir(self):
         if getattr(sys, "frozen", False):

@@ -5,7 +5,7 @@ from tkinter import ttk
 import pandas as pd
 import numpy as np
 
-from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions
+from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions, TempFile
 from trajectory_plotter import TrajectoryPlotter
 import keypoints_proc
 import vcap
@@ -25,7 +25,9 @@ class App(tk.Frame):
         master.title("Keypoints to Trajectory Plot")
         self.pack(padx=10, pady=10)
 
-        self.traj = TrajectoryPlotter(fig_size=(900/72, 700/72), dpi=72)
+        temp = TempFile()
+        width, height, dpi = temp.get_window_size()
+        self.traj = TrajectoryPlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
         self.cap = None
 
         load_frame = tk.Frame(self)

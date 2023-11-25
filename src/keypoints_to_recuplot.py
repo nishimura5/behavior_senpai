@@ -4,7 +4,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions, TimeSpanEntry
+from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions, TimeSpanEntry, TempFile
 from recurrence_plotter import RecurrencePlotter
 import keypoints_proc
 import time_format
@@ -27,7 +27,9 @@ class App(tk.Frame):
         master.title("Keypoints to Recurrence Plot")
         self.pack(padx=10, pady=10)
 
-        self.recu = RecurrencePlotter(fig_size=(900/72, 700/72), dpi=72)
+        temp = TempFile()
+        width, height, dpi = temp.get_window_size()
+        self.recu = RecurrencePlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
         self.cap = None
 
         load_frame = tk.Frame(self)
