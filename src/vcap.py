@@ -66,6 +66,9 @@ class RoiCap(cv2.VideoCapture):
         self.roi_width = right_bottom_point[0] - left_top_point[0]
         self.roi_height = right_bottom_point[1] - left_top_point[1]
 
+    def get_left_top(self):
+        return self.left_top_point
+
     def get_roi_frame(self):
         '''
         read()と互換

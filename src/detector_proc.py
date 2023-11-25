@@ -32,6 +32,7 @@ def exec(model_name, video_path, use_roi=False):
     result_df.attrs["model"] = model_name
     result_df.attrs["frame_size"] = (rcap.width, rcap.height)
     result_df.attrs["video_name"] = os.path.basename(video_path)
+    result_df.attrs["roi_left_top"] = rcap.get_left_top()
 
     result_df.to_pickle(pkl_path)
     rcap.release()
