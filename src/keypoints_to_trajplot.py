@@ -28,7 +28,6 @@ class App(tk.Frame):
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
         self.traj = TrajectoryPlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
-        self.cap = None
 
         load_frame = tk.Frame(self)
         load_frame.pack(pady=5)
@@ -51,6 +50,7 @@ class App(tk.Frame):
 
         self.traj.pack(plot_frame)
  
+        self.cap = vcap.VideoCap()
         self.load_pkl()
 
     def load_pkl(self):
@@ -63,16 +63,13 @@ class App(tk.Frame):
         self.member_keypoints_combos.set_df(self.src_df)
 
         # PKLが置かれているフォルダのパスを取得
-        self.pkl_dir = os.path.dirname(pkl_path)
+        pkl_dir = os.path.dirname(pkl_path)
         self.current_dt_span = None
 
         self.pkl_selector.set_prev_next(self.src_df.attrs)
 
-        if self.cap is not None:
-            self.cap.release()
-        self.cap = vcap.VideoCap(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
-        if self.cap.isOpened() is False:
-            self.cap.set_frame_size(self.src_df.attrs["frame_size"])
+        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
+        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
         self.traj.set_vcap(self.cap)
 
     def draw(self):
@@ -82,12 +79,12 @@ class App(tk.Frame):
         dt_span = self.proc_options.get_dt_span()
         if self.current_dt_span != dt_span:
             speed_df = keypoints_proc.calc_speed(self.src_df, int(dt_span))
-            self.src_speed_df = pd.concat([self.src_df, speed_df], axis=1)
+            src_speed_df = pd.concat([self.src_df, speed_df], axis=1)
             self.current_dt_span = dt_span
 
         # thinningの値だけframeを間引く
         thinning = self.proc_options.get_thinning()
-        plot_df = keypoints_proc.thinning(self.src_speed_df, int(thinning))
+        plot_df = keypoints_proc.thinning(src_speed_df, int(thinning))
 
         # memberとkeypointのインデックス値を文字列に変換
         idx = plot_df.index

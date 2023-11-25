@@ -5,13 +5,13 @@ import numpy as np
 
 
 class VideoCap(cv2.VideoCapture):
-    def __init__(self, video_path):
-        super().__init__(
-            video_path,
-            apiPreference=cv2.CAP_ANY,
-            params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
- 
-        self.frame_size = (int(self.get(cv2.CAP_PROP_FRAME_WIDTH)), int(self.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+    def __init__(self):
+        super().__init__()
+
+    def open_file(self, file_path):
+        ok = self.open(file_path, apiPreference=cv2.CAP_ANY, params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
+        if ok is False:
+            print(f"Failed to open {file_path}")
 
     def read_at(self, msec, rgb=False):
         '''

@@ -59,8 +59,8 @@ class TrajectoryPlotter:
         self.vcap = vcap
 
     def draw(self, plot_df, member: str, keypoint: str, dt_span: int, thinning: int):
-        self.plot_df = plot_df.loc[pd.IndexSlice[:, member, keypoint], :]
-        plot_len = len(self.plot_df['x'])
+        plot_df = plot_df.loc[pd.IndexSlice[:, member, keypoint], :]
+        plot_len = len(plot_df['x'])
         width, height = self.vcap.get_frame_size()
         self.traj_ax.cla()
 
@@ -72,20 +72,20 @@ class TrajectoryPlotter:
             self.dt_v.remove()
 
         # x座標時系列グラフ
-        self.x_time_ax.plot(self.plot_df['x'], self.plot_df['timestamp'], picker=5)
+        self.x_time_ax.plot(plot_df['x'], plot_df['timestamp'], picker=5)
         self.x_time_ax.yaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         # tickをグラフの上・右に表示
         self.x_time_ax.set_xlabel('x(px)')
         self.x_time_ax.xaxis.tick_top()
         self.x_time_ax.xaxis.set_label_position('top')
         self.x_time_ax.yaxis.tick_right()
-        time_max = self.plot_df['timestamp'].max()
+        time_max = plot_df['timestamp'].max()
         self.x_time_ax.set_ylim(0, time_max)
         self.x_time_ax.invert_yaxis()
         self.x_h = self.x_time_ax.axhline(0, color='gray', lw=0.5)
 
         # y座標時系列グラフ
-        self.y_time_ax.plot(self.plot_df['timestamp'], self.plot_df['y'], picker=5)
+        self.y_time_ax.plot(plot_df['timestamp'], plot_df['y'], picker=5)
         self.y_time_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         self.y_time_ax.set_ylabel('y(px)')
         self.y_v = self.y_time_ax.axvline(0, color='gray', lw=0.5)
@@ -93,7 +93,7 @@ class TrajectoryPlotter:
         # 軌跡グラフ
         if plot_len > 10:
             sns.kdeplot(
-                data=self.plot_df, x="x", y="y", fill=True,
+                data=plot_df, x="x", y="y", fill=True,
                 alpha=self.kde_alpha, bw_adjust=self.kde_adjust, thresh=self.kde_thresh, levels=self.kde_levels,
                 ax=self.traj_ax)
         else:
@@ -107,12 +107,13 @@ class TrajectoryPlotter:
         # speedグラフ
         nan_shift = int((dt_span - thinning)/2) - 1
         label = f"{member}_{keypoint} (speed={dt_span}, thinning={thinning})"
-        self.speed_ax.plot(self.plot_df['timestamp'], self.plot_df[f'spd_{dt_span}'].shift(-nan_shift), label=label, picker=5)
+        self.speed_ax.plot(plot_df['timestamp'], plot_df[f'spd_{dt_span}'].shift(-nan_shift), label=label, picker=5)
         self.speed_ax.xaxis.set_visible(False)
         self.speed_ax.set_ylabel('speed')
         self.speed_ax.legend(loc='upper right')
         self.dt_v = self.speed_ax.axvline(0, color='gray', lw=0.5)
 
+        self.plot_df = plot_df
         self.canvas.draw_idle()
         print(self.fig)
 

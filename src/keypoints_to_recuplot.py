@@ -30,7 +30,6 @@ class App(tk.Frame):
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
         self.recu = RecurrencePlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
-        self.cap = None
 
         load_frame = tk.Frame(self)
         load_frame.pack(pady=5)
@@ -67,6 +66,7 @@ class App(tk.Frame):
 
         self.recu.pack(plot_frame)
 
+        self.cap = vcap.VideoCap()
         self.load_pkl()
  
     def load_pkl(self):
@@ -76,7 +76,7 @@ class App(tk.Frame):
         self.member_keypoints_combos.set_df(self.src_df)
 
         # PKLが置かれているフォルダのパスを取得
-        self.pkl_dir = os.path.dirname(pkl_path)
+        pkl_dir = os.path.dirname(pkl_path)
         self.current_dt_span = None
 
         # timestampの範囲を取得
@@ -87,11 +87,8 @@ class App(tk.Frame):
 
         self.pkl_selector.set_prev_next(self.src_df.attrs)
 
-        if self.cap is not None:
-            self.cap.release()
-        self.cap = vcap.VideoCap(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
-        if self.cap.isOpened() is False:
-            self.cap.set_frame_size(self.src_df.attrs["frame_size"])
+        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
+        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
         self.recu.set_vcap(self.cap)
         
     def draw(self):
