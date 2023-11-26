@@ -79,12 +79,12 @@ class App(tk.Frame):
         dt_span = self.proc_options.get_dt_span()
         if self.current_dt_span != dt_span:
             speed_df = keypoints_proc.calc_speed(self.src_df, int(dt_span))
-            src_speed_df = pd.concat([self.src_df, speed_df], axis=1)
+            self.src_speed_df = pd.concat([self.src_df, speed_df], axis=1)
             self.current_dt_span = dt_span
 
         # thinningの値だけframeを間引く
         thinning = self.proc_options.get_thinning()
-        plot_df = keypoints_proc.thinning(src_speed_df, int(thinning))
+        plot_df = keypoints_proc.thinning(self.src_speed_df, int(thinning))
 
         # memberとkeypointのインデックス値を文字列に変換
         idx = plot_df.index
