@@ -9,6 +9,10 @@ class VideoCap(cv2.VideoCapture):
         super().__init__()
 
     def open_file(self, file_path):
+        """
+        動画ファイルを開く
+        initで開くとsegfaultの原因になるため、open_file()を使う
+        """
         ok = self.open(file_path, apiPreference=cv2.CAP_ANY, params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
         if ok is False:
             print(f"Failed to open {file_path}")

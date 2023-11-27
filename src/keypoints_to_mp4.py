@@ -38,6 +38,7 @@ class App(tk.Frame):
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
 
+        self.cap = vcap.VideoCap()
         self.load_pkl()
 
     def load_pkl(self):
@@ -56,11 +57,11 @@ class App(tk.Frame):
 
         out_df = self.src_df
 
-        cap = vcap.VideoCap(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
-        if cap.isOpened() is True:
-            fps = cap.get(cv2.CAP_PROP_FPS)
+        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
+        self.cap.open_file(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
+        if self.cap.isOpened() is True:
+            fps = self.cap.get(cv2.CAP_PROP_FPS)
         else:
-            cap.set_frame_size(self.src_df.attrs["frame_size"])
             fps = 30
 
         scale = 0.5
@@ -89,7 +90,7 @@ class App(tk.Frame):
         total_frame_num = out_df.index.unique(level='frame').max() + 1
         indexes = out_df.sort_index().index
         for i in range(total_frame_num):
-            frame = cap.read_anyway()
+            frame = self.cap.read_anyway()
             frame = cv2.resize(frame, size)
             anno.set_img(frame)
             # draw_allなら全員の姿勢を描画
