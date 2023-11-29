@@ -2,6 +2,7 @@ import os
 import random
 
 import cv2
+import numpy as np
 import pandas as pd
 
 
@@ -53,22 +54,22 @@ class Annotate:
         left_color = (250, 70, 70)
         right_color = (50, 250, 50)
 
-        cv2.line(self.dst_img, self.left_shoulder, self.right_shoulder, self.line_color, 1, cv2.LINE_AA)
-        cv2.line(self.dst_img, self.left_shoulder, self.left_hip, self.line_color, 1, cv2.LINE_AA)
-        cv2.line(self.dst_img, self.right_shoulder, self.right_hip, self.line_color, 1, cv2.LINE_AA)
-        cv2.line(self.dst_img, self.left_hip, self.right_hip, self.line_color, 1, cv2.LINE_AA)
+        self._draw_line(self.left_shoulder, self.right_shoulder, self.line_color, 1)
+        self._draw_line(self.left_shoulder, self.left_hip, self.line_color, 1)
+        self._draw_line(self.right_shoulder, self.right_hip, self.line_color, 1)
+        self._draw_line(self.left_hip, self.right_hip, self.line_color, 1)
         if self.left_shoulder_conf > thresh and self.left_elbow_conf > thresh:
-            cv2.line(self.dst_img, self.left_shoulder, self.left_elbow, self.line_color, 1, cv2.LINE_AA)
-            cv2.line(self.dst_img, self.left_elbow, self.left_wrist, self.line_color, 1, cv2.LINE_AA)
+            self._draw_line(self.left_shoulder, self.left_elbow, self.line_color, 1)
+            self._draw_line(self.left_elbow, self.left_wrist, self.line_color, 1)
         if self.right_shoulder_conf > thresh and self.right_elbow_conf > thresh:
-            cv2.line(self.dst_img, self.right_shoulder, self.right_elbow, self.line_color, 1, cv2.LINE_AA)
-            cv2.line(self.dst_img, self.right_elbow, self.right_wrist, self.line_color, 1, cv2.LINE_AA)
+            self._draw_line(self.right_shoulder, self.right_elbow, self.line_color, 1)
+            self._draw_line(self.right_elbow, self.right_wrist, self.line_color, 1)
         if self.left_hip_conf > thresh and self.left_knee_conf > thresh:
-            cv2.line(self.dst_img, self.left_hip, self.left_knee, self.line_color, 1, cv2.LINE_AA)
-            cv2.line(self.dst_img, self.left_knee, self.left_ankle, self.line_color, 1, cv2.LINE_AA)
+            self._draw_line(self.left_hip, self.left_knee, self.line_color, 1)
+            self._draw_line(self.left_knee, self.left_ankle, self.line_color, 1)
         if self.right_hip_conf > thresh and self.right_knee_conf > thresh:
-            cv2.line(self.dst_img, self.right_hip, self.right_knee, self.line_color, 1, cv2.LINE_AA)
-            cv2.line(self.dst_img, self.right_knee, self.right_ankle, self.line_color, 1, cv2.LINE_AA)
+            self._draw_line(self.right_hip, self.right_knee, self.line_color, 1)
+            self._draw_line(self.right_knee, self.right_ankle, self.line_color, 1)
 
         cv2.circle(self.dst_img, self.left_eye, 3, left_color, -1)
         cv2.circle(self.dst_img, self.left_shoulder, 3, left_color, -1)
@@ -86,7 +87,15 @@ class Annotate:
         cv2.line(self.dst_img, self.pos, (self.pos[0], self.pos[1]-25), (50, 50, 255), 1, cv2.LINE_AA)
         return self.dst_img
 
+    def _draw_line(self, start, end, color, thickness):
+        if (start[0] == 0 and start[1] == 0) or (end[0] == 0 and end[1] == 0):
+            return
+        cv2.line(self.dst_img, start, end, color, thickness, cv2.LINE_AA)
+
     def _cvt_kp(self, kp, idx):
+        # nanチェック
+        if np.isnan(kp[idx][0]) or np.isnan(kp[idx][1]):
+            return (0, 0), 0
         return (int(kp[idx][0]), int(kp[idx][1])), kp[idx][2]
 
 
