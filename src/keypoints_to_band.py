@@ -153,7 +153,6 @@ class App(tk.Frame):
             print("new member name is empty")
             return
         # indexのtypeを表示
-        print(type(old_member), type(new_member), self.src_df.index.dtype)
         self.src_df = self.src_df.rename(index={old_member: new_member}, level=1)
         self.update_tree()
         print(f"renamed {old_member} to {new_member}")
