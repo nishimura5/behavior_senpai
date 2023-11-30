@@ -102,7 +102,7 @@ class BandPlotter:
         kps = tar_df.to_numpy()
         self.anno.set_pose(kps)
         self.anno.set_track(self.member)
-        dst_img = self.anno.draw_idle()
+        dst_img = self.anno.draw()
 
         if frame.shape[0] >= 1080:
             resize_height = 720
