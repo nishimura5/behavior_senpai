@@ -76,11 +76,11 @@ class BandPlotter:
 
         self.band_ax.set_xlim(time_min_msec, time_max_msec)
         self.band_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
-        self.canvas.draw()
+        self.canvas.draw_idle()
 
     def clear(self):
         self.band_ax.cla()
-        self.canvas.draw()
+        self.canvas.draw_idle()
 
     def _format_timedelta(self, x, pos):
         return time_format.msec_to_timestr(x)
@@ -102,7 +102,7 @@ class BandPlotter:
         kps = tar_df.to_numpy()
         self.anno.set_pose(kps)
         self.anno.set_track(self.member)
-        dst_img = self.anno.draw()
+        dst_img = self.anno.draw_idle()
 
         if frame.shape[0] >= 1080:
             resize_height = 720

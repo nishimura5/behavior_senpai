@@ -48,12 +48,10 @@ class RecurrencePlotter:
         self.recu_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         self.recu_ax.yaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         self.canvas.draw_idle()
-        print('draw')
 
     def clear(self):
         self.recu_ax.cla()
         self.canvas.draw_idle()
-        print('clear')
 
     def _format_timedelta(self, x, pos):
         if int(x) >= len(self.timestamps):

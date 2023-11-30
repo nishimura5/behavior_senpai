@@ -117,7 +117,6 @@ class TrajectoryPlotter:
 
         self.plot_df = plot_df
         self.canvas.draw_idle()
-        print(self.fig)
 
     def clear(self):
         self.x_time_ax.cla()
