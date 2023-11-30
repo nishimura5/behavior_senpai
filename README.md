@@ -41,34 +41,10 @@ MediaPipe(YOLOも？)による推論を複数の動画ファイルに対して�
 このプロジェクトでは、以下のそれぞれ独立したアプリケーションをlauncher.pyが呼び出す構成になっています。
  - [video_to_keypoints.py](src/video_to_keypoints.py)
  - [track_list.py](src/track_list.py)
+ - [keypoints_to_band.py](src/keypoints_to_band.py)
  - [keypoints_to_mp4.py](src/keypoints_to_mp4.py)
  - [keypoints_to_trajplot.py](src/keypoints_to_trajplot.py)
  - [keypoints_to_recuplot.py](src/keypoints_to_recuplot.py)
- - [member_table.py](src/member_table.py)
  - [scene_table.py](src/scene_table.py)
 
-### グラフ描画
-以下の動画([YouTube](https://youtu.be/c38UHrECGJA?si=k946YKvBmVXjrG8v))で、アプリケーションの機能や構造を説明をしているので併せてご覧ください。
-<p align="center">
-<a href="https://youtu.be/c38UHrECGJA?si=k946YKvBmVXjrG8v"><img src="http://img.youtube.com/vi/c38UHrECGJA/mqdefault.jpg" width="300"></a>
-</p>
 
- - [keypoints_to_figure.py](src/keypoints_to_figure.py): グラフ描画アプリ(下のラッパー)
- - [trajectory_plotter.py](src/trajectory_plotter.py): PKLファイルのデータのグラフ描画
- - [keypoints_proc.py](src/keypoints_proc.py): 時系列座標データに対する諸計算
-
-### 姿勢推定
-以下の動画([YouTube](https://youtu.be/hE8ZoA8gETU?si=iDzTC7EPSqV6PfcA))で、アプリケーションの機能や構造を説明をしているので併せてご覧ください。
-<p align="center">
-<a href="https://youtu.be/hE8ZoA8gETU?si=iDzTC7EPSqV6PfcA"><img src="http://img.youtube.com/vi/hE8ZoA8gETU/mqdefault.jpg" width="300"></a>
-</p>
-
- - [video_to_keypoints.py](src/video_to_keypoints.py): 姿勢推定アプリ(下のラッパー)
- - [yolo_detector.py](src/yolo_detector.py): YOLOv8による推論
- - [mediapipe_detector.py](src/mediapipe_detector.py): MediaPipe Holisticによる推論
- - [windows_and_mac.py](src/windows_and_mac.py): 動画ファイルやフォルダを開く(WindowsとMacを想定)
- - [roi_cap.py](src/roi_cap.py): ROI機能
-
-### その他
- - [mediapipe_drawer.py](src/mediapipe_drawer.py): PKLファイルを読み込んでMediaPipe Holisticの推論結果を動画に描画
- - [yolo_drawer.py](src/yolo_drawer.py): PKLファイルを読み込んでYOLOv8の推論結果を動画に描画
