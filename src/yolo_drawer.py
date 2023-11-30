@@ -4,7 +4,7 @@ import random
 import cv2
 import numpy as np
 import pandas as pd
-
+import torch
 
 def draw(src_img, result):
     anno = Annotate()
@@ -93,8 +93,12 @@ class Annotate:
         cv2.line(self.dst_img, start, end, color, thickness, cv2.LINE_AA)
 
     def _cvt_kp(self, kp, idx):
-        # nanチェック
-        if np.isnan(kp[idx][0]) or np.isnan(kp[idx][1]):
+        x = kp[idx][0]
+        y = kp[idx][1]
+        if isinstance(x, torch.Tensor):
+            x = x.cpu()
+            y = y.cpu()
+        if np.isnan(x) or np.isnan(y):
             return (0, 0), 0
         return (int(kp[idx][0]), int(kp[idx][1])), kp[idx][2]
 
