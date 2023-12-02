@@ -8,6 +8,7 @@ import keypoints_to_mp4 as k2m
 import keypoints_to_trajplot as k2t
 import keypoints_to_recuplot as k2r
 import scene_table
+import pref_list
 
 
 class App(ttk.Frame):
@@ -51,6 +52,10 @@ class App(ttk.Frame):
         # scene_tableのボタン
         scene_table_button = ttk.Button(buttons_frame, text="scene_table.py", command=lambda: self.launch_window(scene_table.App), width=26)
         scene_table_button.pack(side=tk.TOP, pady=5)
+
+        # pref_listのボタン
+        pref_list_button = ttk.Button(buttons_frame, text="pref_list.py", command=lambda: self.launch_window(pref_list.App), width=26)
+        pref_list_button.pack(side=tk.TOP, pady=5)
 
     def launch_window(self, app, grab=False):
         dlg_modal = tk.Toplevel(self)
