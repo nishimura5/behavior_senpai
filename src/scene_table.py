@@ -7,7 +7,7 @@ from gui_parts import PklSelector, TimeSpanEntry
 import time_format
 
 
-class App(tk.Frame):
+class App(ttk.Frame):
     """
     Trackファイルに保存するDataFrameのattrs['scene_table']を編集するためのGUIです。
     H:MM:SS.fffの形式でstartとendを入力してaddボタンを押すと、tree_viewに追加されます。
@@ -17,7 +17,7 @@ class App(tk.Frame):
         master.title("Scene Table")
         self.pack(padx=10, pady=10)
 
-        load_frame = tk.Frame(self)
+        load_frame = ttk.Frame(self)
         self.pkl_selector = PklSelector(load_frame)
         load_frame.pack(pady=5)
         self.pkl_selector.set_command(cmd=self.load_pkl)

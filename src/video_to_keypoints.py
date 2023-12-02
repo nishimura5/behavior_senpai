@@ -9,7 +9,7 @@ import subprocess
 import windows_and_mac
 
 
-class App(tk.Frame):
+class App(ttk.Frame):
     """
     動画からキーポイントを抽出するためのGUIです。
     以下の機能を有します

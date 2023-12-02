@@ -11,18 +11,18 @@ import mediapipe_drawer
 import vcap
 
 
-class App(tk.Frame):
+class App(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         master.title("Keypoints to MP4")
         self.pack(padx=10, pady=10)
 
-        load_frame = tk.Frame(self)
+        load_frame = ttk.Frame(self)
         self.pkl_selector = PklSelector(load_frame)
         load_frame.pack(pady=5)
         self.pkl_selector.set_command(cmd=self.load_pkl)
 
-        setting_frame = tk.Frame(self)
+        setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
         # allのチェックボックス
         self.draw_all_chk_val = tk.BooleanVar()

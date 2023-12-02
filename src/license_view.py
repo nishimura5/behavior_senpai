@@ -3,7 +3,7 @@ from tkinter import ttk
 import json
 
 
-class App(tk.Frame):
+class App(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         master.title("Licenses")

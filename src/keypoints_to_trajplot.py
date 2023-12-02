@@ -11,7 +11,7 @@ import keypoints_proc
 import vcap
 
 
-class App(tk.Frame):
+class App(ttk.Frame):
     """
     軌跡の時系列グラフ(Trajectory Plot)を描画するためのGUIです。
     以下の機能を有します
@@ -29,12 +29,12 @@ class App(tk.Frame):
         width, height, dpi = temp.get_window_size()
         self.traj = TrajectoryPlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
 
-        load_frame = tk.Frame(self)
+        load_frame = ttk.Frame(self)
         load_frame.pack(pady=5)
         self.pkl_selector = PklSelector(load_frame)
         self.pkl_selector.set_command(cmd=self.load_pkl)
 
-        setting_frame = tk.Frame(self)
+        setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
         self.member_keypoints_combos = MemberKeypointComboboxes(setting_frame)
         self.proc_options = ProcOptions(setting_frame)

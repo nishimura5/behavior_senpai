@@ -9,7 +9,7 @@ from tkinter import filedialog
 import pandas as pd
 
 
-class PklSelector(tk.Frame):
+class PklSelector(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         # 一時ファイルからtrkのパスを取得
@@ -114,7 +114,7 @@ class MemberKeypointComboboxes(tk.Frame):
         return member, keypoint
 
 
-class ProcOptions(tk.Frame):
+class ProcOptions(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         # 一時ファイルからdt_spanとthinningを取得

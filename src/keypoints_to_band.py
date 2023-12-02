@@ -11,7 +11,7 @@ import time_format
 import vcap
 
 
-class App(tk.Frame):
+class App(ttk.Frame):
     """
     帯プロット(Band Plot)を描画するためのGUIです。帯プロットは動画内の各フレームでkeypoint検出に成功しているかを可視化するためのグラフです。
     以下の機能を有します
@@ -29,12 +29,12 @@ class App(tk.Frame):
         width, height, dpi = temp.get_window_size()
         self.band = BandPlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
 
-        load_frame = tk.Frame(self)
+        load_frame = ttk.Frame(self)
         load_frame.pack(pady=5)
         self.pkl_selector = PklSelector(load_frame)
         self.pkl_selector.set_command(cmd=self.load_pkl)
 
-        setting_frame = tk.Frame(self)
+        setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
 
         caption_time = tk.Label(setting_frame, text='time:')
