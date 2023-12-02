@@ -148,6 +148,9 @@ class App(ttk.Frame):
             self.tree.insert("", "end", values=(member, head_timestamp, tail_timestamp, duration_str, f"{kpf:.2f}"))
  
     def rename_member(self):
+        """
+        memberをリネームする、モデルによってはmemberはintで保持されているが、リネーム後はstrになる
+        """
         old_member = self.tar_member_label_var.get()
         new_member = self.new_member_name_entry.get()
         if new_member == "":
@@ -162,6 +165,7 @@ class App(ttk.Frame):
         pkl_path = self.pkl_selector.get_trk_path()
         self.src_df.to_pickle(pkl_path)
         self.load_pkl()
+        print("overwrite done")
 
     def clear(self):
         self.band.clear()

@@ -45,6 +45,7 @@ class App(ttk.Frame):
         data['height'] = self.height_entry.get()
         data['dpi'] = self.dpi_entry.get()
         tmp.save(data)
+        print("saved")
 
     def _validate(self, text):
         return (text.isdigit() or text == "")

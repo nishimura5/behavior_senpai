@@ -170,6 +170,7 @@ class App(ttk.Frame):
                     tar_df.attrs['next'] = item.next
                     tar_df.attrs['take'] = take
                     tar_df.to_pickle(os.path.join(self.folder_path, item.name))
+        print('overwrite done')
         self.load_folder()
 
 
