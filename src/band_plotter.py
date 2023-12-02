@@ -53,11 +53,13 @@ class BandPlotter:
     def draw(self, plot_df, member: str, time_min_msec: int, time_max_msec: int):
         if plot_df.attrs['model'] == "YOLOv8 x-pose-p6":
             self.anno = yolo_drawer.Annotate()
+            cols_for_anno = ['x', 'y', 'conf']
         elif plot_df.attrs['model'] == "MediaPipe Holistic":
             self.anno = mediapipe_drawer.Annotate()
+            cols_for_anno = ['x', 'y', 'z']
         self.member = member
 
-        self.anno_df = plot_df.reset_index().set_index(['timestamp', 'member', 'keypoint']).loc[:, ['x', 'y', 'conf']]
+        self.anno_df = plot_df.reset_index().set_index(['timestamp', 'member', 'keypoint']).loc[:, cols_for_anno]
         self.timestamps = self.anno_df.index.get_level_values('timestamp').unique().to_numpy()
 
         plot_df = plot_df.dropna()
