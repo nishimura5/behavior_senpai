@@ -16,7 +16,20 @@ python-senpaiはWindows11(22H2)上の[Rye](https://rye-up.com)で構築したPyt
 
 ## Usage
 
-ryeを使用する場合はこのリポジトリをclone後に以下を実行することで環境構築が実行されます。CUDAを有効にする場合は事前に[pyproject.toml](pyproject.toml)内のコメントアウトを外してください。
+ryeを使用する場合はこのリポジトリをclone後に以下を実行することで環境構築が実行されます。CUDAを有効にする場合は事前に[pyproject.toml](pyproject.toml)内の以下のコメントアウトを外してください。
+```
+[[tool.rye.sources]]
+name = "torch"
+url = "https://download.pytorch.org/whl/cu118"
+type = "index"
+```
+
+mac環境ではtkaggが使用できない場合があるため、以下のコメントアウトを外してpyqt5をaddしてください。
+```
+"pyqt5>=5.15.10",
+```
+
+ryeを使用する場合は以下のコマンドで環境構築が完了します。
 
 ```
 rye sync
@@ -33,8 +46,6 @@ or
 ```
 rye run launcher
 ```
-
-MediaPipe(YOLOも？)による推論を複数の動画ファイルに対して連続実行すると、2回目以降にメモリアクセス違反でクラッシュしてしまう現象を確認しているため、[detector_proc.py](src/detector_proc.py)をsubprocessで実行する方式としています。
 
 ## Applications
 
