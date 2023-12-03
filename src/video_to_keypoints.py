@@ -4,8 +4,8 @@ from tkinter import ttk
 from tkinter import filedialog
 import glob
 import datetime
-import subprocess
 
+import detector_proc
 import windows_and_mac
 
 
@@ -16,7 +16,7 @@ class App(ttk.Frame):
      - 動画ファイルまたはフォルダを選択してパスを取得する機能
      - 使用するモデルを選択する機能
      - ROI機能を使用するかどうかを選択する機能
-     - subprocessでdetector_proc.pyを実行する機能
+     - detector_proc.pyのexec()を実行する機能
     """
     def __init__(self, master):
         super().__init__(master)
@@ -90,11 +90,7 @@ class App(ttk.Frame):
             return
         model_name = self.model_cbox.get()
         use_roi = self.roi_chk_val.get()
-        script_path = os.path.join(os.path.dirname(__file__), "detector_proc.py")
-        cmd = f"python {script_path} --model_name \"{model_name}\" --video_path \"{video_path}\""
-        if use_roi is True:
-            cmd += " --use_roi"
-        subprocess.run(cmd, shell=True)
+        detector_proc.exec(model_name, video_path, use_roi)
 
     def _on_bat_mode_changed(self, *args):
         if self.bat_chk_val.get() is True:

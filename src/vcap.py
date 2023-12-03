@@ -47,16 +47,18 @@ class VideoCap(cv2.VideoCapture):
  
 
 class RoiCap(cv2.VideoCapture):
-    def __init__(self, video_path):
-        if os.path.exists(video_path) is False:
-            raise FileNotFoundError(f"video_path:{video_path}")
-        # cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY
-        # を指定するとdecodeがGPUになる
-        super().__init__(
-            video_path,
-            apiPreference=cv2.CAP_ANY,
-            params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
+    def __init__(self):
+        super().__init__()
  
+    def open_file(self, file_path):
+        """
+        動画ファイルを開く
+        initで開くとsegfaultの原因になるため、open_file()を使う
+        """
+        ok = self.open(file_path, apiPreference=cv2.CAP_ANY, params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
+        if ok is False:
+            print(f"Failed to open {file_path}")
+
         self.width = int(self.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.left_top_point = (0, 0)
