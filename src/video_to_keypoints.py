@@ -5,6 +5,7 @@ from tkinter import filedialog
 import glob
 import datetime
 
+import vcap
 import detector_proc
 import windows_and_mac
 
@@ -59,6 +60,8 @@ class App(ttk.Frame):
         go_to_folder_btn = ttk.Button(bottom_btn_frame, text="Go to 'trk' Folder", command=lambda: windows_and_mac.go_to_folder(self.tar_path, 'trk'))
         go_to_folder_btn.pack(side=tk.LEFT)
 
+        self.rcap = vcap.RoiCap()
+
     def select_video(self):
         init_dir = os.path.abspath(os.path.dirname(__file__))
         if self.bat_chk_val.get() is True:
@@ -77,7 +80,6 @@ class App(ttk.Frame):
     def exec_folder(self):
         video_paths = glob.glob(os.path.join(self.tar_path, "*.mp4"))
         for video_path in video_paths:
-            print(f"{datetime.datetime.now()} {video_path}")
             self.exec_video(video_path)
         print(f"{datetime.datetime.now()} Done")
 
@@ -86,11 +88,12 @@ class App(ttk.Frame):
         detector_proc.pyを実行
         連続実行するとmediapipeがNULLポインタ参照で落ちるので回避策としてsubprocessを使用
         '''
+        print(f"{datetime.datetime.now()} {video_path}")
         if video_path == "":
             return
         model_name = self.model_cbox.get()
         use_roi = self.roi_chk_val.get()
-        detector_proc.exec(model_name, video_path, use_roi)
+        detector_proc.exec(self.rcap, model_name, video_path, use_roi)
 
     def _on_bat_mode_changed(self, *args):
         if self.bat_chk_val.get() is True:

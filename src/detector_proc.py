@@ -3,12 +3,10 @@ import argparse
 
 from yolo_detector import YoloDetector
 from mediapipe_detector import MediaPipeDetector
-import vcap
 
 
-def exec(model_name, video_path, use_roi=False):
+def exec(rcap, model_name, video_path, use_roi=False):
     # 動画の読み込み
-    rcap = vcap.RoiCap()
     rcap.open_file(video_path)
 
     if use_roi is True:
@@ -37,11 +35,3 @@ def exec(model_name, video_path, use_roi=False):
 
     result_df.to_pickle(pkl_path)
     rcap.release()
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model_name", type=str, default="")
-    parser.add_argument("--video_path", type=str, default="")
-    parser.add_argument("--use_roi", action="store_true")
-    exec(**parser.parse_args().__dict__)
