@@ -31,7 +31,7 @@ class PklSelector(ttk.Frame):
             self.pkl_path_label["text"] = self.trk_path
 
     def _select_trk(self):
-        init_dir = os.path.dirname(os.path.abspath(self.trk_path))
+        init_dir = os.path.dirname(self.trk_path)
         self.trk_path = filedialog.askopenfilename(initialdir=init_dir, title="Select Track file", filetypes=[("pkl files", "*.pkl")])
         self._load_pkl()
 
@@ -71,7 +71,7 @@ class PklSelector(ttk.Frame):
 
     def get_trk_path(self):
         if os.path.exists(self.trk_path) is False:
-            print(f"{self.trk_path} is not found.")
+            print(f"\"{self.trk_path}\" is not found.")
         return self.trk_path
 
     def set_command(self, cmd):
