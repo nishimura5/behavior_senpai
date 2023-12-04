@@ -120,7 +120,7 @@ class ProcOptions(ttk.Frame):
         # 一時ファイルからdt_spanとthinningを取得
         tmp = TempFile()
         data = tmp.load()
- 
+
         dt_span_label = ttk.Label(master, text="diff period:")
         dt_span_label.pack(side=tk.LEFT)
         self.dt_span_entry = ttk.Entry(master, width=5, validate="key", validatecommand=(self.register(self._validate), "%P"))
@@ -140,7 +140,7 @@ class ProcOptions(ttk.Frame):
         data['dt_span'] = dt_span
         tmp.save(data)
         return dt_span
-    
+
     def get_thinning(self):
         tmp = TempFile()
         data = tmp.load()

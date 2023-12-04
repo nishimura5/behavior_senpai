@@ -5,9 +5,10 @@ from tkinter import ttk
 import pandas as pd
 import cv2
 
-from gui_parts import PklSelector, MemberKeypointComboboxes
+from gui_parts import PklSelector, TimeSpanEntry
 import yolo_drawer
 import mediapipe_drawer
+import time_format
 import vcap
 
 
@@ -22,15 +23,24 @@ class App(ttk.Frame):
         load_frame.pack(pady=5)
         self.pkl_selector.set_command(cmd=self.load_pkl)
 
-        setting_frame = ttk.Frame(self)
-        setting_frame.pack(pady=5)
+        proc_frame = ttk.Frame(self)
+        proc_frame.pack(pady=5)
         # allのチェックボックス
         self.draw_all_chk_val = tk.BooleanVar()
         self.draw_all_chk_val.set(False)
-        all_check = ttk.Checkbutton(setting_frame, text="draw all", variable=self.draw_all_chk_val)
+        all_check = ttk.Checkbutton(proc_frame, text="draw all", variable=self.draw_all_chk_val)
         all_check.pack(side=tk.LEFT)
 
-        self.member_keypoints_combos = MemberKeypointComboboxes(setting_frame)
+        self.member_combo = ttk.Combobox(proc_frame, state='readonly', width=12)
+        self.member_combo.pack(side=tk.LEFT, padx=5)
+
+        setting_frame = ttk.Frame(self)
+        setting_frame.pack(pady=5)
+ 
+        caption_time = tk.Label(setting_frame, text='time:')
+        caption_time.pack(side=tk.LEFT, padx=(10, 0))
+        self.time_span_entry = TimeSpanEntry(setting_frame)
+        self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         draw_btn = ttk.Button(setting_frame, text="Export", command=self.export)
         draw_btn.pack(side=tk.LEFT)
@@ -45,7 +55,14 @@ class App(ttk.Frame):
         pkl_path = self.pkl_selector.get_trk_path()
         self.src_df = pd.read_pickle(pkl_path)
 
-        self.member_keypoints_combos.set_df(self.src_df)
+        self.member_combo["values"] = self.src_df.index.get_level_values("member").unique().tolist()
+        self.member_combo.current(0)
+
+        # timestampの範囲を取得
+        self.time_span_entry.update_entry(
+            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].min()),
+            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].max())
+        )
 
         # PKLが置かれているフォルダのパスを取得
         self.pkl_dir = os.path.dirname(pkl_path)
@@ -53,14 +70,19 @@ class App(ttk.Frame):
         self.pkl_selector.set_prev_next(self.src_df.attrs)
 
     def export(self):
-        current_member, current_keypoint = self.member_keypoints_combos.get_selected()
+        current_member = self.member_combo.get()
 
-        out_df = self.src_df
+        # timestampの範囲を抽出
+        time_min, time_max = self.time_span_entry.get_start_end()
+        time_min_msec = time_format.timestr_to_msec(time_min)
+        time_max_msec = time_format.timestr_to_msec(time_max)
+        out_df = self.src_df.loc[self.src_df["timestamp"].between(time_min_msec, time_max_msec), :]
 
         self.cap.set_frame_size(self.src_df.attrs["frame_size"])
         self.cap.open_file(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
         if self.cap.isOpened() is True:
             fps = self.cap.get(cv2.CAP_PROP_FPS)
+            self.cap.set(cv2.CAP_PROP_POS_MSEC, time_min_msec)
         else:
             fps = 30
 
@@ -75,7 +97,7 @@ class App(ttk.Frame):
         if self.draw_all_chk_val.get() is True:
             suffix = "all"
         else:
-            suffix = f"{current_member}_{current_keypoint}"
+            suffix = f"{current_member}"
         out_file_path = os.path.join(self.pkl_dir, f'{file_name}_{suffix}.mp4')
         fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
         size = self.src_df.attrs['frame_size']
@@ -87,34 +109,31 @@ class App(ttk.Frame):
         elif self.src_df.attrs['model'] == "MediaPipe Holistic":
             anno = mediapipe_drawer.Annotate()
 
-        total_frame_num = out_df.index.unique(level='frame').max() + 1
+        max_frame_num = out_df.index.unique(level='frame').max() + 1
+        min_frame_num = out_df.index.unique(level='frame').min()
         indexes = out_df.sort_index().index
-        for i in range(total_frame_num):
+        for i in range(min_frame_num, max_frame_num):
             frame = self.cap.read_anyway()
             frame = cv2.resize(frame, size)
             anno.set_img(frame)
             # draw_allなら全員の姿勢を描画
             if self.draw_all_chk_val.get() is True:
                 for member in indexes.levels[1]:
-                    dst_img = self._draw(i, member, current_keypoint, indexes, anno, scale)
-            # out_dfにi, current_member, current_keypointの組み合わせがない場合はスキップ
-            elif (i, current_member, current_keypoint) in indexes:
-                dst_img = self._draw(i, current_member, current_keypoint, indexes, anno, scale)
+                    dst_img = self._draw(i, member, indexes, anno, scale)
+            # out_dfにi, current_memberの組み合わせがない場合はスキップ
             else:
-                dst_img = frame
+                dst_img = self._draw(i, current_member, indexes, anno, scale)
             cv2.imshow("dst", dst_img)
-            cv2.waitKey(1)
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('x'):
+                break
             out.write(dst_img)
         cv2.destroyAllWindows()
         out.release()
 
-    def _draw(self, frame_num, member, keypoint, all_indexes, anno, scale):
-        if keypoint == '':
-            if (frame_num, member) not in all_indexes.droplevel(2):
-                return anno.dst_img
-        else:
-            if (frame_num, member, keypoint) not in all_indexes:
-                return anno.dst_img
+    def _draw(self, frame_num, member, all_indexes, anno, scale):
+        if (frame_num, member) not in all_indexes.droplevel(2):
+            return anno.dst_img
         keypoints = self.src_df.loc[pd.IndexSlice[frame_num, member, :], :] * scale
         kps = keypoints.to_numpy()
         anno.set_pose(kps)
