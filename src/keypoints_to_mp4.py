@@ -19,8 +19,8 @@ class App(ttk.Frame):
         self.pack(padx=10, pady=10)
 
         load_frame = ttk.Frame(self)
+        load_frame.pack(pady=5, anchor=tk.W)
         self.pkl_selector = PklSelector(load_frame)
-        load_frame.pack(pady=5)
         self.pkl_selector.set_command(cmd=self.load_pkl)
 
         proc_frame = ttk.Frame(self)
@@ -52,22 +52,24 @@ class App(ttk.Frame):
         self.load_pkl()
 
     def load_pkl(self):
+        # ファイルのロード
         pkl_path = self.pkl_selector.get_trk_path()
+        if os.path.exists(pkl_path) is False:
+            return
         self.src_df = pd.read_pickle(pkl_path)
+        self.pkl_dir = os.path.dirname(pkl_path)
+        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
+        self.cap.open_file(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
 
+        # UIの更新
         self.member_combo["values"] = self.src_df.index.get_level_values("member").unique().tolist()
         self.member_combo.current(0)
-
-        # timestampの範囲を取得
         self.time_span_entry.update_entry(
             time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].min()),
             time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].max())
         )
-
-        # PKLが置かれているフォルダのパスを取得
-        self.pkl_dir = os.path.dirname(pkl_path)
-
         self.pkl_selector.set_prev_next(self.src_df.attrs)
+        print('load_pkl() done.')
 
     def export(self):
         current_member = self.member_combo.get()
@@ -78,8 +80,6 @@ class App(ttk.Frame):
         time_max_msec = time_format.timestr_to_msec(time_max)
         out_df = self.src_df.loc[self.src_df["timestamp"].between(time_min_msec, time_max_msec), :]
 
-        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
-        self.cap.open_file(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
         if self.cap.isOpened() is True:
             fps = self.cap.get(cv2.CAP_PROP_FPS)
             self.cap.set(cv2.CAP_PROP_POS_MSEC, time_min_msec)

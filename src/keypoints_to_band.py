@@ -30,7 +30,7 @@ class App(ttk.Frame):
         self.band = BandPlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
 
         load_frame = ttk.Frame(self)
-        load_frame.pack(pady=5)
+        load_frame.pack(pady=5, anchor=tk.W)
         self.pkl_selector = PklSelector(load_frame)
         self.pkl_selector.set_command(cmd=self.load_pkl)
 
@@ -89,34 +89,30 @@ class App(ttk.Frame):
         self.load_pkl()
  
     def load_pkl(self):
+        # ファイルのロード
         pkl_path = self.pkl_selector.get_trk_path()
         if os.path.exists(pkl_path) is False:
-            print(f"{pkl_path} is not found")
             return
         self.src_df = pd.read_pickle(pkl_path)
+        pkl_dir = os.path.dirname(pkl_path)
+        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
+        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
+ 
+        # UIの更新
+        self.current_dt_span = None
+        self.time_span_entry.update_entry(
+            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].min()),
+            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].max())
+        )
+        self.pkl_selector.set_prev_next(self.src_df.attrs)
+        self.update_tree() 
 
         self.src_df['x'] = np.where(self.src_df['x'] == 0, np.nan, self.src_df['x'])
         self.src_df['y'] = np.where(self.src_df['y'] == 0, np.nan, self.src_df['y'])
         idx = self.src_df.index
         self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
-
-        # PKLが置かれているフォルダのパスを取得
-        pkl_dir = os.path.dirname(pkl_path)
-        self.current_dt_span = None
-
-        # timestampの範囲を取得
-        self.time_span_entry.update_entry(
-            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].min()),
-            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].max())
-        )
-
-        self.pkl_selector.set_prev_next(self.src_df.attrs)
-
-        self.update_tree() 
-
-        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
-        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
         self.band.set_vcap(self.cap)
+        print('load_pkl() done.')
         
     def draw(self):
         # treeから選択した行のmemberを取得

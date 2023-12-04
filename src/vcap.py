@@ -55,7 +55,7 @@ class RoiCap(cv2.VideoCapture):
         """
         ok = self.open(file_path, apiPreference=cv2.CAP_ANY, params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
         if ok is False:
-            print(f"Failed to open {file_path}")
+            print(f"Failed to open {file_path}.")
 
         self.width = int(self.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.get(cv2.CAP_PROP_FRAME_HEIGHT))

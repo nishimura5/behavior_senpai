@@ -70,6 +70,8 @@ class PklSelector(ttk.Frame):
         self._load_pkl()
 
     def get_trk_path(self):
+        if os.path.exists(self.trk_path) is False:
+            print(f"{self.trk_path} is not found.")
         return self.trk_path
 
     def set_command(self, cmd):

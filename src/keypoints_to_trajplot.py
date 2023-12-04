@@ -30,7 +30,7 @@ class App(ttk.Frame):
         self.traj = TrajectoryPlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
 
         load_frame = ttk.Frame(self)
-        load_frame.pack(pady=5)
+        load_frame.pack(pady=5, anchor=tk.W)
         self.pkl_selector = PklSelector(load_frame)
         self.pkl_selector.set_command(cmd=self.load_pkl)
 
@@ -54,23 +54,24 @@ class App(ttk.Frame):
         self.load_pkl()
 
     def load_pkl(self):
+        # ファイルのロード
         pkl_path = self.pkl_selector.get_trk_path()
+        if os.path.exists(pkl_path) is False:
+            return
         self.src_df = pd.read_pickle(pkl_path)
+        pkl_dir = os.path.dirname(pkl_path)
+        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
+        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
+ 
+        # UIの更新
+        self.member_keypoints_combos.set_df(self.src_df)
+        self.pkl_selector.set_prev_next(self.src_df.attrs)
+        self.current_dt_span = None
 
         self.src_df['x'] = np.where(self.src_df['x'] == 0, np.nan, self.src_df['x'])
         self.src_df['y'] = np.where(self.src_df['y'] == 0, np.nan, self.src_df['y'])
- 
-        self.member_keypoints_combos.set_df(self.src_df)
-
-        # PKLが置かれているフォルダのパスを取得
-        pkl_dir = os.path.dirname(pkl_path)
-        self.current_dt_span = None
-
-        self.pkl_selector.set_prev_next(self.src_df.attrs)
-
-        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
-        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
         self.traj.set_vcap(self.cap)
+        print('load_pkl() done.')
 
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
