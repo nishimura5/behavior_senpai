@@ -1,5 +1,4 @@
 import os
-import argparse
 
 from yolo_detector import YoloDetector
 from mediapipe_detector import MediaPipeDetector
