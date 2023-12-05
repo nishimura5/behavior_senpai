@@ -158,6 +158,9 @@ class ProcOptions(ttk.Frame):
 class TimeSpanEntry(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
+
+        caption_time = tk.Label(master, text='time:')
+        caption_time.pack(side=tk.LEFT, padx=(10, 0))
         vcmd = (self.register(self._validate), '%P')
         invcmd = (self.register(self._invalid_start), '%P')
         self.time_start_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)

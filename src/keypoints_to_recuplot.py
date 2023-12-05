@@ -35,6 +35,8 @@ class App(ttk.Frame):
         load_frame.pack(pady=5, anchor=tk.W)
         self.pkl_selector = PklSelector(load_frame)
         self.pkl_selector.set_command(cmd=self.load_pkl)
+        self.time_span_entry = TimeSpanEntry(load_frame)
+        self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         proc_frame = ttk.Frame(self)
         proc_frame.pack(pady=5)
@@ -43,11 +45,6 @@ class App(ttk.Frame):
 
         setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
-
-        caption_time = tk.Label(setting_frame, text='time:')
-        caption_time.pack(side=tk.LEFT, padx=(10, 0))
-        self.time_span_entry = TimeSpanEntry(setting_frame)
-        self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         eps_label = ttk.Label(setting_frame, text="threshold:")
         eps_label.pack(side=tk.LEFT)

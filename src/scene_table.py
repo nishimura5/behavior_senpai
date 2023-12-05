@@ -18,14 +18,14 @@ class App(ttk.Frame):
         self.pack(padx=10, pady=10)
 
         load_frame = ttk.Frame(self)
+        load_frame.pack(pady=5, anchor=tk.W)
         self.pkl_selector = PklSelector(load_frame)
-        load_frame.pack(pady=5)
         self.pkl_selector.set_command(cmd=self.load_pkl)
-
+        self.time_span_entry = TimeSpanEntry(load_frame)
+        self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
+ 
         entry_frame = ttk.Frame(self)
         entry_frame.pack(pady=5)
-        self.time_entry = TimeSpanEntry(entry_frame)
-        self.time_entry.pack()
         add_btn = ttk.Button(entry_frame, text="add", command=self._add_row)
         add_btn.pack(side=tk.LEFT, padx=(10, 0))
 
@@ -65,7 +65,7 @@ class App(ttk.Frame):
             self.tree.insert("", "end", values=(start, end, duration_str))
 
     def _add_row(self):
-        start_time, end_time = self.time_entry.get_start_end()
+        start_time, end_time = self.time_span_entry.get_start_end()
 
         start_td = pd.to_timedelta(start_time)
         end_td = pd.to_timedelta(end_time)
