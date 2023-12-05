@@ -36,16 +36,14 @@ class App(ttk.Frame):
         self.member_combo = ttk.Combobox(proc_frame, state='readonly', width=12)
         self.member_combo.pack(side=tk.LEFT, padx=5)
 
-        setting_frame = ttk.Frame(self)
-        setting_frame.pack(pady=5)
- 
-        draw_btn = ttk.Button(setting_frame, text="Export", command=self.export)
+        draw_btn = ttk.Button(proc_frame, text="Export", command=self.export)
         draw_btn.pack(side=tk.LEFT)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
 
         self.cap = vcap.VideoCap()
+        self.out = cv2.VideoWriter()
         self.load_pkl()
 
     def load_pkl(self):
@@ -99,7 +97,7 @@ class App(ttk.Frame):
         fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
         size = self.src_df.attrs['frame_size']
         size = (int(size[0] * scale), int(size[1] * scale))
-        out = cv2.VideoWriter(out_file_path, fourcc, fps, size, params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
+        self.out.open(out_file_path, fourcc, fps, size, params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
 
         if self.src_df.attrs['model'] == "YOLOv8 x-pose-p6":
             anno = yolo_drawer.Annotate()
@@ -124,9 +122,9 @@ class App(ttk.Frame):
             key = cv2.waitKey(1) & 0xFF
             if key == ord('x'):
                 break
-            out.write(dst_img)
+            self.out.write(dst_img)
         cv2.destroyAllWindows()
-        out.release()
+        self.out.release()
 
     def _draw(self, frame_num, member, all_indexes, anno, scale):
         if (frame_num, member) not in all_indexes.droplevel(2):
