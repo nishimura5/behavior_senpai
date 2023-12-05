@@ -24,9 +24,9 @@ class RecurrencePlotter:
         self.fig.canvas.mpl_connect("button_press_event", self._click_graph)
 
         # axesのレイアウト設定
-        gs = gridspec.GridSpec(1, 1)
+        gs = gridspec.GridSpec(1, 1, top=0.97, bottom=0.05)
         self.recu_ax = self.fig.add_subplot(gs[0, 0])
- 
+
     def pack(self, master):
         if USE_TKAGG is True:
             self.canvas = FigureCanvasTkAgg(self.fig, master=master)

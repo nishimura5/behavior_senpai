@@ -27,7 +27,7 @@ class TrajectoryPlotter:
         self.fig.canvas.mpl_connect("pick_event", self._click_graph)
 
         # axesのレイアウト設定
-        gs = gridspec.GridSpec(2, 2, width_ratios=self.fig_size, height_ratios=[1, 1], hspace=0.04, wspace=0.03)
+        gs = gridspec.GridSpec(2, 2, width_ratios=self.fig_size, height_ratios=[1, 1], top=0.94, bottom=0.05, hspace=0.04, wspace=0.03)
         self.traj_ax = self.fig.add_subplot(gs[1, 1])
         self.x_time_ax = self.fig.add_subplot(gs[0, 1], sharex=self.traj_ax)
         self.y_time_ax = self.fig.add_subplot(gs[1, 0], sharey=self.traj_ax)
