@@ -73,6 +73,9 @@ class App(ttk.Frame):
         time_min, time_max = self.time_span_entry.get_start_end()
         time_min_msec = time_format.timestr_to_msec(time_min)
         time_max_msec = time_format.timestr_to_msec(time_max)
+        # memberとkeypointのインデックス値を文字列に変換
+        idx = self.src_df.index
+        self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
         out_df = self.src_df.loc[self.src_df["timestamp"].between(time_min_msec, time_max_msec), :]
 
         if self.cap.isOpened() is True:
@@ -82,10 +85,6 @@ class App(ttk.Frame):
             fps = 30
 
         scale = 0.5
-
-        # memberとkeypointのインデックス値を文字列に変換
-        idx = out_df.index
-        out_df.index = out_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
         # VideoWriter
         file_name = os.path.splitext(self.src_df.attrs['video_name'])[0]
