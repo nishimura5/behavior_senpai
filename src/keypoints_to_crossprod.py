@@ -1,6 +1,7 @@
 import os
 import tkinter as tk
 from tkinter import ttk
+from tkinter import filedialog
 
 import pandas as pd
 
@@ -72,9 +73,9 @@ class App(ttk.Frame):
         if os.path.exists(pkl_path) is False:
             return
         self.src_df = pd.read_pickle(pkl_path)
-        pkl_dir = os.path.dirname(pkl_path)
+        self.pkl_dir = os.path.dirname(pkl_path)
         self.cap.set_frame_size(self.src_df.attrs["frame_size"])
-        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
+        self.cap.open_file(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
 
         # UIの更新
         self.member_combo.set_df(self.src_df)
@@ -89,14 +90,21 @@ class App(ttk.Frame):
 
     def draw(self):
         current_member, kp0, kp1, kp2 = self.member_combo.get_selected()
-        # memberとkeypointのインデックス値を文字列に変換
-        idx = self.src_df.index
-        self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
-        cross_df = keypoints_proc.calc_cross_product(self.src_df, kp0, kp1, kp2)
+        # timestampの範囲を抽出
+        time_min, time_max = self.time_span_entry.get_start_end()
+        time_min_msec = self._timedelta_to_msec(time_min)
+        time_max_msec = self._timedelta_to_msec(time_max)
+        tar_df = self.src_df.loc[self.src_df["timestamp"].between(time_min_msec, time_max_msec), :]
+
+        # memberとkeypointのインデックス値を文字列に変換
+        idx = tar_df.index
+        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
+
+        cross_df = keypoints_proc.calc_cross_product(tar_df, kp0, kp1, kp2)
         col_name = cross_df.columns[0]
 
-        timestamp_df = self.src_df.loc[pd.IndexSlice[:, :, '0'], 'timestamp'].droplevel(2).to_frame()
+        timestamp_df = tar_df.loc[pd.IndexSlice[:, :, '0'], 'timestamp'].droplevel(2).to_frame()
         plot_df = pd.concat([cross_df, timestamp_df], axis=1)
 
         # thinningの値だけframeを間引く
@@ -108,14 +116,30 @@ class App(ttk.Frame):
             self.dst_df = pd.concat([self.dst_df, cross_df], axis=1)
 
     def export(self):
-        print(self.dst_df)
         timestamp_df = self.src_df.loc[pd.IndexSlice[:, :, '0'], 'timestamp'].droplevel(2).to_frame()
         export_df = pd.concat([self.dst_df, timestamp_df], axis=1)
-        print(export_df)
+        export_df.attrs = self.src_df.attrs
+        if 'proc_history' not in export_df.attrs.keys():
+            export_df.attrs['proc_history'] = ['cross_product']
+        else:
+            export_df.attrs['proc_history'].append('cross_product')
+        file_name = filedialog.asksaveasfilename(
+            title="Save as",
+            filetypes=[("pickle", ".pkl")],
+            initialdir=self.pkl_dir,
+            defaultextension="pkl"
+        )
+        export_df.to_pickle(file_name)
 
     def clear(self):
         self.lineplot.clear()
         self.dst_df = pd.DataFrame()
+
+    def _timedelta_to_msec(self, timedelta):
+        # strをtimedeltaに変換
+        timedelta = pd.to_timedelta(timedelta)
+        sec = timedelta.total_seconds()
+        return sec * 1000
 
 
 def quit(root):
