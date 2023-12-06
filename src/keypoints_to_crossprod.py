@@ -69,13 +69,13 @@ class App(ttk.Frame):
 
     def load_pkl(self):
         # ファイルのロード
-        pkl_path = self.pkl_selector.get_trk_path()
-        if os.path.exists(pkl_path) is False:
+        self.pkl_path = self.pkl_selector.get_trk_path()
+        if os.path.exists(self.pkl_path) is False:
             return
-        self.src_df = pd.read_pickle(pkl_path)
-        self.pkl_dir = os.path.dirname(pkl_path)
+        self.src_df = pd.read_pickle(self.pkl_path)
+        pkl_dir = os.path.dirname(self.pkl_path)
         self.cap.set_frame_size(self.src_df.attrs["frame_size"])
-        self.cap.open_file(os.path.join(self.pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
+        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
 
         # UIの更新
         self.member_combo.set_df(self.src_df)
@@ -116,9 +116,14 @@ class App(ttk.Frame):
             self.dst_df = pd.concat([self.dst_df, cross_df], axis=1)
 
     def export(self):
-        dst_dir = os.path.join(self.pkl_dir, 'proc')
+        file_name = os.path.basename(self.pkl_path)
+        dst_dir = os.path.join(os.path.dirname(self.pkl_path), 'proc')
         os.makedirs(dst_dir, exist_ok=True)
         timestamp_df = self.src_df.loc[pd.IndexSlice[:, :, '0'], 'timestamp'].droplevel(2).to_frame()
+        timestamp_df = timestamp_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
+        self.dst_df = self.dst_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
+        print(len(timestamp_df))
+        print(len(self.dst_df))
         export_df = pd.concat([self.dst_df, timestamp_df], axis=1)
         export_df.attrs = self.src_df.attrs
         if 'proc_history' not in export_df.attrs.keys():
@@ -129,6 +134,7 @@ class App(ttk.Frame):
             title="Save as",
             filetypes=[("pickle", ".pkl")],
             initialdir=dst_dir,
+            initialfile=file_name,
             defaultextension="pkl"
         )
         export_df.to_pickle(file_name)
