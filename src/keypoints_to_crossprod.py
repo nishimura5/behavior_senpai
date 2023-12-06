@@ -116,6 +116,8 @@ class App(ttk.Frame):
             self.dst_df = pd.concat([self.dst_df, cross_df], axis=1)
 
     def export(self):
+        dst_dir = os.path.join(self.pkl_dir, 'proc')
+        os.makedirs(dst_dir, exist_ok=True)
         timestamp_df = self.src_df.loc[pd.IndexSlice[:, :, '0'], 'timestamp'].droplevel(2).to_frame()
         export_df = pd.concat([self.dst_df, timestamp_df], axis=1)
         export_df.attrs = self.src_df.attrs
@@ -126,10 +128,11 @@ class App(ttk.Frame):
         file_name = filedialog.asksaveasfilename(
             title="Save as",
             filetypes=[("pickle", ".pkl")],
-            initialdir=self.pkl_dir,
+            initialdir=dst_dir,
             defaultextension="pkl"
         )
         export_df.to_pickle(file_name)
+        print("export() done.")
 
     def clear(self):
         self.lineplot.clear()
