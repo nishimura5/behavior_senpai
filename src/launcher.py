@@ -7,6 +7,7 @@ import keypoints_to_band as k2b
 import keypoints_to_mp4 as k2m
 import keypoints_to_trajplot as k2t
 import keypoints_to_recuplot as k2r
+import keypoints_to_crossprod as k2c
 import scene_table
 import pref_list
 
@@ -48,6 +49,10 @@ class App(ttk.Frame):
         # keypoints_to_recuplotのボタン
         k2r_button = ttk.Button(buttons_frame, text="keypoints_to_recuplot.py", command=lambda: self.launch_window(k2r.App), width=26)
         k2r_button.pack(side=tk.TOP, pady=5)
+
+        # keypoints_to_crossprodのボタン
+        k2c_button = ttk.Button(buttons_frame, text="keypoints_to_crossprod.py", command=lambda: self.launch_window(k2c.App), width=26)
+        k2c_button.pack(side=tk.TOP, pady=5)
 
         # scene_tableのボタン
         scene_table_button = ttk.Button(buttons_frame, text="scene_table.py", command=lambda: self.launch_window(scene_table.App), width=26)
