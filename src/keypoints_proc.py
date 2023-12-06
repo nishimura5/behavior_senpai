@@ -65,6 +65,22 @@ def calc_recurrence(src_arr, threshold: float):
     return dst_mat
 
 
+def calc_cross_product(src_df, kp0: str, kp1: str, kp2: str):
+    '''
+    kp0 -> kp1とkp0 -> kp2の外積を計算する
+    '''
+    col_name = f'{kp1}<-{kp0}->{kp2}'
+    point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
+    point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
+    point2 = src_df.loc[pd.IndexSlice[:, :, kp2], :].droplevel(2)
+    point1_0 = point1 - point0
+    point2_0 = point2 - point0
+    diff_sr = point1_0['x'] * point2_0['y'] - point1_0['y'] * point2_0['x']
+    diff_df = diff_sr.to_frame()
+    diff_df.columns = [col_name]
+    return diff_df
+
+
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     pd.set_option("display.min_rows", 100)
