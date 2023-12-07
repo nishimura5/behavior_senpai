@@ -69,16 +69,32 @@ def calc_cross_product(src_df, kp0: str, kp1: str, kp2: str):
     '''
     kp0 -> kp1とkp0 -> kp2の外積を計算する
     '''
-    col_name = f'{kp1}<-{kp0}->{kp2}'
+    col_name = f'cross({kp0}-{kp1},{kp0}-{kp2})'
     point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
     point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
     point2 = src_df.loc[pd.IndexSlice[:, :, kp2], :].droplevel(2)
     point1_0 = point1 - point0
     point2_0 = point2 - point0
-    diff_sr = point1_0['x'] * point2_0['y'] - point1_0['y'] * point2_0['x']
-    diff_df = diff_sr.to_frame()
-    diff_df.columns = [col_name]
-    return diff_df
+    cross_sr = point1_0['x'] * point2_0['y'] - point1_0['y'] * point2_0['x']
+    cross_df = cross_sr.to_frame()
+    cross_df.columns = [col_name]
+    return cross_df
+
+
+def calc_dot_product(src_df, kp0: str, kp1: str, kp2: str):
+    '''
+    kp0 -> kp1とkp0 -> kp2の内積を計算する
+    '''
+    col_name = f'dot({kp0}-{kp1},{kp0}-{kp2})'
+    point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
+    point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
+    point2 = src_df.loc[pd.IndexSlice[:, :, kp2], :].droplevel(2)
+    point1_0 = point1 - point0
+    point2_0 = point2 - point0
+    dot_sr = point1_0['x'] * point2_0['x'] + point1_0['y'] * point2_0['y']
+    dot_df = dot_sr.to_frame()
+    dot_df.columns = [col_name]
+    return dot_df
 
 
 if __name__ == "__main__":
