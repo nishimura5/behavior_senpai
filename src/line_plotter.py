@@ -48,12 +48,13 @@ class LinePlotter:
         plot_df = plot_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         plot_df = plot_df.loc[pd.IndexSlice[:, member], :]
 
-        self.line_ax.plot(plot_df['timestamp'], plot_df[data_col_name])
+        self.line_ax.plot(plot_df['timestamp'], plot_df[data_col_name], label=data_col_name)
         self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
+        self.line_ax.legend(loc='upper right')
+        self.canvas.draw_idle()
 
         show_df = plot_df.reset_index().set_index(['timestamp', 'member']).loc[:, :]
         self.timestamps = show_df.index.get_level_values('timestamp').unique().to_numpy()
-        self.canvas.draw_idle()
 
     def clear(self):
         self.line_ax.cla()
