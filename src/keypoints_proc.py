@@ -65,6 +65,21 @@ def calc_recurrence(src_arr, threshold: float):
     return dst_mat
 
 
+def calc_plus(src_df, kp0: str, kp1: str, kp2: str):
+    '''
+    kp0 -> kp1とkp0 -> kp2のベクトル和を計算する
+    '''
+    col_name = f'plus({kp0}-{kp1},{kp0}-{kp2})'
+    point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
+    point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
+    point2 = src_df.loc[pd.IndexSlice[:, :, kp2], :].droplevel(2)
+    point1_0 = point1 - point0
+    point2_0 = point2 - point0
+    plus_df = point1_0.loc[:, ['x', 'y']] + point2_0.loc[:, ['x', 'y']]
+    plus_df.columns = [f"{col_name}_x", f"{col_name}_y"]
+    return plus_df
+
+
 def calc_cross_product(src_df, kp0: str, kp1: str, kp2: str):
     '''
     kp0 -> kp1とkp0 -> kp2の外積を計算する
@@ -96,6 +111,37 @@ def calc_dot_product(src_df, kp0: str, kp1: str, kp2: str):
     dot_df.columns = [col_name]
     return dot_df
 
+
+def calc_cross_dot_plus(src_df, kp0: str, kp1: str, kp2: str):
+    '''
+    kp0 -> kp1とkp0 -> kp2の外積、内積、ベクトル和を計算する
+    別々にやるより少し速い
+    '''
+    point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
+    point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
+    point2 = src_df.loc[pd.IndexSlice[:, :, kp2], :].droplevel(2)
+    point1_0 = point1 - point0
+    point2_0 = point2 - point0
+
+    # cross
+    col_name = f'cross({kp0}-{kp1},{kp0}-{kp2})'
+    cross_sr = point1_0['x'] * point2_0['y'] - point1_0['y'] * point2_0['x']
+    cross_df = cross_sr.to_frame()
+    cross_df.columns = [col_name]
+
+    # dot
+    col_name = f'dot({kp0}-{kp1},{kp0}-{kp2})'
+    dot_sr = point1_0['x'] * point2_0['x'] + point1_0['y'] * point2_0['y']
+    dot_df = dot_sr.to_frame()
+    dot_df.columns = [col_name]
+
+    # plus
+    col_name = f'plus({kp0}-{kp1},{kp0}-{kp2})'
+    plus_df = point1_0.loc[:, ['x', 'y']] + point2_0.loc[:, ['x', 'y']]
+    plus_df.columns = [f"{col_name}_x", f"{col_name}_y"]
+
+    dst_df = pd.concat([cross_df, dot_df, plus_df], axis=1)
+    return dst_df
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt

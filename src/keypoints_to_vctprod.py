@@ -40,12 +40,11 @@ class App(ttk.Frame):
         cross_frame.pack(pady=5)
         calc_type_label = ttk.Label(cross_frame, text="Calc:")
         calc_type_label.pack(side=tk.LEFT, padx=5)
-        self.calc_type_combo = ttk.Combobox(cross_frame, state='readonly', width=14)
-        self.calc_type_combo["values"] = ["cross_product", "dot_product"]
-        self.calc_type_combo.bind("<<ComboboxSelected>>", self._on_calc_type_selected)
+        self.calc_type_combo = ttk.Combobox(cross_frame, state='readonly', width=15)
+        self.calc_type_combo["values"] = ["cross_product", "dot_product", "plus", "cross/dot/plus"]
         self.calc_type_combo.current(0)
         self.calc_type_combo.pack(side=tk.LEFT, padx=5)
-        img_path = os.path.join(os.path.dirname(__file__), "img", "cross.gif")
+        img_path = os.path.join(os.path.dirname(__file__), "img", "vector.gif")
         self.img = tk.PhotoImage(file=img_path)
         self.img_label = ttk.Label(cross_frame, image=self.img)
         self.img_label.pack(side=tk.LEFT, padx=5)
@@ -112,7 +111,12 @@ class App(ttk.Frame):
             prod_df = keypoints_proc.calc_cross_product(tar_df, kp0, kp1, kp2)
         elif self.calc_type_combo.get() == 'dot_product':
             prod_df = keypoints_proc.calc_dot_product(tar_df, kp0, kp1, kp2)
-        col_name = prod_df.columns[0]
+        elif self.calc_type_combo.get() == 'plus':
+            prod_df = keypoints_proc.calc_plus(tar_df, kp0, kp1, kp2)
+        elif self.calc_type_combo.get() == 'cross/dot/plus':
+            prod_df = keypoints_proc.calc_cross_dot_plus(tar_df, kp0, kp1, kp2)
+
+        col_names = prod_df.columns
 
         timestamp_df = tar_df.loc[pd.IndexSlice[:, :, '0'], 'timestamp'].droplevel(2).to_frame()
         plot_df = pd.concat([prod_df, timestamp_df], axis=1)
@@ -121,9 +125,11 @@ class App(ttk.Frame):
         thinning = self.thinnig_option.get_thinning()
         plot_df = keypoints_proc.thinning(plot_df, int(thinning))
 
-        self.lineplot.draw(plot_df, current_member, col_name, int(thinning))
-        if prod_df.columns[0] not in self.dst_df.columns:
-            self.dst_df = pd.concat([self.dst_df, prod_df], axis=1)
+        self.lineplot.draw(plot_df, current_member, col_names, int(thinning))
+        for col_name in col_names:
+            if col_name not in self.dst_df.columns:
+                add_df = plot_df.loc[:, col_name].to_frame()
+                self.dst_df = pd.concat([self.dst_df, add_df], axis=1)
 
     def export(self):
         file_name = os.path.basename(self.pkl_path)
@@ -153,15 +159,6 @@ class App(ttk.Frame):
     def clear(self):
         self.lineplot.clear()
         self.dst_df = pd.DataFrame()
-
-    def _on_calc_type_selected(self, event):
-        calc_type = event.widget.get()
-        if calc_type == 'cross_product':
-            img_path = os.path.join(os.path.dirname(__file__), "img", "cross.gif")
-        elif calc_type == 'dot_product':
-            img_path = os.path.join(os.path.dirname(__file__), "img", "dot.gif")
-        self.img = tk.PhotoImage(file=img_path)
-        self.img_label.configure(image=self.img)
 
     def _timedelta_to_msec(self, timedelta):
         # strをtimedeltaに変換

@@ -43,12 +43,13 @@ class LinePlotter:
     def set_vcap(self, vcap):
         self.vcap = vcap
 
-    def draw(self, plot_df, member: str, data_col_name: str, thinning: int):
+    def draw(self, plot_df, member: str, data_col_names: list, thinning: int):
         # multiindexが重複していたらdrop
         plot_df = plot_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         plot_df = plot_df.loc[pd.IndexSlice[:, member], :]
 
-        self.line_ax.plot(plot_df['timestamp'], plot_df[data_col_name], label=data_col_name)
+        for col_name in data_col_names:
+            self.line_ax.plot(plot_df['timestamp'], plot_df[col_name], label=col_name)
         self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         self.line_ax.legend(loc='upper right')
         self.canvas.draw_idle()
