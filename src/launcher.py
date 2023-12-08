@@ -7,7 +7,7 @@ import keypoints_to_band as k2b
 import keypoints_to_mp4 as k2m
 import keypoints_to_trajplot as k2t
 import keypoints_to_recuplot as k2r
-import keypoints_to_vctprod as k2v
+import keypoints_to_vector as k2v
 import scene_table
 import pref_list
 
@@ -50,8 +50,8 @@ class App(ttk.Frame):
         k2r_button = ttk.Button(buttons_frame, text="keypoints_to_recuplot.py", command=lambda: self.launch_window(k2r.App), width=26)
         k2r_button.pack(side=tk.TOP, pady=5)
 
-        # keypoints_to_vctprodのボタン
-        k2c_button = ttk.Button(buttons_frame, text="keypoints_to_vctprod.py", command=lambda: self.launch_window(k2v.App), width=26)
+        # keypoints_to_vectorのボタン
+        k2c_button = ttk.Button(buttons_frame, text="keypoints_to_vector.py", command=lambda: self.launch_window(k2v.App), width=26)
         k2c_button.pack(side=tk.TOP, pady=5)
 
         # scene_tableのボタン
