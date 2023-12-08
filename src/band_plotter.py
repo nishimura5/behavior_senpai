@@ -20,11 +20,6 @@ import yolo_drawer
 import mediapipe_drawer
 
 
-# dataframeのprint時の行数指定
-pd.set_option('display.max_rows', 1000)
-pd.set_option('display.min_rows', 1000)
-
-
 class BandPlotter:
     def __init__(self, fig_size: tuple, dpi=72):
         self.dpi = dpi
