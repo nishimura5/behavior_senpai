@@ -4,6 +4,16 @@ from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.decomposition import PCA
 
 
+def has_keypoint(src_df):
+    '''
+    src_dfにkeypointが含まれているかどうかを判定する
+    '''
+    if 'keypoint' in src_df.index.names:
+        return True
+    else:
+        return False
+
+
 def calc_speed(src_df, step_frame: int):
     '''
     src_dfの各keypointの速さを計算する
@@ -38,18 +48,15 @@ def thinning(src_df, thinning: int):
     return thinned_df
 
 
-def pca(src_df, members: list, keypoints: list, tar_cols: list):
+def pca(src_df, tar_cols: list):
     '''
     PCA: principal component analysis(主成分分析)
     src_dfのtar_colsを次元削減する
     '''
-    tar_df = src_df.loc[pd.IndexSlice[:, members, keypoints], [*tar_cols, 'timestamp']].dropna()
-
     pca = PCA(n_components=1)
-    pca.fit(tar_df[tar_cols])
-    reduced_arr = pca.transform(tar_df[tar_cols])
-    timestamps = tar_df['timestamp'].values
-    return reduced_arr, timestamps
+    pca.fit(src_df[tar_cols])
+    reduced_arr = pca.transform(src_df[tar_cols])
+    return reduced_arr
 
 
 def calc_recurrence(src_arr, threshold: float):
