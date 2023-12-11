@@ -49,7 +49,7 @@ class App(ttk.Frame):
         eps_label = ttk.Label(setting_frame, text="threshold:")
         eps_label.pack(side=tk.LEFT)
         self.eps_entry = ttk.Entry(setting_frame, width=5, validate="key", validatecommand=(self.register(self._validate), "%P"))
-        self.eps_entry.insert(tk.END, '1')
+        self.eps_entry.insert(tk.END, '0')
         self.eps_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         draw_btn = ttk.Button(setting_frame, text="Draw", command=self.draw)

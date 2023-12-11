@@ -113,6 +113,8 @@ class MemberKeypointComboboxes(ttk.Frame):
             self.keypoint_combo.current(0)
 
     def _on_selected(self, event):
+        if keypoints_proc.has_keypoint(self.src_df) is False:
+            return
         current_member = self.member_combo.get()
         # keypointの一覧を取得してコンボボックスにセット
         idx = pd.IndexSlice[:, current_member, :]

@@ -133,19 +133,17 @@ class App(ttk.Frame):
 
     def export(self):
         file_name = os.path.basename(self.pkl_path)
-        dst_dir = os.path.join(os.path.dirname(self.pkl_path), 'proc')
+        dst_dir = os.path.join(os.path.dirname(self.pkl_path), os.pardir, 'calc')
         os.makedirs(dst_dir, exist_ok=True)
         timestamp_df = self.src_df.loc[pd.IndexSlice[:, :, '0'], 'timestamp'].droplevel(2).to_frame()
         timestamp_df = timestamp_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         self.dst_df = self.dst_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
-        print(len(timestamp_df))
-        print(len(self.dst_df))
         export_df = pd.concat([self.dst_df, timestamp_df], axis=1)
         export_df.attrs = self.src_df.attrs
         if 'proc_history' not in export_df.attrs.keys():
-            export_df.attrs['proc_history'] = ['cross_product']
+            export_df.attrs['proc_history'] = ['vector']
         else:
-            export_df.attrs['proc_history'].append('cross_product')
+            export_df.attrs['proc_history'].append('vector')
         file_name = filedialog.asksaveasfilename(
             title="Save as",
             filetypes=[("pickle", ".pkl")],
