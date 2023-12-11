@@ -2,6 +2,14 @@
 
 [pyproject]: https://github.com/nishimura5/python_senpai/blob/master/pyproject.toml
 [launcher]: https://github.com/nishimura5/python_senpai/blob/master/src/launcher.py
+[video_to_keypoints]: https://github.com/nishimura5/python_senpai/blob/master/src/video_to_keypoints.py
+[track_list]: https://github.com/nishimura5/python_senpai/blob/master/src/track_list.py
+[keypoints_to_band]: https://github.com/nishimura5/python_senpai/blob/master/src/keypoints_to_band.py
+[keypoints_to_mp4]: https://github.com/nishimura5/python_senpai/blob/master/src/keypoints_to_mp4.py
+[keypoints_to_trajplot]: https://github.com/nishimura5/python_senpai/blob/master/src/keypoints_to_trajplot.py
+[keypoints_to_vector]: https://github.com/nishimura5/python_senpai/blob/master/src/keypoints_to_vector.py
+[keypoints_to_recuplot]: https://github.com/nishimura5/python_senpai/blob/master/src/keypoints_to_recuplot.py
+[scene_table]: https://github.com/nishimura5/python_senpai/blob/master/src/scene_table.py
 
 Readme in English is [here](README-en.md)
 
@@ -58,14 +66,14 @@ rye run launcher
 ## Applications
 
 このプロジェクトでは、以下のそれぞれ独立したアプリケーションをlauncher.pyが呼び出す構成になっています。
- - [video_to_keypoints.py](/src/video_to_keypoints.py)
- - [track_list.py](/src/track_list.py)
- - [keypoints_to_band.py](/src/keypoints_to_band.py)
- - [keypoints_to_mp4.py](/src/keypoints_to_mp4.py)
- - [keypoints_to_trajplot.py](/src/keypoints_to_trajplot.py)
- - [keypoints_to_vector.py](/src/keypoints_to_vector.py)
- - [keypoints_to_recuplot.py](/src/keypoints_to_recuplot.py)
- - [scene_table.py](/src/scene_table.py)
+ - [video_to_keypoints.py][video_to_keypoints]
+ - [track_list.py][track_list]
+ - [keypoints_to_band.py][keypoints_to_band]
+ - [keypoints_to_mp4.py][keypoints_to_mp4]
+ - [keypoints_to_trajplot.py][keypoints_to_trajplot]
+ - [keypoints_to_vector.py][keypoints_to_vector]
+ - [keypoints_to_recuplot.py][keypoints_to_recuplot]
+ - [scene_table.py][scene_table]
 
 ## Interface
 
