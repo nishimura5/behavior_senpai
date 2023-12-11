@@ -119,13 +119,13 @@ class App(ttk.Frame):
         plot_df = plot_df.loc[plot_df["timestamp"].between(time_min_msec, time_max_msec), :]
 
         plot_df.index = plot_df.index.set_levels(levels)
-        timestamps = plot_df.loc[idx, 'timestamp'].dropna().values
-        plot_df = plot_df.loc[idx, cols].dropna()
 
         # thinningの値だけframeを間引く
         thinning = self.proc_options.get_thinning()
         plot_df = keypoints_proc.thinning(plot_df, int(thinning))
 
+        timestamps = plot_df.loc[idx, 'timestamp'].dropna().values
+        plot_df = plot_df.loc[idx, cols].dropna()
         reduced_arr = keypoints_proc.pca(plot_df, tar_cols=cols)
 
         threshold = self.eps_entry.get()
