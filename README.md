@@ -1,5 +1,8 @@
 # python-senpai
 
+[pyproject]: https://github.com/nishimura5/python_senpai/blob/master/pyproject.toml
+[launcher]: https://github.com/nishimura5/python_senpai/blob/master/src/launcher.py
+
 Readme in English is [here](README-en.md)
 
 python-senpaiは、行動分析と行動観察を行うためのアプリケーションです。また、開発を通じてPythonでのコーディングやデータ解析を学ぶためのプロジェクトです。Pythonの基礎(if文やfor文、リスト内包表記、classあたりを指します)を習得した方が、実用的なアプリケーションの開発に挑戦するための足掛かりにできるよう構成しています。とりわけ以下のライブラリの使用方法について学習することができます。
@@ -15,13 +18,13 @@ python-senpaiは、行動分析と行動観察を行うためのアプリケー�
 
 ## Requirement
 
-python-senpaiはWindows11(22H2)上の[Rye](https://rye-up.com)で構築したPython環境で開発と動作確認をおこなっています。使用しているライブラリ等については[pyproject.toml](/pyproject.toml)等を参照してください。
+python-senpaiはWindows11(22H2)上の[Rye](https://rye-up.com)で構築したPython環境で開発と動作確認をおこなっています。使用しているライブラリ等については[pyproject.toml][pyproject]等を参照してください。
 
 macOSでの動作確認も行っていますが、tkinterのバックエンドに関連する不具合を確認しているため、動作が安定しない場合があります。たとえば、macOS上のRyeで環境構築して実行するとmatplotlib.backends.backend_tkaggのimportに失敗することを確認しています。この問題については、対策としてbackend_tkaggのimportに失敗したとき用の分岐を設けています。
 
 ## Usage
 
-ryeを使用する場合はこのリポジトリをclone後に以下を実行することで環境構築が実行されます。CUDAを有効にする場合は事前に[pyproject.toml](/pyproject.toml)内の以下のコメントアウトを外してください。
+ryeを使用する場合はこのリポジトリをclone後に以下を実行することで環境構築が実行されます。CUDAを有効にする場合は事前に[pyproject.toml][pyproject]内の以下のコメントアウトを外してください。
 ```
 [[tool.rye.sources]]
 name = "torch"
@@ -42,7 +45,7 @@ rye sync
 
 pipでインストールできるライブラリのみを使用しているので、rye以外の方法（Anacondaなど）でも環境を構築することが可能です。
 
-環境構築後は[launcher.py](/src/launcher.py)を実行することでアプリケーションが起動します。
+環境構築後は[launcher.py][launcher]を実行することでアプリケーションが起動します。
 
 ```
 python src/launcher.py
