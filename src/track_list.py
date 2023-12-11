@@ -7,7 +7,7 @@ import glob
 import pandas as pd
 
 from gui_parts import TempFile
-import windows_and_mac
+from python_senpai import windows_and_mac
 
 
 class App(ttk.Frame):

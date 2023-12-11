@@ -7,7 +7,7 @@ import datetime
 
 from python_senpai import vcap
 import detector_proc
-import windows_and_mac
+from python_senpai import windows_and_mac
 
 
 class App(ttk.Frame):
