@@ -15,13 +15,13 @@ python-senpaiは、行動分析と行動観察を行うためのアプリケー�
 
 ## Requirement
 
-python-senpaiはWindows11(22H2)上の[Rye](https://rye-up.com)で構築したPython環境で開発と動作確認をおこなっています。使用しているライブラリ等については[pyproject.toml](pyproject.toml)等を参照してください。
+python-senpaiはWindows11(22H2)上の[Rye](https://rye-up.com)で構築したPython環境で開発と動作確認をおこなっています。使用しているライブラリ等については[pyproject.toml](/pyproject.toml)等を参照してください。
 
 macOSでの動作確認も行っていますが、tkinterのバックエンドに関連する不具合を確認しているため、動作が安定しない場合があります。たとえば、macOS上のRyeで環境構築して実行するとmatplotlib.backends.backend_tkaggのimportに失敗することを確認しています。この問題については、対策としてbackend_tkaggのimportに失敗したとき用の分岐を設けています。
 
 ## Usage
 
-ryeを使用する場合はこのリポジトリをclone後に以下を実行することで環境構築が実行されます。CUDAを有効にする場合は事前に[pyproject.toml](pyproject.toml)内の以下のコメントアウトを外してください。
+ryeを使用する場合はこのリポジトリをclone後に以下を実行することで環境構築が実行されます。CUDAを有効にする場合は事前に[pyproject.toml](/pyproject.toml)内の以下のコメントアウトを外してください。
 ```
 [[tool.rye.sources]]
 name = "torch"
@@ -42,7 +42,7 @@ rye sync
 
 pipでインストールできるライブラリのみを使用しているので、rye以外の方法（Anacondaなど）でも環境を構築することが可能です。
 
-環境構築後は[launcher.py](src/launcher.py)を実行することでアプリケーションが起動します。
+環境構築後は[launcher.py](/src/launcher.py)を実行することでアプリケーションが起動します。
 
 ```
 python src/launcher.py
@@ -55,14 +55,14 @@ rye run launcher
 ## Applications
 
 このプロジェクトでは、以下のそれぞれ独立したアプリケーションをlauncher.pyが呼び出す構成になっています。
- - [video_to_keypoints.py](src/video_to_keypoints.py)
- - [track_list.py](src/track_list.py)
- - [keypoints_to_band.py](src/keypoints_to_band.py)
- - [keypoints_to_mp4.py](src/keypoints_to_mp4.py)
- - [keypoints_to_trajplot.py](src/keypoints_to_trajplot.py)
- - [keypoints_to_vector.py](src/keypoints_to_vector.py)
- - [keypoints_to_recuplot.py](src/keypoints_to_recuplot.py)
- - [scene_table.py](src/scene_table.py)
+ - [video_to_keypoints.py](/src/video_to_keypoints.py)
+ - [track_list.py](/src/track_list.py)
+ - [keypoints_to_band.py](/src/keypoints_to_band.py)
+ - [keypoints_to_mp4.py](/src/keypoints_to_mp4.py)
+ - [keypoints_to_trajplot.py](/src/keypoints_to_trajplot.py)
+ - [keypoints_to_vector.py](/src/keypoints_to_vector.py)
+ - [keypoints_to_recuplot.py](/src/keypoints_to_recuplot.py)
+ - [scene_table.py](/src/scene_table.py)
 
 ## Interface
 
@@ -81,15 +81,15 @@ trk_df = pd.read_pickle("path/to/track_file.pkl")
 print(trk_df.attrs)
 ```
 
-また[print_track_file.py](src/samplecode/print_track_file.py)にはTrack fileを開くための基本的なサンプルコードを記述しています。
+また[print_track_file.py](/src/samplecode/print_track_file.py)にはTrack fileを開くための基本的なサンプルコードを記述しています。
 
 ### Calculated track file
 
-[keypoints_to_vector.py](src/keypoints_to_vector.py)で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で保存されますが、データの構造が少し異なります。ファイル拡張子は'.pkl'です。
+[keypoints_to_vector.py](/src/keypoints_to_vector.py)で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で保存されますが、データの構造が少し異なります。ファイル拡張子は'.pkl'です。
 
 Calculated track fileは2-level-multi-indexでデータを保持しています。indexの名称はlevel 0から順に'frame', 'member'です。columnsの名称は計算の内容に準じますが、必ず'timestamp'が含まれています。
 
 ### Temporary file
 
 アプリケーションの設定値や直近で読み込まれたTrack fileのパスは、Pickle化されたPythonのdictionary型で保存されます。ファイル名は'temp.pkl'です。このファイルが存在しない場合はアプリケーションが(初期値を用いて)自動生成します。したがって、設定値をクリアする等の目的で、ファイルを手動で削除(ゴミ箱に移動)することができます。
-'temp.pkl'は[gui_parts.py](src/gui_parts.py)が管理しています。
+'temp.pkl'は[gui_parts.py](/src/gui_parts.py)が管理しています。
