@@ -10,6 +10,8 @@
 [keypoints_to_vector]: https://github.com/nishimura5/python_senpai/blob/master/src/keypoints_to_vector.py
 [keypoints_to_recuplot]: https://github.com/nishimura5/python_senpai/blob/master/src/keypoints_to_recuplot.py
 [scene_table]: https://github.com/nishimura5/python_senpai/blob/master/src/scene_table.py
+[gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
+[print_track_file]: https://github.com/nishimura5/python_senpai/blob/master/src/samplecode/print_track_file.py
 
 Readme in English is [here](README-en.md)
 
@@ -92,15 +94,15 @@ trk_df = pd.read_pickle("path/to/track_file.pkl")
 print(trk_df.attrs)
 ```
 
-また[print_track_file.py](/src/samplecode/print_track_file.py)にはTrack fileを開くための基本的なサンプルコードを記述しています。
+また[print_track_file.py][print_track_file]にはTrack fileを開くための基本的なサンプルコードを記述しています。
 
 ### Calculated track file
 
-[keypoints_to_vector.py](/src/keypoints_to_vector.py)で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で保存されますが、データの構造が少し異なります。ファイル拡張子は'.pkl'です。
+[keypoints_to_vector.py][keypoints_to_vector]で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で保存されますが、データの構造が少し異なります。ファイル拡張子は'.pkl'です。
 
 Calculated track fileは2-level-multi-indexでデータを保持しています。indexの名称はlevel 0から順に'frame', 'member'です。columnsの名称は計算の内容に準じますが、必ず'timestamp'が含まれています。
 
 ### Temporary file
 
 アプリケーションの設定値や直近で読み込まれたTrack fileのパスは、Pickle化されたPythonのdictionary型で保存されます。ファイル名は'temp.pkl'です。このファイルが存在しない場合はアプリケーションが(初期値を用いて)自動生成します。したがって、設定値をクリアする等の目的で、ファイルを手動で削除(ゴミ箱に移動)することができます。
-'temp.pkl'は[gui_parts.py](/src/gui_parts.py)が管理しています。
+'temp.pkl'は[gui_parts.py][gui_parts]が管理しています。
