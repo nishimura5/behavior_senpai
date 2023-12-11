@@ -8,7 +8,7 @@ from tkinter import filedialog
 
 import pandas as pd
 
-import keypoints_proc
+from python_senpai import keypoints_proc
 
 
 class PklSelector(ttk.Frame):

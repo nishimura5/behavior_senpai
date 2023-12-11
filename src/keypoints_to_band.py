@@ -7,9 +7,9 @@ import numpy as np
 
 from gui_parts import PklSelector, TimeSpanEntry, TempFile
 from band_plotter import BandPlotter
-import time_format
-import keypoints_proc
-import vcap
+from python_senpai import time_format
+from python_senpai import keypoints_proc
+from python_senpai import vcap
 
 
 class App(ttk.Frame):

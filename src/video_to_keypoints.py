@@ -5,7 +5,7 @@ from tkinter import filedialog
 import glob
 import datetime
 
-import vcap
+from python_senpai import vcap
 import detector_proc
 import windows_and_mac
 

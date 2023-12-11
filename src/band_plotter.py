@@ -15,7 +15,7 @@ except ImportError:
 else:
     USE_TKAGG = True 
 
-import time_format
+from python_senpai import time_format
 import yolo_drawer
 import mediapipe_drawer
 

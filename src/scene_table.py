@@ -4,7 +4,7 @@ from tkinter import ttk
 import pandas as pd
 
 from gui_parts import PklSelector, TimeSpanEntry
-import time_format
+from python_senpai import time_format
 
 
 class App(ttk.Frame):

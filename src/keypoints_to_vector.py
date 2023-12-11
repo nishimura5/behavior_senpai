@@ -7,9 +7,9 @@ import pandas as pd
 
 from gui_parts import PklSelector, TimeSpanEntry, MemberKeypointComboboxesForCross, ThinningOption, TempFile
 from line_plotter import LinePlotter
-import keypoints_proc
-import time_format
-import vcap
+from python_senpai import keypoints_proc
+from python_senpai import time_format
+from python_senpai import vcap
 
 
 class App(ttk.Frame):
