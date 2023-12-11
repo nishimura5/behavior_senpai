@@ -79,6 +79,9 @@ class App(ttk.Frame):
         if os.path.exists(self.pkl_path) is False:
             return
         self.src_df = pd.read_pickle(self.pkl_path)
+        if keypoints_proc.has_keypoint(self.src_df) is False:
+            print("No keypoint index in {}".format(self.pkl_path))
+            return
         pkl_dir = os.path.dirname(self.pkl_path)
         self.cap.set_frame_size(self.src_df.attrs["frame_size"])
         self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
