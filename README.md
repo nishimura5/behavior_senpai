@@ -81,6 +81,8 @@ trk_df = pd.read_pickle("path/to/track_file.pkl")
 print(trk_df.attrs)
 ```
 
+また[print_track_file.py](src/samplecode/print_track_file.py)にはTrack fileを開くための基本的なサンプルコードを記述しています。
+
 ### Calculated track file
 
 [keypoints_to_vector.py](src/keypoints_to_vector.py)で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で保存されますが、データの構造が少し異なります。ファイル拡張子は'.pkl'です。
@@ -90,3 +92,4 @@ Calculated track fileは2-level-multi-indexでデータを保持しています�
 ### Temporary file
 
 アプリケーションの設定値や直近で読み込まれたTrack fileのパスは、Pickle化されたPythonのdictionary型で保存されます。ファイル名は'temp.pkl'です。このファイルが存在しない場合はアプリケーションが(初期値を用いて)自動生成します。したがって、設定値をクリアする等の目的で、ファイルを手動で削除(ゴミ箱に移動)することができます。
+'temp.pkl'は[gui_parts.py](src/gui_parts.py)が管理しています。
