@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import torch
 
+
 def draw(src_img, result):
     anno = Annotate()
     anno.set_img(src_img)
@@ -42,7 +43,10 @@ class Annotate:
         self.line_color = (random.randint(180, 250), random.randint(180, 250), random.randint(180, 250))
 
     def set_track(self, trk):
-        self.pos = self.nose
+        if self.nose[0] != 0 and self.nose[1] != 0:
+            self.pos = self.nose
+        else:
+            self.pos = self.right_shoulder
         self.id = trk
 
     def set_img(self, src_img):
