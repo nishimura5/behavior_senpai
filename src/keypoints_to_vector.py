@@ -104,7 +104,7 @@ class App(ttk.Frame):
         time_min, time_max = self.time_span_entry.get_start_end()
         time_min_msec = self._timedelta_to_msec(time_min)
         time_max_msec = self._timedelta_to_msec(time_max)
-        tar_df = self.src_df.loc[self.src_df["timestamp"].between(time_min_msec, time_max_msec), :]
+        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min_msec, time_max_msec)
 
         # memberとkeypointのインデックス値を文字列に変換
         idx = tar_df.index

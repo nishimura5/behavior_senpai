@@ -80,7 +80,7 @@ class App(ttk.Frame):
         # memberとkeypointのインデックス値を文字列に変換
         idx = self.src_df.index
         self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
-        out_df = self.src_df.loc[self.src_df["timestamp"].between(time_min_msec, time_max_msec), :]
+        out_df = keypoints_proc.filter_by_timerange(self.src_df, time_min_msec, time_max_msec)
 
         if self.cap.isOpened() is True:
             fps = self.cap.get(cv2.CAP_PROP_FPS)

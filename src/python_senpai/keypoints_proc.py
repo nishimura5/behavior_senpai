@@ -14,6 +14,14 @@ def has_keypoint(src_df):
         return False
 
 
+def filter_by_timerange(src_df, start_msec: int, end_msec: int):
+    '''
+    src_dfのtimestampの範囲を[start_msec, end_msec]に絞る
+    '''
+    dst_df = src_df.loc[src_df["timestamp"].between(start_msec, end_msec), :]
+    return dst_df
+
+
 def calc_speed(src_df, step_frame: int):
     '''
     src_dfの各keypointの速さを計算する

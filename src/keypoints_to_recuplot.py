@@ -116,7 +116,7 @@ class App(ttk.Frame):
         time_min, time_max = self.time_span_entry.get_start_end()
         time_min_msec = self._timedelta_to_msec(time_min)
         time_max_msec = self._timedelta_to_msec(time_max)
-        plot_df = plot_df.loc[plot_df["timestamp"].between(time_min_msec, time_max_msec), :]
+        plot_df = keypoints_proc.filter_by_timerange(plot_df, time_min_msec, time_max_msec)
 
         plot_df.index = plot_df.index.set_levels(levels)
 
