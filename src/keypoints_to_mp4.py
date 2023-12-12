@@ -109,14 +109,16 @@ class App(ttk.Frame):
 
         max_frame_num = out_df.index.unique(level='frame').max() + 1
         min_frame_num = out_df.index.unique(level='frame').min()
-        indexes = out_df.sort_index().index
         for i in range(min_frame_num, max_frame_num):
             frame = self.cap.read_anyway()
             frame = cv2.resize(frame, size)
             anno.set_img(frame)
+            frame_df = out_df.loc[pd.IndexSlice[i, :, :], :]
+            indexes = frame_df.sort_index().index
             # draw_allなら全員の姿勢を描画
             if self.draw_all_chk_val.get() is True:
-                for member in indexes.levels[1]:
+                for member in indexes.get_level_values('member').unique():
+                    print(member)
                     dst_img = self._draw(i, member, indexes, anno, scale)
             # out_dfにi, current_memberの組み合わせがない場合はスキップ
             else:
