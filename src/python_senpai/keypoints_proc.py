@@ -22,6 +22,12 @@ def filter_by_timerange(src_df, start_msec: int, end_msec: int):
     return dst_df
 
 
+def zero_point_to_nan(src_df, zero_point: tuple):
+    src_df['x'] = np.where(src_df['x'] == zero_point[0], np.nan, src_df['x'])
+    src_df['y'] = np.where(src_df['y'] == zero_point[1], np.nan, src_df['y'])
+    return src_df
+
+
 def calc_speed(src_df, step_frame: int):
     '''
     src_dfの各keypointの速さを計算する

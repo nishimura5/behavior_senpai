@@ -68,6 +68,9 @@ class App(ttk.Frame):
             time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].max())
         )
         self.pkl_selector.set_prev_next(self.src_df.attrs)
+
+        zero_point = self.src_df.attrs['roi_left_top']
+        self.src_df = keypoints_proc.zero_point_to_nan(self.src_df, zero_point)
         print('load_pkl() done.')
 
     def export(self):
@@ -118,7 +121,6 @@ class App(ttk.Frame):
             # draw_allなら全員の姿勢を描画
             if self.draw_all_chk_val.get() is True:
                 for member in indexes.get_level_values('member').unique():
-                    print(member)
                     dst_img = self._draw(i, member, indexes, anno, scale)
             # out_dfにi, current_memberの組み合わせがない場合はスキップ
             else:
