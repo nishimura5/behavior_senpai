@@ -112,19 +112,24 @@ class App(ttk.Frame):
 
         max_frame_num = out_df.index.unique(level='frame').max() + 1
         min_frame_num = out_df.index.unique(level='frame').min()
+        out_indexes = out_df.sort_index().index
+        frames = out_indexes.get_level_values('frame').unique()
         for i in range(min_frame_num, max_frame_num):
             frame = self.cap.read_anyway()
             frame = cv2.resize(frame, size)
             anno.set_img(frame)
-            frame_df = out_df.loc[pd.IndexSlice[i, :, :], :]
-            indexes = frame_df.sort_index().index
-            # draw_allなら全員の姿勢を描画
-            if self.draw_all_chk_val.get() is True:
-                for member in indexes.get_level_values('member').unique():
-                    dst_img = self._draw(i, member, indexes, anno, scale)
-            # out_dfにi, current_memberの組み合わせがない場合はスキップ
+            if i in frames:
+                frame_df = out_df.loc[pd.IndexSlice[i, :, :], :]
+                indexes = frame_df.sort_index().index
+                # draw_allなら全員の姿勢を描画
+                if self.draw_all_chk_val.get() is True:
+                    for member in indexes.get_level_values('member').unique():
+                        dst_img = self._draw(i, member, indexes, anno, scale)
+                # out_dfにi, current_memberの組み合わせがない場合はスキップ
+                else:
+                    dst_img = self._draw(i, current_member, indexes, anno, scale)
             else:
-                dst_img = self._draw(i, current_member, indexes, anno, scale)
+                dst_img = frame
             cv2.imshow("dst", dst_img)
             key = cv2.waitKey(1) & 0xFF
             if key == ord('x'):
