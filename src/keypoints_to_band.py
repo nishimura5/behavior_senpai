@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-import numpy as np
 
 from gui_parts import PklSelector, TimeSpanEntry, TempFile
 from band_plotter import BandPlotter
@@ -98,7 +97,7 @@ class App(ttk.Frame):
         pkl_dir = os.path.dirname(pkl_path)
         self.cap.set_frame_size(self.src_df.attrs["frame_size"])
         self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
- 
+
         # UIの更新
         self.current_dt_span = None
         self.time_span_entry.update_entry(
@@ -108,13 +107,11 @@ class App(ttk.Frame):
         self.pkl_selector.set_prev_next(self.src_df.attrs)
         self.update_tree() 
 
-        self.src_df['x'] = np.where(self.src_df['x'] == 0, np.nan, self.src_df['x'])
-        self.src_df['y'] = np.where(self.src_df['y'] == 0, np.nan, self.src_df['y'])
         idx = self.src_df.index
         self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
         self.band.set_vcap(self.cap)
         print('load_pkl() done.')
-        
+
     def draw(self):
         # treeから選択した行のmemberを取得
         current_member = str(self.tree.item(self.tree.selection()[0])["values"][0])
@@ -134,8 +131,11 @@ class App(ttk.Frame):
     def update_tree(self):
         self.tree.delete(*self.tree.get_children())
         members = self.src_df.index.get_level_values(1).unique()
+        zero_point = self.src_df.attrs['roi_left_top']
+        tree_df = keypoints_proc.zero_point_to_nan(self.src_df, zero_point)
+
         for member in members:
-            sliced_df = self.src_df.loc[pd.IndexSlice[:, member, :], :]
+            sliced_df = tree_df.loc[pd.IndexSlice[:, member, :], :]
             sliced_df = sliced_df.loc[~(sliced_df['x'].isna()) & (~sliced_df['y'].isna())]
             kpf = len(sliced_df)/len(sliced_df.index.get_level_values(0).unique())
             head_timestamp = time_format.msec_to_timestr_with_fff(sliced_df.head(1)['timestamp'].values[0])
@@ -143,7 +143,7 @@ class App(ttk.Frame):
             duration = sliced_df.tail(1)['timestamp'].values[0] - sliced_df.head(1)['timestamp'].values[0]
             duration_str = time_format.msec_to_timestr_with_fff(duration)
             self.tree.insert("", "end", values=(member, head_timestamp, tail_timestamp, duration_str, f"{kpf:.2f}"))
- 
+
     def rename_member(self):
         """
         memberをリネームする、モデルによってはmemberはintで保持されているが、リネーム後はstrになる

@@ -71,8 +71,9 @@ class App(ttk.Frame):
         self.pkl_selector.set_prev_next(self.src_df.attrs)
         self.current_dt_span = None
 
-        self.src_df['x'] = np.where(self.src_df['x'] == 0, np.nan, self.src_df['x'])
-        self.src_df['y'] = np.where(self.src_df['y'] == 0, np.nan, self.src_df['y'])
+        zero_point = self.src_df.attrs['roi_left_top']
+        self.src_df = keypoints_proc.zero_point_to_nan(self.src_df, zero_point)
+
         self.traj.set_vcap(self.cap)
         print('load_pkl() done.')
 
