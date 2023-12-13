@@ -86,6 +86,33 @@ def calc_recurrence(src_arr, threshold: float):
     return dst_mat
 
 
+def is_in_poly(src_df, target_keypoint, poly_points, scale=1.0):
+    '''
+    poly_pointsの内側にtarget_keypointがあるかを判定する
+    '''
+    tar_point = src_df.loc[pd.IndexSlice[:, :, target_keypoint], :].droplevel(2)
+    in_out_df = pd.DataFrame()
+    for i, point in enumerate(poly_points):
+        vect_df = tar_point.copy()
+        x_to = int(point[0] / scale)
+        y_to = int(point[1] / scale)
+        x_from = int(poly_points[i-1][0] / scale)
+        y_from = int(poly_points[i-1][1] / scale)
+        anchor_vector = np.array([x_to - x_from, y_to - y_from])
+        vect_df['x'] = tar_point['x'] - x_from
+        vect_df['y'] = tar_point['y'] - y_from
+        cross_sr = anchor_vector[0] * vect_df['y'] - anchor_vector[1] * vect_df['x']
+        cross_sr = cross_sr < 0
+        cross_df = cross_sr.to_frame()
+        cross_df.columns = [i]
+        in_out_df = pd.concat([in_out_df, cross_df], axis=1)
+    # 全てのcolumnsがTrueならTrue
+    isin_df = in_out_df.all(axis=1).to_frame()
+    col_name = f"is_{target_keypoint}_in"
+    isin_df.columns = [col_name]
+    return isin_df
+
+
 def calc_plus(src_df, kp0: str, kp1: str, kp2: str):
     '''
     kp0 -> kp1とkp0 -> kp2のベクトル和を計算する
@@ -163,6 +190,7 @@ def calc_cross_dot_plus(src_df, kp0: str, kp1: str, kp2: str):
 
     dst_df = pd.concat([cross_df, dot_df, plus_df], axis=1)
     return dst_df
+
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt

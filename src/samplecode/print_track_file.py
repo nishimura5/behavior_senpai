@@ -19,6 +19,7 @@ for trk_path in trk_list:
         print(trk_df.head())
     else:
         print("No keypoint index in {}".format(trk_path))
+        print(trk_df.head())
 
     print("[attrs]")
     print(trk_df.attrs)
@@ -27,4 +28,5 @@ for trk_path in trk_list:
     print("[index]")
     print("frame :", trk_df.index.get_level_values("frame").unique().size)
     print("member:", trk_df.index.get_level_values("member").unique().size)
-    print("keypoint:", trk_df.index.get_level_values("keypoint").unique().size)
+    if keypoints_proc.has_keypoint(trk_df) is True:
+        print("keypoint:", trk_df.index.get_level_values("keypoint").unique().size)
