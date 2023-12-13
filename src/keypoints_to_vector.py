@@ -135,13 +135,12 @@ class App(ttk.Frame):
                 self.dst_df = pd.concat([self.dst_df, add_df], axis=1)
 
     def export(self):
-        file_name = os.path.basename(self.pkl_path)
-        dst_dir = os.path.join(os.path.dirname(self.pkl_path), os.pardir, 'calc')
         timestamp_df = self.src_df.loc[:, 'timestamp'].droplevel(2).to_frame()
         timestamp_df = timestamp_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         self.dst_df = self.dst_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         export_df = pd.concat([self.dst_df, timestamp_df], axis=1)
-        file_inout.save_pkl(dst_dir, file_name, export_df, proc_history="vector")
+        export_df.attrs = self.src_df.attrs
+        file_inout.save_pkl(self.pkl_path, export_df, proc_history="vector")
 
     def clear(self):
         self.lineplot.clear()
