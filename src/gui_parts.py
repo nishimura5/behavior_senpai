@@ -98,12 +98,12 @@ class MemberKeypointComboboxes(ttk.Frame):
         combo_df = self.src_df
 
         if keypoints_proc.has_keypoint(self.src_df) is True:
-            self.keypoint_combo.pack(side=tk.LEFT, padx=5)
             # memberとkeypointのインデックス値を文字列に変換
             idx = combo_df.index
             combo_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
+            self.keypoint_combo.state(['readonly'])
         else:
-            self.keypoint_combo.pack_forget()
+            self.keypoint_combo.state(['disabled'])
 
         self.member_combo["values"] = combo_df.index.get_level_values("member").unique().tolist()
         self.member_combo.current(0)
