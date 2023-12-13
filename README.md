@@ -2,13 +2,14 @@
 
 [pyproject]: https://github.com/nishimura5/python_senpai/blob/master/pyproject.toml
 [launcher]: https://github.com/nishimura5/python_senpai/blob/master/src/launcher.py
-[video_to_keypoints]: https://github.com/nishimura5/python_senpai/blob/master/src/video_to_keypoints.py
-[track_list]: https://github.com/nishimura5/python_senpai/blob/master/src/track_list.py
-[keypoints_to_band]: https://github.com/nishimura5/python_senpai/blob/master/src/keypoints_to_band.py
-[keypoints_to_mp4]: https://github.com/nishimura5/python_senpai/blob/master/src/keypoints_to_mp4.py
-[keypoints_to_trajplot]: https://github.com/nishimura5/python_senpai/blob/master/src/keypoints_to_trajplot.py
-[keypoints_to_vector]: https://github.com/nishimura5/python_senpai/blob/master/src/keypoints_to_vector.py
-[keypoints_to_recuplot]: https://github.com/nishimura5/python_senpai/blob/master/src/keypoints_to_recuplot.py
+[app_detect]: https://github.com/nishimura5/python_senpai/blob/master/src/app_detect.py
+[app_track_list]: https://github.com/nishimura5/python_senpai/blob/master/src/app_track_list.py
+[app_member_edit]: https://github.com/nishimura5/python_senpai/blob/master/src/app_member_edit.py
+[app_make_mp4]: https://github.com/nishimura5/python_senpai/blob/master/src/app_make_mp4.py
+[app_trajplot]: https://github.com/nishimura5/python_senpai/blob/master/src/app_trajplot.py
+[app_area_filter]: https://github.com/nishimura5/python_senpai/blob/master/src/app_area_filter.py
+[app_calc_vector]: https://github.com/nishimura5/python_senpai/blob/master/src/app_calc_vector.py
+[app_recuplot]: https://github.com/nishimura5/python_senpai/blob/master/src/app_recuplot.py
 [scene_table]: https://github.com/nishimura5/python_senpai/blob/master/src/scene_table.py
 [gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
 [print_track_file]: https://github.com/nishimura5/python_senpai/blob/master/src/samplecode/print_track_file.py
@@ -68,20 +69,21 @@ rye run launcher
 ## Applications
 
 このプロジェクトでは、以下のそれぞれ独立したアプリケーションをlauncher.pyが呼び出す構成になっています。
- - [video_to_keypoints.py][video_to_keypoints]
- - [track_list.py][track_list]
- - [keypoints_to_band.py][keypoints_to_band]
- - [keypoints_to_mp4.py][keypoints_to_mp4]
- - [keypoints_to_trajplot.py][keypoints_to_trajplot]
- - [keypoints_to_vector.py][keypoints_to_vector]
- - [keypoints_to_recuplot.py][keypoints_to_recuplot]
+ - [app_detect.py][app_detect]
+ - [app_track_list.py][app_track_list]
+ - [app_member_edit.py][app_member_edit]
+ - [app_make_mp4.py][app_make_mp4]
+ - [app_trajplot.py][app_trajplot]
+ - [app_area_filter.py][app_area_filter]
+ - [app_calc_vector.py][app_calc_vector]
+ - [app_recuplot.py][app_recuplot]
  - [scene_table.py][scene_table]
 
 ## Interface
 
 ### Track file
 
-video_to_keypoints.pyで姿勢推定を行った結果としての時系列座標データは、Pickle化されたPandasのDataFrame型で保存されます。python-senpaiはこれをTrackファイルと呼んでいます。ファイル拡張子は'.pkl'です。
+app_detect.pyで姿勢推定を行った結果としての時系列座標データは、Pickle化されたPandasのDataFrame型で保存されます。python-senpaiはこれをTrackファイルと呼んでいます。ファイル拡張子は'.pkl'です。
 
 Trackファイルは3-level-multi-indexで時系列座標データを保持しています。indexの名称はlevel 0から順に'frame', 'member', 'keypoint'です。frameは0から始まる整数で、動画のフレーム番号と対応しています。memberとkeypointは姿勢推定モデルが検出したkeypointsのIDです。Trackファイルには必ず'x', 'y', 'timestamp'の3つのcolumnsが含まれています。姿勢推定モデルの仕様に応じて、そのほかに、'z'や'conf'といったcolumnsが含まれます。
 
@@ -98,7 +100,7 @@ print(trk_df.attrs)
 
 ### Calculated track file
 
-[keypoints_to_vector.py][keypoints_to_vector]で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で保存されますが、データの構造が少し異なります。ファイル拡張子は'.pkl'です。
+[app_calc_vector.py][app_calc_vector]や[app_area_filter][app_area_filter]で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で保存されますが、データの構造が少し異なります。ファイル拡張子は'.pkl'です。
 
 Calculated track fileは2-level-multi-indexでデータを保持しています。indexの名称はlevel 0から順に'frame', 'member'です。columnsの名称は計算の内容に準じますが、必ず'timestamp'が含まれています。
 
