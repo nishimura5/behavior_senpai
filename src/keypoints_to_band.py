@@ -84,7 +84,7 @@ class App(ttk.Frame):
 
         self.cap = vcap.VideoCap()
         self.load_pkl()
- 
+
     def load_pkl(self):
         # ファイルのロード
         pkl_path = self.pkl_selector.get_trk_path()

@@ -65,7 +65,7 @@ class App(ttk.Frame):
 
         self.cap = vcap.VideoCap()
         self.load_pkl()
- 
+
     def load_pkl(self):
         # ファイルのロード
         pkl_path = self.pkl_selector.get_trk_path()
@@ -87,7 +87,7 @@ class App(ttk.Frame):
 
         self.recu.set_vcap(self.cap)
         print('load_pkl() done.')
-        
+
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
         idx = self.src_df.index

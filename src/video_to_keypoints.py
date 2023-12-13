@@ -34,7 +34,7 @@ class App(ttk.Frame):
         bat_chk = ttk.Checkbutton(bat_mode_frame, text="Bat mode", variable=self.bat_chk_val)
         bat_chk.pack(side=tk.LEFT)
         self.bat_chk_val.trace("w", self._on_bat_mode_changed)
- 
+
         # ファイル/フォルダ選択
         top_btn_frame = ttk.Frame(self)
         top_btn_frame.pack(pady=10)

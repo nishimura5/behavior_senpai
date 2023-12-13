@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-import numpy as np
 
 from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions, TempFile
 from trajectory_plotter import TrajectoryPlotter
@@ -49,7 +48,7 @@ class App(ttk.Frame):
         plot_frame.pack(pady=5)
 
         self.traj.pack(plot_frame)
- 
+
         self.cap = vcap.VideoCap()
         self.load_pkl()
 
@@ -65,7 +64,7 @@ class App(ttk.Frame):
         pkl_dir = os.path.dirname(pkl_path)
         self.cap.set_frame_size(self.src_df.attrs["frame_size"])
         self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
- 
+
         # UIの更新
         self.member_keypoints_combos.set_df(self.src_df)
         self.pkl_selector.set_prev_next(self.src_df.attrs)
