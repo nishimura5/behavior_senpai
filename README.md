@@ -10,7 +10,7 @@
 [app_area_filter]: https://github.com/nishimura5/python_senpai/blob/master/src/app_area_filter.py
 [app_calc_vector]: https://github.com/nishimura5/python_senpai/blob/master/src/app_calc_vector.py
 [app_recuplot]: https://github.com/nishimura5/python_senpai/blob/master/src/app_recuplot.py
-[scene_table]: https://github.com/nishimura5/python_senpai/blob/master/src/scene_table.py
+[app_scene_table]: https://github.com/nishimura5/python_senpai/blob/master/src/app_scene_table.py
 [gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
 [print_track_file]: https://github.com/nishimura5/python_senpai/blob/master/src/samplecode/print_track_file.py
 
@@ -77,7 +77,7 @@ rye run launcher
  - [app_area_filter.py][app_area_filter]
  - [app_calc_vector.py][app_calc_vector]
  - [app_recuplot.py][app_recuplot]
- - [scene_table.py][scene_table]
+ - [app_scene_table.py][app_scene_table]
 
 ## Interface
 

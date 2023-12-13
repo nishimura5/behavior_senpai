@@ -23,7 +23,7 @@ class App(ttk.Frame):
         self.pkl_selector.set_command(cmd=self.load_pkl)
         self.time_span_entry = TimeSpanEntry(load_frame)
         self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
- 
+
         entry_frame = ttk.Frame(self)
         entry_frame.pack(pady=5)
         add_btn = ttk.Button(entry_frame, text="add", command=self._add_row)
@@ -51,10 +51,10 @@ class App(ttk.Frame):
     def load_pkl(self):
         pkl_path = self.pkl_selector.get_trk_path()
         self.src_df = pd.read_pickle(pkl_path)
-        
+
         if 'scene_table' not in self.src_df.attrs.keys():
             return
-        
+
         scene_table = self.src_df.attrs['scene_table']
         # self.treeをクリアしてattrs['scene_table']の値を入れる
         for item in self.tree.get_children(''):
@@ -87,7 +87,7 @@ class App(ttk.Frame):
 
         # tree_viewをstartカラムでソート
         self._treeview_sort_column(self.tree, "start")
-    
+
     def _treeview_sort_column(self, tv, col):
         tar_list = [(tv.set(k, col), k) for k in tv.get_children('')]
         tar_list.sort()

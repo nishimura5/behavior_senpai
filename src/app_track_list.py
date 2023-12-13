@@ -210,7 +210,7 @@ class TrackList:
         if take not in self.track_dict.keys():
             self.track_dict[take] = LinkList()
         self.track_dict[take].append_link_item(item)
-    
+
     def get_dict(self):
         dst_dict = {}
         for take, links in self.track_dict.items():
