@@ -14,8 +14,6 @@
 [gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
 [print_track_file]: https://github.com/nishimura5/python_senpai/blob/master/src/samplecode/print_track_file.py
 
-Readme in English is [here](README-en.md)
-
 python-senpaiは、行動分析と行動観察を行うためのアプリケーションです。また、開発を通じてPythonでのコーディングやデータ解析を学ぶためのプロジェクトです。Pythonの基礎(if文やfor文、リスト内包表記、classあたりを指します)を習得した方が、実用的なアプリケーションの開発に挑戦するための足掛かりにできるよう構成しています。とりわけ以下のライブラリの使用方法について学習することができます。
 
  - PandasのMultiIndex
@@ -69,14 +67,14 @@ rye run launcher
 ## Applications
 
 このプロジェクトでは、以下のそれぞれ独立したアプリケーションをlauncher.pyが呼び出す構成になっています。
- - [app_detect.py][app_detect]
- - [app_track_list.py][app_track_list]
- - [app_member_edit.py][app_member_edit]
- - [app_make_mp4.py][app_make_mp4]
- - [app_trajplot.py][app_trajplot]
- - [app_area_filter.py][app_area_filter]
- - [app_calc_vector.py][app_calc_vector]
- - [app_recuplot.py][app_recuplot]
+ - [app_detect.py][app_detect]：姿勢推定を実行し動画ファイルからTrackファイルを作成します。
+ - [app_track_list.py][app_track_list]：Trackファイルの順番を設定します。
+ - [app_member_edit.py][app_member_edit]：Trackファイルに記録されたmemberの名称を編集します。
+ - [app_make_mp4.py][app_make_mp4]：Trackファイルのデータを動画ファイルにアノテーションして保存します。
+ - [app_trajplot.py][app_trajplot]：x-y座標の時系列折れ線グラフを描画します。
+ - [app_area_filter.py][app_area_filter]：指定した領域内にキーポイントが存在するかを判定し結果を出力します。
+ - [app_calc_vector.py][app_calc_vector]：3点のキーポイントからベクトルの和、内積、外積を計算し結果を出力します。
+ - [app_recuplot.py][app_recuplot]：リカレンスプロットを描画します。
  - [app_scene_table.py][app_scene_table]
 
 ## Interface
@@ -85,7 +83,25 @@ rye run launcher
 
 app_detect.pyで姿勢推定を行った結果としての時系列座標データは、Pickle化されたPandasのDataFrame型で保存されます。python-senpaiはこれをTrackファイルと呼んでいます。ファイル拡張子は'.pkl'です。
 
-Trackファイルは3-level-multi-indexで時系列座標データを保持しています。indexの名称はlevel 0から順に'frame', 'member', 'keypoint'です。frameは0から始まる整数で、動画のフレーム番号と対応しています。memberとkeypointは姿勢推定モデルが検出したkeypointsのIDです。Trackファイルには必ず'x', 'y', 'timestamp'の3つのcolumnsが含まれています。姿勢推定モデルの仕様に応じて、そのほかに、'z'や'conf'といったcolumnsが含まれます。
+Trackファイルは3-level-multi-indexで時系列座標データを保持しています。indexの名称はlevel 0から順に'frame', 'member', 'keypoint'です。frameは0から始まる整数で、動画のフレーム番号と対応しています。memberとkeypointは姿勢推定モデルが検出したkeypointsのIDです。Trackファイルには必ず'x', 'y', 'timestamp'の3つのcolumnsが含まれています。x,yの単位はpx、timestampの単位はミリ秒です。
+
+Trackファイルに格納されているDataFrameの例を以下に示します。なおcolumnsには姿勢推定モデルの仕様に応じて、そのほかに、'z'や'conf'といったcolumnが含まれることがあります。
+
+|  |  |  | x | y | timestamp |
+| - | - | - | - | - | - |
+| frame | member | keypoint |  |  |  |
+| 0 | 1 | 0 | 1365.023560 | 634.258484 | 0.0 |
+|  |  | 1 | 1383.346191 | 610.686951 | 0.0 |
+|  |  | 2 | 1342.362061 | 621.434998 | 0.0 |
+|  |  | ... | ... | ... | ... |
+|  |  | 16 | 1417.897583 | 893.739258 | 0.0 |
+|  | 2 | 0 | 2201.367920 | 846.174194 | 0.0 |
+|  |  | 1 | 2270.834473 | 1034.986328 | 0.0 |
+|  |  | ... | ... | ... | ... |
+|  |  | 16 | 2328.100098 | 653.919312 | 0.0 |
+| 1 | 1 | 0 | 1365.023560 | 634.258484 | 33.333333 |
+|  |  | 1 | 1383.346191 | 610.686951 | 33.333333 |
+|  |  | ... | ... | ... | ... |
 
 Trackファイルに格納されたDataFrameのattrsプロパティには、元の動画ファイルのファイル名やそのフレームサイズ、姿勢推定に使用したモデルの名称等が記録されています。
 
