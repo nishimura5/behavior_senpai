@@ -69,7 +69,10 @@ class App(ttk.Frame):
         )
         self.pkl_selector.set_prev_next(self.src_df.attrs)
 
-        zero_point = self.src_df.attrs['roi_left_top']
+        if "roi_left_top" in self.src_df.attrs:
+            zero_point = self.src_df.attrs['roi_left_top']
+        else:
+            zero_point = (0, 0)
         self.src_df = keypoints_proc.zero_point_to_nan(self.src_df, zero_point)
         print('load_pkl() done.')
 
