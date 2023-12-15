@@ -24,7 +24,7 @@ class YoloDetector:
                 ret, frame = self.cap.get_roi_frame()
             else:
                 ret, frame = self.cap.read()
-            
+
             result = self.model.track(frame, verbose=False, persist=True, classes=0)
             timestamp = self.cap.get(cv2.CAP_PROP_POS_MSEC)
 
@@ -76,3 +76,14 @@ class YoloDetector:
         text_pos = (font_size*5, font_size*15)
         cv2.putText(src_img, f"{pos}/{self.total_frame_num}", text_pos, txt_font, font_size, (0, 0, 0), font_size*3)
         cv2.putText(src_img, f"{pos}/{self.total_frame_num}", text_pos, txt_font, font_size, (255, 255, 255), font_size)
+
+
+def detect_from_pitcure(src_path):
+    src_img = cv2.imread(src_path)
+
+    model = YOLO(model="yolov8x-pose-p6.pt")
+    result = model.track(src_img, verbose=False, persist=True, classes=0)
+
+    anno_img = yolo_drawer.draw(src_img, result)
+    cv2.imshow("dst", anno_img)
+    cv2.waitKey(0)
