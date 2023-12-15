@@ -31,11 +31,22 @@ Behavior Senpaiは、定量的行動観察を行うためのアプリケーシ�
 
 Behavior SenpaiはWindows11(23H2)上の[Rye](https://rye-up.com)で構築したPython環境で開発と動作確認をおこなっています。使用しているライブラリ等については[pyproject.toml][pyproject]等を参照してください。
 
-macOSでの動作確認も行っていますが、tkinterのバックエンドに関連する不具合を確認しているため、動作が安定しない場合があります。たとえば、macOS上のRyeで環境構築して実行するとmatplotlib.backends.backend_tkaggのimportに失敗することを確認しています。この問題については、対策としてbackend_tkaggのimportに失敗したとき用の分岐を設けています。
+ただし、Behavior Senpaiはpipでインストールできるライブラリのみを使用しているので、Rye以外の方法（Anacondaなど）でも環境を構築することが可能です。
 
 ## Usage
 
-ryeを使用する場合はこのリポジトリをclone後に以下を実行することで環境構築が実行されます。CUDAを有効にする場合は事前に[pyproject.toml][pyproject]内の以下のコメントアウトを外してください。
+ここではRyeの使用を想定して導入から起動までの手順を記載しています。
+
+### Windows
+
+Ryeを使用している場合は以下を実行することで環境構築が実行されます。
+
+```
+rye sync
+```
+
+CUDAを有効にする場合は事前に[pyproject.toml][pyproject]内の以下のコメントアウトを外してください。
+
 ```
 [[tool.rye.sources]]
 name = "torch"
@@ -43,28 +54,21 @@ url = "https://download.pytorch.org/whl/cu118"
 type = "index"
 ```
 
-mac環境ではtkaggが使用できない場合があるため、以下のコメントアウトを外してpyqt5をaddしてください。
-```
-"pyqt5>=5.15.10",
-```
-
-ryeを使用する場合は以下のコマンドで環境構築が完了します。
-
-```
-rye sync
-```
-
-pipでインストールできるライブラリのみを使用しているので、rye以外の方法（Anacondaなど）でも環境を構築することが可能です。
-
-環境構築後は[launcher.py][launcher]を実行することでアプリケーションが起動します。
+環境構築後はlauncher.batを実行するか、以下のコマンドで[launcher.py][launcher]を実行することでアプリケーションが起動します。
 
 ```
 python src/launcher.py
 ```
-or
+
+### Mac
+
+mac環境ではtkaggが使用できない場合があるため、以下のコメントアウトを外してください。
+
 ```
-rye run launcher
+"pyqt5>=5.15.10",
 ```
+
+macOSでの動作確認において、tkinterのバックエンドに関連する不具合を確認しているため、動作が安定しない場合があります。たとえば、macOS上のRyeで環境構築して実行するとmatplotlib.backends.backend_tkaggのimportに失敗することを確認しています。この問題については、対策としてbackend_tkaggのimportに失敗したとき用の分岐を設けています。
 
 ## Applications
 
