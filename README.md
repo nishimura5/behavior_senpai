@@ -1,4 +1,4 @@
-# python-senpai
+# Behavior Senpai
 
 [pyproject]: https://github.com/nishimura5/python_senpai/blob/master/pyproject.toml
 [launcher]: https://github.com/nishimura5/python_senpai/blob/master/src/launcher.py
@@ -14,7 +14,9 @@
 [gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
 [print_track_file]: https://github.com/nishimura5/python_senpai/blob/master/src/samplecode/print_track_file.py
 
-python-senpaiは、行動分析と行動観察を行うためのアプリケーションです。また、開発を通じてPythonでのコーディングやデータ解析を学ぶためのプロジェクトです。Pythonの基礎(if文やfor文、リスト内包表記、classあたりを指します)を習得した方が、実用的なアプリケーションの開発に挑戦するための足掛かりにできるよう構成しています。とりわけ以下のライブラリの使用方法について学習することができます。
+Behavior Senpaiは、定量的行動観察を行うためのアプリケーションです。ビデオカメラで撮影した人の行動をkeypoint検出AIを使用して時系列座標データ化し、その時系列座標データを用いて人の行動を定量的に分析することができます。
+
+また、Behavior SenpaiはPythonを使用したデータ解析を学ぶためのプロジェクトでもあります。Pythonの基礎(if文やfor文、リスト内包表記、classあたりを指します)を習得した人が、実用的なアプリケーションの開発に挑戦するための足掛かりにできるよう構成しています。とりわけ以下のライブラリの使用方法について学習することができます。
 
  - PandasのMultiIndex
  - Matplotlibでの時系列データ描画
@@ -27,7 +29,7 @@ python-senpaiは、行動分析と行動観察を行うためのアプリケー�
 
 ## Requirement
 
-python-senpaiはWindows11(22H2)上の[Rye](https://rye-up.com)で構築したPython環境で開発と動作確認をおこなっています。使用しているライブラリ等については[pyproject.toml][pyproject]等を参照してください。
+python-senpaiはWindows11(23H2)上の[Rye](https://rye-up.com)で構築したPython環境で開発と動作確認をおこなっています。使用しているライブラリ等については[pyproject.toml][pyproject]等を参照してください。
 
 macOSでの動作確認も行っていますが、tkinterのバックエンドに関連する不具合を確認しているため、動作が安定しない場合があります。たとえば、macOS上のRyeで環境構築して実行するとmatplotlib.backends.backend_tkaggのimportに失敗することを確認しています。この問題については、対策としてbackend_tkaggのimportに失敗したとき用の分岐を設けています。
 
@@ -67,10 +69,10 @@ rye run launcher
 ## Applications
 
 このプロジェクトでは、以下のそれぞれ独立したアプリケーションをlauncher.pyが呼び出す構成になっています。
- - [app_detect.py][app_detect]：姿勢推定を実行し動画ファイルからTrackファイルを作成します。
- - [app_track_list.py][app_track_list]：Trackファイルの順番を設定します。
- - [app_member_edit.py][app_member_edit]：Trackファイルに記録されたmemberの名称を編集します。
- - [app_make_mp4.py][app_make_mp4]：Trackファイルのデータを動画ファイルにアノテーションして保存します。
+ - [app_detect.py][app_detect]：姿勢推定を実行し動画ファイルからTrack fileを作成します。
+ - [app_track_list.py][app_track_list]：Track fileの順番を設定します。
+ - [app_member_edit.py][app_member_edit]：Track fileに記録されたmemberの名称を編集します。
+ - [app_make_mp4.py][app_make_mp4]：Track fileのデータを動画ファイルにアノテーションして保存します。
  - [app_trajplot.py][app_trajplot]：x-y座標の時系列折れ線グラフを描画します。
  - [app_area_filter.py][app_area_filter]：指定した領域内にキーポイントが存在するかを判定し結果を出力します。
  - [app_calc_vector.py][app_calc_vector]：3点のキーポイントからベクトルの和、内積、外積を計算し結果を出力します。
@@ -81,11 +83,11 @@ rye run launcher
 
 ### Track file
 
-app_detect.pyで姿勢推定を行った結果としての時系列座標データは、Pickle化されたPandasのDataFrame型で保存されます。python-senpaiはこれをTrackファイルと呼んでいます。ファイル拡張子は'.pkl'です。
+app_detect.pyで姿勢推定を行った結果としての時系列座標データは、Pickle化されたPandasのDataFrame型で保存されます。python-senpaiはこれをTrack fileと呼んでいます。ファイル拡張子は'.pkl'です。
 
-Trackファイルは3-level-multi-indexで時系列座標データを保持しています。indexの名称はlevel 0から順に'frame', 'member', 'keypoint'です。frameは0から始まる整数で、動画のフレーム番号と対応しています。memberとkeypointは姿勢推定モデルが検出したkeypointsのIDです。Trackファイルには必ず'x', 'y', 'timestamp'の3つのcolumnsが含まれています。x,yの単位はpx、timestampの単位はミリ秒です。
+Track fileは3-level-multi-indexで時系列座標データを保持しています。indexの名称はlevel 0から順に'frame', 'member', 'keypoint'です。frameは0から始まる整数で、動画のフレーム番号と対応しています。memberとkeypointは姿勢推定モデルが検出したkeypointsのIDです。Track fileには必ず'x', 'y', 'timestamp'の3つのcolumnsが含まれています。x,yの単位はpx、timestampの単位はミリ秒です。
 
-Trackファイルに格納されているDataFrameの例を以下に示します。なおcolumnsには姿勢推定モデルの仕様に応じて、そのほかに、'z'や'conf'といったcolumnが含まれることがあります。
+Track fileに格納されているDataFrameの例を以下に示します。なおcolumnsには姿勢推定モデルの仕様に応じて、そのほかに、'z'や'conf'といったcolumnが含まれることがあります。
 
 |  |  |  | x | y | timestamp |
 | - | - | - | - | - | - |
@@ -103,9 +105,9 @@ Trackファイルに格納されているDataFrameの例を以下に示します
 |  |  | 1 | 1383.346191 | 610.686951 | 33.333333 |
 |  |  | ... | ... | ... | ... |
 
-Trackファイルに格納されたDataFrameのattrsプロパティには、元の動画ファイルのファイル名やそのフレームサイズ、姿勢推定に使用したモデルの名称等が記録されています。
+Track fileに格納されたDataFrameのattrsプロパティには、元の動画ファイルのファイル名やそのフレームサイズ、姿勢推定に使用したモデルの名称等が記録されています。
 
-Trackファイルを読み込み、attrsに記録された内容を確認するためのPythonコードは以下のとおりです。
+Track fileを読み込み、attrsに記録された内容を確認するためのPythonコードは以下のとおりです。
 
 ```
 trk_df = pd.read_pickle("path/to/track_file.pkl")
