@@ -120,7 +120,7 @@ Calculated Track fileは2-level-multi-indexでデータを保持しています�
 
 ### Attributes of Track file
 
-Track fileやCalculated Track fileに格納されたDataFrameのattrsプロパティには、元の動画ファイルのファイル名やそのフレームサイズ、キーポイント検出に使用したAIモデルの名称等が記録されています。
+Track fileやCalculated Track fileに格納されたDataFrameの[attrsプロパティ](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.attrs.html)には、元の動画ファイルのファイル名やそのフレームサイズ、キーポイント検出に使用したAIモデルの名称等が記録されています。
 
 Track fileを読み込み、attrsに記録された内容を確認するためのPythonコードは以下のとおりです。attrsプロパティはdictionary型です。
 
@@ -128,26 +128,27 @@ Track fileを読み込み、attrsに記録された内容を確認するため�
 trk_df = pd.read_pickle("path/to/track_file.pkl")
 print(trk_df.attrs)
 ```
-attrsの内容は以下のとおりです。
+
+主なattrsの内容は以下のとおりです。このほかにも適宜追加されます。
 
 #### model
 
-キーポイント検出に使用したAIモデルの名称が記録されています。attrへの追加は[app_detector.py][app_detect]（[detector_proc.py][detector_proc]）で行われます。
+キーポイント検出に使用したAIモデルの名称が記録されています。attrsへの追加は[app_detector.py][app_detect]（[detector_proc.py][detector_proc]）で行われます。
 
  - YOLOv8 x-pose-p6
  - MediaPipe Holistic
 
 #### frame_size
 
-キーポイント検出を行った動画のフレームサイズがtuple型(width, height)で記録されています。単位はpxです。attrへの追加は[app_detector.py][app_detect]（[detector_proc.py][detector_proc]）で行われます。
+キーポイント検出を行った動画のフレームサイズがtuple型(width, height)で記録されています。単位はpxです。attrsへの追加は[app_detector.py][app_detect]（[detector_proc.py][detector_proc]）で行われます。
 
 #### video_name
 
-キーポイント検出を行った動画のファイル名が記録されています。attrへの追加は[app_detector.py][app_detect]（[detector_proc.py][detector_proc]）で行われます。
+キーポイント検出を行った動画のファイル名が記録されています。attrsへの追加は[app_detector.py][app_detect]（[detector_proc.py][detector_proc]）で行われます。
 
 #### next, prev
 
-ビデオカメラで撮影した長時間の動画ファイルは、カメラの仕様で録画時に分割されることがあります。Track fileは動画ファイルと対になっているためTrack fileも分かれてしまいます。nextとprevは分かれているTrack fileの前後関係を記録するためのものです。attrへの追加は[app_track_list.py][app_track_list]で行われます。
+ビデオカメラで撮影した長時間の動画ファイルは、カメラの仕様で録画時に分割されることがあります。Track fileは動画ファイルと対になっているためTrack fileも分かれてしまいます。nextとprevは分かれているTrack fileの前後関係を記録するためのものです。attrsへの追加は[app_track_list.py][app_track_list]で行われます。
 
 ### Temporary file
 
