@@ -1,3 +1,4 @@
+import sys
 import os
 from tkinter import filedialog
 
@@ -36,3 +37,14 @@ def save_pkl(org_pkl_path, dst_df, proc_history=None):
     )
     dst_df.to_pickle(file_name)
     print("export() done.")
+
+
+def find_data_dir():
+    if getattr(sys, "frozen", False):
+        # The application is frozen
+        datadir = os.path.dirname(sys.executable)
+    else:
+        # The application is not frozen
+        # Change this bit to match where you store your data files:
+        datadir = os.path.join(os.path.dirname(__file__), os.pardir)
+    return datadir

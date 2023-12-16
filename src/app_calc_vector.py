@@ -44,7 +44,8 @@ class App(ttk.Frame):
         self.calc_type_combo["values"] = ["cross_product", "dot_product", "plus", "cross/dot/plus"]
         self.calc_type_combo.current(0)
         self.calc_type_combo.pack(side=tk.LEFT, padx=5)
-        img_path = os.path.join(os.path.dirname(__file__), "img", "vector.gif")
+        data_dir = file_inout.find_data_dir()
+        img_path = os.path.join(data_dir, "img", "vector.gif")
         self.img = tk.PhotoImage(file=img_path)
         self.img_label = ttk.Label(cross_frame, image=self.img)
         self.img_label.pack(side=tk.LEFT, padx=5)

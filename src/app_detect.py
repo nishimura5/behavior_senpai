@@ -8,6 +8,7 @@ import datetime
 from python_senpai import vcap
 import detector_proc
 from python_senpai import windows_and_mac
+from python_senpai import file_inout
 
 
 class App(ttk.Frame):
@@ -63,7 +64,7 @@ class App(ttk.Frame):
         self.rcap = vcap.RoiCap()
 
     def select_video(self):
-        init_dir = os.path.abspath(os.path.dirname(__file__))
+        init_dir = file_inout.find_data_dir()
         if self.bat_chk_val.get() is True:
             self.tar_path = filedialog.askdirectory(initialdir=init_dir)
         else:
