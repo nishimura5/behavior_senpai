@@ -1,3 +1,4 @@
+import sys
 import os
 import tkinter as tk
 from tkinter import ttk
@@ -44,7 +45,7 @@ class App(ttk.Frame):
         self.calc_type_combo["values"] = ["cross_product", "dot_product", "plus", "cross/dot/plus"]
         self.calc_type_combo.current(0)
         self.calc_type_combo.pack(side=tk.LEFT, padx=5)
-        data_dir = file_inout.find_data_dir()
+        data_dir = self._find_data_dir()
         img_path = os.path.join(data_dir, "img", "vector.gif")
         self.img = tk.PhotoImage(file=img_path)
         self.img_label = ttk.Label(cross_frame, image=self.img)
@@ -147,6 +148,16 @@ class App(ttk.Frame):
         timedelta = pd.to_timedelta(timedelta)
         sec = timedelta.total_seconds()
         return sec * 1000
+
+    def _find_data_dir(self):
+        if getattr(sys, "frozen", False):
+            # The application is frozen
+            datadir = os.path.dirname(sys.executable)
+        else:
+            # The application is not frozen
+            # Change this bit to match where you store your data files:
+            datadir = os.path.dirname(__file__)
+        return datadir
 
 
 def quit(root):

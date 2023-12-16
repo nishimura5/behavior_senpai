@@ -1,3 +1,4 @@
+import sys
 import os
 import tkinter as tk
 from tkinter import ttk
@@ -8,7 +9,6 @@ import datetime
 from python_senpai import vcap
 import detector_proc
 from python_senpai import windows_and_mac
-from python_senpai import file_inout
 
 
 class App(ttk.Frame):
@@ -64,7 +64,7 @@ class App(ttk.Frame):
         self.rcap = vcap.RoiCap()
 
     def select_video(self):
-        init_dir = file_inout.find_data_dir()
+        init_dir = self._find_data_dir()
         if self.bat_chk_val.get() is True:
             self.tar_path = filedialog.askdirectory(initialdir=init_dir)
         else:
@@ -105,6 +105,16 @@ class App(ttk.Frame):
             self.video_path_label["text"] = "No video selected"
             self.roi_chk["state"] = "enabled"
         self.tar_path = ""
+
+    def _find_data_dir(self):
+        if getattr(sys, "frozen", False):
+            # The application is frozen
+            datadir = os.path.dirname(sys.executable)
+        else:
+            # The application is not frozen
+            # Change this bit to match where you store your data files:
+            datadir = os.path.dirname(__file__)
+        return datadir
 
 
 def quit(root):
