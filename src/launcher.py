@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 
+import cv2
+
 import app_detect as v2k
 import app_track_list as tl
 import app_member_edit as k2b
@@ -64,6 +66,7 @@ class App(ttk.Frame):
             dlg_modal.grab_set()
         dlg_modal.transient(self.master)
         app(dlg_modal)
+        dlg_modal.protocol("WM_DELETE_WINDOW", lambda: [dlg_modal.destroy(), cv2.destroyAllWindows()])
         self.wait_window(dlg_modal)
 
 
