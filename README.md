@@ -13,6 +13,7 @@
 [app_scene_table]: https://github.com/nishimura5/python_senpai/blob/master/src/app_scene_table.py
 [gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
 [print_track_file]: https://github.com/nishimura5/python_senpai/blob/master/src/samplecode/print_track_file.py
+[detector_proc]: https://github.com/nishimura5/python_senpai/blob/master/src/detector_proc.py
 
 ![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/image/git_behavior_senpai_trajplot.png)
 
@@ -24,7 +25,7 @@ Behavior Senpaiは、定量的行動観察を行うためのアプリケーシ�
  - Matplotlibでの時系列データ描画
  - OpenCV(cv2)のVideoCapture
 
-現在Behavior Senpaiが対応している姿勢推定モデルは以下のとおりです。
+現在Behavior Senpaiが対応しているAIモデルは以下のとおりです。
 
  - YOLOv8
  - MediaPipe Holistic
@@ -75,7 +76,7 @@ macOSでの動作確認において、tkinterのバックエンドに関連す�
 ## Applications
 
 このプロジェクトでは、以下のそれぞれ独立したアプリケーションをlauncher.pyが呼び出す構成になっています。
- - [app_detect.py][app_detect]：姿勢推定を実行し動画ファイルからTrack fileを作成します。
+ - [app_detect.py][app_detect]：キーポイント検出を実行し動画ファイルからTrack fileを作成します。
  - [app_track_list.py][app_track_list]：Track fileの順番を設定します。
  - [app_member_edit.py][app_member_edit]：Track fileに記録されたmemberの名称を編集します。
  - [app_make_mp4.py][app_make_mp4]：Track fileのデータを動画ファイルにアノテーションして保存します。
@@ -89,11 +90,11 @@ macOSでの動作確認において、tkinterのバックエンドに関連す�
 
 ### Track file
 
-app_detect.pyで姿勢推定を行った結果としての時系列座標データは、Pickle化されたPandasのDataFrame型で保存されます。Behavior SenpaiはこれをTrack fileと呼んでいます。ファイル拡張子は'.pkl'です。
+app_detect.pyでキーポイント検出を行った結果としての時系列座標データは、Pickle化されたPandasのDataFrame型で保存されます。Behavior SenpaiはこれをTrack fileと呼んでいます。ファイル拡張子は'.pkl'です。Track fileはキーポイント検出を行った動画ファイルと同じディレクトリに生成される'trk'フォルダに保存されます。
 
-Track fileは3-level-multi-indexで時系列座標データを保持しています。indexの名称はlevel 0から順に'frame', 'member', 'keypoint'です。frameは0から始まる整数で、動画のフレーム番号と対応しています。memberとkeypointは姿勢推定モデルが検出したkeypointsのIDです。Track fileには必ず'x', 'y', 'timestamp'の3つのcolumnsが含まれています。x,yの単位はpx、timestampの単位はミリ秒です。
+Track fileは3-level-multi-indexで時系列座標データを保持しています。indexの名称はlevel 0から順に'frame', 'member', 'keypoint'です。frameは0から始まる整数で、動画のフレーム番号と対応しています。memberとkeypointはモデルが検出したkeypointsのIDです。Track fileには必ず'x', 'y', 'timestamp'の3つのcolumnsが含まれています。x,yの単位はpx、timestampの単位はミリ秒です。
 
-Track fileに格納されているDataFrameの例を以下に示します。なおcolumnsには姿勢推定モデルの仕様に応じて、そのほかに、'z'や'conf'といったcolumnが含まれることがあります。
+Track fileに格納されているDataFrameの例を以下に示します。なおcolumnsにはAIモデルの仕様に応じて、そのほかに、'z'や'conf'といったcolumnが含まれることがあります。
 
 |  |  |  | x | y | timestamp |
 | - | - | - | - | - | - |
@@ -111,22 +112,42 @@ Track fileに格納されているDataFrameの例を以下に示します。な�
 |  |  | 1 | 1383.346191 | 610.686951 | 33.333333 |
 |  |  | ... | ... | ... | ... |
 
-Track fileに格納されたDataFrameのattrsプロパティには、元の動画ファイルのファイル名やそのフレームサイズ、姿勢推定に使用したモデルの名称等が記録されています。
-
-Track fileを読み込み、attrsに記録された内容を確認するためのPythonコードは以下のとおりです。
-
-```
-trk_df = pd.read_pickle("path/to/track_file.pkl")
-print(trk_df.attrs)
-```
-
-また[print_track_file.py][print_track_file]にはTrack fileを開くための基本的なサンプルコードを記述しています。
-
 ### Calculated Track file
 
 [app_calc_vector.py][app_calc_vector]や[app_area_filter][app_area_filter]で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で保存されますが、データの構造が少し異なります。ファイル拡張子は'.pkl'です。
 
 Calculated Track fileは2-level-multi-indexでデータを保持しています。indexの名称はlevel 0から順に'frame', 'member'です。columnsの名称は計算の内容に準じますが、必ず'timestamp'が含まれています。
+
+### Attributes of Track file
+
+Track fileやCalculated Track fileに格納されたDataFrameのattrsプロパティには、元の動画ファイルのファイル名やそのフレームサイズ、キーポイント検出に使用したAIモデルの名称等が記録されています。
+
+Track fileを読み込み、attrsに記録された内容を確認するためのPythonコードは以下のとおりです。attrsプロパティはdictionary型です。
+
+```
+trk_df = pd.read_pickle("path/to/track_file.pkl")
+print(trk_df.attrs)
+```
+attrsの内容は以下のとおりです。
+
+#### model
+
+キーポイント検出に使用したAIモデルの名称が記録されています。attrへの追加は[app_detector.py][app_detect]（[detector_proc.py][detector_proc]）で行われます。
+
+ - YOLOv8 x-pose-p6
+ - MediaPipe Holistic
+
+#### frame_size
+
+キーポイント検出を行った動画のフレームサイズがtuple型(width, height)で記録されています。単位はpxです。attrへの追加は[app_detector.py][app_detect]（[detector_proc.py][detector_proc]）で行われます。
+
+#### video_name
+
+キーポイント検出を行った動画のファイル名が記録されています。attrへの追加は[app_detector.py][app_detect]（[detector_proc.py][detector_proc]）で行われます。
+
+#### next, prev
+
+ビデオカメラで撮影した長時間の動画ファイルは、カメラの仕様で録画時に分割されることがあります。Track fileは動画ファイルと対になっているためTrack fileも分かれてしまいます。nextとprevは分かれているTrack fileの前後関係を記録するためのものです。attrへの追加は[app_track_list.py][app_track_list]で行われます。
 
 ### Temporary file
 
