@@ -8,6 +8,7 @@ from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions, TempFi
 from trajectory_plotter import TrajectoryPlotter
 from python_senpai import keypoints_proc
 from python_senpai import vcap
+from python_senpai import file_inout
 
 
 class App(ttk.Frame):
@@ -55,12 +56,7 @@ class App(ttk.Frame):
     def load_pkl(self):
         # ファイルのロード
         pkl_path = self.pkl_selector.get_trk_path()
-        if os.path.exists(pkl_path) is False:
-            return
-        self.src_df = pd.read_pickle(pkl_path)
-        if keypoints_proc.has_keypoint(self.src_df) is False:
-            print("No keypoint index in {}".format(pkl_path))
-            return
+        self.src_df = file_inout.load_track_file(pkl_path, allow_calculated_track_file=True)
         pkl_dir = os.path.dirname(pkl_path)
         self.cap.set_frame_size(self.src_df.attrs["frame_size"])
         self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))

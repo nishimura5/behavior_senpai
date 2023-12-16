@@ -5,6 +5,7 @@ import pandas as pd
 
 from gui_parts import PklSelector, TimeSpanEntry
 from python_senpai import time_format
+from python_senpai import file_inout
 
 
 class App(ttk.Frame):
@@ -50,8 +51,7 @@ class App(ttk.Frame):
 
     def load_pkl(self):
         pkl_path = self.pkl_selector.get_trk_path()
-        self.src_df = pd.read_pickle(pkl_path)
-
+        self.src_df = file_inout.load_track_file(pkl_path, allow_calculated_track_file=True)
         if 'scene_table' not in self.src_df.attrs.keys():
             return
 

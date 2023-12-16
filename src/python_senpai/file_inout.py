@@ -1,6 +1,21 @@
 import os
 from tkinter import filedialog
 
+import pandas as pd
+
+from . import keypoints_proc
+
+
+def load_track_file(tar_path, allow_calculated_track_file=False):
+    if os.path.exists(tar_path) is False:
+        print("File not found: {}".format(tar_path))
+        return
+    src_df = pd.read_pickle(tar_path)
+    if keypoints_proc.has_keypoint(src_df) is False and allow_calculated_track_file is False:
+        print("No keypoint index in {}".format(tar_path))
+        return
+    return src_df
+
 
 def save_pkl(org_pkl_path, dst_df, proc_history=None):
     file_name = os.path.basename(org_pkl_path)
