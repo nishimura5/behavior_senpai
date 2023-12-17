@@ -42,16 +42,27 @@ class App(ttk.Frame):
         self.keypoint_combo = ttk.Combobox(setting_frame, state='readonly', width=12)
         self.keypoint_combo.pack(side=tk.LEFT, padx=5)
 
+        area_name_label = ttk.Label(setting_frame, text="Area name:")
+        area_name_label.pack(side=tk.LEFT, padx=(10, 0))
+        self.area_name_entry = ttk.Entry(setting_frame, width=14)
+        self.area_name_entry.pack(side=tk.LEFT, padx=(0, 10))
+        self.area_dict = {}
+
         calc_button = ttk.Button(setting_frame, text="Calc In/Out", command=self.calc_in_out)
         calc_button.pack(side=tk.LEFT)
 
-        result_label = ttk.Label(setting_frame, text="Result:")
+        export_frame = ttk.Frame(self)
+        export_frame.pack(pady=5)
+        result_label = ttk.Label(export_frame, text="Columns:")
         result_label.pack(side=tk.LEFT, padx=(10, 0))
-        self.result_combo = ttk.Combobox(setting_frame, state='readonly')
+        self.result_combo = ttk.Combobox(export_frame, state='readonly')
         self.result_combo.pack(side=tk.LEFT)
         self.result_list = []
 
-        export_btn = ttk.Button(setting_frame, text="Export", command=self.export)
+        clear_btn = ttk.Button(export_frame, text="Clear", command=self.clear)
+        clear_btn.pack(side=tk.LEFT, padx=(10, 0))
+
+        export_btn = ttk.Button(export_frame, text="Export", command=self.export)
         export_btn.pack(side=tk.LEFT, padx=(10, 0))
 
         self.canvas = tk.Canvas(self, width=600, height=400)
@@ -105,7 +116,7 @@ class App(ttk.Frame):
         image_pil = Image.fromarray(image_rgb)
         self.image_tk = ImageTk.PhotoImage(image_pil)
         self.canvas.create_image(0, 0, image=self.image_tk, anchor='nw')
-        self.dst_df = pd.DataFrame()
+        self.clear()
         print('load_pkl() done.')
 
     def calc_in_out(self):
@@ -122,22 +133,38 @@ class App(ttk.Frame):
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
 
         poly_points = [p['point'] for p in self.anchor_points]
-        isin_df = keypoints_proc.is_in_poly(tar_df, current_keypoint, poly_points, self.scale)
-        if isin_df.columns[0] not in self.dst_df.columns:
+        area_name = self.area_name_entry.get()
+        isin_df = keypoints_proc.is_in_poly(tar_df, current_keypoint, poly_points, area_name, self.scale)
+        new_col_name = isin_df.columns[0]
+        if new_col_name not in self.dst_df.columns:
             self.dst_df = pd.concat([self.dst_df, isin_df], axis=1)
+
+        self.area_dict[area_name] = poly_points
 
         # UI表示用
         frame_true_cnt = isin_df.droplevel(1).sum()
         in_percent = int(sum(frame_true_cnt) / len(isin_df) * 100)
-        self.result_list.append(f"{current_keypoint} is in {in_percent}%")
+        self.result_list.append(f"{new_col_name}: {in_percent}%")
         self.result_combo["values"] = self.result_list
 
+    def clear(self):
+        self.area_name_entry.delete(0, tk.END)
+        self.area_dict = {}
+        self.result_list = []
+        self.result_combo["values"] = ""
+        self.dst_df = pd.DataFrame()
+
     def export(self):
+        if len(self.dst_df) == 0:
+            print("No data to export.")
+            return
         timestamp_df = self.src_df.loc[:, 'timestamp'].droplevel(2).to_frame()
         timestamp_df = timestamp_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         self.dst_df = self.dst_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         export_df = pd.concat([self.dst_df, timestamp_df], axis=1)
         export_df.attrs = self.src_df.attrs
+        export_df.attrs['area_filters'] = self.area_dict
+
         file_inout.save_pkl(self.pkl_path, export_df, proc_history="area_filter")
 
     def select(self, event):
@@ -149,6 +176,7 @@ class App(ttk.Frame):
                 break
             else:
                 self.selected_id = None
+        self.area_name_entry.delete(0, tk.END)
 
     def motion(self, event):
         if self.selected_id is None:

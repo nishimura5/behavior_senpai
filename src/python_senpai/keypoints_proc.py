@@ -86,7 +86,7 @@ def calc_recurrence(src_arr, threshold: float):
     return dst_mat
 
 
-def is_in_poly(src_df, target_keypoint, poly_points, scale=1.0):
+def is_in_poly(src_df, target_keypoint, poly_points, area_name, scale=1.0):
     '''
     poly_pointsの内側にtarget_keypointがあるかを判定する
     '''
@@ -108,7 +108,7 @@ def is_in_poly(src_df, target_keypoint, poly_points, scale=1.0):
         in_out_df = pd.concat([in_out_df, cross_df], axis=1)
     # 全てのcolumnsがTrueならTrue
     isin_df = in_out_df.all(axis=1).to_frame()
-    col_name = f"is_{target_keypoint}_in"
+    col_name = f"{target_keypoint}_in_{area_name}"
     isin_df.columns = [col_name]
     return isin_df
 

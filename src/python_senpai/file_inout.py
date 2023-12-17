@@ -34,5 +34,8 @@ def save_pkl(org_pkl_path, dst_df, proc_history=None):
         initialfile=file_name,
         defaultextension="pkl",
     )
+    if file_name == "":
+        print("export() canceled.")
+        return
     dst_df.to_pickle(file_name)
     print("export() done.")
