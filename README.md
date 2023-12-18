@@ -32,6 +32,9 @@ Behavior Senpaiは、定量的行動観察を行うためのアプリケーシ�
 
 ## Requirement
 
+ - 空き容量: 8GB以上
+ - 搭載RAM: 8GB以上 (16GB以上推奨)
+
 Behavior SenpaiはWindows11(23H2)上の[Rye](https://rye-up.com)で構築したPython環境で開発と動作確認をおこなっています。使用しているライブラリ等については[pyproject.toml][pyproject]等を参照してください。
 
 ただし、Behavior Senpaiはpipでインストールできるライブラリのみを使用しているので、Rye以外の方法（Anacondaなど）でも環境を構築することが可能です。
