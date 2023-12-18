@@ -125,14 +125,13 @@ class App(ttk.Frame):
 
     def calc_in_out(self):
         current_keypoint = self.keypoint_combo.get()
-        tar_df = self.src_df.copy()
 
         # timestampの範囲を抽出
         time_min, time_max = self.time_span_entry.get_start_end()
         time_min_msec = self._timedelta_to_msec(time_min)
         time_max_msec = self._timedelta_to_msec(time_max)
-        tar_df = keypoints_proc.filter_by_timerange(tar_df, time_min_msec, time_max_msec)
-
+        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min_msec, time_max_msec)
+        # memberとkeypointのインデックス値を文字列に変換
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
 
@@ -168,7 +167,6 @@ class App(ttk.Frame):
         export_df = pd.concat([self.dst_df, timestamp_df], axis=1)
         export_df.attrs = self.src_df.attrs
         export_df.attrs['area_filters'] = self.area_dict
-
         file_inout.save_pkl(self.pkl_path, export_df, proc_history="area_filter")
 
     def select(self, event):

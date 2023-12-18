@@ -79,10 +79,10 @@ class App(ttk.Frame):
         time_min, time_max = self.time_span_entry.get_start_end()
         time_min_msec = time_format.timestr_to_msec(time_min)
         time_max_msec = time_format.timestr_to_msec(time_max)
+        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min_msec, time_max_msec)
         # memberとkeypointのインデックス値を文字列に変換
-        idx = self.src_df.index
-        self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
-        out_df = keypoints_proc.filter_by_timerange(self.src_df, time_min_msec, time_max_msec)
+        idx = tar_df.index
+        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
         if self.cap.isOpened() is True:
             fps = self.cap.get(cv2.CAP_PROP_FPS)
@@ -109,6 +109,7 @@ class App(ttk.Frame):
         elif self.src_df.attrs['model'] == "MediaPipe Holistic":
             anno = mediapipe_drawer.Annotate()
 
+        out_df = tar_df
         max_frame_num = out_df.index.unique(level='frame').max() + 1
         min_frame_num = out_df.index.unique(level='frame').min()
         out_indexes = out_df.sort_index().index

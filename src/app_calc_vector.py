@@ -102,7 +102,6 @@ class App(ttk.Frame):
         time_min_msec = self._timedelta_to_msec(time_min)
         time_max_msec = self._timedelta_to_msec(time_max)
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min_msec, time_max_msec)
-
         # memberとkeypointのインデックス値を文字列に変換
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
@@ -118,7 +117,7 @@ class App(ttk.Frame):
 
         col_names = prod_df.columns
 
-        timestamp_df = tar_df.loc[pd.IndexSlice[:, :, '0'], 'timestamp'].droplevel(2).to_frame()
+        timestamp_df = tar_df.loc[:, 'timestamp'].droplevel(2).to_frame()
         plot_df = pd.concat([prod_df, timestamp_df], axis=1)
 
         # thinningの値だけframeを間引く
@@ -132,6 +131,9 @@ class App(ttk.Frame):
                 self.dst_df = pd.concat([self.dst_df, add_df], axis=1)
 
     def export(self):
+        if len(self.dst_df) == 0:
+            print("No data to export.")
+            return
         timestamp_df = self.src_df.loc[:, 'timestamp'].droplevel(2).to_frame()
         timestamp_df = timestamp_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         self.dst_df = self.dst_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])

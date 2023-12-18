@@ -89,39 +89,37 @@ class App(ttk.Frame):
 
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
-        idx = self.src_df.index
-
-        if 'keypoint' in idx.names:
-            dt_span = self.proc_options.get_dt_span()
-            if self.current_dt_span != dt_span:
-                # speedとaccelerationを計算してsrc_dfに追加
-                speed_df = keypoints_proc.calc_speed(self.src_df, int(dt_span))
-                acc_df = keypoints_proc.calc_acceleration(speed_df, int(dt_span))
-                self.src_speed_df = pd.concat([self.src_df, speed_df, acc_df], axis=1)
-                self.current_dt_span = dt_span
-
-            plot_df = self.src_speed_df
-            levels = [idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)]
-            idx = pd.IndexSlice[:, current_member, current_keypoint]
-            cols = ['x', 'y', f'spd_{dt_span}', f'acc_{dt_span}']
-        else:
-            # そのまま計算、一番右にあるカラム(timestamp)だけ除外する
-            plot_df = self.src_df
-            levels = [idx.levels[0], idx.levels[1].astype(str)]
-            idx = pd.IndexSlice[:, current_member]
-            cols = plot_df.columns[:-1]
 
         # timestampの範囲を抽出
         time_min, time_max = self.time_span_entry.get_start_end()
         time_min_msec = self._timedelta_to_msec(time_min)
         time_max_msec = self._timedelta_to_msec(time_max)
-        plot_df = keypoints_proc.filter_by_timerange(plot_df, time_min_msec, time_max_msec)
+        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min_msec, time_max_msec)
 
-        plot_df.index = plot_df.index.set_levels(levels)
+        idx = tar_df.index
+        if 'keypoint' in idx.names:
+            dt_span = self.proc_options.get_dt_span()
+            if self.current_dt_span != dt_span:
+                # speedとaccelerationを計算してsrc_dfに追加
+                speed_df = keypoints_proc.calc_speed(tar_df, int(dt_span))
+                acc_df = keypoints_proc.calc_acceleration(speed_df, int(dt_span))
+                tar_df = pd.concat([tar_df, speed_df, acc_df], axis=1)
+                self.current_dt_span = dt_span
+
+            levels = [idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)]
+            idx = pd.IndexSlice[:, current_member, current_keypoint]
+            cols = ['x', 'y', f'spd_{dt_span}', f'acc_{dt_span}']
+        else:
+            # そのまま計算、一番右にあるカラム(timestamp)だけ除外する
+            levels = [idx.levels[0], idx.levels[1].astype(str)]
+            idx = pd.IndexSlice[:, current_member]
+            cols = tar_df.columns[:-1]
+
+        tar_df.index = tar_df.index.set_levels(levels)
 
         # thinningの値だけframeを間引く
         thinning = self.proc_options.get_thinning()
-        plot_df = keypoints_proc.thinning(plot_df, int(thinning))
+        plot_df = keypoints_proc.thinning(tar_df, int(thinning))
 
         timestamps = plot_df.loc[idx, 'timestamp'].dropna().values
         plot_df = plot_df.loc[idx, cols].dropna()
