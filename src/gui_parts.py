@@ -4,11 +4,11 @@ import re
 import pickle
 import tkinter as tk
 from tkinter import ttk
-from tkinter import filedialog
 
 import pandas as pd
 
 from python_senpai import keypoints_proc
+from python_senpai import file_inout
 
 
 class PklSelector(ttk.Frame):
@@ -33,8 +33,7 @@ class PklSelector(ttk.Frame):
             self.pkl_path_label["text"] = self.trk_path
 
     def _select_trk(self):
-        init_dir = os.path.dirname(self.trk_path)
-        self.trk_path = filedialog.askopenfilename(initialdir=init_dir, title="Select Track file", filetypes=[("pkl files", "*.pkl")])
+        self.trk_path = file_inout.open_pkl(self.trk_path)
         self._load_pkl()
 
     def _load_pkl(self):
@@ -318,7 +317,7 @@ class TempFile:
                 self.data = pickle.load(f)
                 res = self.data
         return res
-    
+
     def get_window_size(self):
         if 'width' not in self.data.keys() or self.data['width'] == '':
             width = 900

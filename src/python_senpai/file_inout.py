@@ -6,6 +6,20 @@ import pandas as pd
 from . import keypoints_proc
 
 
+def open_pkl(org_pkl_path):
+    if org_pkl_path != "":
+        init_dir = os.path.dirname(org_pkl_path)
+
+    trk_path = filedialog.askopenfilename(
+        initialdir=init_dir,
+        title="Select Track file",
+        filetypes=[("pkl files", "*.pkl")]
+    )
+    if trk_path == "":
+        trk_path = org_pkl_path
+    return trk_path
+
+
 def load_track_file(tar_path, allow_calculated_track_file=False):
     if os.path.exists(tar_path) is False:
         print("File not found: {}".format(tar_path))
