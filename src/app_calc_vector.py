@@ -118,16 +118,17 @@ class App(ttk.Frame):
         timestamp_df = tar_df.loc[:, 'timestamp'].droplevel(2).to_frame()
         plot_df = pd.concat([prod_df, timestamp_df], axis=1)
 
-        # thinningの値だけframeを間引く
-        thinning = self.thinnig_option.get_thinning()
-        plot_df = keypoints_proc.thinning(plot_df, int(thinning))
-
-        self.lineplot.draw(plot_df, current_member, col_names, int(thinning))
         for col_name in col_names:
             if col_name not in self.dst_df.columns:
                 add_df = plot_df.loc[:, col_name].to_frame()
                 self.dst_df = pd.concat([self.dst_df, add_df], axis=1)
 
+        # thinningの値だけframeを間引く
+        thinning = self.thinnig_option.get_thinning()
+        plot_df = keypoints_proc.thinning(plot_df, int(thinning))
+
+        self.lineplot.draw(plot_df, current_member, col_names, int(thinning))
+ 
     def export(self):
         if len(self.dst_df) == 0:
             print("No data to export.")
