@@ -71,6 +71,7 @@ class App(ttk.Frame):
         self.canvas.bind("<Button1-Motion>", self.motion)
 
         self.cap = vcap.VideoCap()
+        self.img_on_canvas = None
         self.load_pkl()
 
         self.anchor_points = [
@@ -115,7 +116,10 @@ class App(ttk.Frame):
         image_rgb = cv2.resize(image_rgb, None, fx=self.scale, fy=self.scale)
         image_pil = Image.fromarray(image_rgb)
         self.image_tk = ImageTk.PhotoImage(image_pil)
-        self.canvas.create_image(0, 0, image=self.image_tk, anchor='nw')
+        if self.img_on_canvas is None:
+            self.img_on_canvas = self.canvas.create_image(0, 0, anchor=tk.NW, image=self.image_tk)
+        else:
+            self.canvas.itemconfig(self.img_on_canvas, image=self.image_tk)
         self.clear()
         print('load_pkl() done.')
 
