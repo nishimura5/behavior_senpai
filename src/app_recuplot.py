@@ -92,9 +92,7 @@ class App(ttk.Frame):
 
         # timestampの範囲を抽出
         time_min, time_max = self.time_span_entry.get_start_end()
-        time_min_msec = self._timedelta_to_msec(time_min)
-        time_max_msec = self._timedelta_to_msec(time_max)
-        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min_msec, time_max_msec)
+        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min, time_max)
 
         idx = tar_df.index
         if 'keypoint' in idx.names:
@@ -135,12 +133,6 @@ class App(ttk.Frame):
     def clear(self):
         self.recu.clear()
         self.current_dt_span = None
-
-    def _timedelta_to_msec(self, timedelta):
-        # strをtimedeltaに変換
-        timedelta = pd.to_timedelta(timedelta)
-        sec = timedelta.total_seconds()
-        return sec * 1000
 
     def _validate(self, text):
         return (text.replace(".", "").isdigit() or text == "")

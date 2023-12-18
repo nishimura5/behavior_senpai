@@ -65,8 +65,7 @@ class App(ttk.Frame):
             self.tree.insert("", "end", values=(start, end, duration_str))
 
     def _add_row(self):
-        start_time, end_time = self.time_span_entry.get_start_end()
-
+        start_time, end_time = self.time_span_entry.get_start_end_str()
         start_td = pd.to_timedelta(start_time)
         end_td = pd.to_timedelta(end_time)
         # durationの計算、startとendが逆だったら入れ替える

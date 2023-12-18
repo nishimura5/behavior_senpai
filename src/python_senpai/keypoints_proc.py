@@ -18,7 +18,12 @@ def filter_by_timerange(src_df, start_msec: int, end_msec: int):
     '''
     src_dfのtimestampの範囲を[start_msec, end_msec]に絞る
     '''
+    if start_msec > end_msec:
+        print("start_msec > end_msec")
     dst_df = src_df.loc[src_df["timestamp"].between(start_msec, end_msec), :]
+    # emptyなら空のDataFrameを返す
+    if len(dst_df) == 0:
+        print("Filtered DataFrame is empty.")
     return dst_df
 
 

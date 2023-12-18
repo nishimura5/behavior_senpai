@@ -114,15 +114,13 @@ class App(ttk.Frame):
 
         # timestampの範囲を抽出
         time_min, time_max = self.time_span_entry.get_start_end()
-        time_min_msec = self._timedelta_to_msec(time_min)
-        time_max_msec = self._timedelta_to_msec(time_max)
-        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min_msec, time_max_msec)
+        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min, time_max)
         # keypointのインデックス値を文字列に変換
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
 
         plot_df = tar_df
-        self.band.draw(plot_df, current_member, time_min_msec, time_max_msec)
+        self.band.draw(plot_df, current_member, time_min, time_max)
 
     def update_tree(self):
         self.tree.delete(*self.tree.get_children())
@@ -172,12 +170,6 @@ class App(ttk.Frame):
             return
         current_member = str(self.tree.item(self.tree.selection()[0])["values"][0])
         self.tar_member_label_var.set(current_member)
-
-    def _timedelta_to_msec(self, timedelta):
-        # strをtimedeltaに変換
-        timedelta = pd.to_timedelta(timedelta)
-        sec = timedelta.total_seconds()
-        return sec * 1000
 
     def _validate(self, text):
         return (text.replace(".", "").isdigit() or text == "")

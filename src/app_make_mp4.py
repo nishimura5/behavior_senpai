@@ -77,16 +77,14 @@ class App(ttk.Frame):
 
         # timestampの範囲を抽出
         time_min, time_max = self.time_span_entry.get_start_end()
-        time_min_msec = time_format.timestr_to_msec(time_min)
-        time_max_msec = time_format.timestr_to_msec(time_max)
-        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min_msec, time_max_msec)
+        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min, time_max)
         # memberとkeypointのインデックス値を文字列に変換
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
         if self.cap.isOpened() is True:
             fps = self.cap.get(cv2.CAP_PROP_FPS)
-            self.cap.set(cv2.CAP_PROP_POS_MSEC, time_min_msec)
+            self.cap.set(cv2.CAP_PROP_POS_MSEC, time_min)
         else:
             fps = 30
 

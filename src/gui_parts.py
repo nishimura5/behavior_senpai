@@ -9,6 +9,7 @@ import pandas as pd
 
 from python_senpai import keypoints_proc
 from python_senpai import file_inout
+from python_senpai import time_format
 
 
 class PklSelector(ttk.Frame):
@@ -272,10 +273,17 @@ class TimeSpanEntry(ttk.Frame):
         self.time_end_entry.bind("<FocusIn>", self._select_all)
 
     def get_start_end(self):
-        start_val = self.time_start_entry.get()
-        end_val = self.time_end_entry.get()
-        return start_val, end_val
+        start_str = self.time_start_entry.get()
+        end_str = self.time_end_entry.get()
+        start = time_format.timestr_to_msec(start_str)
+        end = time_format.timestr_to_msec(end_str)
+        return start, end
 
+    def get_start_end_str(self):
+        start_str = self.time_start_entry.get()
+        end_str = self.time_end_entry.get()
+        return start_str, end_str
+ 
     def update_entry(self, start, end):
         self.time_start_entry.delete(0, tk.END)
         self.time_start_entry.insert(tk.END, start)
