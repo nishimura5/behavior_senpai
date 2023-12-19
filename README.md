@@ -78,16 +78,38 @@ macOSでの動作確認において、tkinterのバックエンドに関連す�
 
 ## Applications
 
-このプロジェクトでは、以下のそれぞれ独立したアプリケーションをlauncher.pyが呼び出す構成になっています。
- - [app_detect.py][app_detect]：キーポイント検出を実行し動画ファイルからTrack fileを作成します。
+### GUI
+
+以下のそれぞれ独立したアプリケーションをlauncher.pyが呼び出す構成になっています。
+
+#### Detection
+
+キーポイント検出を実行し動画ファイルからTrack fileを作成します。
+
+ - [app_detect.py][app_detect]
+
+#### Edit
+
+Track fileを編集します。Attributesの追加や編集も含みます。
+
  - [app_track_list.py][app_track_list]：Track fileの順番を設定します。
  - [app_member_edit.py][app_member_edit]：Track fileに記録されたmemberの名称を編集します。
+ - [app_scene_table.py][app_scene_table]
+
+#### Visualization
+
+Track file（またはCalculated Track file）のデータを可視化します。
+
  - [app_make_mp4.py][app_make_mp4]：Track fileのデータを動画ファイルにアノテーションして保存します。
  - [app_trajplot.py][app_trajplot]：x-y座標の時系列折れ線グラフを描画します。
+ - [app_recuplot.py][app_recuplot]：リカレンスプロットを描画します。
+
+#### Calculation
+
+Track fileのデータに対して計算を行い、Calculated Track fileを作成します。
+
  - [app_area_filter.py][app_area_filter]：指定した領域内にキーポイントが存在するかを判定し結果を出力します。
  - [app_calc_vector.py][app_calc_vector]：3点のキーポイントからベクトルの和、内積、外積を計算し結果を出力します。
- - [app_recuplot.py][app_recuplot]：リカレンスプロットを描画します。
- - [app_scene_table.py][app_scene_table]
 
 ## Interface
 
