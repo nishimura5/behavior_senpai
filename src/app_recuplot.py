@@ -7,7 +7,6 @@ import pandas as pd
 from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions, TimeSpanEntry, TempFile
 from recurrence_plotter import RecurrencePlotter
 from python_senpai import keypoints_proc
-from python_senpai import time_format
 from python_senpai import vcap
 from python_senpai import file_inout
 
@@ -78,10 +77,7 @@ class App(ttk.Frame):
         # UIの更新
         self.current_dt_span = None
         self.member_keypoints_combos.set_df(self.src_df)
-        self.time_span_entry.update_entry(
-            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].min()),
-            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].max())
-        )
+        self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
         self.pkl_selector.set_prev_next(self.src_df.attrs)
 
         self.recu.set_vcap(self.cap)

@@ -96,10 +96,7 @@ class App(ttk.Frame):
 
         # UIの更新
         self.current_dt_span = None
-        self.time_span_entry.update_entry(
-            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].min()),
-            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].max())
-        )
+        self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
         self.pkl_selector.set_prev_next(self.src_df.attrs)
         self.update_tree() 
 

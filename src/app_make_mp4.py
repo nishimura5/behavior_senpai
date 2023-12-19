@@ -8,7 +8,6 @@ import cv2
 from gui_parts import PklSelector, TimeSpanEntry
 import yolo_drawer
 import mediapipe_drawer
-from python_senpai import time_format
 from python_senpai import keypoints_proc
 from python_senpai import vcap
 from python_senpai import file_inout
@@ -59,10 +58,7 @@ class App(ttk.Frame):
         # UIの更新
         self.member_combo["values"] = self.src_df.index.get_level_values("member").unique().tolist()
         self.member_combo.current(0)
-        self.time_span_entry.update_entry(
-            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].min()),
-            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].max())
-        )
+        self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
         self.pkl_selector.set_prev_next(self.src_df.attrs)
 
         if "roi_left_top" in self.src_df.attrs:

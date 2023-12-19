@@ -284,7 +284,10 @@ class TimeSpanEntry(ttk.Frame):
         end_str = self.time_end_entry.get()
         return start_str, end_str
  
-    def update_entry(self, start, end):
+    def update_entry(self, start_msec, end_msec):
+        print(start_msec, end_msec, type(start_msec), type(end_msec))
+        start = time_format.msec_to_timestr_with_fff(start_msec)
+        end = time_format.msec_to_timestr_with_fff(end_msec)
         self.time_start_entry.delete(0, tk.END)
         self.time_start_entry.insert(tk.END, start)
         self.time_end_entry.delete(0, tk.END)

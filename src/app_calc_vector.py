@@ -8,7 +8,6 @@ import pandas as pd
 from gui_parts import PklSelector, TimeSpanEntry, MemberKeypointComboboxesForCross, ThinningOption, TempFile
 from line_plotter import LinePlotter
 from python_senpai import keypoints_proc
-from python_senpai import time_format
 from python_senpai import vcap
 from python_senpai import file_inout
 
@@ -85,10 +84,7 @@ class App(ttk.Frame):
 
         # UIの更新
         self.member_combo.set_df(self.src_df)
-        self.time_span_entry.update_entry(
-            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].min()),
-            time_format.msec_to_timestr_with_fff(self.src_df["timestamp"].max())
-        )
+        self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
         self.pkl_selector.set_prev_next(self.src_df.attrs)
         self.lineplot.set_vcap(self.cap)
         self.dst_df = pd.DataFrame()
@@ -128,12 +124,12 @@ class App(ttk.Frame):
         plot_df = keypoints_proc.thinning(plot_df, int(thinning))
 
         self.lineplot.draw(plot_df, current_member, col_names, int(thinning))
- 
+
     def export(self):
         if len(self.dst_df) == 0:
             print("No data to export.")
             return
-        timestamp_df = self.src_df.loc[:, 'timestamp'].droplevel(2).to_frame()
+        timestamp_df = self.dst_df.loc[:, 'timestamp'].droplevel(2).to_frame()
         timestamp_df = timestamp_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         self.dst_df = self.dst_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         export_df = pd.concat([self.dst_df, timestamp_df], axis=1)
