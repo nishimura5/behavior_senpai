@@ -29,35 +29,40 @@ class App(ttk.Frame):
         buttons_frame = ttk.Frame(self)
         buttons_frame.pack()
 
+        detect_label = ttk.Label(buttons_frame, text="Detection")
+        detect_label.pack(side=tk.TOP, pady=(4, 0))
         v2k_button = ttk.Button(buttons_frame, text="app_detect.py", command=lambda: self.launch_window(v2k.App, grab=True), width=26)
-        v2k_button.pack(side=tk.TOP, pady=5)
+        v2k_button.pack(side=tk.TOP, pady=4)
 
+        edit_label = ttk.Label(buttons_frame, text="Edit")
+        edit_label.pack(side=tk.TOP, pady=(8, 0))
         tl_button = ttk.Button(buttons_frame, text="app_track_list.py", command=lambda: self.launch_window(tl.App, grab=True), width=26)
-        tl_button.pack(side=tk.TOP, pady=5)
-
+        tl_button.pack(side=tk.TOP, pady=4)
         k2b_button = ttk.Button(buttons_frame, text="app_member_edit.py", command=lambda: self.launch_window(k2b.App), width=26)
-        k2b_button.pack(side=tk.TOP, pady=5)
-
-        k2m_button = ttk.Button(buttons_frame, text="app_make_mp4.py", command=lambda: self.launch_window(k2m.App, grab=True), width=26)
-        k2m_button.pack(side=tk.TOP, pady=5)
-
-        k2f_button = ttk.Button(buttons_frame, text="app_trajplot.py", command=lambda: self.launch_window(k2t.App), width=26)
-        k2f_button.pack(side=tk.TOP, pady=5)
-
-        af_button = ttk.Button(buttons_frame, text="app_area_filter.py", command=lambda: self.launch_window(af.App), width=26)
-        af_button.pack(side=tk.TOP, pady=5)
-
-        k2c_button = ttk.Button(buttons_frame, text="app_calc_vector.py", command=lambda: self.launch_window(k2v.App), width=26)
-        k2c_button.pack(side=tk.TOP, pady=5)
-
-        k2r_button = ttk.Button(buttons_frame, text="app_recuplot.py", command=lambda: self.launch_window(k2r.App), width=26)
-        k2r_button.pack(side=tk.TOP, pady=5)
-
+        k2b_button.pack(side=tk.TOP, pady=4)
         scene_table_button = ttk.Button(buttons_frame, text="scene_table.py", command=lambda: self.launch_window(app_scene_table.App), width=26)
-        scene_table_button.pack(side=tk.TOP, pady=5)
+        scene_table_button.pack(side=tk.TOP, pady=4)
 
+        vis_label = ttk.Label(buttons_frame, text="Visualization")
+        vis_label.pack(side=tk.TOP, pady=(8, 0))
+        k2m_button = ttk.Button(buttons_frame, text="app_make_mp4.py", command=lambda: self.launch_window(k2m.App, grab=True), width=26)
+        k2m_button.pack(side=tk.TOP, pady=4)
+        k2f_button = ttk.Button(buttons_frame, text="app_trajplot.py", command=lambda: self.launch_window(k2t.App), width=26)
+        k2f_button.pack(side=tk.TOP, pady=4)
+        k2r_button = ttk.Button(buttons_frame, text="app_recuplot.py", command=lambda: self.launch_window(k2r.App), width=26)
+        k2r_button.pack(side=tk.TOP, pady=4)
+
+        calc_label = ttk.Label(buttons_frame, text="Calculation")
+        calc_label.pack(side=tk.TOP, pady=(8, 0))
+        af_button = ttk.Button(buttons_frame, text="app_area_filter.py", command=lambda: self.launch_window(af.App), width=26)
+        af_button.pack(side=tk.TOP, pady=4)
+        k2c_button = ttk.Button(buttons_frame, text="app_calc_vector.py", command=lambda: self.launch_window(k2v.App), width=26)
+        k2c_button.pack(side=tk.TOP, pady=4)
+
+        pref_label = ttk.Label(buttons_frame, text="Preference")
+        pref_label.pack(side=tk.TOP, pady=(8, 0))
         pref_list_button = ttk.Button(buttons_frame, text="pref_list.py", command=lambda: self.launch_window(pref_list.App), width=26)
-        pref_list_button.pack(side=tk.TOP, pady=5)
+        pref_list_button.pack(side=tk.TOP, pady=4)
 
     def launch_window(self, app, grab=False):
         dlg_modal = tk.Toplevel(self)
