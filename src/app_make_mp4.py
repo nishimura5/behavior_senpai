@@ -94,7 +94,9 @@ class App(ttk.Frame):
             suffix = "all"
         else:
             suffix = f"{current_member}"
-        out_file_path = os.path.join(self.pkl_dir, f'{file_name}_{suffix}.mp4')
+        dst_dir = os.path.join(self.pkl_dir, os.pardir, 'mp4')
+        os.makedirs(dst_dir, exist_ok=True)
+        out_file_path = os.path.join(dst_dir, f'{file_name}_{suffix}.mp4')
         fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
         size = self.src_df.attrs['frame_size']
         size = (int(size[0] * scale), int(size[1] * scale))
@@ -120,10 +122,10 @@ class App(ttk.Frame):
                 # draw_allなら全員の姿勢を描画
                 if self.draw_all_chk_val.get() is True:
                     for member in indexes.get_level_values('member').unique():
-                        dst_img = self._draw(i, member, indexes, anno, scale)
+                        dst_img = self._draw(out_df, i, member, indexes, anno, scale)
                 # out_dfにi, current_memberの組み合わせがない場合はスキップ
                 else:
-                    dst_img = self._draw(i, current_member, indexes, anno, scale)
+                    dst_img = self._draw(out_df, i, current_member, indexes, anno, scale)
             else:
                 dst_img = frame
             cv2.imshow("dst", dst_img)
@@ -134,10 +136,10 @@ class App(ttk.Frame):
         cv2.destroyAllWindows()
         self.out.release()
 
-    def _draw(self, frame_num, member, all_indexes, anno, scale):
+    def _draw(self, out_df, frame_num, member, all_indexes, anno, scale):
         if (frame_num, member) not in all_indexes.droplevel(2):
             return anno.dst_img
-        keypoints = self.src_df.loc[pd.IndexSlice[frame_num, member, :], :] * scale
+        keypoints = out_df.loc[pd.IndexSlice[frame_num, member, :], :] * scale
         kps = keypoints.to_numpy()
         anno.set_pose(kps)
         anno.set_track(member)

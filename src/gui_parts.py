@@ -164,8 +164,11 @@ class MemberKeypointComboboxesForCross(ttk.Frame):
         self.member_combo["values"] = combo_df.index.get_level_values("member").unique().tolist()
         self.member_combo.current(0)
         init_member = self.member_combo.get()
-        idx = pd.IndexSlice[:, init_member, :]
-        keypoints = self.src_df.loc[idx, :].index.get_level_values("keypoint").unique().tolist()
+        idx = self.src_df.index
+        tar_df = self.src_df
+        tar_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
+        idx_slice = pd.IndexSlice[:, init_member, :]
+        keypoints = tar_df.loc[idx_slice, :].index.get_level_values("keypoint").unique().tolist()
         self.keypoint_combo_a["values"] = keypoints
         self.keypoint_combo_a.current(0)
         self.keypoint_combo_b["values"] = keypoints
@@ -285,7 +288,6 @@ class TimeSpanEntry(ttk.Frame):
         return start_str, end_str
  
     def update_entry(self, start_msec, end_msec):
-        print(start_msec, end_msec, type(start_msec), type(end_msec))
         start = time_format.msec_to_timestr_with_fff(start_msec)
         end = time_format.msec_to_timestr_with_fff(end_msec)
         self.time_start_entry.delete(0, tk.END)
