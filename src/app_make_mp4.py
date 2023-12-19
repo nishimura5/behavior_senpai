@@ -5,7 +5,7 @@ from tkinter import ttk
 import pandas as pd
 import cv2
 
-from gui_parts import PklSelector, TimeSpanEntry
+from gui_parts import PklSelector, TimeSpanEntry, TempFile
 import yolo_drawer
 import mediapipe_drawer
 from python_senpai import keypoints_proc
@@ -84,7 +84,9 @@ class App(ttk.Frame):
         else:
             fps = 30
 
-        scale = 0.5
+        tmp = TempFile()
+        data = tmp.load()
+        scale = float(data['mp4_scale'])
 
         # VideoWriter
         file_name = os.path.splitext(self.src_df.attrs['video_name'])[0]

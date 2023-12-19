@@ -344,6 +344,13 @@ class TempFile:
             dpi = int(self.data['dpi'])
         return width, height, dpi
 
+    def get_mp4_setting(self):
+        if 'mp4_scale' not in self.data.keys() or self.data['mp4_scale'] == '':
+            mp4_scale = 0.5
+        else:
+            mp4_scale = float(self.data['mp4_scale'])
+        return mp4_scale
+
     def _find_data_dir(self):
         if getattr(sys, "frozen", False):
             # The application is frozen
