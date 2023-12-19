@@ -99,6 +99,7 @@ class App(ttk.Frame):
         self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
         self.pkl_selector.set_prev_next(self.src_df.attrs)
         self.update_tree() 
+        self.clear()
 
         idx = self.src_df.index
         self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
