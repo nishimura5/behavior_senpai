@@ -96,6 +96,9 @@ class App(ttk.Frame):
         # timestampの範囲を抽出
         time_min, time_max = self.time_span_entry.get_start_end()
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min, time_max)
+        # 重複インデックス削除
+        tar_df = tar_df.reset_index().drop_duplicates(subset=['frame', 'member', 'keypoint'], keep='last').set_index(['frame', 'member', 'keypoint'])
+
         # memberとkeypointのインデックス値を文字列に変換
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
@@ -111,8 +114,8 @@ class App(ttk.Frame):
 
         col_names = prod_df.columns
 
-        timestamp_df = tar_df.loc[:, 'timestamp'].droplevel(2).to_frame()
-        plot_df = pd.concat([prod_df, timestamp_df], axis=1)
+        self.timestamp_df = tar_df.loc[:, 'timestamp'].droplevel(2).to_frame()
+        plot_df = pd.concat([prod_df, self.timestamp_df], axis=1)
 
         for col_name in col_names:
             if col_name not in self.dst_df.columns:
@@ -129,7 +132,7 @@ class App(ttk.Frame):
         if len(self.dst_df) == 0:
             print("No data to export.")
             return
-        timestamp_df = self.dst_df.loc[:, 'timestamp'].droplevel(2).to_frame()
+        timestamp_df = self.timestamp_df
         timestamp_df = timestamp_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         self.dst_df = self.dst_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         export_df = pd.concat([self.dst_df, timestamp_df], axis=1)
