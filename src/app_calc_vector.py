@@ -41,7 +41,7 @@ class App(ttk.Frame):
         calc_type_label = ttk.Label(cross_frame, text="Calc:")
         calc_type_label.pack(side=tk.LEFT, padx=5)
         self.calc_type_combo = ttk.Combobox(cross_frame, state='readonly', width=15)
-        self.calc_type_combo["values"] = ["cross_product", "dot_product", "plus", "cross/dot/plus"]
+        self.calc_type_combo["values"] = ["all", "cross_product", "dot_product", "plus", "angle(pi)"]
         self.calc_type_combo.current(0)
         self.calc_type_combo.pack(side=tk.LEFT, padx=5)
         data_dir = self._find_data_dir()
@@ -87,7 +87,7 @@ class App(ttk.Frame):
         self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
         self.pkl_selector.set_prev_next(self.src_df.attrs)
         self.lineplot.set_vcap(self.cap)
-        self.dst_df = pd.DataFrame()
+        self.clear()
         print('load_pkl() done.')
 
     def draw(self):
@@ -109,8 +109,10 @@ class App(ttk.Frame):
             prod_df = keypoints_proc.calc_dot_product(tar_df, kp0, kp1, kp2)
         elif self.calc_type_combo.get() == 'plus':
             prod_df = keypoints_proc.calc_plus(tar_df, kp0, kp1, kp2)
-        elif self.calc_type_combo.get() == 'cross/dot/plus':
-            prod_df = keypoints_proc.calc_cross_dot_plus(tar_df, kp0, kp1, kp2)
+        elif self.calc_type_combo.get() == 'angle(pi)':
+            prod_df = keypoints_proc.calc_angle(tar_df, kp0, kp1, kp2)
+        elif self.calc_type_combo.get() == 'all':
+            prod_df = keypoints_proc.calc_cross_dot_plus_angle(tar_df, kp0, kp1, kp2)
 
         col_names = prod_df.columns
 

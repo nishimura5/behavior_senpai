@@ -165,9 +165,27 @@ def calc_dot_product(src_df, kp0: str, kp1: str, kp2: str):
     return dot_df
 
 
-def calc_cross_dot_plus(src_df, kp0: str, kp1: str, kp2: str):
+def calc_angle(src_df, kp0: str, kp1: str, kp2: str):
     '''
-    kp0 -> kp1とkp0 -> kp2の外積、内積、ベクトル和を計算する
+    kp0 -> kp1とkp0 -> kp2の角度を計算する
+    '''
+    col_name = f'angle({kp0}-{kp1},{kp0}-{kp2})'
+    point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
+    point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
+    point2 = src_df.loc[pd.IndexSlice[:, :, kp2], :].droplevel(2)
+    point1_0 = point1 - point0
+    point2_0 = point2 - point0
+    cos_sr = (point1_0['x'] * point2_0['x'] + point1_0['y'] * point2_0['y']) / (np.sqrt(point1_0['x']**2 + point1_0['y']**2) * np.sqrt(point2_0['x']**2 + point2_0['y']**2))
+    angle_sr = np.arccos(cos_sr)
+
+    angle_df = angle_sr.to_frame()
+    angle_df.columns = [col_name]
+    return angle_df
+
+
+def calc_cross_dot_plus_angle(src_df, kp0: str, kp1: str, kp2: str):
+    '''
+    kp0 -> kp1とkp0 -> kp2の外積、内積、ベクトル和、角度を計算する
     別々にやるより少し速い
     '''
     point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
@@ -193,7 +211,14 @@ def calc_cross_dot_plus(src_df, kp0: str, kp1: str, kp2: str):
     plus_df = point1_0.loc[:, ['x', 'y']] + point2_0.loc[:, ['x', 'y']]
     plus_df.columns = [f"{col_name}_x", f"{col_name}_y"]
 
-    dst_df = pd.concat([cross_df, dot_df, plus_df], axis=1)
+    # angle
+    col_name = f'angle({kp0}-{kp1},{kp0}-{kp2})'
+    cos_sr = (point1_0['x'] * point2_0['x'] + point1_0['y'] * point2_0['y']) / (np.sqrt(point1_0['x']**2 + point1_0['y']**2) * np.sqrt(point2_0['x']**2 + point2_0['y']**2))
+    angle_sr = np.arccos(cos_sr)
+    angle_df = angle_sr.to_frame()
+    angle_df.columns = [col_name]
+
+    dst_df = pd.concat([cross_df, dot_df, plus_df, angle_df], axis=1)
     return dst_df
 
 
