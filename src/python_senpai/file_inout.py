@@ -9,6 +9,8 @@ from . import keypoints_proc
 def open_pkl(org_pkl_path):
     if org_pkl_path != "":
         init_dir = os.path.dirname(org_pkl_path)
+    else:
+        init_dir = "./"
 
     trk_path = filedialog.askopenfilename(
         initialdir=init_dir,
