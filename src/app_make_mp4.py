@@ -113,7 +113,7 @@ class App(ttk.Frame):
         frames = out_indexes.get_level_values('frame').unique()
         for i in range(min_frame_num, max_frame_num):
             frame = self.cap.read_anyway()
-            frame = cv2.resize(frame, size)
+            frame = cv2.resize(frame, size, interpolation=cv2.INTER_AREA)
             anno.set_img(frame)
             if i in frames:
                 frame_df = out_df.loc[pd.IndexSlice[i, :, :], :]
