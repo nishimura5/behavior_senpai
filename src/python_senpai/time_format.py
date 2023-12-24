@@ -3,6 +3,8 @@ import pandas as pd
 
 
 def msec_to_timestr(x):
+    if x < 0:
+        return "0:00:00"
     sec = x / 1000
     hours = sec // 3600
     remain = sec - (hours*3600)
@@ -12,6 +14,8 @@ def msec_to_timestr(x):
 
 
 def msec_to_timestr_with_fff(x):
+    if x < 0:
+        return "0:00:00.000"
     sec = x / 1000
     hours = sec // 3600
     remain = sec - (hours*3600)
