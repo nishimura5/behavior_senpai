@@ -183,9 +183,25 @@ def calc_angle(src_df, kp0: str, kp1: str, kp2: str):
     return angle_df
 
 
+def calc_norms(src_df, kp0: str, kp1: str, kp2: str):
+    '''
+    kp0 -> kp1とkp0 -> kp2のベクトルのノルムの積を計算する
+    '''
+    col_name = f'norms({kp0}-{kp1},{kp0}-{kp2})'
+    point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
+    point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
+    point2 = src_df.loc[pd.IndexSlice[:, :, kp2], :].droplevel(2)
+    point1_0 = point1 - point0
+    point2_0 = point2 - point0
+    norms_sr = np.sqrt(point1_0['x']**2 + point1_0['y']**2) * np.sqrt(point2_0['x']**2 + point2_0['y']**2)
+    norms_df = norms_sr.to_frame()
+    norms_df.columns = [col_name]
+    return norms_df
+
+
 def calc_cross_dot_plus_angle(src_df, kp0: str, kp1: str, kp2: str):
     '''
-    kp0 -> kp1とkp0 -> kp2の外積、内積、ベクトル和、角度を計算する
+    kp0 -> kp1とkp0 -> kp2の外積、内積、ベクトル和、ノルムの積を計算する
     別々にやるより少し速い
     '''
     point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
@@ -211,14 +227,13 @@ def calc_cross_dot_plus_angle(src_df, kp0: str, kp1: str, kp2: str):
     plus_df = point1_0.loc[:, ['x', 'y']] + point2_0.loc[:, ['x', 'y']]
     plus_df.columns = [f"{col_name}_x", f"{col_name}_y"]
 
-    # angle
-    col_name = f'angle({kp0}-{kp1},{kp0}-{kp2})'
-    cos_sr = (point1_0['x'] * point2_0['x'] + point1_0['y'] * point2_0['y']) / (np.sqrt(point1_0['x']**2 + point1_0['y']**2) * np.sqrt(point2_0['x']**2 + point2_0['y']**2))
-    angle_sr = np.arccos(cos_sr)
-    angle_df = angle_sr.to_frame()
-    angle_df.columns = [col_name]
+    # norms
+    col_name = f'norms({kp0}-{kp1},{kp0}-{kp2})'
+    norms_sr = np.sqrt(point1_0['x']**2 + point1_0['y']**2) * np.sqrt(point2_0['x']**2 + point2_0['y']**2)
+    norms_df = norms_sr.to_frame()
+    norms_df.columns = [col_name]
 
-    dst_df = pd.concat([cross_df, dot_df, plus_df, angle_df], axis=1)
+    dst_df = pd.concat([cross_df, dot_df, plus_df, norms_df], axis=1)
     return dst_df
 
 

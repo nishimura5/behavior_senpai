@@ -40,8 +40,8 @@ class App(ttk.Frame):
         cross_frame.pack(pady=5)
         calc_type_label = ttk.Label(cross_frame, text="Calc:")
         calc_type_label.pack(side=tk.LEFT, padx=5)
-        self.calc_type_combo = ttk.Combobox(cross_frame, state='readonly', width=15)
-        self.calc_type_combo["values"] = ["all", "cross_product", "dot_product", "plus", "angle(pi)"]
+        self.calc_type_combo = ttk.Combobox(cross_frame, state='readonly', width=18)
+        self.calc_type_combo["values"] = ["all", "cross_product (AB×AC)", "dot_product (AB・AC)", "plus (AB+AC)", "norms (|AB||AC|)"]
         self.calc_type_combo.current(0)
         self.calc_type_combo.pack(side=tk.LEFT, padx=5)
         data_dir = self._find_data_dir()
@@ -103,14 +103,14 @@ class App(ttk.Frame):
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
-        if self.calc_type_combo.get() == 'cross_product':
+        if self.calc_type_combo.get() == 'cross_product (AB×AC)':
             prod_df = keypoints_proc.calc_cross_product(tar_df, kp0, kp1, kp2)
-        elif self.calc_type_combo.get() == 'dot_product':
+        elif self.calc_type_combo.get() == 'dot_product (AB・AC)':
             prod_df = keypoints_proc.calc_dot_product(tar_df, kp0, kp1, kp2)
-        elif self.calc_type_combo.get() == 'plus':
+        elif self.calc_type_combo.get() == 'plus (AB+AC)':
             prod_df = keypoints_proc.calc_plus(tar_df, kp0, kp1, kp2)
-        elif self.calc_type_combo.get() == 'angle(pi)':
-            prod_df = keypoints_proc.calc_angle(tar_df, kp0, kp1, kp2)
+        elif self.calc_type_combo.get() == 'norms (|AB||AC|)':
+            prod_df = keypoints_proc.calc_norms(tar_df, kp0, kp1, kp2)
         elif self.calc_type_combo.get() == 'all':
             prod_df = keypoints_proc.calc_cross_dot_plus_angle(tar_df, kp0, kp1, kp2)
 
