@@ -68,13 +68,29 @@ python src/launcher.py
 
 ### Mac
 
-mac環境ではtkaggが使用できない場合があるため、以下のコメントアウトを外してください。
+Macでは[Miniconda](https://docs.conda.io/projects/miniconda/en/latest/)の使用を推奨しています。pipで環境構築してください。
+```
+pip install torch
+pip install ultralytics
+pip install lapx
+pip install mediapipe
+pip install scikit-learn
+pip install pyperclip
+```
+
+環境構築後は以下のコマンドで[launcher.py][launcher]を実行することでアプリケーションが起動します。
+
+```
+python src/launcher.py
+```
+
+※Mac&Rye環境において、tkinterのバックエンドに関連する不具合を確認しているため動作が安定しない場合があります。たとえば、Mac&Ryeではmatplotlib.backends.backend_tkaggのimportに失敗することを確認しています。この問題については、対策としてbackend_tkaggのimportに失敗したとき用の分岐を設けています。
+
+また、MacでRyeを使用する場合はpyproject.tomlの以下のコメントアウトを外してください。
 
 ```
 "pyqt5>=5.15.10",
 ```
-
-macOSでの動作確認において、tkinterのバックエンドに関連する不具合を確認しているため、動作が安定しない場合があります。たとえば、macOS上のRyeで環境構築して実行するとmatplotlib.backends.backend_tkaggのimportに失敗することを確認しています。この問題については、対策としてbackend_tkaggのimportに失敗したとき用の分岐を設けています。
 
 ## Applications
 
