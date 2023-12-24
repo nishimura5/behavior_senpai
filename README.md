@@ -37,15 +37,13 @@ Behavior Senpaiは、定量的行動観察を行うためのアプリケーシ�
 
 Behavior SenpaiはWindows11(23H2)上の[Rye](https://rye-up.com)で構築したPython環境で開発と動作確認をおこなっています。使用しているライブラリ等については[pyproject.toml][pyproject]等を参照してください。
 
-ただし、Behavior Senpaiはpipでインストールできるライブラリのみを使用しているので、Rye以外の方法（Anacondaなど）でも環境を構築することが可能です。
+ただし、Behavior Senpaiはpipでインストールできるライブラリのみを使用しているので、Rye以外の方法（Minicondaなど）でも環境を構築することが可能です。
 
 ## Usage
 
-ここではRyeの使用を想定して導入から起動までの手順を記載しています。
-
 ### Windows
 
-Ryeを使用している場合は以下を実行することで環境構築が実行されます。
+Windowsでは[Rye](https://rye-up.com)の使用を推奨しています。Ryeを使用している場合は、以下を実行することで環境構築が実行されます。
 
 ```
 rye sync
