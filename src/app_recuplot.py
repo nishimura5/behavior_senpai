@@ -24,7 +24,7 @@ class App(ttk.Frame):
     """
     def __init__(self, master):
         super().__init__(master)
-        master.title("Keypoints to Recurrence Plot")
+        master.title("Recurrence Plot")
         self.pack(padx=10, pady=10)
 
         temp = TempFile()

@@ -16,7 +16,7 @@ from python_senpai import file_inout
 class App(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
-        master.title("Keypoints to MP4")
+        master.title("Make MP4")
         self.pack(padx=10, pady=10)
 
         load_frame = ttk.Frame(self)
@@ -85,8 +85,7 @@ class App(ttk.Frame):
             fps = 30
 
         tmp = TempFile()
-        data = tmp.load()
-        scale = float(data['mp4_scale'])
+        scale = tmp.get_mp4_setting()
 
         # VideoWriter
         file_name = os.path.splitext(self.src_df.attrs['video_name'])[0]

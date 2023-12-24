@@ -22,7 +22,7 @@ class App(ttk.Frame):
     """
     def __init__(self, master):
         super().__init__(master)
-        master.title("Keypoints to Cross Product")
+        master.title("Calc Vector")
         self.pack(padx=10, pady=10)
 
         temp = TempFile()

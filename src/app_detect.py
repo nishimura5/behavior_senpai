@@ -22,7 +22,7 @@ class App(ttk.Frame):
     """
     def __init__(self, master):
         super().__init__(master)
-        master.title("Video to Keypoints")
+        master.title("Detect")
         self.pack(padx=10, pady=10)
 
         self.tar_path = ""
