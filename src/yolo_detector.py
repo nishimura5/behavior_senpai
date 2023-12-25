@@ -78,7 +78,7 @@ class YoloDetector:
         cv2.putText(src_img, f"{pos}/{self.total_frame_num}", text_pos, txt_font, font_size, (255, 255, 255), font_size)
 
 
-def detect_from_pitcure(src_path):
+def detect_from_picture(src_path):
     src_img = cv2.imread(src_path)
 
     model = YOLO(model="yolov8x-pose-p6.pt")
