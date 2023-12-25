@@ -43,7 +43,9 @@ Behavior SenpaiはWindows11(23H2)上の[Rye](https://rye-up.com)で構築したP
 
 ### Windows
 
-Windowsでは[Rye](https://rye-up.com)の使用を推奨しています。Ryeを使用している場合は、以下を実行することで環境構築が実行されます。
+WindowsでのPython環境構築については[こちらの動画](https://youtu.be/tU4Q5q07A1Y)を参考にしてください。
+
+Ryeを使用している場合は、以下を実行するだけでbehavior senpaiを起動する準備が整います。
 
 ```
 rye sync
