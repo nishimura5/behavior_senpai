@@ -17,7 +17,7 @@
 
 ![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/behaviorsenpai/git_behavior_senpai_trajplot.png)
 
-Behavior Senpaiは、定量的行動観察を行うためのアプリケーションです。ビデオカメラで撮影した人の行動をkeypoint検出AIを使用して時系列座標データ化し、その時系列座標データを用いて人の行動を定量的に分析することができます。
+Behavior Senpai(ビヘイビア センパイ)は、定量的行動観察を行うためのアプリケーションです。ビデオカメラで撮影した人の行動をkeypoint検出AIを使用して時系列座標データ化し、その時系列座標データを用いて人の行動を定量的に分析することができます。
 
 また、Behavior SenpaiはPythonを使用したデータ解析を学ぶためのプロジェクトでもあります。Pythonの基礎(if文やfor文、リスト内包表記、classあたりを指します)を習得した人が、実用的なアプリケーションの開発に挑戦するための足掛かりにできるよう構成しています。とりわけ以下のライブラリの使用方法について学習することができます。
 
@@ -52,13 +52,13 @@ git clone https://github.com/nishimura5/behavior_senpai.git
 cd behavior_senpai
 ```
 
-Ryeを使用している場合は、以下を実行するだけでbehavior senpaiを起動する準備が整います。
+Ryeを使用している場合は、以下を実行するだけでBehavior Senpaiを起動する準備が整います。
 
 ```
 rye sync
 ```
 
-CUDAを有効にする場合は事前に[pyproject.toml][pyproject]内の以下のコメントアウトを外してください。
+CUDAを有効にする場合はsyncの前に[pyproject.toml][pyproject]内の以下のコメントアウトを外してください。
 
 ```
 [[tool.rye.sources]]
