@@ -45,6 +45,13 @@ Behavior SenpaiはWindows11(23H2)上の[Rye](https://rye-up.com)で構築したP
 
 WindowsでのPython環境構築については[こちらの動画](https://youtu.be/tU4Q5q07A1Y)を参考にしてください。
 
+作業フォルダに本プロジェクトをcloneします。以下のコマンドを実行してください。このとき、親フォルダに日本語が使用されていないことを確認してください。
+
+```
+git clone https://github.com/nishimura5/behavior_senpai.git
+cd behavior_senpai
+```
+
 Ryeを使用している場合は、以下を実行するだけでbehavior senpaiを起動する準備が整います。
 
 ```
