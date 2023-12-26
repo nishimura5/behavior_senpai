@@ -1,10 +1,7 @@
 [project]
-name = "python-senpai"
-version = "0.1.0"
+name = "behavior-senpai"
+version = "1.0.0"
 description = "A collection of Python code for performing behavioral analysis."
-authors = [
-    { name = "a5", email = "" }
-]
 dependencies = [
     "torch>=2.1",
     "ultralytics~=8.0",
@@ -28,14 +25,13 @@ dev-dependencies = [
 ]
 
 [tool.rye.scripts]
-detect = "python src/video_to_keypoints.py"
 launcher = "python src/launcher.py"
-lic = "pip-licenses --order=license -u -l --no-license-path --format=json --output-file license.json"
+licence = "pip-licenses --order=license -u -l --no-license-path --format=json --output-file license.json"
 
-#[[tool.rye.sources]]
-#name = "torch"
-#url = "https://download.pytorch.org/whl/cu118"
-#type = "index"
+[[tool.rye.sources]]
+name = "torch"
+url = "https://download.pytorch.org/whl/cu118"
+type = "index"
 
 [tool.hatch.metadata]
 allow-direct-references = true
