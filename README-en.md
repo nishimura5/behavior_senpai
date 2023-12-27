@@ -1,65 +1,100 @@
-# python-senpai
+# Behavior Senpai
 
-python-senpai is an application for behavioral analysis and observation. It is also a project for learning Python coding and data analysis through development. It is designed so that those who have mastered the basics of Python (around if statements, for loops, list comprehensions, classes, etc.) can use it as a foothold to challenge the development of practical applications. In particular, you can learn how to use the following libraries:
+[pyproject]: https://github.com/nishimura5/python_senpai/blob/master/pyproject.toml
+[launcher]: https://github.com/nishimura5/python_senpai/blob/master/src/launcher.py
+[app_detect]: https://github.com/nishimura5/python_senpai/blob/master/src/app_detect.py
+[app_track_list]: https://github.com/nishimura5/python_senpai/blob/master/src/app_track_list.py
+[app_member_edit]: https://github.com/nishimura5/python_senpai/blob/master/src/app_member_edit.py
+[app_make_mp4]: https://github.com/nishimura5/python_senpai/blob/master/src/app_make_mp4.py
+[app_trajplot]: https://github.com/nishimura5/python_senpai/blob/master/src/app_trajplot.py
+[app_area_filter]: https://github.com/nishimura5/python_senpai/blob/master/src/app_area_filter.py
+[app_calc_vector]: https://github.com/nishimura5/python_senpai/blob/master/src/app_calc_vector.py
+[app_recuplot]: https://github.com/nishimura5/python_senpai/blob/master/src/app_recuplot.py
+[app_scene_table]: https://github.com/nishimura5/python_senpai/blob/master/src/app_scene_table.py
+[gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
+[print_track_file]: https://github.com/nishimura5/python_senpai/blob/master/src/samplecode/print_track_file.py
+[detector_proc]: https://github.com/nishimura5/python_senpai/blob/master/src/detector_proc.py
 
- -  MultiIndex in Pandas
- - Time series data plotting with Matplotlib
+![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/behaviorsenpai/git_behavior_senpai_trajplot.png)
+
+Behavior Senpai is an application designed for quantitative behavioral observation. It converts the behavior of people recorded on video cameras into time-series coordinate data using keypoint detection AI. This time-series coordinate data is then used to quantitatively analyze human behavior.
+
+Additionally, Behavior Senpai serves as a project for learning data analysis using Python. It is structured to provide a stepping stone for individuals who have mastered the basics of Python (such as if statements, for loops, list comprehensions, and classes) to challenge themselves in developing practical applications. In particular, it offers the opportunity to learn about the following libraries:
+
+ - MultiIndex in Pandas
+ - Time-series data plotting with Matplotlib
  - VideoCapture in OpenCV (cv2)
+
+The AI models currently supported by Behavior Senpai are as follows:
+
+ - YOLOv8
+ - MediaPipe Holistic
 
 ## Requirement 
 
-python-senpai was developed and tested in a Python environment built with [Rye](https://rye-up.com) on Windows 11 (22H2). Please refer to [pyproject.toml](pyproject.toml) etc. for the libraries used.
+ - Free Space: More than 8GB
+ - RAM: More than 8GB (16GB or more recommended)
 
-Currently, we have confirmed that importing matplotlib.backends.backend_tkagg fails when building the environment with Rye on macOS. Therefore, we have provided a branch for when backend_tkagg import fails. The code concerned is [trajectory_plotter.py](src/trajectory_plotter.py) and [recurrence_plotter.py](src/recurrence_plotter.py).
+Behavior Senpai has been developed and tested in a Python environment constructed on Rye running on Windows 11 (23H2). For information about the libraries being used, please refer to pyproject.toml or similar documents.
+
+However, since Behavior Senpai only utilizes libraries that can be installed via pip, it is possible to set up the environment using other methods apart from Rye, such as Miniconda.
 
 ## Usage
 
-If using rye, clone this repository and then run the following to build the environment:
+### Windows
+For setting up a Python environment on Windows, please refer to this video.
+
+Clone this project into your working folder. Execute the following commands. Ensure that the parent folder does not contain any Japanese characters.
+
+```
+git clone https://github.com/nishimura5/behavior_senpai.git
+cd behavior_senpai
+```
+
+If you are using Rye, simply execute the following to prepare for launching Behavior Senpai.
 
 ```
 rye sync
 ```
 
-To enable CUDA, uncomment the relevant section in [pyproject.toml](pyproject.toml) beforehand.
-
-Since only libraries that can be installed with pip are used, the environment can also be built using methods other than rye (like Anaconda).
-
-After building the environment, run [launcher.py](src/launcher.py) to start the application.
+If you want to enable CUDA, remove the comment out in [pyproject.toml][pyproject] before sync.
 
 ```
-rye run python src/launcher.py 
+[[tool.rye.sources]]
+name = "torch"
+url = "https://download.pytorch.org/whl/cu118"
+type = "index"
 ```
 
-When running inferences on multiple video files sequentially using MediaPipe (and YOLO?), there is an issue where it crashes after the 2nd run due to a memory access violation. Therefore, [detector_proc.py](src/detector_proc.py) is executed using subprocess.
+After setting up the environment, either run launcher.bat or execute [launcher.py][launcher] with the following command to start the application.
 
-## Scripts
+```
+python src/launcher.py
+```
 
-This repository contains the following applications:
- - video_to_keypoints.py: Pose estimation using YOLOv8 and MediaPipe Holistic and saving the results to a PKL file
- - keypoints_to_figure.py: Application to graph the data from the PKL file output by the above application
+### Mac
+On Mac, we recommend using Miniconda. Please set up the environment using pip.
 
-### Graph Drawing
-The functionality and structure of the application is explained in the video below ([YouTube](https://youtu.be/c38UHrECGJA?si=k946YKvBmVXjrG8v)), so please watch it as well.
-<p align="center">
-<a href="https://youtu.be/c38UHrECGJA?si=k946YKvBmVXjrG8v"><img src="http://img.youtube.com/vi/c38UHrECGJA/mqdefault.jpg" width="300"></a>
-</p>
+```
+pip install torch
+pip install ultralytics
+pip install lapx
+pip install mediapipe
+pip install scikit-learn
+pip install pyperclip
+```
 
- - [keypoints_to_figure.py](src/keypoints_to_figure.py): Graph drawing application (wrapper below) 
- - [trajectory_plotter.py](src/trajectory_plotter.py): Graphing data from PKL files
- - [keypoints_proc.py](src/keypoints_proc.py): Various calculations on time series coordinate data
+After setting up the environment, execute [launcher.py][launcher] with the following command to start the application.
 
-### Pose Estimation
-The functionality and structure of the application is explained in the video below ([YouTube](https://youtu.be/hE8ZoA8gETU?si=iDzTC7EPSqV6PfcA)), so please watch it as well.
-<p align="center">
-<a href="https://youtu.be/hE8ZoA8gETU?si=iDzTC7EPSqV6PfcA"><img src="http://img.youtube.com/vi/hE8ZoA8gETU/mqdefault.jpg" width="300"></a>
-</p>
+```
+python src/launcher.py
+```
 
- - [video_to_keypoints.py](src/video_to_keypoints.py): Pose estimation application (wrapper below)
- - [yolo_detector.py](src/yolo_detector.py): Inference with YOLOv8 
- - [mediapipe_detector.py](src/mediapipe_detector.py): Inference with MediaPipe Holistic
- - [windows_and_mac.py](src/windows_and_mac.py): Opening video files and folders (for Windows and Mac)
- - [roi_cap.py](src/roi_cap.py): ROI feature
+※In the Mac&Rye environment, we have identified issues related to the tkinter backend, which may cause instability. For example, we have confirmed a failure in importing matplotlib.backends.backend_tkagg on Mac&Rye. To address this issue, we have implemented an alternative branch for cases when the import of backend_tkagg fails.
 
-### Other
- - [mediapipe_drawer.py](src/mediapipe_drawer.py): Read PKL file and draw MediaPipe Holistic inference results on video
- - [yolo_drawer.py](src/yolo_drawer.py): Read PKL file and draw YOLOv8 inference results on video
+Also, if you are using Rye on Mac, please remove the comment out in pyproject.toml.
+
+```
+"pyqt5>=5.15.10",
+```
+
