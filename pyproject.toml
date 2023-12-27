@@ -28,10 +28,10 @@ dev-dependencies = [
 launcher = "python src/launcher.py"
 licence = "pip-licenses --order=license -u -l --no-license-path --format=json --output-file license.json"
 
-[[tool.rye.sources]]
-name = "torch"
-url = "https://download.pytorch.org/whl/cu118"
-type = "index"
+#[[tool.rye.sources]]
+#name = "torch"
+#url = "https://download.pytorch.org/whl/cu118"
+#type = "index"
 
 [tool.hatch.metadata]
 allow-direct-references = true
