@@ -132,6 +132,8 @@ class App(ttk.Frame):
         for member in members:
             sliced_df = tree_df.loc[pd.IndexSlice[:, member, :], :]
             sliced_df = sliced_df.loc[~(sliced_df['x'].isna()) & (~sliced_df['y'].isna())]
+            if len(sliced_df.index.get_level_values(0).unique()) == 0:
+                continue
             kpf = len(sliced_df)/len(sliced_df.index.get_level_values(0).unique())
             head_timestamp = time_format.msec_to_timestr_with_fff(sliced_df.head(1)['timestamp'].values[0])
             tail_timestamp = time_format.msec_to_timestr_with_fff(sliced_df.tail(1)['timestamp'].values[0])
