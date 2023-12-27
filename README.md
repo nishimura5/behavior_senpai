@@ -44,15 +44,7 @@ Behavior SenpaiはWindows11(23H2)上の[Rye](https://rye-up.com)で構築したP
 
 WindowsでのPython環境構築については[こちらの動画](https://youtu.be/tU4Q5q07A1Y)を参考にしてください。
 
-作業フォルダに本プロジェクトをcloneし、rye syncを実行します。以下のコマンドを順に実行してください。このとき、親フォルダに日本語が使用されていないことを確認してください。
-
-```
-git clone https://github.com/nishimura5/behavior_senpai.git
-cd behavior_senpai
-rye sync
-```
-
-CUDAを有効にする場合はsyncの前に[pyproject.toml][pyproject]内の以下のコメントアウトを外してください。
+YOLOv8でCUDAを使用する場合はrye syncの前に[pyproject.toml][pyproject]内の以下のコメントアウトを外してください。
 
 ```
 [[tool.rye.sources]]
@@ -61,11 +53,15 @@ url = "https://download.pytorch.org/whl/cu118"
 type = "index"
 ```
 
-環境構築後はlauncher.batを実行するか、以下のコマンドで[launcher.py][launcher]を実行することでアプリケーションが起動します。
+作業フォルダに本プロジェクトをcloneし、rye syncを実行します。以下のコマンドを順に実行してください。このとき、親フォルダに日本語が使用されていないことを確認してください。
 
 ```
-python src/launcher.py
+git clone https://github.com/nishimura5/behavior_senpai.git
+cd behavior_senpai
+rye sync
 ```
+
+環境構築後はlauncher.batを実行することでアプリケーションが起動します。
 
 ### Mac
 
@@ -79,13 +75,9 @@ cd behavior_senpai
 . ./venv_mac.sh
 ```
 
-環境構築後はlauncher.shを実行するか、以下のコマンドで[launcher.py][launcher]を実行することでアプリケーションが起動します。
+環境構築後はlauncher.shを実行することでアプリケーションが起動します。
 
-```
-python src/launcher.py
-```
-
-※Mac&Rye環境において、tkinterのバックエンドに関連する不具合を確認しています。たとえば、Mac&Ryeではmatplotlib.backends.backend_tkaggのimportに失敗することを確認しています。この問題については、対策としてbackend_tkaggのimportに失敗したとき用の分岐を設けていますがほかにも動作が安定しないところがあります。
+※Mac&Rye環境において、tkinterのバックエンドに関連する不具合を確認しています。たとえば、Mac&Ryeではmatplotlib.backends.backend_tkaggのimportに失敗することを確認しています。この問題については対策としてbackend_tkaggのimportに失敗したとき用の分岐を設けていますが、ほかにもtkinter周辺で動作が安定しないところがあります。
 
 MacでRyeを使用する場合はpyproject.tomlの以下のコメントアウトを外してください。
 
@@ -97,7 +89,7 @@ MacでRyeを使用する場合はpyproject.tomlの以下のコメントアウト
 
 ### GUI
 
-以下のそれぞれ独立したアプリケーションをlauncher.pyが呼び出す構成になっています。
+以下のそれぞれ独立したアプリケーションを[launcher.py][launcher]が呼び出す構成になっています。
 
 #### Detection
 
