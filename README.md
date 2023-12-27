@@ -19,25 +19,24 @@
 
 Behavior Senpai(ビヘイビア センパイ)は、定量的行動観察を行うためのアプリケーションです。ビデオカメラで撮影した人の行動をkeypoint検出AIを使用して時系列座標データ化し、その時系列座標データを用いて人の行動を定量的に分析することができます。
 
+現在Behavior Senpaiが対応しているAIモデルは以下のとおりです。
+
+ - YOLOv8
+ - MediaPipe Holistic
+
 また、Behavior SenpaiはPythonを使用したデータ解析を学ぶためのプロジェクトでもあります。Pythonの基礎(if文やfor文、リスト内包表記、classあたりを指します)を習得した人が、実用的なアプリケーションの開発に挑戦するための足掛かりにできるよう構成しています。とりわけ以下のライブラリの使用方法について学習することができます。
 
  - PandasのMultiIndex
  - Matplotlibでの時系列データ描画
  - OpenCV(cv2)のVideoCapture
 
-現在Behavior Senpaiが対応しているAIモデルは以下のとおりです。
-
- - YOLOv8
- - MediaPipe Holistic
-
 ## Requirement
 
  - 空き容量: 8GB以上
  - 搭載RAM: 8GB以上 (16GB以上推奨)
+ - Python: 3.11 (3.12以上はインストール時にエラーが発生するようです)
 
 Behavior SenpaiはWindows11(23H2)上の[Rye](https://rye-up.com)で構築したPython環境で開発と動作確認をおこなっています。使用しているライブラリ等については[pyproject.toml][pyproject]等を参照してください。
-
-ただし、Behavior Senpaiはpipでインストールできるライブラリのみを使用しているので、Rye以外の方法（Minicondaなど）でも環境を構築することが可能です。
 
 ## Usage
 
@@ -45,16 +44,11 @@ Behavior SenpaiはWindows11(23H2)上の[Rye](https://rye-up.com)で構築したP
 
 WindowsでのPython環境構築については[こちらの動画](https://youtu.be/tU4Q5q07A1Y)を参考にしてください。
 
-作業フォルダに本プロジェクトをcloneします。以下のコマンドを実行してください。このとき、親フォルダに日本語が使用されていないことを確認してください。
+作業フォルダに本プロジェクトをcloneし、rye syncを実行します。以下のコマンドを順に実行してください。このとき、親フォルダに日本語が使用されていないことを確認してください。
 
 ```
 git clone https://github.com/nishimura5/behavior_senpai.git
 cd behavior_senpai
-```
-
-Ryeを使用している場合は、以下を実行するだけでBehavior Senpaiを起動する準備が整います。
-
-```
 rye sync
 ```
 
@@ -75,25 +69,25 @@ python src/launcher.py
 
 ### Mac
 
-Macでは[Miniconda](https://docs.conda.io/projects/miniconda/en/latest/)の使用を推奨しています。pipで環境構築してください。
+MacではRyeの使用を推奨していません(※)。[Python3.6.11](https://www.python.org/downloads/macos/)をインストールしてください。
+
+作業フォルダに本プロジェクトをcloneし、shellスクリプトを実行します。以下のコマンドを順に実行してください。このとき、親フォルダに日本語が使用されていないことを確認してください。
+
 ```
-pip install torch
-pip install ultralytics
-pip install lapx
-pip install mediapipe
-pip install scikit-learn
-pip install pyperclip
+git clone https://github.com/nishimura5/behavior_senpai.git
+cd behavior_senpai
+. ./venv_mac.sh
 ```
 
-環境構築後は以下のコマンドで[launcher.py][launcher]を実行することでアプリケーションが起動します。
+環境構築後はlauncher.shを実行するか、以下のコマンドで[launcher.py][launcher]を実行することでアプリケーションが起動します。
 
 ```
 python src/launcher.py
 ```
 
-※Mac&Rye環境において、tkinterのバックエンドに関連する不具合を確認しているため動作が安定しない場合があります。たとえば、Mac&Ryeではmatplotlib.backends.backend_tkaggのimportに失敗することを確認しています。この問題については、対策としてbackend_tkaggのimportに失敗したとき用の分岐を設けています。
+※Mac&Rye環境において、tkinterのバックエンドに関連する不具合を確認しています。たとえば、Mac&Ryeではmatplotlib.backends.backend_tkaggのimportに失敗することを確認しています。この問題については、対策としてbackend_tkaggのimportに失敗したとき用の分岐を設けていますがほかにも動作が安定しないところがあります。
 
-また、MacでRyeを使用する場合はpyproject.tomlの以下のコメントアウトを外してください。
+MacでRyeを使用する場合はpyproject.tomlの以下のコメントアウトを外してください。
 
 ```
 "pyqt5>=5.15.10",
