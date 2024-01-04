@@ -1,7 +1,7 @@
 [project]
 name = "behavior-senpai"
 version = "1.0.0"
-description = "A collection of Python code for performing behavioral analysis."
+description = "A collection of Python scripts and applications for supporting Quantitative Behavioral Observation using videos."
 dependencies = [
     "torch~=2.1",
     "ultralytics~=8.0",
