@@ -26,7 +26,7 @@ dev-dependencies = [
 
 [tool.rye.scripts]
 launcher = "python src/launcher.py"
-licence = "pip-licenses --order=license -u -l --no-license-path --format=json --output-file license.json"
+license = "pip-licenses --order=license -u -l --no-license-path --format=json --output-file license.json"
 
 #[[tool.rye.sources]]
 #name = "torch"

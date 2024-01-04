@@ -1,3 +1,5 @@
+import sys
+import os
 import tkinter as tk
 from tkinter import ttk
 
@@ -13,6 +15,7 @@ import app_area_filter as af
 import app_calc_vector as k2v
 import app_scene_table
 import pref_list
+import license_view
 
 
 class App(ttk.Frame):
@@ -22,7 +25,7 @@ class App(ttk.Frame):
     """
     def __init__(self, master):
         super().__init__(master)
-        master.title("Launcher")
+        master.title("Behavior Senpai")
         self.pack(padx=10, pady=10)
 
         # ボタンのフレーム
@@ -59,10 +62,16 @@ class App(ttk.Frame):
         k2c_button = ttk.Button(buttons_frame, text="app_calc_vector.py", command=lambda: self.launch_window(k2v.App), width=26)
         k2c_button.pack(side=tk.TOP, pady=4)
 
-        pref_label = ttk.Label(buttons_frame, text="Preference")
+        pref_label = ttk.Label(buttons_frame, text="MISC")
         pref_label.pack(side=tk.TOP, pady=(8, 0))
         pref_list_button = ttk.Button(buttons_frame, text="pref_list.py", command=lambda: self.launch_window(pref_list.App), width=26)
         pref_list_button.pack(side=tk.TOP, pady=4)
+
+        # srcにlicense.jsonがある場合はボタンを表示
+        license_path = os.path.join(self._find_data_dir(), 'license.json')
+        if os.path.exists(license_path):
+            license_button = ttk.Button(buttons_frame, text="license_view.py", command=lambda: self.launch_window(license_view.App), width=26)
+            license_button.pack(side=tk.TOP, pady=4)
 
     def launch_window(self, app, grab=False):
         dlg_modal = tk.Toplevel(self)
@@ -73,6 +82,16 @@ class App(ttk.Frame):
         app(dlg_modal)
         dlg_modal.protocol("WM_DELETE_WINDOW", lambda: [dlg_modal.destroy(), cv2.destroyAllWindows()])
         self.wait_window(dlg_modal)
+
+    def _find_data_dir(self):
+        if getattr(sys, "frozen", False):
+            # The application is frozen
+            datadir = os.path.dirname(sys.executable)
+        else:
+            # The application is not frozen
+            # Change this bit to match where you store your data files:
+            datadir = os.path.dirname(__file__)
+        return datadir
 
 
 def quit(root):
