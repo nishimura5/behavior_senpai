@@ -237,6 +237,21 @@ def calc_cross_dot_plus_angle(src_df, kp0: str, kp1: str, kp2: str):
     return dst_df
 
 
+def calc_moving_average(src_df, window_size: int):
+    '''
+    timestamp以外の全てのカラムを移動平均する
+    indexがframe-memberの場合にのみ対応
+    TODO: frame-member-keypointにも対応する
+    '''
+    rolling_df = pd.DataFrame()
+    columns = src_df.columns.drop('timestamp')
+    rolling_df = src_df[columns].reset_index(["member"])
+    rolling_df = rolling_df.groupby(['member'], as_index=True).rolling(window=window_size, center=True).mean()
+    rolling_df = rolling_df.swaplevel('frame', 'member').sort_index()
+    rolling_df['timestamp'] = src_df['timestamp']
+    return rolling_df
+
+
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     pd.set_option("display.min_rows", 100)
