@@ -62,7 +62,10 @@ class App(ttk.Frame):
     def load_pkl(self):
         pkl_path = self.pkl_selector.get_trk_path()
         self.src_df = file_inout.load_track_file(pkl_path, allow_calculated_track_file=True)
+
+        self.clear()
         if 'scene_table' not in self.src_df.attrs.keys():
+            print("scene_table is not in attrs")
             return
 
         scene_table = self.src_df.attrs['scene_table']
@@ -123,6 +126,9 @@ class App(ttk.Frame):
         self.src_df.attrs['scene_table'] = scene_table
         print(self.src_df.attrs['scene_table'])
         self.src_df.to_pickle(self.pkl_selector.get_trk_path())
+
+    def clear(self):
+        self.tree.delete(*self.tree.get_children())
 
 
 def quit(root):
