@@ -27,16 +27,26 @@ class App(ttk.Frame):
 
         entry_frame = ttk.Frame(self)
         entry_frame.pack(pady=5)
+        description_label = ttk.Label(entry_frame, text="description")
+        description_label.pack(side=tk.LEFT)
+        self.description_entry = ttk.Entry(entry_frame, width=40)
+        self.description_entry.pack(side=tk.LEFT, padx=(0, 5))
+
         add_btn = ttk.Button(entry_frame, text="add", command=self._add_row)
         add_btn.pack(side=tk.LEFT, padx=(10, 0))
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
-        cols = ("start", "end", "duration")
+        cols = ("start", "end", "duration", "description")
         self.tree = ttk.Treeview(tree_frame, columns=cols, show='headings', selectmode="extended")
         self.tree.heading("start", text="start")
         self.tree.heading("end", text="end")
         self.tree.heading("duration", text="duration")
+        self.tree.heading("description", text="description")
+        self.tree.column("start", width=100)
+        self.tree.column("end", width=100)
+        self.tree.column("duration", width=100)
+        self.tree.column("description", width=350)
 
         self.tree.pack()
 
@@ -59,10 +69,15 @@ class App(ttk.Frame):
         # self.treeをクリアしてattrs['scene_table']の値を入れる
         for item in self.tree.get_children(''):
             self.tree.delete(item)
-        for start, end in zip(scene_table['start'], scene_table['end']):
+
+        # attrsにdescriptionがなかったら空のリストを入れる
+        if 'description' not in scene_table.keys():
+            scene_table['description'] = [''] * len(scene_table['start'])
+
+        for start, end, description in zip(scene_table['start'], scene_table['end'], scene_table['description']):
             duration = pd.to_timedelta(end) - pd.to_timedelta(start)
             duration_str = time_format.timedelta_to_str(duration)
-            self.tree.insert("", "end", values=(start, end, duration_str))
+            self.tree.insert("", "end", values=(start, end, duration_str, description))
 
     def _add_row(self):
         start_time, end_time = self.time_span_entry.get_start_end_str()
@@ -82,7 +97,7 @@ class App(ttk.Frame):
         for tar in tar_list:
             if start_str == self.tree.item(tar)['values'][0] and end_str == self.tree.item(tar)['values'][1]:
                 return
-        self.tree.insert("", "end", values=(start_str, end_str, duration_str))
+        self.tree.insert("", "end", values=(start_str, end_str, duration_str, self.description_entry.get()))
 
         # tree_viewをstartカラムでソート
         self._treeview_sort_column(self.tree, "start")
@@ -99,12 +114,14 @@ class App(ttk.Frame):
             self.tree.delete(item)
 
     def _update(self):
-        scene_table = {'start': [], 'end': []}
+        scene_table = {'start': [], 'end': [], 'description': []}
         for item in self.tree.get_children(''):
             scene_table['start'].append(self.tree.item(item)['values'][0])
             scene_table['end'].append(self.tree.item(item)['values'][1])
+            scene_table['description'].append(self.tree.item(item)['values'][3])
 
         self.src_df.attrs['scene_table'] = scene_table
+        print(self.src_df.attrs['scene_table'])
         self.src_df.to_pickle(self.pkl_selector.get_trk_path())
 
 
