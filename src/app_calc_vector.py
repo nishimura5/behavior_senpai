@@ -129,7 +129,8 @@ class App(ttk.Frame):
         plot_df = keypoints_proc.thinning(plot_df, int(thinning))
 
         self.lineplot.set_trk_df(self.src_df)
-        self.lineplot.draw(plot_df, current_member, col_names, int(thinning))
+        self.lineplot.set_plot(plot_df, current_member, col_names, int(thinning))
+        self.lineplot.draw()
 
     def export(self):
         if len(self.dst_df) == 0:

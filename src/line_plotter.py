@@ -13,7 +13,7 @@ except ImportError:
     # 代わりのバックエンドを指定
     matplotlib.use('Qt5Agg')
 else:
-    USE_TKAGG = True 
+    USE_TKAGG = True
 
 from python_senpai import time_format
 
@@ -58,9 +58,8 @@ class LinePlotter:
             self.anno = mediapipe_drawer.Annotate()
             cols_for_anno = ['x', 'y', 'z']
         self.anno_df = trk_df.reset_index().set_index(['timestamp', 'member', 'keypoint']).loc[:, cols_for_anno]
-        self.timestamps = self.anno_df.index.get_level_values('timestamp').unique().to_numpy()
 
-    def draw(self, plot_df, member: str, data_col_names: list, thinning: int):
+    def set_plot(self, plot_df, member: str, data_col_names: list, thinning: int):
         self.member = member
         # multiindexが重複していたらdrop
         plot_df = plot_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
@@ -70,12 +69,11 @@ class LinePlotter:
             self.line_ax.plot(plot_df['timestamp'], plot_df[col_name], label=col_name)
         self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         self.line_ax.legend(loc='upper right')
-        self.canvas.draw_idle()
 
         show_df = plot_df.reset_index().set_index(['timestamp', 'member']).loc[:, :]
         self.timestamps = show_df.index.get_level_values('timestamp').unique().to_numpy()
 
-    def draw_keypoints_band(self, plot_df, member: str, time_min_msec: int, time_max_msec: int):
+    def set_plot_band(self, plot_df, member: str, time_min_msec: int, time_max_msec: int):
         self.member = member
 
         plot_df = plot_df.dropna()
@@ -96,6 +94,11 @@ class LinePlotter:
         self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         self.line_ax.xaxis.set_major_locator(ticker.MultipleLocator(5*60*1000))
         self.line_ax.grid(which='major', axis='x', linewidth=0.3)
+
+        show_df = plot_df.reset_index().set_index(['timestamp', 'member']).loc[:, :]
+        self.timestamps = show_df.index.get_level_values('timestamp').unique().to_numpy()
+
+    def draw(self):
         self.canvas.draw_idle()
 
     def clear(self):

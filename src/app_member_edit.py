@@ -98,7 +98,7 @@ class App(ttk.Frame):
         self.current_dt_span = None
         self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
         self.pkl_selector.set_prev_next(self.src_df.attrs)
-        self.update_tree() 
+        self.update_tree()
         self.clear()
 
         idx = self.src_df.index
@@ -119,8 +119,8 @@ class App(ttk.Frame):
 
         plot_df = tar_df
         self.band.set_trk_df(plot_df)
-        self.band.draw_keypoints_band(plot_df, current_member, time_min, time_max)
-#        self.band.draw_col(plot_df, current_member, 'x', time_min, time_max)
+        self.band.set_plot_band(plot_df, current_member, time_min, time_max)
+        self.band.draw()
 
     def update_tree(self):
         self.tree.delete(*self.tree.get_children())
