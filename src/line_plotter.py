@@ -98,6 +98,35 @@ class LinePlotter:
         show_df = plot_df.reset_index().set_index(['timestamp', 'member']).loc[:, :]
         self.timestamps = show_df.index.get_level_values('timestamp').unique().to_numpy()
 
+    def set_plot_rect(self, plot_df, member: str, rects: list, time_min_msec: int, time_max_msec: int):
+        self.member = member
+
+        rect_df = pd.DataFrame(rects, columns=['start', 'end', 'description'])
+
+        rect_df['start'] = pd.to_timedelta(rect_df['start']).dt.total_seconds() * 1000
+        rect_df['end'] = pd.to_timedelta(rect_df['end']).dt.total_seconds() * 1000
+        descriptions = rect_df['description'].unique()
+        ticks = []
+        for i, description in enumerate(descriptions):
+            # descriptionでフィルタリング
+            tar_df = rect_df.loc[rect_df['description'] == description, :]
+            rectangles = []
+            for _, row in tar_df.iterrows():
+                rectangles.append(matplotlib.patches.Rectangle((row['start'], i), row['end']-row['start'], 0.9, alpha=0.7, label=description))
+            for rectangle in rectangles:
+                self.line_ax.add_patch(rectangle)
+            ticks.append(i+0.45)
+        self.line_ax.set_ylim(0, len(descriptions))
+        self.line_ax.set_yticks(ticks)
+        self.line_ax.set_yticklabels(descriptions)
+        self.line_ax.set_xlim(time_min_msec, time_max_msec)
+        self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
+        self.line_ax.xaxis.set_major_locator(ticker.MultipleLocator(5*60*1000))
+        self.line_ax.grid(which='major', axis='x', linewidth=0.3)
+
+        show_df = plot_df.reset_index().set_index(['timestamp', 'member']).loc[:, :]
+        self.timestamps = show_df.index.get_level_values('timestamp').unique().to_numpy()
+
     def draw(self):
         self.canvas.draw_idle()
 

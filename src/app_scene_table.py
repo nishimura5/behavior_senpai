@@ -1,11 +1,15 @@
+import os
 import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
 
-from gui_parts import PklSelector, TimeSpanEntry
+from gui_parts import PklSelector, TimeSpanEntry, TempFile
+from line_plotter import LinePlotter
 from python_senpai import time_format
+from python_senpai import keypoints_proc
 from python_senpai import file_inout
+from python_senpai import vcap
 
 
 class App(ttk.Frame):
@@ -18,12 +22,30 @@ class App(ttk.Frame):
         master.title("Scene Table")
         self.pack(padx=10, pady=10)
 
+        temp = TempFile()
+        width, height, dpi = temp.get_window_size()
+        self.plot = LinePlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
+
         load_frame = ttk.Frame(self)
         load_frame.pack(pady=5, anchor=tk.W)
         self.pkl_selector = PklSelector(load_frame)
         self.pkl_selector.set_command(cmd=self.load_pkl)
         self.time_span_entry = TimeSpanEntry(load_frame)
         self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
+
+        setting_frame = ttk.Frame(self)
+        setting_frame.pack(pady=5)
+
+        member_label = ttk.Label(setting_frame, text="member")
+        member_label.pack(side=tk.LEFT)
+        self.member_combo = ttk.Combobox(setting_frame, state='readonly', width=18)
+        self.member_combo.pack(side=tk.LEFT, padx=5)
+
+        draw_btn = ttk.Button(setting_frame, text="Draw", command=self.draw)
+        draw_btn.pack(side=tk.LEFT)
+
+        clear_btn = ttk.Button(setting_frame, text="Clear", command=self.clear)
+        clear_btn.pack(side=tk.LEFT)
 
         entry_frame = ttk.Frame(self)
         entry_frame.pack(pady=5)
@@ -33,12 +55,16 @@ class App(ttk.Frame):
         self.description_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         add_btn = ttk.Button(entry_frame, text="add", command=self._add_row)
-        add_btn.pack(side=tk.LEFT, padx=(10, 0))
+        add_btn.pack(side=tk.LEFT, padx=5)
+        delete_btn = ttk.Button(entry_frame, text="Delete Selected", command=self._delete_selected)
+        delete_btn.pack(side=tk.LEFT, padx=5)
+        update_btn = ttk.Button(entry_frame, text="Write to Track", command=self._update)
+        update_btn.pack(side=tk.LEFT, padx=5)
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
         cols = ("start", "end", "duration", "description")
-        self.tree = ttk.Treeview(tree_frame, columns=cols, show='headings', selectmode="extended", height=30)
+        self.tree = ttk.Treeview(tree_frame, columns=cols, show='headings', selectmode="extended", height=10)
         self.tree.heading("start", text="start")
         self.tree.heading("end", text="end")
         self.tree.heading("duration", text="duration")
@@ -47,23 +73,30 @@ class App(ttk.Frame):
         self.tree.column("end", width=100)
         self.tree.column("duration", width=100)
         self.tree.column("description", width=350)
-
         self.tree.pack()
 
-        control_frame = ttk.Frame(self)
-        control_frame.pack(pady=5)
-        delete_btn = ttk.Button(control_frame, text="Delete Selected", command=self._delete_selected)
-        delete_btn.pack(side=tk.LEFT)
-        update_btn = ttk.Button(control_frame, text="Write to Track", command=self._update)
-        update_btn.pack(side=tk.LEFT, padx=(10, 0))
+        plot_frame = ttk.Frame(self)
+        plot_frame.pack(pady=5)
+        self.plot.pack(plot_frame)
 
+        self.cap = vcap.VideoCap()
         self.load_pkl()
 
     def load_pkl(self):
+        # ファイルのロード
         pkl_path = self.pkl_selector.get_trk_path()
         self.src_df = file_inout.load_track_file(pkl_path, allow_calculated_track_file=True)
+        pkl_dir = os.path.dirname(pkl_path)
+        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
+        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
 
+        # UIの更新
+        self.member_combo["values"] = self.src_df.index.get_level_values(1).unique().tolist()
+        self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
+        self.pkl_selector.set_prev_next(self.src_df.attrs)
+        self.tree.delete(*self.tree.get_children())
         self.clear()
+
         if 'scene_table' not in self.src_df.attrs.keys():
             print("scene_table is not in attrs")
             return
@@ -81,6 +114,28 @@ class App(ttk.Frame):
             duration = pd.to_timedelta(end) - pd.to_timedelta(start)
             duration_str = time_format.timedelta_to_str(duration)
             self.tree.insert("", "end", values=(start, end, duration_str, description))
+        self.plot.set_vcap(self.cap)
+        print('load_pkl() done.')
+
+    def draw(self):
+        current_member = self.member_combo.get()
+
+        # timestampの範囲を抽出
+        time_min, time_max = self.time_span_entry.get_start_end()
+        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min, time_max)
+        # keypointのインデックス値を文字列に変換
+        idx = tar_df.index
+        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
+        plot_df = tar_df
+
+        if 'scene_table' not in self.src_df.attrs.keys():
+            print("scene_table is not in attrs")
+            return
+        rects = self.src_df.attrs['scene_table']
+
+        self.plot.set_trk_df(plot_df)
+        self.plot.set_plot_rect(plot_df, current_member, rects, time_min, time_max)
+        self.plot.draw()
 
     def _add_row(self):
         start_time, end_time = self.time_span_entry.get_start_end_str()
@@ -128,7 +183,7 @@ class App(ttk.Frame):
         self.src_df.to_pickle(self.pkl_selector.get_trk_path())
 
     def clear(self):
-        self.tree.delete(*self.tree.get_children())
+        self.plot.clear()
 
 
 def quit(root):
