@@ -73,6 +73,8 @@ class BandPlotter:
 
         self.band_ax.set_xlim(time_min_msec, time_max_msec)
         self.band_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
+        self.band_ax.xaxis.set_major_locator(ticker.MultipleLocator(5*60*1000))
+        self.band_ax.grid(which='major', axis='x', linewidth=0.3)
         self.canvas.draw_idle()
 
     def clear(self):
