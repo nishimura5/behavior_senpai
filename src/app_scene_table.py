@@ -74,6 +74,8 @@ class App(ttk.Frame):
         self.tree.column("duration", width=100)
         self.tree.column("description", width=350)
         self.tree.pack()
+        # rowを選択したときのイベントを設定
+        self.tree.bind("<<TreeviewSelect>>", self._select_tree_row)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
@@ -85,7 +87,7 @@ class App(ttk.Frame):
     def load_pkl(self):
         # ファイルのロード
         pkl_path = self.pkl_selector.get_trk_path()
-        self.src_df = file_inout.load_track_file(pkl_path, allow_calculated_track_file=True)
+        self.src_df = file_inout.load_track_file(pkl_path)
         pkl_dir = os.path.dirname(pkl_path)
         self.cap.set_frame_size(self.src_df.attrs["frame_size"])
         self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
@@ -184,6 +186,20 @@ class App(ttk.Frame):
 
     def clear(self):
         self.plot.clear()
+
+    def _select_tree_row(self, event):
+        # 選択した行のmemberを取得
+        if len(self.tree.selection()) == 0:
+            return
+        selected = self.tree.selection()[0]
+        start = self.tree.item(selected)['values'][0]
+        end = self.tree.item(selected)['values'][1]
+        start_msec = time_format.timestr_to_msec(start)
+        end_msec = time_format.timestr_to_msec(end)
+        self.time_span_entry.update_entry(start_msec, end_msec)
+        description = self.tree.item(selected)['values'][3]
+        self.description_entry.delete(0, tk.END)
+        self.description_entry.insert(0, description)
 
 
 def quit(root):
