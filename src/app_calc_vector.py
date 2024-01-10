@@ -128,6 +128,7 @@ class App(ttk.Frame):
         thinning = self.thinnig_option.get_thinning()
         plot_df = keypoints_proc.thinning(plot_df, int(thinning))
 
+        self.lineplot.set_trk_df(self.src_df)
         self.lineplot.draw(plot_df, current_member, col_names, int(thinning))
 
     def export(self):

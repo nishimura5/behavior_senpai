@@ -5,7 +5,7 @@ from tkinter import ttk
 import pandas as pd
 
 from gui_parts import PklSelector, TimeSpanEntry, TempFile
-from band_plotter import BandPlotter
+from line_plotter import LinePlotter
 from python_senpai import time_format
 from python_senpai import keypoints_proc
 from python_senpai import vcap
@@ -28,7 +28,7 @@ class App(ttk.Frame):
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
-        self.band = BandPlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
+        self.band = LinePlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
 
         load_frame = ttk.Frame(self)
         load_frame.pack(pady=5, anchor=tk.W)
@@ -118,7 +118,9 @@ class App(ttk.Frame):
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
 
         plot_df = tar_df
-        self.band.draw(plot_df, current_member, time_min, time_max)
+        self.band.set_trk_df(plot_df)
+        self.band.draw_keypoints_band(plot_df, current_member, time_min, time_max)
+#        self.band.draw_col(plot_df, current_member, 'x', time_min, time_max)
 
     def update_tree(self):
         self.tree.delete(*self.tree.get_children())

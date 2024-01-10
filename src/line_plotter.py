@@ -29,6 +29,9 @@ class LinePlotter:
         gs = gridspec.GridSpec(1, 1, top=0.97, bottom=0.05)
         self.line_ax = self.fig.add_subplot(gs[0, 0])
 
+        # グラフクリック時にアノテーションを描画するかのフラグ
+        self.draw_anno = False
+
     def pack(self, master):
         if USE_TKAGG is True:
             self.canvas = FigureCanvasTkAgg(self.fig, master=master)
@@ -43,7 +46,22 @@ class LinePlotter:
     def set_vcap(self, vcap):
         self.vcap = vcap
 
+    def set_trk_df(self, trk_df):
+        self.draw_anno = True
+        import yolo_drawer
+        import mediapipe_drawer
+
+        if trk_df.attrs['model'] == "YOLOv8 x-pose-p6":
+            self.anno = yolo_drawer.Annotate()
+            cols_for_anno = ['x', 'y', 'conf']
+        elif trk_df.attrs['model'] == "MediaPipe Holistic":
+            self.anno = mediapipe_drawer.Annotate()
+            cols_for_anno = ['x', 'y', 'z']
+        self.anno_df = trk_df.reset_index().set_index(['timestamp', 'member', 'keypoint']).loc[:, cols_for_anno]
+        self.timestamps = self.anno_df.index.get_level_values('timestamp').unique().to_numpy()
+
     def draw(self, plot_df, member: str, data_col_names: list, thinning: int):
+        self.member = member
         # multiindexが重複していたらdrop
         plot_df = plot_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         plot_df = plot_df.loc[pd.IndexSlice[:, member], :]
@@ -56,6 +74,29 @@ class LinePlotter:
 
         show_df = plot_df.reset_index().set_index(['timestamp', 'member']).loc[:, :]
         self.timestamps = show_df.index.get_level_values('timestamp').unique().to_numpy()
+
+    def draw_keypoints_band(self, plot_df, member: str, time_min_msec: int, time_max_msec: int):
+        self.member = member
+
+        plot_df = plot_df.dropna()
+        keypoints = plot_df.index.get_level_values('keypoint').unique()
+        chk_df = plot_df.reset_index().set_index(['member', 'keypoint']).sort_index()
+        for keypoint in keypoints:
+            # memberとkeypointのindexの組み合わせがない場合はスキップ
+            if (self.member, keypoint) not in chk_df.index:
+                print(f'{self.member}_{keypoint} not found')
+                continue
+
+            dst_df = plot_df.loc[pd.IndexSlice[:, self.member, keypoint], :]
+            dst_df = dst_df.reset_index().set_index('frame')
+            dst_df = dst_df.loc[:, ['keypoint', 'timestamp']].astype({'keypoint': str})
+            self.line_ax.plot(dst_df['timestamp'], dst_df['keypoint'], label=f'{self.member}_{keypoint}', marker='|', linestyle='', picker=5)
+
+        self.line_ax.set_xlim(time_min_msec, time_max_msec)
+        self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
+        self.line_ax.xaxis.set_major_locator(ticker.MultipleLocator(5*60*1000))
+        self.line_ax.grid(which='major', axis='x', linewidth=0.3)
+        self.canvas.draw_idle()
 
     def clear(self):
         self.line_ax.cla()
@@ -76,6 +117,15 @@ class LinePlotter:
             return
 
         ret, frame = self.vcap.read_at(timestamp_msec)
+
+        if self.draw_anno is True:
+            tar_df = self.anno_df.loc[pd.IndexSlice[timestamp_msec, self.member, :], :]
+            kps = tar_df.to_numpy()
+            self.anno.set_img(frame)
+            self.anno.set_pose(kps)
+            self.anno.set_track(self.member)
+            frame = self.anno.draw()
+
         if frame.shape[0] >= 1080:
             resize_height = 720
             resize_width = int(frame.shape[1] * resize_height / frame.shape[0])
@@ -83,4 +133,3 @@ class LinePlotter:
         if ret is True:
             cv2.imshow("frame", frame)
             cv2.waitKey(1)
-
