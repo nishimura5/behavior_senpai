@@ -33,21 +33,55 @@ class VideoCap(cv2.VideoCapture):
         if ok is False:
             frame = np.zeros((self.frame_size[1], self.frame_size[0], 3), dtype=np.uint8)
         return frame
- 
+
     def get_frame_size(self):
         return self.frame_size
-    
+
     def set_frame_size(self, frame_size):
         '''
         read_anyway()を見越してフレームのwidthとheightをsetする(resizeはしない)
         '''
         self.frame_size = frame_size
- 
+
+
+class MultiVcap():
+    '''
+    分割されたmp4に対して、通しのmsecでread_atするためのクラス
+    '''
+    def __init__(self):
+        self.vcaps = []
+
+    def open_files(self, file_path_list, total_msec_list):
+        # file_path_listとtotal_msec_listは先頭が最初の動画になっていること
+        self.total_msec_list = total_msec_list
+        for file_path in file_path_list:
+            vc = VideoCap()
+            vc.open_file(file_path)
+            self.vcaps.append(vc)
+
+    def read_at(self, msec):
+        '''
+        ミリ秒を指定してreadする
+        '''
+        tar_idx = 0
+        for tar_msec in self.total_msec_list:
+            if msec <= tar_msec:
+                break
+            tar_idx += 1
+
+        tar_vcap = self.vcaps[tar_idx]
+        if tar_idx == 0:
+            ok, frame = tar_vcap.read_at(msec)
+        else:
+            tar_msec = msec - self.total_msec_list[tar_idx-1]
+            ok, frame = tar_vcap.read_at(tar_msec)
+        return ok, frame
+
 
 class RoiCap(cv2.VideoCapture):
     def __init__(self):
         super().__init__()
- 
+
     def open_file(self, file_path):
         """
         動画ファイルを開く
