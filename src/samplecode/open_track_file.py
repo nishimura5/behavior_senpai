@@ -21,7 +21,13 @@ else:
     print(trk_df.head())
 
 print("[attrs]")
-print(trk_df.attrs)
+for key, value in trk_df.attrs.items():
+    if isinstance(value, dict):
+        print(f"{key}:")
+        for key2, value2 in value.items():
+            print(f"  {key2}: {value2}")
+    else:
+        print(f"{key}: {value}")
 
 # frameとmemberの個数を表示
 print("[index]")
