@@ -43,7 +43,7 @@ class App(ttk.Frame):
         tl_button.pack(side=tk.TOP, pady=4)
         k2b_button = ttk.Button(buttons_frame, text="app_member_edit.py", command=lambda: self.launch_window(k2b.App), width=26)
         k2b_button.pack(side=tk.TOP, pady=4)
-        scene_table_button = ttk.Button(buttons_frame, text="scene_table.py", command=lambda: self.launch_window(app_scene_table.App), width=26)
+        scene_table_button = ttk.Button(buttons_frame, text="app_scene_table.py", command=lambda: self.launch_window(app_scene_table.App), width=26)
         scene_table_button.pack(side=tk.TOP, pady=4)
 
         vis_label = ttk.Label(buttons_frame, text="Visualization")

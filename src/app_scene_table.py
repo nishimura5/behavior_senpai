@@ -94,6 +94,7 @@ class App(ttk.Frame):
 
         # UIの更新
         self.member_combo["values"] = self.src_df.index.get_level_values(1).unique().tolist()
+        self.member_combo.current(0)
         self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
         self.pkl_selector.set_prev_next(self.src_df.attrs)
         self.tree.delete(*self.tree.get_children())

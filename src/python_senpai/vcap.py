@@ -77,6 +77,9 @@ class MultiVcap():
             ok, frame = tar_vcap.read_at(tar_msec)
         return ok, frame
 
+    def clear(self):
+        self.vcaps = []
+
 
 class RoiCap(cv2.VideoCapture):
     def __init__(self):

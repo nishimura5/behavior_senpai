@@ -44,6 +44,9 @@ class LinePlotter:
             plt.show(block=False)
 
     def set_vcap(self, vcap):
+        '''
+        VideoCapかMultiVcapが入ってくる
+        '''
         self.vcap = vcap
 
     def set_trk_df(self, trk_df):
@@ -101,7 +104,9 @@ class LinePlotter:
     def set_plot_rect(self, plot_df, member: str, rects: list, time_min_msec: int, time_max_msec: int):
         self.member = member
 
-        rect_df = pd.DataFrame(rects, columns=['start', 'end', 'description'])
+        # カラムごとにdtypeを指定してDataFrameを作成
+        rect_df = pd.DataFrame(rects, columns=['start', 'end', 'description'], dtype='str')
+        rect_df = rect_df.sort_values('description')
 
         rect_df['start'] = pd.to_timedelta(rect_df['start']).dt.total_seconds() * 1000
         rect_df['end'] = pd.to_timedelta(rect_df['end']).dt.total_seconds() * 1000
@@ -145,10 +150,10 @@ class LinePlotter:
         timestamp_msec = self.timestamps[np.fabs(self.timestamps-timestamp_msec).argsort()[:1]][0]
 
         time_format.copy_to_clipboard(timestamp_msec)
-        if self.vcap.isOpened() is False:
-            return
 
         ret, frame = self.vcap.read_at(timestamp_msec)
+        if ret is False:
+            return
 
         if self.draw_anno is True:
             tar_df = self.anno_df.loc[pd.IndexSlice[timestamp_msec, self.member, :], :]
