@@ -11,6 +11,10 @@ from python_senpai import keypoints_proc
 from python_senpai import vcap
 from python_senpai import file_inout
 
+# dataframe のprint時に300行まで表示する
+pd.set_option('display.min_rows', 300)
+pd.set_option('display.max_rows', 300)
+
 
 class App(ttk.Frame):
     """
@@ -38,14 +42,17 @@ class App(ttk.Frame):
 
         setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
-        self.keypoint_combo = ttk.Combobox(setting_frame, state='readonly', width=12)
-        self.keypoint_combo.pack(side=tk.LEFT, padx=5)
 
-        area_name_label = ttk.Label(setting_frame, text="Area name:")
-        area_name_label.pack(side=tk.LEFT, padx=(10, 0))
-        self.area_name_entry = ttk.Entry(setting_frame, width=14)
-        self.area_name_entry.pack(side=tk.LEFT, padx=(0, 10))
-        self.area_dict = {}
+        in_out_label = ttk.Label(setting_frame, text="remove")
+        in_out_label.pack(side=tk.LEFT)
+        self.keypoint_member_combo = ttk.Combobox(setting_frame, state='readonly', width=18)
+        self.keypoint_member_combo.pack(side=tk.LEFT, padx=5)
+        self.keypoint_member_combo["values"] = ("only keyoints", "member")
+        self.keypoint_member_combo.current(0)
+        self.in_out_combo = ttk.Combobox(setting_frame, state='readonly', width=18)
+        self.in_out_combo.pack(side=tk.LEFT, padx=5)
+        self.in_out_combo["values"] = ("within area", "outside area")
+        self.in_out_combo.current(0)
 
         calc_button = ttk.Button(setting_frame, text="Calc In/Out", command=self.calc_in_out)
         calc_button.pack(side=tk.LEFT)
@@ -64,7 +71,7 @@ class App(ttk.Frame):
         export_btn = ttk.Button(export_frame, text="Export", command=self.export)
         export_btn.pack(side=tk.LEFT, padx=(10, 0))
 
-        self.canvas = tk.Canvas(self, width=600, height=400)
+        self.canvas = tk.Canvas(self, width=width, height=self.height)
         self.canvas.pack()
         self.canvas.bind("<ButtonPress-1>", self.select)
         self.canvas.bind("<Button1-Motion>", self.motion)
@@ -91,13 +98,12 @@ class App(ttk.Frame):
         # ファイルのロード
         self.pkl_path = self.pkl_selector.get_trk_path()
         self.src_df = file_inout.load_track_file(self.pkl_path)
+        self.src_df = self.src_df[~self.src_df.index.duplicated(keep='last')]
         pkl_dir = os.path.dirname(self.pkl_path)
         self.cap.set_frame_size(self.src_df.attrs["frame_size"])
         self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
 
         # UIの更新
-        self.keypoint_combo["values"] = self.src_df.index.get_level_values("keypoint").unique().tolist()
-        self.keypoint_combo.current(0)
         self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
         self.pkl_selector.set_prev_next(self.src_df.attrs)
 
@@ -120,23 +126,22 @@ class App(ttk.Frame):
         print('load_pkl() done.')
 
     def calc_in_out(self):
-        current_keypoint = self.keypoint_combo.get()
-
         # timestampの範囲を抽出
         time_min, time_max = self.time_span_entry.get_start_end()
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min, time_max)
         # keypointのインデックス値を文字列に変換
-        idx = tar_df.index
-        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
+#        idx = tar_df.index
+#        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
 
         poly_points = [p['point'] for p in self.anchor_points]
-        area_name = self.area_name_entry.get()
-        isin_df = keypoints_proc.is_in_poly(tar_df, current_keypoint, poly_points, area_name, self.scale)
-        new_col_name = isin_df.columns[0]
-        if new_col_name not in self.dst_df.columns:
-            self.dst_df = pd.concat([self.dst_df, isin_df], axis=1)
+        isin_df = keypoints_proc.is_in_poly(tar_df, poly_points, 'is_remove', self.scale)
+        # area外を削除したいときはboolを反転する
+        if self.in_out_combo.get() == "within area":
+            isin_df = isin_df.applymap(lambda x: not x)
 
-        self.area_dict[area_name] = poly_points
+        new_col_name = isin_df.columns[0]
+        if new_col_name not in self.isin_df.columns:
+            self.isin_df = pd.concat([self.isin_df, isin_df], axis=1)
 
         # UI表示用
         frame_true_cnt = isin_df.droplevel(1).sum()
@@ -145,23 +150,20 @@ class App(ttk.Frame):
         self.result_combo["values"] = self.result_list
 
     def clear(self):
-        self.area_name_entry.delete(0, tk.END)
-        self.area_dict = {}
         self.result_list = []
         self.result_combo["values"] = ""
-        self.dst_df = pd.DataFrame()
+        self.isin_df = pd.DataFrame()
 
     def export(self):
-        if len(self.dst_df) == 0:
+        if len(self.isin_df) == 0:
             print("No data to export.")
             return
-        timestamp_df = self.src_df.loc[:, 'timestamp'].droplevel(2).to_frame()
-        timestamp_df = timestamp_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
-        self.dst_df = self.dst_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
-        export_df = pd.concat([self.dst_df, timestamp_df], axis=1)
+        dst_df = pd.concat([self.src_df, self.isin_df], axis=1)
+        k_m_bool = self.keypoint_member_combo.get() == "member"
+        export_df = keypoints_proc.remove_by_bool_col(dst_df, 'is_remove', k_m_bool)
+        export_df = export_df.drop(columns=['is_remove'])
         export_df.attrs = self.src_df.attrs
-        export_df.attrs['area_filters'] = self.area_dict
-        file_inout.save_pkl(self.pkl_path, export_df, proc_history="area_filter")
+        file_inout.save_pkl(self.pkl_path, export_df, proc_history="area_remove")
 
     def select(self, event):
         for point in self.anchor_points:
@@ -172,7 +174,6 @@ class App(ttk.Frame):
                 break
             else:
                 self.selected_id = None
-        self.area_name_entry.delete(0, tk.END)
 
     def motion(self, event):
         if self.selected_id is None:

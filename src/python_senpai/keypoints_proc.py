@@ -20,7 +20,7 @@ def filter_by_timerange(src_df, start_msec: int, end_msec: int):
     '''
     if start_msec > end_msec:
         print("start_msec > end_msec")
-    dst_df = src_df.loc[src_df["timestamp"].between(start_msec, end_msec), :]
+    dst_df = src_df.loc[src_df["timestamp"].between(start_msec-1, end_msec+1), :]
     # emptyなら空のDataFrameを返す
     if len(dst_df) == 0:
         print("Filtered DataFrame is empty.")
@@ -91,11 +91,11 @@ def calc_recurrence(src_arr, threshold: float):
     return dst_mat
 
 
-def is_in_poly(src_df, target_keypoint, poly_points, area_name, scale=1.0):
+def is_in_poly(src_df, poly_points, area_name, scale=1.0):
     '''
-    poly_pointsの内側にtarget_keypointがあるかを判定する
+    poly_pointsの内側にtarget_keypointがあったらTrue
     '''
-    tar_point = src_df.loc[pd.IndexSlice[:, :, target_keypoint], :].droplevel(2)
+    tar_point = src_df
     in_out_df = pd.DataFrame()
     for i, point in enumerate(poly_points):
         vect_df = tar_point.copy()
@@ -113,9 +113,24 @@ def is_in_poly(src_df, target_keypoint, poly_points, area_name, scale=1.0):
         in_out_df = pd.concat([in_out_df, cross_df], axis=1)
     # 全てのcolumnsがTrueならTrue
     isin_df = in_out_df.all(axis=1).to_frame()
-    col_name = f"{target_keypoint}_in_{area_name}"
-    isin_df.columns = [col_name]
+    isin_df.columns = [area_name]
     return isin_df
+
+
+def remove_by_bool_col(src_df, bool_col_name: str, drop_member: bool = False):
+    '''
+    src_dfのbool_col_nameがFalseの行のxとyをnanにする
+    drop_memberがTrueの場合は、keypointが1つでもFalseならそのmember丸ごとFalseにする
+    '''
+    remove_sr = src_df[bool_col_name]
+    if drop_member is True:
+        group_sr = remove_sr.groupby(level=['frame', 'member']).all()
+        print(group_sr)
+        remove_sr = pd.merge(remove_sr, group_sr, left_index=True, right_index=True)[bool_col_name + '_y']
+
+    src_df['x'] = np.where(remove_sr == False, np.nan, src_df['x'])
+    src_df['y'] = np.where(remove_sr == False, np.nan, src_df['y'])
+    return src_df
 
 
 def calc_plus(src_df, kp0: str, kp1: str, kp2: str):
