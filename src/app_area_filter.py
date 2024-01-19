@@ -130,10 +130,6 @@ class App(ttk.Frame):
         # timestampの範囲を抽出
         time_min, time_max = self.time_span_entry.get_start_end()
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min, time_max)
-        print(self.src_df)
-        # keypointのインデックス値を文字列に変換
-#        idx = tar_df.index
-#        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
 
         poly_points = [p['point'] for p in self.anchor_points]
         left, top = self.src_df.attrs["roi_left_top"]
@@ -149,7 +145,6 @@ class App(ttk.Frame):
         k_m_bool = self.keypoint_member_combo.get() == "member"
         self.dst_df = keypoints_proc.remove_by_bool_col(self.dst_df, 'is_remove', k_m_bool)
         self.dst_df = self.dst_df.drop(columns=['is_remove'])
-        print(self.dst_df)
 
     def clear(self):
         self.result_list = []
