@@ -5,6 +5,7 @@ from tkinter import ttk
 import pandas as pd
 from PIL import Image, ImageTk
 import cv2
+import numpy as np
 
 from gui_parts import PklSelector, TimeSpanEntry, TempFile
 from python_senpai import keypoints_proc
@@ -54,7 +55,7 @@ class App(ttk.Frame):
         self.in_out_combo["values"] = ("within area", "outside area")
         self.in_out_combo.current(0)
 
-        calc_button = ttk.Button(setting_frame, text="Calc In/Out", command=self.calc_in_out)
+        calc_button = ttk.Button(setting_frame, text="remove", command=self.calc_in_out)
         calc_button.pack(side=tk.LEFT)
 
         export_frame = ttk.Frame(self)
@@ -129,41 +130,38 @@ class App(ttk.Frame):
         # timestampの範囲を抽出
         time_min, time_max = self.time_span_entry.get_start_end()
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min, time_max)
+        print(self.src_df)
         # keypointのインデックス値を文字列に変換
 #        idx = tar_df.index
 #        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
 
         poly_points = [p['point'] for p in self.anchor_points]
+        left, top = self.src_df.attrs["roi_left_top"]
+        # tar_dfのx,yが両方ともzero_pointと同じならnp.nanに置換する
+        tar_df.loc[(tar_df["x"] == left) & (tar_df["y"] == top), ["x", "y"]] = [np.nan, np.nan]
+
         isin_df = keypoints_proc.is_in_poly(tar_df, poly_points, 'is_remove', self.scale)
         # area外を削除したいときはboolを反転する
         if self.in_out_combo.get() == "within area":
             isin_df = isin_df.applymap(lambda x: not x)
 
-        new_col_name = isin_df.columns[0]
-        if new_col_name not in self.isin_df.columns:
-            self.isin_df = pd.concat([self.isin_df, isin_df], axis=1)
-
-        # UI表示用
-        frame_true_cnt = isin_df.droplevel(1).sum()
-        in_percent = int(sum(frame_true_cnt) / len(isin_df) * 100)
-        self.result_list.append(f"{new_col_name}: {in_percent}%")
-        self.result_combo["values"] = self.result_list
+        self.dst_df = pd.concat([self.src_df, isin_df], axis=1)
+        k_m_bool = self.keypoint_member_combo.get() == "member"
+        self.dst_df = keypoints_proc.remove_by_bool_col(self.dst_df, 'is_remove', k_m_bool)
+        self.dst_df = self.dst_df.drop(columns=['is_remove'])
+        print(self.dst_df)
 
     def clear(self):
         self.result_list = []
         self.result_combo["values"] = ""
-        self.isin_df = pd.DataFrame()
 
     def export(self):
-        if len(self.isin_df) == 0:
+        if len(self.dst_df) == 0:
             print("No data to export.")
             return
-        dst_df = pd.concat([self.src_df, self.isin_df], axis=1)
-        k_m_bool = self.keypoint_member_combo.get() == "member"
-        export_df = keypoints_proc.remove_by_bool_col(dst_df, 'is_remove', k_m_bool)
-        export_df = export_df.drop(columns=['is_remove'])
+        export_df = self.dst_df
         export_df.attrs = self.src_df.attrs
-        file_inout.save_pkl(self.pkl_path, export_df, proc_history="area_remove")
+        file_inout.overwrite_track_file(self.pkl_path, export_df, proc_history="area_remove")
 
     def select(self, event):
         for point in self.anchor_points:

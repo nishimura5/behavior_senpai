@@ -114,10 +114,11 @@ def is_in_poly(src_df, poly_points, area_name, scale=1.0):
     # 全てのcolumnsがTrueならTrue
     isin_df = in_out_df.all(axis=1).to_frame()
     isin_df.columns = [area_name]
+    print(isin_df)
     return isin_df
 
 
-def remove_by_bool_col(src_df, bool_col_name: str, drop_member: bool = False):
+def remove_by_bool_col(src_df, bool_col_name: str, drop_member: bool = False, left_top: tuple = (0, 0)):
     '''
     src_dfのbool_col_nameがFalseの行のxとyをnanにする
     drop_memberがTrueの場合は、keypointが1つでもFalseならそのmember丸ごとFalseにする
@@ -125,11 +126,10 @@ def remove_by_bool_col(src_df, bool_col_name: str, drop_member: bool = False):
     remove_sr = src_df[bool_col_name]
     if drop_member is True:
         group_sr = remove_sr.groupby(level=['frame', 'member']).all()
-        print(group_sr)
         remove_sr = pd.merge(remove_sr, group_sr, left_index=True, right_index=True)[bool_col_name + '_y']
 
-    src_df['x'] = np.where(remove_sr == False, np.nan, src_df['x'])
-    src_df['y'] = np.where(remove_sr == False, np.nan, src_df['y'])
+    src_df['x'] = np.where(remove_sr == False, left_top[0], src_df['x'])
+    src_df['y'] = np.where(remove_sr == False, left_top[1], src_df['y'])
     return src_df
 
 
