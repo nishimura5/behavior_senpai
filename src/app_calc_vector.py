@@ -5,10 +5,9 @@ from tkinter import ttk
 
 import pandas as pd
 
-from gui_parts import PklSelector, TimeSpanEntry, MemberKeypointComboboxesForCross, ThinningOption, TempFile
+from gui_parts import MemberKeypointComboboxesForCross, ThinningOption, TempFile
 from line_plotter import LinePlotter
 from python_senpai import keypoints_proc
-from python_senpai import vcap
 from python_senpai import file_inout
 
 
@@ -16,11 +15,9 @@ class App(ttk.Frame):
     """
     外積の結果を描画するためのGUIです。
     以下の機能を有します
-     - Trackファイルを選択して読み込む機能
-     - 計算対象の時間帯の指定を行う機能
      - 以上の処理で得られたデータをLinePlotterに渡す機能
     """
-    def __init__(self, master):
+    def __init__(self, master, args):
         super().__init__(master)
         master.title("Calc Vector")
         self.pack(padx=10, pady=10)
@@ -28,13 +25,6 @@ class App(ttk.Frame):
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
         self.lineplot = LinePlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
-
-        load_frame = ttk.Frame(self)
-        load_frame.pack(pady=5, anchor=tk.W)
-        self.pkl_selector = PklSelector(load_frame)
-        self.pkl_selector.set_command(cmd=self.load_pkl)
-        self.time_span_entry = TimeSpanEntry(load_frame)
-        self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         cross_frame = ttk.Frame(self)
         cross_frame.pack(pady=5)
@@ -71,31 +61,25 @@ class App(ttk.Frame):
         plot_frame.pack(pady=5)
         self.lineplot.pack(plot_frame)
 
-        self.cap = vcap.VideoCap()
-        self.load_pkl()
+        self.reload(args)
 
-    def load_pkl(self):
-        # ファイルのロード
-        self.pkl_path = self.pkl_selector.get_trk_path()
-        self.src_df = file_inout.load_track_file(self.pkl_path)
-        pkl_dir = os.path.dirname(self.pkl_path)
-        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
-        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
+    def reload(self, args):
+        self.src_df = args['src_df']
+        self.cap = args['cap']
+        self.src_attrs = args['src_attrs']
+        self.time_min, self.time_max = args['time_span_msec']
 
         # UIの更新
         self.member_combo.set_df(self.src_df)
-        self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
-        self.pkl_selector.set_prev_next(self.src_df.attrs)
         self.lineplot.set_vcap(self.cap)
         self.clear()
-        print('load_pkl() done.')
+        print('reload() done.')
 
     def draw(self):
         current_member, kp0, kp1, kp2 = self.member_combo.get_selected()
 
         # timestampの範囲を抽出
-        time_min, time_max = self.time_span_entry.get_start_end()
-        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min, time_max)
+        tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
         # 重複インデックス削除
         tar_df = tar_df.reset_index().drop_duplicates(subset=['frame', 'member', 'keypoint'], keep='last').set_index(['frame', 'member', 'keypoint'])
 
@@ -140,7 +124,7 @@ class App(ttk.Frame):
         timestamp_df = timestamp_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         self.dst_df = self.dst_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         export_df = pd.concat([self.dst_df, timestamp_df], axis=1)
-        export_df.attrs = self.src_df.attrs
+        export_df.attrs = self.src_attrs
         file_inout.save_pkl(self.pkl_path, export_df, proc_history="vector")
 
     def clear(self):

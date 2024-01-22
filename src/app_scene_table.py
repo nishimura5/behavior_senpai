@@ -1,15 +1,12 @@
-import os
 import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
 
-from gui_parts import PklSelector, TimeSpanEntry, TempFile
+from gui_parts import TempFile, TimeSpanEntry
 from line_plotter import LinePlotter
 from python_senpai import time_format
 from python_senpai import keypoints_proc
-from python_senpai import file_inout
-from python_senpai import vcap
 
 
 class App(ttk.Frame):
@@ -17,7 +14,7 @@ class App(ttk.Frame):
     Trackファイルに保存するDataFrameのattrs['scene_table']を編集するためのGUIです。
     H:MM:SS.fffの形式でstartとendを入力してaddボタンを押すと、tree_viewに追加されます。
     """
-    def __init__(self, master):
+    def __init__(self, master, args):
         super().__init__(master)
         master.title("Scene Table")
         self.pack(padx=10, pady=10)
@@ -25,13 +22,6 @@ class App(ttk.Frame):
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
         self.plot = LinePlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
-
-        load_frame = ttk.Frame(self)
-        load_frame.pack(pady=5, anchor=tk.W)
-        self.pkl_selector = PklSelector(load_frame)
-        self.pkl_selector.set_command(cmd=self.load_pkl)
-        self.time_span_entry = TimeSpanEntry(load_frame)
-        self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
@@ -49,6 +39,8 @@ class App(ttk.Frame):
 
         entry_frame = ttk.Frame(self)
         entry_frame.pack(pady=5)
+        self.time_span_entry = TimeSpanEntry(entry_frame)
+        self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
         description_label = ttk.Label(entry_frame, text="description")
         description_label.pack(side=tk.LEFT)
         self.description_entry = ttk.Entry(entry_frame, width=40)
@@ -81,30 +73,27 @@ class App(ttk.Frame):
         plot_frame.pack(pady=5)
         self.plot.pack(plot_frame)
 
-        self.cap = vcap.VideoCap()
-        self.load_pkl()
+        self.reload(args)
 
-    def load_pkl(self):
-        # ファイルのロード
-        pkl_path = self.pkl_selector.get_trk_path()
-        self.src_df = file_inout.load_track_file(pkl_path)
-        pkl_dir = os.path.dirname(pkl_path)
-        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
-        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
+    def reload(self, args):
+        self.src_df = args['src_df']
+        self.cap = args['cap']
+        self.src_attrs = args['src_attrs']
+        self.time_min, self.time_max = args['time_span_msec']
 
         # UIの更新
         self.member_combo["values"] = self.src_df.index.get_level_values(1).unique().tolist()
         self.member_combo.current(0)
-        self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
-        self.pkl_selector.set_prev_next(self.src_df.attrs)
+        self.time_span_entry.update_entry(self.time_min, self.time_max)
+
         self.tree.delete(*self.tree.get_children())
         self.clear()
 
-        if 'scene_table' not in self.src_df.attrs.keys():
+        if 'scene_table' not in self.src_attrs.keys():
             print("scene_table is not in attrs")
             return
 
-        scene_table = self.src_df.attrs['scene_table']
+        scene_table = self.src_attrs['scene_table']
         # self.treeをクリアしてattrs['scene_table']の値を入れる
         for item in self.tree.get_children(''):
             self.tree.delete(item)
@@ -118,26 +107,25 @@ class App(ttk.Frame):
             duration_str = time_format.timedelta_to_str(duration)
             self.tree.insert("", "end", values=(start, end, duration_str, description))
         self.plot.set_vcap(self.cap)
-        print('load_pkl() done.')
+        print('reload() done.')
 
     def draw(self):
         current_member = self.member_combo.get()
 
         # timestampの範囲を抽出
-        time_min, time_max = self.time_span_entry.get_start_end()
-        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min, time_max)
+        tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
         # keypointのインデックス値を文字列に変換
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
         plot_df = tar_df
 
-        if 'scene_table' not in self.src_df.attrs.keys():
+        if 'scene_table' not in self.src_attrs.keys():
             print("scene_table is not in attrs")
             return
-        rects = self.src_df.attrs['scene_table']
+        rects = self.src_attrs['scene_table']
 
         self.plot.set_trk_df(plot_df)
-        self.plot.set_plot_rect(plot_df, current_member, rects, time_min, time_max)
+        self.plot.set_plot_rect(plot_df, current_member, rects, self.time_min, self.time_max)
         self.plot.draw()
 
     def _add_row(self):
@@ -181,8 +169,8 @@ class App(ttk.Frame):
             scene_table['end'].append(self.tree.item(item)['values'][1])
             scene_table['description'].append(self.tree.item(item)['values'][3])
 
-        self.src_df.attrs['scene_table'] = scene_table
-        print(self.src_df.attrs['scene_table'])
+        self.src_attrs['scene_table'] = scene_table
+        print(self.src_attrs['scene_table'])
         self.src_df.to_pickle(self.pkl_selector.get_trk_path())
 
     def clear(self):

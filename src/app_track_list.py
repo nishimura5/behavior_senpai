@@ -14,7 +14,7 @@ class App(ttk.Frame):
     """
     Trackファイルの一覧を表示するためのGUIです。
     """
-    def __init__(self, master):
+    def __init__(self, master, args):
         super().__init__(master)
         master.title("Track List")
         self.pack(padx=10, pady=10)

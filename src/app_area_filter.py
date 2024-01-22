@@ -1,4 +1,3 @@
-import os
 import tkinter as tk
 from tkinter import ttk
 
@@ -7,9 +6,8 @@ from PIL import Image, ImageTk
 import cv2
 import numpy as np
 
-from gui_parts import PklSelector, TimeSpanEntry, TempFile
+from gui_parts import TempFile
 from python_senpai import keypoints_proc
-from python_senpai import vcap
 from python_senpai import file_inout
 
 # dataframe のprint時に300行まで表示する
@@ -21,25 +19,16 @@ class App(ttk.Frame):
     """
     指定した四角形の中にkeypointが入っているかを判定するためのGUIです。
     以下の機能を有します
-        - Trackファイルを選択して読み込む機能
-        - 計算対象の時間帯の指定を行う機能
         - 四角形の位置を指定する機能
         - 以上の処理で得られたデータをpklに保存する機能
     """
-    def __init__(self, master):
+    def __init__(self, master, args):
         super().__init__(master)
         master.title("Area Filter")
         self.pack(padx=10, pady=10)
 
         temp = TempFile()
         width, self.height, dpi = temp.get_window_size()
-
-        load_frame = ttk.Frame(self)
-        load_frame.pack(pady=5, anchor=tk.W)
-        self.pkl_selector = PklSelector(load_frame)
-        self.pkl_selector.set_command(cmd=self.load_pkl)
-        self.time_span_entry = TimeSpanEntry(load_frame)
-        self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
@@ -60,11 +49,6 @@ class App(ttk.Frame):
 
         export_frame = ttk.Frame(self)
         export_frame.pack(pady=5)
-        result_label = ttk.Label(export_frame, text="Columns:")
-        result_label.pack(side=tk.LEFT, padx=(10, 0))
-        self.result_combo = ttk.Combobox(export_frame, state='readonly')
-        self.result_combo.pack(side=tk.LEFT)
-        self.result_list = []
 
         clear_btn = ttk.Button(export_frame, text="Clear", command=self.clear)
         clear_btn.pack(side=tk.LEFT, padx=(10, 0))
@@ -77,9 +61,8 @@ class App(ttk.Frame):
         self.canvas.bind("<ButtonPress-1>", self.select)
         self.canvas.bind("<Button1-Motion>", self.motion)
 
-        self.cap = vcap.VideoCap()
         self.img_on_canvas = None
-        self.load_pkl()
+        self.reload(args)
 
         self.anchor_points = [
             {'point': (100, 100)},
@@ -95,22 +78,16 @@ class App(ttk.Frame):
             y = point['point'][1]
             point['id'] = self.canvas.create_rectangle(x-2, y-2, x+2, y+2, fill="white")
 
-    def load_pkl(self):
-        # ファイルのロード
-        self.pkl_path = self.pkl_selector.get_trk_path()
-        self.src_df = file_inout.load_track_file(self.pkl_path)
-        self.src_df = self.src_df[~self.src_df.index.duplicated(keep='last')]
-        pkl_dir = os.path.dirname(self.pkl_path)
-        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
-        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
+    def reload(self, args):
+        self.src_df = args['src_df']
+        self.cap = args['cap']
+        self.src_attrs = args['src_attrs']
+        self.time_min, self.time_max = args['time_span_msec']
 
         # UIの更新
-        self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
-        self.pkl_selector.set_prev_next(self.src_df.attrs)
-
-        ratio = self.src_df.attrs["frame_size"][0] / self.src_df.attrs["frame_size"][1]
+        ratio = self.src_attrs["frame_size"][0] / self.src_attrs["frame_size"][1]
         width = int(self.height * ratio)
-        self.scale = width / self.src_df.attrs["frame_size"][0]
+        self.scale = width / self.src_attrs["frame_size"][0]
         self.canvas.config(width=width, height=self.height)
 
         ok, image_rgb = self.cap.read_at(10, rgb=True)
@@ -124,15 +101,14 @@ class App(ttk.Frame):
         else:
             self.canvas.itemconfig(self.img_on_canvas, image=self.image_tk)
         self.clear()
-        print('load_pkl() done.')
+        print('reload_pkl()')
 
     def calc_in_out(self):
         # timestampの範囲を抽出
-        time_min, time_max = self.time_span_entry.get_start_end()
-        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min, time_max)
+        tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
 
         poly_points = [p['point'] for p in self.anchor_points]
-        left, top = self.src_df.attrs["roi_left_top"]
+        left, top = self.src_attrs["roi_left_top"]
         # tar_dfのx,yが両方ともzero_pointと同じならnp.nanに置換する
         tar_df.loc[(tar_df["x"] == left) & (tar_df["y"] == top), ["x", "y"]] = [np.nan, np.nan]
 
@@ -147,15 +123,14 @@ class App(ttk.Frame):
         self.dst_df = self.dst_df.drop(columns=['is_remove'])
 
     def clear(self):
-        self.result_list = []
-        self.result_combo["values"] = ""
+        print("clear()")
 
     def export(self):
         if len(self.dst_df) == 0:
             print("No data to export.")
             return
         export_df = self.dst_df
-        export_df.attrs = self.src_df.attrs
+        export_df.attrs = self.src_attrs
         file_inout.overwrite_track_file(self.pkl_path, export_df, proc_history="area_remove")
 
     def select(self, event):

@@ -20,7 +20,7 @@ class App(ttk.Frame):
      - ROI機能を使用するかどうかを選択する機能
      - detector_proc.pyのexec()を実行する機能
     """
-    def __init__(self, master):
+    def __init__(self, master, args):
         super().__init__(master)
         master.title("Detect")
         self.pack(padx=10, pady=10)

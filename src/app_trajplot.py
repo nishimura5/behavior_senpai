@@ -1,26 +1,22 @@
-import os
 import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
 
-from gui_parts import PklSelector, MemberKeypointComboboxes, ProcOptions, TempFile
+from gui_parts import MemberKeypointComboboxes, ProcOptions, TempFile
 from trajectory_plotter import TrajectoryPlotter
 from python_senpai import keypoints_proc
-from python_senpai import vcap
-from python_senpai import file_inout
 
 
 class App(ttk.Frame):
     """
     軌跡の時系列グラフ(Trajectory Plot)を描画するためのGUIです。
     以下の機能を有します
-     - Trackファイルを選択して読み込む機能
      - 描画するmemberとkeypointを指定する機能
      - 速さ計算と間引き処理を行う機能
      - 以上の処理で得られたデータをTrajectoryPlotterに渡す機能
     """
-    def __init__(self, master):
+    def __init__(self, master, args):
         super().__init__(master)
         master.title("Keypoints to Trajectory Plot")
         self.pack(padx=10, pady=10)
@@ -28,11 +24,6 @@ class App(ttk.Frame):
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
         self.traj = TrajectoryPlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
-
-        load_frame = ttk.Frame(self)
-        load_frame.pack(pady=5, anchor=tk.W)
-        self.pkl_selector = PklSelector(load_frame)
-        self.pkl_selector.set_command(cmd=self.load_pkl)
 
         setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
@@ -50,30 +41,25 @@ class App(ttk.Frame):
 
         self.traj.pack(plot_frame)
 
-        self.cap = vcap.VideoCap()
-        self.load_pkl()
+        self.reload(args)
 
-    def load_pkl(self):
-        # ファイルのロード
-        pkl_path = self.pkl_selector.get_trk_path()
-        self.src_df = file_inout.load_track_file(pkl_path, allow_calculated_track_file=True)
-        pkl_dir = os.path.dirname(pkl_path)
-        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
-        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
+    def reload(self, args):
+        self.src_df = args['src_df']
+        self.cap = args['cap']
+        self.src_attrs = args['src_attrs']
+        self.time_min, self.time_max = args['time_span_msec']
 
         # UIの更新
         self.member_keypoints_combos.set_df(self.src_df)
-        self.pkl_selector.set_prev_next(self.src_df.attrs)
         self.current_dt_span = None
 
-        if "roi_left_top" in self.src_df.attrs:
-            zero_point = self.src_df.attrs['roi_left_top']
+        if "roi_left_top" in self.src_attrs:
+            zero_point = self.src_attrs['roi_left_top']
         else:
             zero_point = (0, 0)
         self.src_df = keypoints_proc.zero_point_to_nan(self.src_df, zero_point)
-
         self.traj.set_vcap(self.cap)
-        print('load_pkl() done.')
+        print('reload() done.')
 
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()

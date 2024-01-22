@@ -1,15 +1,12 @@
-import os
 import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
 
-from gui_parts import PklSelector, TimeSpanEntry, TempFile
+from gui_parts import TempFile
 from line_plotter import LinePlotter
 from python_senpai import time_format
 from python_senpai import keypoints_proc
-from python_senpai import vcap
-from python_senpai import file_inout
 
 
 class App(ttk.Frame):
@@ -21,7 +18,7 @@ class App(ttk.Frame):
      - 以上の処理で得られたデータをBandPlotterに渡す機能
      - Trackファイルのmember名を変更する機能
     """
-    def __init__(self, master):
+    def __init__(self, master, args):
         super().__init__(master)
         master.title("Member Edit")
         self.pack(padx=10, pady=10)
@@ -29,13 +26,6 @@ class App(ttk.Frame):
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
         self.band = LinePlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
-
-        load_frame = ttk.Frame(self)
-        load_frame.pack(pady=5, anchor=tk.W)
-        self.pkl_selector = PklSelector(load_frame)
-        self.pkl_selector.set_command(cmd=self.load_pkl)
-        self.time_span_entry = TimeSpanEntry(load_frame)
-        self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
@@ -83,50 +73,44 @@ class App(ttk.Frame):
         plot_frame.pack(pady=5)
         self.band.pack(plot_frame)
 
-        self.cap = vcap.VideoCap()
-        self.load_pkl()
+        self.reload(args)
 
-    def load_pkl(self):
-        # ファイルのロード
-        pkl_path = self.pkl_selector.get_trk_path()
-        self.src_df = file_inout.load_track_file(pkl_path)
-        pkl_dir = os.path.dirname(pkl_path)
-        self.cap.set_frame_size(self.src_df.attrs["frame_size"])
-        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_df.attrs["video_name"]))
+    def reload(self, args):
+        self.src_df = args['src_df']
+        self.cap = args['cap']
+        self.src_attrs = args['src_attrs']
+        self.time_min, self.time_max = args['time_span_msec']
 
         # UIの更新
         self.current_dt_span = None
-        self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
-        self.pkl_selector.set_prev_next(self.src_df.attrs)
         self.update_tree()
         self.clear()
 
         idx = self.src_df.index
         self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
         self.band.set_vcap(self.cap)
-        print('load_pkl() done.')
+        print('reload() done.')
 
     def draw(self):
         # treeから選択した行のmemberを取得
         current_member = str(self.tree.item(self.tree.selection()[0])["values"][0])
 
         # timestampの範囲を抽出
-        time_min, time_max = self.time_span_entry.get_start_end()
-        tar_df = keypoints_proc.filter_by_timerange(self.src_df, time_min, time_max)
+        tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
         # keypointのインデックス値を文字列に変換
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
 
         plot_df = tar_df
         self.band.set_trk_df(plot_df)
-        self.band.set_plot_band(plot_df, current_member, time_min, time_max)
+        self.band.set_plot_band(plot_df, current_member, self.time_min, self.time_max)
         self.band.draw()
 
     def update_tree(self):
         self.tree.delete(*self.tree.get_children())
         members = self.src_df.index.get_level_values(1).unique()
-        if "roi_left_top" in self.src_df.attrs:
-            zero_point = self.src_df.attrs['roi_left_top']
+        if "roi_left_top" in self.src_attrs:
+            zero_point = self.src_attrs['roi_left_top']
         else:
             zero_point = (0, 0)
         tree_df = keypoints_proc.zero_point_to_nan(self.src_df, zero_point)
