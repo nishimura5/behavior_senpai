@@ -74,6 +74,7 @@ class App(ttk.Frame):
         self.plot.pack(plot_frame)
 
         self.reload(args)
+        self.dst_df = None
 
     def reload(self, args):
         self.src_df = args['src_df']
@@ -170,8 +171,8 @@ class App(ttk.Frame):
             scene_table['description'].append(self.tree.item(item)['values'][3])
 
         self.src_attrs['scene_table'] = scene_table
-        print(self.src_attrs['scene_table'])
-        self.src_df.to_pickle(self.pkl_selector.get_trk_path())
+        self.dst_df = self.src_df
+        self.dst_df['attrs'] = self.src_attrs
 
     def clear(self):
         self.plot.clear()
@@ -189,19 +190,3 @@ class App(ttk.Frame):
         description = self.tree.item(selected)['values'][3]
         self.description_entry.delete(0, tk.END)
         self.description_entry.insert(0, description)
-
-
-def quit(root):
-    root.quit()
-    root.destroy()
-
-
-def main():
-    root = tk.Tk()
-    app = App(root)
-    root.protocol("WM_DELETE_WINDOW", lambda: quit(root))
-    app.mainloop()
-
-
-if __name__ == "__main__":
-    main()

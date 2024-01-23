@@ -38,7 +38,7 @@ class App(ttk.Frame):
         buttons_frame = ttk.Frame(self)
         buttons_frame.pack(side=tk.LEFT, anchor=tk.NW)
 
-        detect_label = ttk.Label(buttons_frame, text="Detection")
+        detect_label = ttk.Label(buttons_frame, text="Preparation")
         detect_label.pack(side=tk.TOP, pady=(4, 0))
         v2k_button = ttk.Button(buttons_frame, text="app_detect.py", command=lambda: self.launch_window(v2k.App, grab=True), width=26)
         v2k_button.pack(side=tk.TOP, pady=4)

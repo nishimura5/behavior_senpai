@@ -13,8 +13,6 @@ class App(ttk.Frame):
     """
     帯プロット(Band Plot)を描画するためのGUIです。帯プロットは動画内の各フレームでkeypoint検出に成功しているかを可視化するためのグラフです。
     以下の機能を有します
-     - Trackファイルを選択して読み込む機能
-     - 計算対象の時間帯の指定を行う機能
      - 以上の処理で得られたデータをBandPlotterに渡す機能
      - Trackファイルのmember名を変更する機能
     """
@@ -143,6 +141,8 @@ class App(ttk.Frame):
 
     def on_ok(self):
         self.dst_df = self.src_df
+        if "proc_history" not in self.src_attrs.keys():
+            self.src_attrs["proc_history"] = []
         self.src_attrs["proc_history"].append("member_edit")
         self.dst_df.attrs = self.src_attrs
         self.master.destroy()

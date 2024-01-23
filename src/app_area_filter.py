@@ -122,6 +122,8 @@ class App(ttk.Frame):
 
     def on_ok(self):
         self.dst_df = self.src_df
+        if "proc_history" not in self.src_attrs.keys():
+            self.src_attrs["proc_history"] = []
         self.src_attrs["proc_history"].append("area_filter")
         self.dst_df['attrs'] = self.src_attrs
         if len(self.dst_df) == 0:
