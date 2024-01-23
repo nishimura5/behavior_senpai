@@ -42,13 +42,15 @@ class App(ttk.Frame):
         detect_label.pack(side=tk.TOP, pady=(4, 0))
         v2k_button = ttk.Button(buttons_frame, text="app_detect.py", command=lambda: self.launch_window(v2k.App, grab=True), width=26)
         v2k_button.pack(side=tk.TOP, pady=4)
+        tl_button = ttk.Button(buttons_frame, text="app_track_list.py", command=lambda: self.launch_window(tl.App, grab=True), width=26)
+        tl_button.pack(side=tk.TOP, pady=4)
 
         edit_label = ttk.Label(buttons_frame, text="Edit")
         edit_label.pack(side=tk.TOP, pady=(8, 0))
-        tl_button = ttk.Button(buttons_frame, text="app_track_list.py", command=lambda: self.launch_window(tl.App, grab=True), width=26)
-        tl_button.pack(side=tk.TOP, pady=4)
         k2b_button = ttk.Button(buttons_frame, text="app_member_edit.py", command=lambda: self.launch_window(k2b.App), width=26)
         k2b_button.pack(side=tk.TOP, pady=4)
+        af_button = ttk.Button(buttons_frame, text="app_area_filter.py", command=lambda: self.launch_window(af.App), width=26)
+        af_button.pack(side=tk.TOP, pady=4)
         scene_table_button = ttk.Button(buttons_frame, text="app_scene_table.py", command=lambda: self.launch_window(app_scene_table.App), width=26)
         scene_table_button.pack(side=tk.TOP, pady=4)
 
@@ -63,8 +65,6 @@ class App(ttk.Frame):
 
         calc_label = ttk.Label(buttons_frame, text="Calculation")
         calc_label.pack(side=tk.TOP, pady=(8, 0))
-        af_button = ttk.Button(buttons_frame, text="app_area_filter.py", command=lambda: self.launch_window(af.App), width=26)
-        af_button.pack(side=tk.TOP, pady=4)
         k2c_button = ttk.Button(buttons_frame, text="app_calc_vector.py", command=lambda: self.launch_window(k2v.App), width=26)
         k2c_button.pack(side=tk.TOP, pady=4)
 
@@ -84,15 +84,20 @@ class App(ttk.Frame):
         load_frame = ttk.Frame(main_frame)
         load_frame.pack(pady=5, anchor=tk.W)
         self.pkl_selector = PklSelector(load_frame)
-        self.pkl_selector.set_command(cmd=self.load_pkl)
+        self.pkl_selector.set_command(cmd=self.load)
         self.time_span_entry = TimeSpanEntry(load_frame)
         self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
 
-        self.cap = vcap.VideoCap()
-        self.load_pkl()
+        save_frame = ttk.Frame(main_frame)
+        save_frame.pack(pady=5, anchor=tk.W)
+        self.save_button = ttk.Button(save_frame, text="Overwrite", command=self.overwrite)
+        self.save_button.pack(side=tk.LEFT, padx=(0, 5))
+        self.save_button["state"] = "disable"
 
-    def load_pkl(self):
-        # ファイルのロード
+        self.cap = vcap.VideoCap()
+        self.load()
+
+    def load(self):
         pkl_path = self.pkl_selector.get_trk_path()
         self.src_df = file_inout.load_track_file(pkl_path)
         self.src_attrs = self.src_df.attrs
@@ -112,9 +117,24 @@ class App(ttk.Frame):
             dlg_modal.grab_set()
         dlg_modal.transient(self.master)
         args = {"src_df": self.src_df, "src_attrs": self.src_attrs, "time_span_msec": self.time_span_msec, "cap": self.cap}
-        app(dlg_modal, args)
+        self.a = app(dlg_modal, args)
         dlg_modal.protocol("WM_DELETE_WINDOW", lambda: [dlg_modal.destroy(), cv2.destroyAllWindows()])
         self.wait_window(dlg_modal)
+
+        # ダイアログを閉じた後の処理
+        if hasattr(self.a, "dst_df") is False:
+            return
+        if self.a.dst_df is None:
+            return
+
+        self.src_df = self.a.dst_df
+        self.save_button["state"] = "normal"
+        member_count = self.src_df.index.get_level_values(1).unique().size
+        print(member_count)
+
+    def overwrite(self):
+        file_inout.overwrite_track_file(self.pkl_path, self.src_df)
+        print("overwrite done.")
 
     def _find_data_dir(self):
         if getattr(sys, "frozen", False):

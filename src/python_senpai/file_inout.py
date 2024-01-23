@@ -33,7 +33,7 @@ def load_track_file(tar_path, allow_calculated_track_file=False):
     return src_df
 
 
-def overwrite_track_file(tar_path, tar_df, proc_history=None):
+def overwrite_track_file(tar_path, tar_df):
     '''
     上書きしようとしているファイルをバックアップしてから上書きする
     バックアップフォルダにバックアップを保存する
@@ -48,12 +48,6 @@ def overwrite_track_file(tar_path, tar_df, proc_history=None):
     backup_path = os.path.join(backup_dir, os.path.basename(tar_path))
     # バックアップ先にファイルがあったら上書きする
     os.replace(tar_path, backup_path)
-    # 新しいファイルを保存
-    if proc_history is not None:
-        if 'proc_history' not in tar_df.attrs.keys():
-            tar_df.attrs['proc_history'] = [proc_history]
-        else:
-            tar_df.attrs['proc_history'].append(proc_history)
     tar_df.to_pickle(tar_path)
     print("overwrite_track_file() done.")
 

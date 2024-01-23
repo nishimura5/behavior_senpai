@@ -50,8 +50,8 @@ class App(ttk.Frame):
         self.new_member_name_entry.pack(side=tk.LEFT, padx=5)
         rename_btn = ttk.Button(rename_frame, text="Rename", command=self.rename_member)
         rename_btn.pack(side=tk.LEFT, padx=5)
-        overwrite_btn = ttk.Button(rename_frame, text="Write to Track", command=self.overwrite)
-        overwrite_btn.pack(side=tk.LEFT, padx=5)
+        ok_btn = ttk.Button(rename_frame, text="OK", command=self.on_ok)
+        ok_btn.pack(side=tk.LEFT, padx=5)
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
@@ -73,9 +73,10 @@ class App(ttk.Frame):
         plot_frame.pack(pady=5)
         self.band.pack(plot_frame)
 
-        self.reload(args)
+        self.dst_df = None
+        self.load(args)
 
-    def reload(self, args):
+    def load(self, args):
         self.src_df = args['src_df']
         self.cap = args['cap']
         self.src_attrs = args['src_attrs']
@@ -89,7 +90,6 @@ class App(ttk.Frame):
         idx = self.src_df.index
         self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
         self.band.set_vcap(self.cap)
-        print('reload() done.')
 
     def draw(self):
         # treeから選択した行のmemberを取得
@@ -141,11 +141,11 @@ class App(ttk.Frame):
         self.update_tree()
         print(f"renamed {old_member} to {new_member}")
 
-    def overwrite(self):
-        pkl_path = self.pkl_selector.get_trk_path()
-        self.src_df.to_pickle(pkl_path)
-        self.load_pkl()
-        print("overwrite done")
+    def on_ok(self):
+        self.dst_df = self.src_df
+        self.src_attrs["proc_history"].append("member_edit")
+        self.dst_df.attrs = self.src_attrs
+        self.master.destroy()
 
     def clear(self):
         self.band.clear()
@@ -159,19 +159,3 @@ class App(ttk.Frame):
 
     def _validate(self, text):
         return (text.replace(".", "").isdigit() or text == "")
-
-
-def quit(root):
-    root.quit()
-    root.destroy()
-
-
-def main():
-    root = tk.Tk()
-    app = App(root)
-    root.protocol("WM_DELETE_WINDOW", lambda: quit(root))
-    app.mainloop()
-
-
-if __name__ == "__main__":
-    main()

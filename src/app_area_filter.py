@@ -8,11 +8,6 @@ import numpy as np
 
 from gui_parts import TempFile
 from python_senpai import keypoints_proc
-from python_senpai import file_inout
-
-# dataframe のprint時に300行まで表示する
-pd.set_option('display.min_rows', 300)
-pd.set_option('display.max_rows', 300)
 
 
 class App(ttk.Frame):
@@ -53,7 +48,7 @@ class App(ttk.Frame):
         clear_btn = ttk.Button(export_frame, text="Clear", command=self.clear)
         clear_btn.pack(side=tk.LEFT, padx=(10, 0))
 
-        export_btn = ttk.Button(export_frame, text="Export", command=self.export)
+        export_btn = ttk.Button(export_frame, text="OK", command=self.on_ok)
         export_btn.pack(side=tk.LEFT, padx=(10, 0))
 
         self.canvas = tk.Canvas(self, width=width, height=self.height)
@@ -62,7 +57,8 @@ class App(ttk.Frame):
         self.canvas.bind("<Button1-Motion>", self.motion)
 
         self.img_on_canvas = None
-        self.reload(args)
+        self.dst_df = None
+        self.load(args)
 
         self.anchor_points = [
             {'point': (100, 100)},
@@ -78,7 +74,7 @@ class App(ttk.Frame):
             y = point['point'][1]
             point['id'] = self.canvas.create_rectangle(x-2, y-2, x+2, y+2, fill="white")
 
-    def reload(self, args):
+    def load(self, args):
         self.src_df = args['src_df']
         self.cap = args['cap']
         self.src_attrs = args['src_attrs']
@@ -101,7 +97,6 @@ class App(ttk.Frame):
         else:
             self.canvas.itemconfig(self.img_on_canvas, image=self.image_tk)
         self.clear()
-        print('reload_pkl()')
 
     def calc_in_out(self):
         # timestampの範囲を抽出
@@ -117,21 +112,22 @@ class App(ttk.Frame):
         if self.in_out_combo.get() == "within area":
             isin_df = isin_df.applymap(lambda x: not x)
 
-        self.dst_df = pd.concat([self.src_df, isin_df], axis=1)
+        dst_df = pd.concat([self.src_df, isin_df], axis=1)
         k_m_bool = self.keypoint_member_combo.get() == "member"
-        self.dst_df = keypoints_proc.remove_by_bool_col(self.dst_df, 'is_remove', k_m_bool)
-        self.dst_df = self.dst_df.drop(columns=['is_remove'])
+        dst_df = keypoints_proc.remove_by_bool_col(dst_df, 'is_remove', k_m_bool)
+        self.src_df = dst_df.drop(columns=['is_remove'])
 
     def clear(self):
         print("clear()")
 
-    def export(self):
+    def on_ok(self):
+        self.dst_df = self.src_df
+        self.src_attrs["proc_history"].append("area_filter")
+        self.dst_df['attrs'] = self.src_attrs
         if len(self.dst_df) == 0:
-            print("No data to export.")
-            return
-        export_df = self.dst_df
-        export_df.attrs = self.src_attrs
-        file_inout.overwrite_track_file(self.pkl_path, export_df, proc_history="area_remove")
+            print("No data in DataFrame")
+            self.dst_df = None
+        self.master.destroy()
 
     def select(self, event):
         for point in self.anchor_points:
@@ -153,19 +149,3 @@ class App(ttk.Frame):
         poly_points = sum([list(p['point']) for p in self.anchor_points], [])
         self.canvas.coords(self.selected_id, event.x-2, event.y-2, event.x+2, event.y+2)
         self.canvas.coords(self.poly_id, *poly_points)
-
-
-def quit(root):
-    root.quit()
-    root.destroy()
-
-
-def main():
-    root = tk.Tk()
-    app = App(root)
-    root.protocol("WM_DELETE_WINDOW", lambda: quit(root))
-    app.mainloop()
-
-
-if __name__ == "__main__":
-    main()
