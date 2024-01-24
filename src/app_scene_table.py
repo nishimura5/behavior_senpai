@@ -74,6 +74,7 @@ class App(ttk.Frame):
         self.plot.pack(plot_frame)
 
         self.dst_df = None
+        self.history = "scene_table_edit"
         self.load(args)
 
     def load(self, args):
@@ -130,9 +131,6 @@ class App(ttk.Frame):
 
     def on_ok(self):
         self.dst_df = self.src_df.copy()
-        if "proc_history" not in self.dst_df.attrs.keys():
-            self.dst_df.attrs["proc_history"] = []
-        self.dst_df.attrs["proc_history"].append("scene_table_edit")
         if len(self.dst_df) == 0:
             print("No data in DataFrame")
             self.dst_df = None

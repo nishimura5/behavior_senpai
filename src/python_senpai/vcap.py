@@ -5,6 +5,8 @@ import numpy as np
 class VideoCap(cv2.VideoCapture):
     def __init__(self):
         super().__init__()
+        self.frame_size = (0, 0)
+        self.max_msec = 0
 
     def open_file(self, file_path):
         """
@@ -15,7 +17,7 @@ class VideoCap(cv2.VideoCapture):
         if ok is False:
             print(f"Failed to open {file_path}")
 
-    def read_at(self, msec, rgb=False):
+    def read_at(self, msec, scale=None, rgb=False):
         '''
         ミリ秒を指定してreadする
         '''
@@ -23,6 +25,8 @@ class VideoCap(cv2.VideoCapture):
         ok, frame = self.read()
         if ok is True and rgb is True:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        if scale is not None:
+            frame = cv2.resize(frame, None, fx=scale, fy=scale)
         return ok, frame
 
     def read_anyway(self):
@@ -42,6 +46,12 @@ class VideoCap(cv2.VideoCapture):
         read_anyway()を見越してフレームのwidthとheightをsetする(resizeはしない)
         '''
         self.frame_size = frame_size
+
+    def set_max_msec(self, max_msec):
+        self.max_msec = max_msec
+
+    def get_max_msec(self):
+        return self.max_msec
 
 
 class MultiVcap():

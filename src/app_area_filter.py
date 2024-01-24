@@ -3,7 +3,6 @@ from tkinter import ttk
 
 import pandas as pd
 from PIL import Image, ImageTk
-import cv2
 import numpy as np
 
 from gui_parts import TempFile
@@ -58,6 +57,7 @@ class App(ttk.Frame):
 
         self.img_on_canvas = None
         self.dst_df = None
+        self.history = "area_filter"
         self.load(args)
 
         self.anchor_points = [
@@ -85,11 +85,9 @@ class App(ttk.Frame):
         width = int(self.height * ratio)
         self.scale = width / src_attrs["frame_size"][0]
         self.canvas.config(width=width, height=self.height)
-
-        ok, image_rgb = self.cap.read_at(10, rgb=True)
+        ok, image_rgb = self.cap.read_at(10, scale=self.scale, rgb=True)
         if ok is False:
             return
-        image_rgb = cv2.resize(image_rgb, None, fx=self.scale, fy=self.scale)
         image_pil = Image.fromarray(image_rgb)
         self.image_tk = ImageTk.PhotoImage(image_pil)
         if self.img_on_canvas is None:
@@ -122,9 +120,6 @@ class App(ttk.Frame):
 
     def on_ok(self):
         self.dst_df = self.src_df.copy()
-        if "proc_history" not in self.dst_df.attrs.keys():
-            self.dst_df.attrs["proc_history"] = []
-        self.dst_df.attrs["proc_history"].append("area_filter")
         if len(self.dst_df) == 0:
             print("No data in DataFrame")
             self.dst_df = None

@@ -6,6 +6,7 @@ from tkinter import ttk
 import cv2
 
 from gui_parts import PklSelector, TimeSpanEntry, TempFile
+from main_gui_parts import VideoViewer
 from python_senpai import file_inout
 from python_senpai import vcap
 import app_detect as v2k
@@ -32,7 +33,8 @@ class App(ttk.Frame):
         self.pack(padx=10, pady=10)
 
         temp = TempFile()
-        width, height, dpi = temp.get_window_size()
+        w_width, w_height, dpi = temp.get_window_size()
+        self.w_height = int(w_height * 0.5)
 
         # ボタンのフレーム
         buttons_frame = ttk.Frame(self)
@@ -49,19 +51,19 @@ class App(ttk.Frame):
         edit_label.pack(side=tk.TOP, pady=(8, 0))
         k2b_button = ttk.Button(
             buttons_frame,
-            text="app_member_edit.py",
+            text="member",
             command=lambda: self.launch_window(k2b.App, edit_df=True, grab=True),
             width=26)
         k2b_button.pack(side=tk.TOP, pady=4)
         af_button = ttk.Button(
             buttons_frame,
-            text="app_area_filter.py",
+            text="area filter",
             command=lambda: self.launch_window(af.App, edit_df=True, grab=True),
             width=26)
         af_button.pack(side=tk.TOP, pady=4)
         scene_table_button = ttk.Button(
             buttons_frame,
-            text="app_scene_table.py",
+            text="scene table",
             command=lambda: self.launch_window(app_scene_table.App, edit_df=True, grab=True),
             width=26)
         scene_table_button.pack(side=tk.TOP, pady=4)
@@ -106,6 +108,12 @@ class App(ttk.Frame):
         self.save_button.pack(side=tk.LEFT, padx=(0, 5))
         self.save_button["state"] = "disable"
 
+        video_frame = ttk.Frame(main_frame)
+        video_frame.pack(pady=5, anchor=tk.W)
+        self.canvas = VideoViewer(video_frame, width=w_width, height=self.w_height)
+        self.canvas.pack()
+
+        self.img_on_canvas = None
         self.cap = vcap.VideoCap()
         self.load()
 
@@ -122,7 +130,9 @@ class App(ttk.Frame):
         self.time_span_msec = self.time_span_entry.get_start_end()
         self.pkl_selector.set_prev_next(src_attrs)
 
-    def launch_window(self, app, edit_df=True, grab=False):
+        self.canvas.set_cap(self.cap, src_attrs["frame_size"], anno_trk=self.src_df)
+
+    def launch_window(self, app, edit_df=False, grab=False):
         dlg_modal = tk.Toplevel(self)
         dlg_modal.focus_set()
         if grab is True:
@@ -143,7 +153,11 @@ class App(ttk.Frame):
         if self.src_df.equals(self.a.dst_df) is True and self.src_df.attrs == self.a.dst_df.attrs:
             return
 
+        print("DataFrame Update")
         self.src_df = self.a.dst_df
+        if "proc_history" not in self.src_df.attrs.keys():
+            self.src_df.attrs["proc_history"] = []
+        self.src_df.attrs["proc_history"].append(self.a.history)
 
         self.save_button["state"] = "normal"
         member_count = self.src_df.index.get_level_values(1).unique().size
