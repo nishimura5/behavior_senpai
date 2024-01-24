@@ -128,6 +128,8 @@ class App(ttk.Frame):
     def load(self):
         pkl_path = self.pkl_selector.get_trk_path()
         self.src_df = file_inout.load_track_file(pkl_path)
+        if self.src_df is None:
+            return
         src_attrs = self.src_df.attrs
         pkl_dir = os.path.dirname(pkl_path)
         self.cap.set_frame_size(src_attrs["frame_size"])

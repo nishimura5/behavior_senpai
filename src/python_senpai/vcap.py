@@ -23,7 +23,9 @@ class VideoCap(cv2.VideoCapture):
         '''
         self.set(cv2.CAP_PROP_POS_MSEC, msec)
         ok, frame = self.read()
-        if ok is True and rgb is True:
+        if ok is False:
+            return ok, frame
+        if rgb is True:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         if scale is not None:
             frame = cv2.resize(frame, None, fx=scale, fy=scale)
