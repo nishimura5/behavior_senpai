@@ -103,15 +103,23 @@ class App(ttk.Frame):
         self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
 
         save_frame = ttk.Frame(main_frame)
-        save_frame.pack(pady=5, anchor=tk.W)
+        save_frame.pack(pady=5, anchor=tk.E)
         self.save_button = ttk.Button(save_frame, text="Overwrite", command=self.overwrite)
         self.save_button.pack(side=tk.LEFT, padx=(0, 5))
         self.save_button["state"] = "disable"
 
-        video_frame = ttk.Frame(main_frame)
-        video_frame.pack(pady=5, anchor=tk.W)
+        view_frame = ttk.Frame(main_frame)
+        view_frame.pack(pady=5, anchor=tk.W)
+
+        video_frame = ttk.Frame(view_frame)
+        video_frame.pack(side=tk.LEFT, anchor=tk.N)
         self.canvas = VideoViewer(video_frame, width=w_width, height=self.w_height)
         self.canvas.pack()
+
+        attrs_frame = ttk.Frame(view_frame)
+        attrs_frame.pack(side=tk.RIGHT, anchor=tk.N)
+        self.attrs_textbox = tk.Text(attrs_frame, relief=tk.FLAT, padx=10, pady=10)
+        self.attrs_textbox.pack(fill=tk.BOTH, expand=True, padx=(10, 0))
 
         self.img_on_canvas = None
         self.cap = vcap.VideoCap()
@@ -131,6 +139,17 @@ class App(ttk.Frame):
         self.pkl_selector.set_prev_next(src_attrs)
 
         self.canvas.set_cap(self.cap, src_attrs["frame_size"], anno_trk=self.src_df)
+
+        self.attrs_textbox.delete("1.0", tk.END)
+        print_str = ""
+        for key, value in src_attrs.items():
+            if isinstance(value, dict):
+                print_str += f"{key}:\n"
+                for key2, value2 in value.items():
+                    print_str += f"  {key2}: {value2}\n"
+            else:
+                print_str += f"{key}: {value}\n"
+        self.attrs_textbox.insert(tk.END, print_str)
 
     def launch_window(self, app, edit_df=False, grab=False):
         dlg_modal = tk.Toplevel(self)

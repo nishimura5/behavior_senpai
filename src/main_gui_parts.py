@@ -11,7 +11,7 @@ from python_senpai import keypoints_proc
 class VideoViewer(ttk.Frame):
     def __init__(self, master, width, height):
         super().__init__(master)
-        self.pack(padx=10, pady=10)
+        self.pack()
 
         self.canvas = CapCanvas(self, width=width, height=height)
         self.canvas.pack()
@@ -25,7 +25,7 @@ class VideoViewer(ttk.Frame):
             to=self.time_max,
             orient=tk.HORIZONTAL,
             command=self.on_slider_changed)
-        self.slider.pack(fill=tk.X)
+        self.slider.pack(fill=tk.X, padx=5)
         self.time_max = None
 
     def set_cap(self, cap, frame_size, anno_trk=None):
