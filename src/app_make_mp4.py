@@ -35,12 +35,12 @@ class App(ttk.Frame):
         plot_frame.pack(pady=5)
 
         self.out = cv2.VideoWriter()
-        self.reload(args)
+        self.load(args)
 
-    def reload(self, args):
+    def load(self, args):
         self.src_df = args['src_df']
         self.cap = args['cap']
-        self.src_attrs = args['src_attrs']
+        self.src_attrs = self.src_df.attrs
         self.time_min, self.time_max = args['time_span_msec']
 
         # UIの更新
@@ -52,7 +52,6 @@ class App(ttk.Frame):
         else:
             zero_point = (0, 0)
         self.src_df = keypoints_proc.zero_point_to_nan(self.src_df, zero_point)
-        print('reload() done.')
 
     def export(self):
         current_member = self.member_combo.get()

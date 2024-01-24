@@ -77,13 +77,13 @@ class App(ttk.Frame):
     def load(self, args):
         self.src_df = args['src_df']
         self.cap = args['cap']
-        self.src_attrs = args['src_attrs']
+        src_attrs = self.src_df.attrs
         self.time_min, self.time_max = args['time_span_msec']
 
         # UIの更新
-        ratio = self.src_attrs["frame_size"][0] / self.src_attrs["frame_size"][1]
+        ratio = src_attrs["frame_size"][0] / src_attrs["frame_size"][1]
         width = int(self.height * ratio)
-        self.scale = width / self.src_attrs["frame_size"][0]
+        self.scale = width / src_attrs["frame_size"][0]
         self.canvas.config(width=width, height=self.height)
 
         ok, image_rgb = self.cap.read_at(10, rgb=True)
@@ -103,7 +103,7 @@ class App(ttk.Frame):
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
 
         poly_points = [p['point'] for p in self.anchor_points]
-        left, top = self.src_attrs["roi_left_top"]
+        left, top = self.src_df.attrs["roi_left_top"]
         # tar_dfのx,yが両方ともzero_pointと同じならnp.nanに置換する
         tar_df.loc[(tar_df["x"] == left) & (tar_df["y"] == top), ["x", "y"]] = [np.nan, np.nan]
 
@@ -121,11 +121,10 @@ class App(ttk.Frame):
         print("clear()")
 
     def on_ok(self):
-        self.dst_df = self.src_df
-        if "proc_history" not in self.src_attrs.keys():
-            self.src_attrs["proc_history"] = []
-        self.src_attrs["proc_history"].append("area_filter")
-        self.dst_df['attrs'] = self.src_attrs
+        self.dst_df = self.src_df.copy()
+        if "proc_history" not in self.dst_df.attrs.keys():
+            self.dst_df.attrs["proc_history"] = []
+        self.dst_df.attrs["proc_history"].append("area_filter")
         if len(self.dst_df) == 0:
             print("No data in DataFrame")
             self.dst_df = None

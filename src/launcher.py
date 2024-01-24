@@ -47,11 +47,23 @@ class App(ttk.Frame):
 
         edit_label = ttk.Label(buttons_frame, text="Edit")
         edit_label.pack(side=tk.TOP, pady=(8, 0))
-        k2b_button = ttk.Button(buttons_frame, text="app_member_edit.py", command=lambda: self.launch_window(k2b.App), width=26)
+        k2b_button = ttk.Button(
+            buttons_frame,
+            text="app_member_edit.py",
+            command=lambda: self.launch_window(k2b.App, edit_df=True, grab=True),
+            width=26)
         k2b_button.pack(side=tk.TOP, pady=4)
-        af_button = ttk.Button(buttons_frame, text="app_area_filter.py", command=lambda: self.launch_window(af.App), width=26)
+        af_button = ttk.Button(
+            buttons_frame,
+            text="app_area_filter.py",
+            command=lambda: self.launch_window(af.App, edit_df=True, grab=True),
+            width=26)
         af_button.pack(side=tk.TOP, pady=4)
-        scene_table_button = ttk.Button(buttons_frame, text="app_scene_table.py", command=lambda: self.launch_window(app_scene_table.App), width=26)
+        scene_table_button = ttk.Button(
+            buttons_frame,
+            text="app_scene_table.py",
+            command=lambda: self.launch_window(app_scene_table.App, edit_df=True, grab=True),
+            width=26)
         scene_table_button.pack(side=tk.TOP, pady=4)
 
         vis_label = ttk.Label(buttons_frame, text="Visualization")
@@ -100,34 +112,39 @@ class App(ttk.Frame):
     def load(self):
         pkl_path = self.pkl_selector.get_trk_path()
         self.src_df = file_inout.load_track_file(pkl_path)
-        self.src_attrs = self.src_df.attrs
+        src_attrs = self.src_df.attrs
         pkl_dir = os.path.dirname(pkl_path)
-        self.cap.set_frame_size(self.src_attrs["frame_size"])
-        self.cap.open_file(os.path.join(pkl_dir, os.pardir, self.src_attrs["video_name"]))
+        self.cap.set_frame_size(src_attrs["frame_size"])
+        self.cap.open_file(os.path.join(pkl_dir, os.pardir, src_attrs["video_name"]))
 
         # UIの更新
         self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
         self.time_span_msec = self.time_span_entry.get_start_end()
-        self.pkl_selector.set_prev_next(self.src_attrs)
+        self.pkl_selector.set_prev_next(src_attrs)
 
-    def launch_window(self, app, grab=False):
+    def launch_window(self, app, edit_df=True, grab=False):
         dlg_modal = tk.Toplevel(self)
         dlg_modal.focus_set()
         if grab is True:
             dlg_modal.grab_set()
         dlg_modal.transient(self.master)
-        args = {"src_df": self.src_df, "src_attrs": self.src_attrs, "time_span_msec": self.time_span_msec, "cap": self.cap}
+        args = {"src_df": self.src_df, "time_span_msec": self.time_span_msec, "cap": self.cap}
         self.a = app(dlg_modal, args)
         dlg_modal.protocol("WM_DELETE_WINDOW", lambda: [dlg_modal.destroy(), cv2.destroyAllWindows()])
         self.wait_window(dlg_modal)
 
         # ダイアログを閉じた後の処理
+        if edit_df is False:
+            return
         if hasattr(self.a, "dst_df") is False:
             return
         if self.a.dst_df is None:
             return
+        if self.src_df.equals(self.a.dst_df) is True and self.src_df.attrs == self.a.dst_df.attrs:
+            return
 
         self.src_df = self.a.dst_df
+
         self.save_button["state"] = "normal"
         member_count = self.src_df.index.get_level_values(1).unique().size
         print(member_count)

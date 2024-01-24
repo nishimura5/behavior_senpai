@@ -50,7 +50,7 @@ class App(ttk.Frame):
         add_btn.pack(side=tk.LEFT, padx=5)
         delete_btn = ttk.Button(entry_frame, text="Delete Selected", command=self._delete_selected)
         delete_btn.pack(side=tk.LEFT, padx=5)
-        update_btn = ttk.Button(entry_frame, text="Write to Track", command=self._update)
+        update_btn = ttk.Button(entry_frame, text="OK", command=self.on_ok)
         update_btn.pack(side=tk.LEFT, padx=5)
 
         tree_frame = ttk.Frame(self)
@@ -73,13 +73,13 @@ class App(ttk.Frame):
         plot_frame.pack(pady=5)
         self.plot.pack(plot_frame)
 
-        self.reload(args)
         self.dst_df = None
+        self.load(args)
 
-    def reload(self, args):
+    def load(self, args):
         self.src_df = args['src_df']
         self.cap = args['cap']
-        self.src_attrs = args['src_attrs']
+        src_attrs = self.src_df.attrs
         self.time_min, self.time_max = args['time_span_msec']
 
         # UIの更新
@@ -89,12 +89,13 @@ class App(ttk.Frame):
 
         self.tree.delete(*self.tree.get_children())
         self.clear()
+        self.plot.set_vcap(self.cap)
 
-        if 'scene_table' not in self.src_attrs.keys():
+        if 'scene_table' not in src_attrs.keys():
             print("scene_table is not in attrs")
             return
 
-        scene_table = self.src_attrs['scene_table']
+        scene_table = src_attrs['scene_table']
         # self.treeをクリアしてattrs['scene_table']の値を入れる
         for item in self.tree.get_children(''):
             self.tree.delete(item)
@@ -107,8 +108,6 @@ class App(ttk.Frame):
             duration = pd.to_timedelta(end) - pd.to_timedelta(start)
             duration_str = time_format.timedelta_to_str(duration)
             self.tree.insert("", "end", values=(start, end, duration_str, description))
-        self.plot.set_vcap(self.cap)
-        print('reload() done.')
 
     def draw(self):
         current_member = self.member_combo.get()
@@ -120,14 +119,24 @@ class App(ttk.Frame):
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
         plot_df = tar_df
 
-        if 'scene_table' not in self.src_attrs.keys():
+        if 'scene_table' not in self.src_df.attrs.keys():
             print("scene_table is not in attrs")
             return
-        rects = self.src_attrs['scene_table']
+        rects = self.src_df.attrs['scene_table']
 
         self.plot.set_trk_df(plot_df)
         self.plot.set_plot_rect(plot_df, current_member, rects, self.time_min, self.time_max)
         self.plot.draw()
+
+    def on_ok(self):
+        self.dst_df = self.src_df.copy()
+        if "proc_history" not in self.dst_df.attrs.keys():
+            self.dst_df.attrs["proc_history"] = []
+        self.dst_df.attrs["proc_history"].append("scene_table_edit")
+        if len(self.dst_df) == 0:
+            print("No data in DataFrame")
+            self.dst_df = None
+        self.master.destroy()
 
     def _add_row(self):
         start_time, end_time = self.time_span_entry.get_start_end_str()
@@ -169,10 +178,7 @@ class App(ttk.Frame):
             scene_table['start'].append(self.tree.item(item)['values'][0])
             scene_table['end'].append(self.tree.item(item)['values'][1])
             scene_table['description'].append(self.tree.item(item)['values'][3])
-
-        self.src_attrs['scene_table'] = scene_table
-        self.dst_df = self.src_df
-        self.dst_df['attrs'] = self.src_attrs
+        self.src_df.attrs['scene_table'] = scene_table
 
     def clear(self):
         self.plot.clear()

@@ -61,19 +61,18 @@ class App(ttk.Frame):
         plot_frame.pack(pady=5)
         self.lineplot.pack(plot_frame)
 
-        self.reload(args)
+        self.load(args)
 
-    def reload(self, args):
+    def load(self, args):
         self.src_df = args['src_df']
         self.cap = args['cap']
-        self.src_attrs = args['src_attrs']
+        self.src_attrs = self.src_df.attrs
         self.time_min, self.time_max = args['time_span_msec']
 
         # UIの更新
         self.member_combo.set_df(self.src_df)
         self.lineplot.set_vcap(self.cap)
         self.clear()
-        print('reload() done.')
 
     def draw(self):
         current_member, kp0, kp1, kp2 = self.member_combo.get_selected()
@@ -104,9 +103,9 @@ class App(ttk.Frame):
         plot_df = pd.concat([prod_df, self.timestamp_df], axis=1)
 
         for col_name in col_names:
-            if col_name not in self.dst_df.columns:
+            if col_name not in self.calc_df.columns:
                 add_df = plot_df.loc[:, col_name].to_frame()
-                self.dst_df = pd.concat([self.dst_df, add_df], axis=1)
+                self.calc_df = pd.concat([self.calc_df, add_df], axis=1)
 
         # thinningの値だけframeを間引く
         thinning = self.thinnig_option.get_thinning()
@@ -117,19 +116,19 @@ class App(ttk.Frame):
         self.lineplot.draw()
 
     def export(self):
-        if len(self.dst_df) == 0:
+        if len(self.calc_df) == 0:
             print("No data to export.")
             return
         timestamp_df = self.timestamp_df
         timestamp_df = timestamp_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
-        self.dst_df = self.dst_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
-        export_df = pd.concat([self.dst_df, timestamp_df], axis=1)
+        self.calc_df = self.calc_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
+        export_df = pd.concat([self.calc_df, timestamp_df], axis=1)
         export_df.attrs = self.src_attrs
         file_inout.save_pkl(self.pkl_path, export_df, proc_history="vector")
 
     def clear(self):
         self.lineplot.clear()
-        self.dst_df = pd.DataFrame()
+        self.calc_df = pd.DataFrame()
 
     def _find_data_dir(self):
         if getattr(sys, "frozen", False):

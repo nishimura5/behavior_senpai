@@ -77,7 +77,6 @@ class App(ttk.Frame):
     def load(self, args):
         self.src_df = args['src_df']
         self.cap = args['cap']
-        self.src_attrs = args['src_attrs']
         self.time_min, self.time_max = args['time_span_msec']
 
         # UIの更新
@@ -107,8 +106,8 @@ class App(ttk.Frame):
     def update_tree(self):
         self.tree.delete(*self.tree.get_children())
         members = self.src_df.index.get_level_values(1).unique()
-        if "roi_left_top" in self.src_attrs:
-            zero_point = self.src_attrs['roi_left_top']
+        if "roi_left_top" in self.src_df.attrs:
+            zero_point = self.src_df.attrs['roi_left_top']
         else:
             zero_point = (0, 0)
         tree_df = keypoints_proc.zero_point_to_nan(self.src_df, zero_point)
@@ -140,11 +139,13 @@ class App(ttk.Frame):
         print(f"renamed {old_member} to {new_member}")
 
     def on_ok(self):
-        self.dst_df = self.src_df
-        if "proc_history" not in self.src_attrs.keys():
-            self.src_attrs["proc_history"] = []
-        self.src_attrs["proc_history"].append("member_edit")
-        self.dst_df.attrs = self.src_attrs
+        self.dst_df = self.src_df.copy()
+        if "proc_history" not in self.dst_df.attrs.keys():
+            self.dst_df.attrs["proc_history"] = []
+        self.dst_df.attrs["proc_history"].append("member_edit")
+        if len(self.dst_df) == 0:
+            print("No data in DataFrame")
+            self.dst_df = None
         self.master.destroy()
 
     def clear(self):
