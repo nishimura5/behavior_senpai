@@ -32,8 +32,10 @@ class App(ttk.Frame):
         temp = TempFile()
         width, self.height, dpi = temp.get_window_size()
 
-        setting_frame = ttk.Frame(self)
-        setting_frame.pack(pady=5)
+        control_frame = ttk.Frame(self)
+        control_frame.pack(fill=tk.X, pady=(0, 20))
+        setting_frame = ttk.Frame(control_frame)
+        setting_frame.pack(side=tk.LEFT)
 
         in_out_label = ttk.Label(setting_frame, text="Target:")
         in_out_label.pack(side=tk.LEFT)
@@ -49,14 +51,12 @@ class App(ttk.Frame):
         calc_button = ttk.Button(setting_frame, text="Remove", command=self.calc_in_out)
         calc_button.pack(side=tk.LEFT)
 
-        export_frame = ttk.Frame(self)
-        export_frame.pack(pady=5)
-
-        clear_btn = ttk.Button(export_frame, text="Clear", command=self.clear)
-        clear_btn.pack(side=tk.LEFT, padx=(10, 0))
-
-        export_btn = ttk.Button(export_frame, text="OK", command=self.on_ok)
-        export_btn.pack(side=tk.LEFT, padx=(10, 0))
+        ok_frame = ttk.Frame(control_frame)
+        ok_frame.pack(anchor=tk.NE, padx=(20, 0))
+        ok_btn = ttk.Button(ok_frame, text="OK", command=self.on_ok)
+        ok_btn.pack(pady=(0, 5))
+        cancel_btn = ttk.Button(ok_frame, text="Cancel", command=self.cancel)
+        cancel_btn.pack()
 
         self.canvas = tk.Canvas(self, width=width, height=self.height)
         self.canvas.pack()
@@ -83,7 +83,7 @@ class App(ttk.Frame):
         width = int(self.height * ratio)
         self.scale = width / src_attrs["frame_size"][0]
         self.canvas.config(width=width, height=self.height)
-        ok, image_rgb = self.cap.read_at(10, scale=self.scale, rgb=True)
+        ok, image_rgb = self.cap.read_at(1000, scale=self.scale, rgb=True)
         if ok is False:
             return
         image_pil = Image.fromarray(image_rgb)
@@ -92,7 +92,6 @@ class App(ttk.Frame):
             self.img_on_canvas = self.canvas.create_image(0, 0, anchor=tk.NW, image=self.image_tk)
         else:
             self.canvas.itemconfig(self.img_on_canvas, image=self.image_tk)
-        self.clear()
 
     def draw_convex_hull(self):
         # src_dfのx,yから凸包を描画
@@ -127,7 +126,7 @@ class App(ttk.Frame):
         tar_df.loc[(tar_df["x"] == left) & (tar_df["y"] == top), ["x", "y"]] = [np.nan, np.nan]
 
         isin_df = keypoints_proc.is_in_poly(tar_df, poly_points, 'is_remove', self.scale)
-        # area外を削除したいときはboolを反転する
+        # area内を削除したいときはboolを反転する
         if self.in_out_combo.get() == "within area":
             isin_df = isin_df.applymap(lambda x: not x)
 
@@ -138,8 +137,9 @@ class App(ttk.Frame):
 
         self.draw_convex_hull()
 
-    def clear(self):
-        print("clear()")
+    def cancel(self):
+        self.dst_df = None
+        self.master.destroy()
 
     def on_ok(self):
         self.dst_df = self.src_df.copy()

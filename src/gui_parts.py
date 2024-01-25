@@ -261,14 +261,14 @@ class TimeSpanEntry(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
 
-        caption_time = tk.Label(master, text='time:')
+        caption_time = ttk.Label(master, text='time:')
         caption_time.pack(side=tk.LEFT, padx=(10, 0))
         vcmd = (self.register(self._validate), '%P')
         invcmd = (self.register(self._invalid_start), '%P')
         self.time_start_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)
         self.time_start_entry.pack(side=tk.LEFT, padx=0)
         self.time_start_entry.bind("<FocusIn>", self._select_all)
-        nyoro_time = tk.Label(master, text='～')
+        nyoro_time = ttk.Label(master, text='～')
         nyoro_time.pack(side=tk.LEFT, padx=1)
         invcmd = (self.register(self._invalid_end), '%P')
         self.time_end_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)

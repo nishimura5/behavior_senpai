@@ -25,16 +25,20 @@ class App(ttk.Frame):
         width, height, dpi = temp.get_window_size()
         self.band = LinePlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
 
-        setting_frame = ttk.Frame(self)
-        setting_frame.pack(pady=5)
+        control_frame = ttk.Frame(self)
+        control_frame.pack(fill=tk.X, pady=(0, 20))
+        # Frameの色を赤にする
+        setting_frame = ttk.Frame(control_frame)
+        setting_frame.pack(fill=tk.X, expand=True, side=tk.LEFT)
 
-        draw_btn = ttk.Button(setting_frame, text="Draw", command=self.draw)
+        draw_frame = ttk.Frame(setting_frame)
+        draw_frame.pack(pady=5)
+        draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT)
-
-        clear_btn = ttk.Button(setting_frame, text="Clear", command=self.clear)
+        clear_btn = ttk.Button(draw_frame, text="Clear", command=self.clear)
         clear_btn.pack(side=tk.LEFT)
 
-        rename_frame = ttk.Frame(self)
+        rename_frame = ttk.Frame(setting_frame)
         rename_frame.pack(pady=5)
         rename_member_label = ttk.Label(rename_frame, text="Rename Member")
         rename_member_label.pack(side=tk.LEFT, pady=5)
@@ -48,10 +52,8 @@ class App(ttk.Frame):
         self.new_member_name_entry.pack(side=tk.LEFT, padx=5)
         rename_btn = ttk.Button(rename_frame, text="Rename", command=self.rename_member)
         rename_btn.pack(side=tk.LEFT, padx=5)
-        ok_btn = ttk.Button(rename_frame, text="OK", command=self.on_ok)
-        ok_btn.pack(side=tk.LEFT, padx=5)
 
-        tree_frame = ttk.Frame(self)
+        tree_frame = ttk.Frame(setting_frame)
         tree_frame.pack(pady=5)
         cols = ("member", "start", "end", "duration", "keypoints/frame")
         self.tree = ttk.Treeview(tree_frame, columns=cols, show='headings', selectmode="extended")
@@ -66,6 +68,13 @@ class App(ttk.Frame):
         self.tree.pack()
         # rowを選択したときのイベントを設定
         self.tree.bind("<<TreeviewSelect>>", self._select_tree_row)
+
+        ok_frame = ttk.Frame(control_frame)
+        ok_frame.pack(anchor=tk.NE, padx=(20, 0))
+        ok_btn = ttk.Button(ok_frame, text="OK", command=self.on_ok)
+        ok_btn.pack(pady=(0, 5))
+        cancel_btn = ttk.Button(ok_frame, text="Cancel", command=self.cancel)
+        cancel_btn.pack()
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
@@ -144,6 +153,10 @@ class App(ttk.Frame):
         if len(self.dst_df) == 0:
             print("No data in DataFrame")
             self.dst_df = None
+        self.master.destroy()
+
+    def cancel(self):
+        self.dst_df = None
         self.master.destroy()
 
     def clear(self):

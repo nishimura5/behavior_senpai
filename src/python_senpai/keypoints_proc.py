@@ -123,12 +123,16 @@ def remove_by_bool_col(src_df, bool_col_name: str, drop_member: bool = False):
     drop_memberがTrueの場合は、keypointが1つでもFalseならそのmember丸ごとFalseにする
     '''
     remove_sr = src_df[bool_col_name]
+    remove_sr = remove_sr.fillna(False)
     if drop_member is True:
         group_sr = remove_sr.groupby(level=['frame', 'member']).all()
-        remove_sr = pd.merge(remove_sr, group_sr, left_index=True, right_index=True)[bool_col_name + '_y']
+        remove_sr = pd.merge(remove_sr, group_sr, left_index=True, right_index=True)
+        remove_sr = remove_sr[bool_col_name + '_y']
 
-    src_df['x'] = np.where(remove_sr == False, np.nan, src_df['x'])
-    src_df['y'] = np.where(remove_sr == False, np.nan, src_df['y'])
+    x_sr = np.where(remove_sr == False, np.nan, src_df['x'])
+    y_sr = np.where(remove_sr == False, np.nan, src_df['y'])
+    src_df['x'] = x_sr.copy()
+    src_df['y'] = y_sr.copy()
     return src_df
 
 
