@@ -97,7 +97,6 @@ class CapCanvas(tk.Canvas):
                 members = tar_df.index.get_level_values("member").unique().tolist()
                 for member in members:
                     member_df = tar_df.loc[pd.IndexSlice[:, member, :], :]
-                    print(member_df)
                     kps = member_df.to_numpy()
                     self.anno.set_img(image_rgb)
                     self.anno.set_pose(kps)

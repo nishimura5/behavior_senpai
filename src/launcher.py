@@ -113,15 +113,14 @@ class App(ttk.Frame):
 
         video_frame = ttk.Frame(view_frame)
         video_frame.pack(side=tk.LEFT, anchor=tk.N)
-        self.canvas = VideoViewer(video_frame, width=w_width, height=self.w_height)
-        self.canvas.pack()
+        self.vw = VideoViewer(video_frame, width=w_width, height=self.w_height)
+        self.vw.pack()
 
         attrs_frame = ttk.Frame(view_frame)
         attrs_frame.pack(side=tk.RIGHT, anchor=tk.N)
         self.attrs_textbox = tk.Text(attrs_frame, relief=tk.FLAT, padx=10, pady=10)
         self.attrs_textbox.pack(fill=tk.BOTH, expand=True, padx=(10, 0))
 
-        self.img_on_canvas = None
         self.cap = vcap.VideoCap()
         self.load()
 
@@ -140,7 +139,7 @@ class App(ttk.Frame):
         self.time_span_msec = self.time_span_entry.get_start_end()
         self.pkl_selector.set_prev_next(src_attrs)
 
-        self.canvas.set_cap(self.cap, src_attrs["frame_size"], anno_trk=self.src_df)
+        self.vw.set_cap(self.cap, src_attrs["frame_size"], anno_trk=self.src_df)
         self.update_attrs()
 
     def update_attrs(self):
@@ -184,7 +183,7 @@ class App(ttk.Frame):
         self.src_df.attrs["proc_history"].append(self.a.history)
 
         self.update_attrs()
-        self.canvas.set_trk(self.src_df)
+        self.vw.set_trk(self.src_df)
 
         self.save_button["state"] = "normal"
         member_count = self.src_df.index.get_level_values(1).unique().size
