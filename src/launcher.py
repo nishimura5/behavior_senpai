@@ -126,12 +126,12 @@ class App(ttk.Frame):
         self.load()
 
     def load(self):
-        pkl_path = self.pkl_selector.get_trk_path()
-        self.src_df = file_inout.load_track_file(pkl_path)
+        self.pkl_path = self.pkl_selector.get_trk_path()
+        self.src_df = file_inout.load_track_file(self.pkl_path)
         if self.src_df is None:
             return
         src_attrs = self.src_df.attrs
-        pkl_dir = os.path.dirname(pkl_path)
+        pkl_dir = os.path.dirname(self.pkl_path)
         self.cap.set_frame_size(src_attrs["frame_size"])
         self.cap.open_file(os.path.join(pkl_dir, os.pardir, src_attrs["video_name"]))
 
@@ -141,7 +141,10 @@ class App(ttk.Frame):
         self.pkl_selector.set_prev_next(src_attrs)
 
         self.canvas.set_cap(self.cap, src_attrs["frame_size"], anno_trk=self.src_df)
+        self.update_attrs()
 
+    def update_attrs(self):
+        src_attrs = self.src_df.attrs
         self.attrs_textbox.delete("1.0", tk.END)
         print_str = ""
         for key, value in src_attrs.items():
@@ -179,6 +182,9 @@ class App(ttk.Frame):
         if "proc_history" not in self.src_df.attrs.keys():
             self.src_df.attrs["proc_history"] = []
         self.src_df.attrs["proc_history"].append(self.a.history)
+
+        self.update_attrs()
+        self.canvas.set_trk(self.src_df)
 
         self.save_button["state"] = "normal"
         member_count = self.src_df.index.get_level_values(1).unique().size

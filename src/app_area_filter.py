@@ -4,6 +4,7 @@ from tkinter import ttk
 import pandas as pd
 from PIL import Image, ImageTk
 import numpy as np
+import cv2
 
 from gui_parts import TempFile
 from python_senpai import keypoints_proc
@@ -21,13 +22,20 @@ class App(ttk.Frame):
         master.title("Area Filter")
         self.pack(padx=10, pady=10)
 
+        self.init_anchor_points = [
+            {'point': (100, 100)},
+            {'point': (100, 200)},
+            {'point': (200, 200)},
+            {'point': (200, 100)},
+            ]
+
         temp = TempFile()
         width, self.height, dpi = temp.get_window_size()
 
         setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
 
-        in_out_label = ttk.Label(setting_frame, text="remove")
+        in_out_label = ttk.Label(setting_frame, text="Target:")
         in_out_label.pack(side=tk.LEFT)
         self.keypoint_member_combo = ttk.Combobox(setting_frame, state='readonly', width=18)
         self.keypoint_member_combo.pack(side=tk.LEFT, padx=5)
@@ -38,7 +46,7 @@ class App(ttk.Frame):
         self.in_out_combo["values"] = ("within area", "outside area")
         self.in_out_combo.current(0)
 
-        calc_button = ttk.Button(setting_frame, text="remove", command=self.calc_in_out)
+        calc_button = ttk.Button(setting_frame, text="Remove", command=self.calc_in_out)
         calc_button.pack(side=tk.LEFT)
 
         export_frame = ttk.Frame(self)
@@ -56,23 +64,13 @@ class App(ttk.Frame):
         self.canvas.bind("<Button1-Motion>", self.motion)
 
         self.img_on_canvas = None
+        self.hull_id = None
         self.dst_df = None
         self.history = "area_filter"
-        self.load(args)
 
-        self.anchor_points = [
-            {'point': (100, 100)},
-            {'point': (100, 200)},
-            {'point': (200, 200)},
-            {'point': (200, 100)},
-            ]
-        self.selected_id = None
-        poly_points = sum([list(p['point']) for p in self.anchor_points], [])
-        self.poly_id = self.canvas.create_polygon(*poly_points, fill="", outline="black")
-        for point in self.anchor_points:
-            x = point['point'][0]
-            y = point['point'][1]
-            point['id'] = self.canvas.create_rectangle(x-2, y-2, x+2, y+2, fill="white")
+        self.load(args)
+        self.draw_convex_hull()
+        self.reset_anchor_points()
 
     def load(self, args):
         self.src_df = args['src_df']
@@ -80,7 +78,7 @@ class App(ttk.Frame):
         src_attrs = self.src_df.attrs
         self.time_min, self.time_max = args['time_span_msec']
 
-        # UIの更新
+        # 動画のフレームを描画
         ratio = src_attrs["frame_size"][0] / src_attrs["frame_size"][1]
         width = int(self.height * ratio)
         self.scale = width / src_attrs["frame_size"][0]
@@ -95,6 +93,29 @@ class App(ttk.Frame):
         else:
             self.canvas.itemconfig(self.img_on_canvas, image=self.image_tk)
         self.clear()
+
+    def draw_convex_hull(self):
+        # src_dfのx,yから凸包を描画
+        points = self.src_df[["x", "y"]].dropna().values
+        points = points * self.scale
+        points = np.array(points, dtype=np.int32)
+        hull = cv2.convexHull(points)
+        hull_points = hull.reshape(-1, 2)
+        flat_list = [item for sublist in hull_points for item in sublist]
+        if self.hull_id is None:
+            self.hull_id = self.canvas.create_polygon(*flat_list, fill="", outline="aqua", width=2)
+        else:
+            self.canvas.coords(self.hull_id, *flat_list)
+
+    def reset_anchor_points(self):
+        self.anchor_points = self.init_anchor_points.copy()
+        self.selected_id = None
+        poly_points = sum([list(p['point']) for p in self.anchor_points], [])
+        self.poly_id = self.canvas.create_polygon(*poly_points, fill="", outline="black")
+        for point in self.anchor_points:
+            x = point['point'][0]
+            y = point['point'][1]
+            point['id'] = self.canvas.create_rectangle(x-2, y-2, x+2, y+2, fill="white")
 
     def calc_in_out(self):
         # timestampの範囲を抽出
@@ -114,6 +135,8 @@ class App(ttk.Frame):
         k_m_bool = self.keypoint_member_combo.get() == "member"
         dst_df = keypoints_proc.remove_by_bool_col(dst_df, 'is_remove', k_m_bool)
         self.src_df = dst_df.drop(columns=['is_remove'])
+
+        self.draw_convex_hull()
 
     def clear(self):
         print("clear()")

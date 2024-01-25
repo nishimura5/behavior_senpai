@@ -36,10 +36,15 @@ class VideoViewer(ttk.Frame):
             self.time_max = cap.get_max_msec()
 
         self.canvas.set_cap(cap, frame_size)
+        self.canvas.scale_trk()
         self.time_min = 0
         self.slider.config(from_=self.time_min, to=self.time_max)
         self.canvas.update(self.time_min)
         self.slider.set(0)
+
+    def set_trk(self, anno_trk):
+        self.canvas.set_trk(anno_trk)
+        self.canvas.scale_trk()
 
     def on_slider_changed(self, msec):
         msec = float(msec)
@@ -77,6 +82,9 @@ class CapCanvas(tk.Canvas):
             cols_for_anno = ['x', 'y', 'z']
         self.anno_df = src_df.reset_index().set_index(['timestamp', 'member', 'keypoint']).loc[:, cols_for_anno]
 
+    def scale_trk(self):
+        self.anno_df.loc[:, ['x', 'y']] *= self.scale
+
     def update(self, msec):
         ok, image_rgb = self.cap.read_at(msec, scale=self.scale, rgb=True)
         if ok is False:
@@ -89,8 +97,7 @@ class CapCanvas(tk.Canvas):
                 members = tar_df.index.get_level_values("member").unique().tolist()
                 for member in members:
                     member_df = tar_df.loc[pd.IndexSlice[:, member, :], :]
-                    member_df['x'] = member_df['x'] * self.scale
-                    member_df['y'] = member_df['y'] * self.scale
+                    print(member_df)
                     kps = member_df.to_numpy()
                     self.anno.set_img(image_rgb)
                     self.anno.set_pose(kps)
