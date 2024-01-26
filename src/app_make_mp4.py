@@ -42,6 +42,7 @@ class App(ttk.Frame):
         self.cap = args['cap']
         self.src_attrs = self.src_df.attrs
         self.time_min, self.time_max = args['time_span_msec']
+        self.pkl_dir = args['pkl_dir']
 
         # UIの更新
         self.member_combo["values"] = self.src_df.index.get_level_values("member").unique().tolist()

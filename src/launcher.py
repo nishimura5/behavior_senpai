@@ -130,9 +130,9 @@ class App(ttk.Frame):
         if self.src_df is None:
             return
         src_attrs = self.src_df.attrs
-        pkl_dir = os.path.dirname(self.pkl_path)
+        self.pkl_dir = os.path.dirname(self.pkl_path)
         self.cap.set_frame_size(src_attrs["frame_size"])
-        self.cap.open_file(os.path.join(pkl_dir, os.pardir, src_attrs["video_name"]))
+        self.cap.open_file(os.path.join(self.pkl_dir, os.pardir, src_attrs["video_name"]))
 
         # UIの更新
         self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
@@ -161,7 +161,7 @@ class App(ttk.Frame):
         if grab is True:
             dlg_modal.grab_set()
         dlg_modal.transient(self.master)
-        args = {"src_df": self.src_df, "time_span_msec": self.time_span_msec, "cap": self.cap}
+        args = {"src_df": self.src_df, "time_span_msec": self.time_span_msec, "cap": self.cap, "pkl_dir": self.pkl_dir}
         self.a = app(dlg_modal, args)
         dlg_modal.protocol("WM_DELETE_WINDOW", lambda: [dlg_modal.destroy(), cv2.destroyAllWindows()])
         self.wait_window(dlg_modal)
