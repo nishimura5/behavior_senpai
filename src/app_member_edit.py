@@ -40,6 +40,8 @@ class App(ttk.Frame):
 
         rename_frame = ttk.Frame(setting_frame)
         rename_frame.pack(pady=5)
+        remove_btn = ttk.Button(rename_frame, text="Remove", command=self.remove_member)
+        remove_btn.pack(anchor=tk.W, padx=5)
         rename_member_label = ttk.Label(rename_frame, text="Rename Member")
         rename_member_label.pack(side=tk.LEFT, pady=5)
         self.tar_member_label_var = tk.StringVar()
@@ -147,6 +149,19 @@ class App(ttk.Frame):
         self.src_df = self.src_df.rename(index={old_member: new_member}, level=1)
         self.update_tree()
         print(f"renamed {old_member} to {new_member}")
+
+    def remove_member(self):
+        """
+        memberを削除する
+        """
+        current_member = self.tar_member_label_var.get()
+        if current_member == "":
+            print("current member is empty")
+            return
+        # indexのtypeを表示
+        self.src_df = self.src_df.drop(current_member, level=1)
+        self.update_tree()
+        print(f"removed {current_member}")
 
     def on_ok(self):
         self.dst_df = self.src_df.copy()

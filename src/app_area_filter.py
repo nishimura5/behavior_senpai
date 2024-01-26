@@ -1,3 +1,4 @@
+import operator
 import tkinter as tk
 from tkinter import ttk
 
@@ -83,7 +84,7 @@ class App(ttk.Frame):
         width = int(self.height * ratio)
         self.scale = width / src_attrs["frame_size"][0]
         self.canvas.config(width=width, height=self.height)
-        ok, image_rgb = self.cap.read_at(1000, scale=self.scale, rgb=True)
+        ok, image_rgb = self.cap.read_at(30*1000, scale=self.scale, rgb=True)
         if ok is False:
             return
         image_pil = Image.fromarray(image_rgb)
@@ -95,12 +96,10 @@ class App(ttk.Frame):
 
     def draw_convex_hull(self):
         # src_dfのx,yから凸包を描画
-        points = self.src_df[["x", "y"]].dropna().values
-        points = points * self.scale
+        points = self.src_df[["x", "y"]].dropna().values * self.scale
         points = np.array(points, dtype=np.int32)
         hull = cv2.convexHull(points)
-        hull_points = hull.reshape(-1, 2)
-        flat_list = [item for sublist in hull_points for item in sublist]
+        flat_list = sum(sum(hull.tolist(), []), [])
         if self.hull_id is None:
             self.hull_id = self.canvas.create_polygon(*flat_list, fill="", outline="aqua", width=2)
         else:
@@ -128,7 +127,7 @@ class App(ttk.Frame):
         isin_df = keypoints_proc.is_in_poly(tar_df, poly_points, 'is_remove', self.scale)
         # area内を削除したいときはboolを反転する
         if self.in_out_combo.get() == "within area":
-            isin_df = isin_df.applymap(lambda x: not x)
+            isin_df = isin_df.map(operator.not_)
 
         dst_df = pd.concat([self.src_df, isin_df], axis=1)
         k_m_bool = self.keypoint_member_combo.get() == "member"
