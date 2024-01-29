@@ -100,6 +100,10 @@ class App(ttk.Frame):
         self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
         self.band.set_vcap(self.cap)
 
+        # memberの数をカウント
+        members = self.src_df.dropna().index.get_level_values(1).unique()
+        print(f"members: {len(members)}")
+
     def draw(self):
         # treeから選択した行のmemberを取得
         current_member = str(self.tree.item(self.tree.selection()[0])["values"][0])
@@ -128,6 +132,7 @@ class App(ttk.Frame):
             sliced_df = tree_df.loc[pd.IndexSlice[:, member, :], :]
             sliced_df = sliced_df.loc[~(sliced_df['x'].isna()) & (~sliced_df['y'].isna())]
             if len(sliced_df.index.get_level_values(0).unique()) == 0:
+                print(f"member {member} has no data")
                 continue
             kpf = len(sliced_df)/len(sliced_df.index.get_level_values(0).unique())
             head_timestamp = time_format.msec_to_timestr_with_fff(sliced_df.head(1)['timestamp'].values[0])
@@ -162,6 +167,19 @@ class App(ttk.Frame):
         self.src_df = self.src_df.drop(current_member, level=1)
         self.update_tree()
         print(f"removed {current_member}")
+
+    def export_tree(self):
+        # treeの内容をCSVで出力
+        base_dict = {"member": [], "start": [], "end": [], "duration": []}
+        data = self.tree.get_children()
+        for d in data:
+            row = self.tree.item(d)["values"]
+            base_dict["member"].append(row[0])
+            base_dict["start"].append(row[1])
+            base_dict["end"].append(row[2])
+            base_dict["duration"].append(row[3])
+        df = pd.DataFrame(base_dict)
+        df.to_csv("member_edit.csv", index=False)
 
     def on_ok(self):
         self.dst_df = self.src_df.copy()
