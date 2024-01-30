@@ -36,12 +36,12 @@ class App(ttk.Frame):
         draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT)
         clear_btn = ttk.Button(draw_frame, text="Clear", command=self.clear)
-        clear_btn.pack(side=tk.LEFT)
+        clear_btn.pack(side=tk.LEFT, padx=(10, 0))
 
         rename_frame = ttk.Frame(setting_frame)
         rename_frame.pack(pady=5)
         remove_btn = ttk.Button(rename_frame, text="Remove", command=self.remove_member)
-        remove_btn.pack(anchor=tk.W, padx=5)
+        remove_btn.pack(anchor=tk.W, padx=(0, 5))
         rename_member_label = ttk.Label(rename_frame, text="Rename Member")
         rename_member_label.pack(side=tk.LEFT, pady=5)
         self.tar_member_label_var = tk.StringVar()
@@ -67,7 +67,10 @@ class App(ttk.Frame):
         self.tree.column("start", width=100)
         self.tree.column("end", width=100)
         self.tree.column("duration", width=100)
-        self.tree.pack()
+        self.tree.pack(side=tk.LEFT)
+        scroll = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
+        scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        self.tree.configure(yscrollcommand=scroll.set)
         # rowを選択したときのイベントを設定
         self.tree.bind("<<TreeviewSelect>>", self._select_tree_row)
 

@@ -39,18 +39,18 @@ class App(ttk.Frame):
         setting_frame.pack(side=tk.LEFT)
 
         in_out_label = ttk.Label(setting_frame, text="Target:")
-        in_out_label.pack(side=tk.LEFT)
+        in_out_label.pack(side=tk.LEFT, padx=(0, 3))
         self.keypoint_member_combo = ttk.Combobox(setting_frame, state='readonly', width=18)
-        self.keypoint_member_combo.pack(side=tk.LEFT, padx=5)
+        self.keypoint_member_combo.pack(side=tk.LEFT, padx=(0, 5))
         self.keypoint_member_combo["values"] = ("only keyoints", "member")
         self.keypoint_member_combo.current(0)
         self.in_out_combo = ttk.Combobox(setting_frame, state='readonly', width=18)
-        self.in_out_combo.pack(side=tk.LEFT, padx=5)
+        self.in_out_combo.pack(side=tk.LEFT)
         self.in_out_combo["values"] = ("within area", "outside area")
         self.in_out_combo.current(0)
 
         calc_button = ttk.Button(setting_frame, text="Remove", command=self.calc_in_out)
-        calc_button.pack(side=tk.LEFT)
+        calc_button.pack(side=tk.LEFT, padx=(10, 0))
 
         ok_frame = ttk.Frame(control_frame)
         ok_frame.pack(anchor=tk.NE, padx=(20, 0))

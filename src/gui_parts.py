@@ -25,10 +25,10 @@ class PklSelector(ttk.Frame):
         self.next_pkl_btn = ttk.Button(master, text=">", width=1, state=tk.DISABLED)
         self.next_pkl_btn.pack(side=tk.LEFT, padx=(0, 10))
 
-        self.load_pkl_btn = ttk.Button(master, text="Load Track")
+        self.load_pkl_btn = ttk.Button(master, text="Load", width=6)
         self.load_pkl_btn.pack(side=tk.LEFT)
         self.pkl_path_label = ttk.Label(master, text="No Track file loaded")
-        self.pkl_path_label.pack(side=tk.LEFT)
+        self.pkl_path_label.pack(side=tk.LEFT, padx=(5, 0))
 
         if self.trk_path != '':
             self.pkl_path_label["text"] = self.trk_path
@@ -262,17 +262,17 @@ class TimeSpanEntry(ttk.Frame):
         super().__init__(master)
 
         caption_time = ttk.Label(master, text='time:')
-        caption_time.pack(side=tk.LEFT, padx=(10, 0))
+        caption_time.pack(side=tk.LEFT, padx=(10, 3))
         vcmd = (self.register(self._validate), '%P')
         invcmd = (self.register(self._invalid_start), '%P')
         self.time_start_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)
-        self.time_start_entry.pack(side=tk.LEFT, padx=0)
+        self.time_start_entry.pack(side=tk.LEFT)
         self.time_start_entry.bind("<FocusIn>", self._select_all)
         nyoro_time = ttk.Label(master, text='～')
         nyoro_time.pack(side=tk.LEFT, padx=1)
         invcmd = (self.register(self._invalid_end), '%P')
         self.time_end_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)
-        self.time_end_entry.pack(side=tk.LEFT, padx=0)
+        self.time_end_entry.pack(side=tk.LEFT)
         self.time_end_entry.bind("<FocusIn>", self._select_all)
 
     def get_start_end(self):

@@ -41,10 +41,10 @@ class App(ttk.Frame):
         buttons_frame.pack(side=tk.LEFT, anchor=tk.NW)
 
         detect_label = ttk.Label(buttons_frame, text="Preparation")
-        detect_label.pack(side=tk.TOP, pady=(4, 0))
-        v2k_button = ttk.Button(buttons_frame, text="Detect", command=lambda: self.launch_window(v2k.App, grab=True), width=22)
+        detect_label.pack(side=tk.TOP)
+        v2k_button = ttk.Button(buttons_frame, text="Detect", command=lambda: self.launch_window(v2k.App, grab=True), width=20)
         v2k_button.pack(side=tk.TOP, pady=4)
-        tl_button = ttk.Button(buttons_frame, text="Track list", command=lambda: self.launch_window(tl.App, grab=True), width=22)
+        tl_button = ttk.Button(buttons_frame, text="Track list", command=lambda: self.launch_window(tl.App, grab=True), width=20)
         tl_button.pack(side=tk.TOP, pady=4)
 
         edit_label = ttk.Label(buttons_frame, text="Edit")
@@ -53,59 +53,59 @@ class App(ttk.Frame):
             buttons_frame,
             text="Member",
             command=lambda: self.launch_window(k2b.App, edit_df=True, grab=True),
-            width=22)
+            width=20)
         k2b_button.pack(side=tk.TOP, pady=4)
         af_button = ttk.Button(
             buttons_frame,
             text="Area",
             command=lambda: self.launch_window(af.App, edit_df=True, grab=True),
-            width=22)
+            width=20)
         af_button.pack(side=tk.TOP, pady=4)
         scene_table_button = ttk.Button(
             buttons_frame,
             text="Scene table",
             command=lambda: self.launch_window(app_scene_table.App, edit_df=True, grab=True),
-            width=22)
+            width=20)
         scene_table_button.pack(side=tk.TOP, pady=4)
 
         vis_label = ttk.Label(buttons_frame, text="Visualization")
         vis_label.pack(side=tk.TOP, pady=(8, 0))
-        k2m_button = ttk.Button(buttons_frame, text="Make MP4", command=lambda: self.launch_window(k2m.App, grab=True), width=22)
+        k2m_button = ttk.Button(buttons_frame, text="Make MP4", command=lambda: self.launch_window(k2m.App, grab=True), width=20)
         k2m_button.pack(side=tk.TOP, pady=4)
-        k2f_button = ttk.Button(buttons_frame, text="Trajplot", command=lambda: self.launch_window(k2t.App), width=22)
+        k2f_button = ttk.Button(buttons_frame, text="Trajplot", command=lambda: self.launch_window(k2t.App), width=20)
         k2f_button.pack(side=tk.TOP, pady=4)
-        k2r_button = ttk.Button(buttons_frame, text="Recuplot", command=lambda: self.launch_window(k2r.App), width=22)
+        k2r_button = ttk.Button(buttons_frame, text="Recuplot", command=lambda: self.launch_window(k2r.App), width=20)
         k2r_button.pack(side=tk.TOP, pady=4)
 
         calc_label = ttk.Label(buttons_frame, text="Calculation")
         calc_label.pack(side=tk.TOP, pady=(8, 0))
-        k2c_button = ttk.Button(buttons_frame, text="Vector.py", command=lambda: self.launch_window(k2v.App), width=22)
+        k2c_button = ttk.Button(buttons_frame, text="Vector.py", command=lambda: self.launch_window(k2v.App), width=20)
         k2c_button.pack(side=tk.TOP, pady=4)
 
         pref_label = ttk.Label(buttons_frame, text="MISC")
         pref_label.pack(side=tk.TOP, pady=(8, 0))
-        pref_list_button = ttk.Button(buttons_frame, text="Preference", command=lambda: self.launch_window(pref_list.App), width=22)
+        pref_list_button = ttk.Button(buttons_frame, text="Preference", command=lambda: self.launch_window(pref_list.App), width=20)
         pref_list_button.pack(side=tk.TOP, pady=4)
 
         # srcにlicense.jsonがある場合はボタンを表示
         license_path = os.path.join(self._find_data_dir(), 'license.json')
         if os.path.exists(license_path):
-            license_button = ttk.Button(buttons_frame, text="License", command=lambda: self.launch_window(license_view.App), width=22)
+            license_button = ttk.Button(buttons_frame, text="License", command=lambda: self.launch_window(license_view.App), width=20)
             license_button.pack(side=tk.TOP, pady=4)
 
         main_frame = ttk.Frame(self)
-        main_frame.pack(side=tk.RIGHT, anchor=tk.NE, padx=10)
+        main_frame.pack(side=tk.RIGHT, anchor=tk.NE, padx=(24, 0))
         load_frame = ttk.Frame(main_frame)
-        load_frame.pack(pady=5, anchor=tk.W)
+        load_frame.pack(pady=(0, 20), anchor=tk.W)
         self.pkl_selector = PklSelector(load_frame)
         self.pkl_selector.set_command(cmd=self.load)
         self.time_span_entry = TimeSpanEntry(load_frame)
-        self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
+        self.time_span_entry.pack(side=tk.LEFT)
 
         save_frame = ttk.Frame(main_frame)
         save_frame.pack(pady=5, anchor=tk.E)
         self.save_button = ttk.Button(save_frame, text="Overwrite", command=self.overwrite)
-        self.save_button.pack(side=tk.LEFT, padx=(0, 5))
+        self.save_button.pack(side=tk.LEFT)
         self.save_button["state"] = "disable"
 
         view_frame = ttk.Frame(main_frame)
