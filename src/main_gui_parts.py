@@ -51,7 +51,7 @@ class VideoViewer(ttk.Frame):
 
 class CapCanvas(tk.Canvas):
     def __init__(self, master, width, height):
-        super().__init__(master, width=width, height=height)
+        super().__init__(master, width=width, height=height, highlightthickness=0)
         self.height = height
         self.img_on_canvas = None
         self.anno_df = None

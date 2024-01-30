@@ -59,7 +59,7 @@ class App(ttk.Frame):
         cancel_btn = ttk.Button(ok_frame, text="Cancel", command=self.cancel)
         cancel_btn.pack()
 
-        self.canvas = tk.Canvas(self, width=width, height=self.height)
+        self.canvas = tk.Canvas(self, width=width, height=self.height, highlightthickness=0)
         self.canvas.pack()
         self.canvas.bind("<ButtonPress-1>", self.select)
         self.canvas.bind("<Button1-Motion>", self.motion)
