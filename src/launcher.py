@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import cv2
+import ttkthemes
 
 from gui_parts import PklSelector, TimeSpanEntry, TempFile
 from main_gui_parts import VideoViewer
@@ -41,55 +42,55 @@ class App(ttk.Frame):
 
         detect_label = ttk.Label(buttons_frame, text="Preparation")
         detect_label.pack(side=tk.TOP, pady=(4, 0))
-        v2k_button = ttk.Button(buttons_frame, text="app_detect.py", command=lambda: self.launch_window(v2k.App, grab=True), width=26)
+        v2k_button = ttk.Button(buttons_frame, text="Detect", command=lambda: self.launch_window(v2k.App, grab=True), width=26)
         v2k_button.pack(side=tk.TOP, pady=4)
-        tl_button = ttk.Button(buttons_frame, text="app_track_list.py", command=lambda: self.launch_window(tl.App, grab=True), width=26)
+        tl_button = ttk.Button(buttons_frame, text="Track list", command=lambda: self.launch_window(tl.App, grab=True), width=26)
         tl_button.pack(side=tk.TOP, pady=4)
 
         edit_label = ttk.Label(buttons_frame, text="Edit")
         edit_label.pack(side=tk.TOP, pady=(8, 0))
         k2b_button = ttk.Button(
             buttons_frame,
-            text="member",
+            text="Member",
             command=lambda: self.launch_window(k2b.App, edit_df=True, grab=True),
             width=26)
         k2b_button.pack(side=tk.TOP, pady=4)
         af_button = ttk.Button(
             buttons_frame,
-            text="area filter",
+            text="Area",
             command=lambda: self.launch_window(af.App, edit_df=True, grab=True),
             width=26)
         af_button.pack(side=tk.TOP, pady=4)
         scene_table_button = ttk.Button(
             buttons_frame,
-            text="scene table",
+            text="Scene table",
             command=lambda: self.launch_window(app_scene_table.App, edit_df=True, grab=True),
             width=26)
         scene_table_button.pack(side=tk.TOP, pady=4)
 
         vis_label = ttk.Label(buttons_frame, text="Visualization")
         vis_label.pack(side=tk.TOP, pady=(8, 0))
-        k2m_button = ttk.Button(buttons_frame, text="app_make_mp4.py", command=lambda: self.launch_window(k2m.App, grab=True), width=26)
+        k2m_button = ttk.Button(buttons_frame, text="Make MP4", command=lambda: self.launch_window(k2m.App, grab=True), width=26)
         k2m_button.pack(side=tk.TOP, pady=4)
-        k2f_button = ttk.Button(buttons_frame, text="app_trajplot.py", command=lambda: self.launch_window(k2t.App), width=26)
+        k2f_button = ttk.Button(buttons_frame, text="Trajplot", command=lambda: self.launch_window(k2t.App), width=26)
         k2f_button.pack(side=tk.TOP, pady=4)
-        k2r_button = ttk.Button(buttons_frame, text="app_recuplot.py", command=lambda: self.launch_window(k2r.App), width=26)
+        k2r_button = ttk.Button(buttons_frame, text="Recuplot", command=lambda: self.launch_window(k2r.App), width=26)
         k2r_button.pack(side=tk.TOP, pady=4)
 
         calc_label = ttk.Label(buttons_frame, text="Calculation")
         calc_label.pack(side=tk.TOP, pady=(8, 0))
-        k2c_button = ttk.Button(buttons_frame, text="app_calc_vector.py", command=lambda: self.launch_window(k2v.App), width=26)
+        k2c_button = ttk.Button(buttons_frame, text="Vector.py", command=lambda: self.launch_window(k2v.App), width=26)
         k2c_button.pack(side=tk.TOP, pady=4)
 
         pref_label = ttk.Label(buttons_frame, text="MISC")
         pref_label.pack(side=tk.TOP, pady=(8, 0))
-        pref_list_button = ttk.Button(buttons_frame, text="pref_list.py", command=lambda: self.launch_window(pref_list.App), width=26)
+        pref_list_button = ttk.Button(buttons_frame, text="Preference", command=lambda: self.launch_window(pref_list.App), width=26)
         pref_list_button.pack(side=tk.TOP, pady=4)
 
         # srcにlicense.jsonがある場合はボタンを表示
         license_path = os.path.join(self._find_data_dir(), 'license.json')
         if os.path.exists(license_path):
-            license_button = ttk.Button(buttons_frame, text="license_view.py", command=lambda: self.launch_window(license_view.App), width=26)
+            license_button = ttk.Button(buttons_frame, text="License", command=lambda: self.launch_window(license_view.App), width=26)
             license_button.pack(side=tk.TOP, pady=4)
 
         main_frame = ttk.Frame(self)
@@ -210,7 +211,7 @@ def quit(root):
 
 
 def main():
-    root = tk.Tk()
+    root = ttkthemes.ThemedTk(theme="breeze")
     app = App(root)
     root.protocol("WM_DELETE_WINDOW", lambda: [quit(root), exit()])
     app.mainloop()
