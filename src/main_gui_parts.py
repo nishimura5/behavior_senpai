@@ -5,8 +5,6 @@ from PIL import Image, ImageTk
 import cv2
 import pandas as pd
 
-from python_senpai import keypoints_proc
-
 
 class VideoViewer(ttk.Frame):
     def __init__(self, master, width, height):
@@ -68,11 +66,6 @@ class CapCanvas(tk.Canvas):
     def set_trk(self, src_df):
         import yolo_drawer
         import mediapipe_drawer
-
-        # roi_left_topと同じx,yをnanにする
-        if "roi_left_top" in src_df.attrs:
-            zero_point = src_df.attrs['roi_left_top']
-            self.src_df = keypoints_proc.zero_point_to_nan(src_df, zero_point)
 
         if src_df.attrs['model'] == "YOLOv8 x-pose-p6":
             self.anno = yolo_drawer.Annotate()

@@ -48,12 +48,6 @@ class App(ttk.Frame):
         self.member_combo["values"] = self.src_df.index.get_level_values("member").unique().tolist()
         self.member_combo.current(0)
 
-        if "roi_left_top" in self.src_attrs:
-            zero_point = self.src_attrs['roi_left_top']
-        else:
-            zero_point = (0, 0)
-        self.src_df = keypoints_proc.zero_point_to_nan(self.src_df, zero_point)
-
     def export(self):
         current_member = self.member_combo.get()
 

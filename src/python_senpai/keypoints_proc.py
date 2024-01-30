@@ -27,7 +27,11 @@ def filter_by_timerange(src_df, start_msec: int, end_msec: int):
     return dst_df
 
 
-def zero_point_to_nan(src_df, zero_point: tuple):
+def zero_point_to_nan(src_df):
+    if "roi_left_top" in src_df.attrs:
+        zero_point = src_df.attrs['roi_left_top']
+    else:
+        zero_point = (0, 0)
     src_df['x'] = np.where(src_df['x'] == zero_point[0], np.nan, src_df['x'])
     src_df['y'] = np.where(src_df['y'] == zero_point[1], np.nan, src_df['y'])
     return src_df

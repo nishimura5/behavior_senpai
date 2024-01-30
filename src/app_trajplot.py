@@ -46,18 +46,12 @@ class App(ttk.Frame):
     def load(self, args):
         self.src_df = args['src_df']
         self.cap = args['cap']
-        src_attrs = self.src_df.attrs
         self.time_min, self.time_max = args['time_span_msec']
 
         # UIの更新
         self.member_keypoints_combos.set_df(self.src_df)
         self.current_dt_span = None
 
-        if "roi_left_top" in src_attrs:
-            zero_point = src_attrs['roi_left_top']
-        else:
-            zero_point = (0, 0)
-        self.src_df = keypoints_proc.zero_point_to_nan(self.src_df, zero_point)
         self.traj.set_vcap(self.cap)
         print('load() done.')
 

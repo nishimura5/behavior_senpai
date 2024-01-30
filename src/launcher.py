@@ -7,8 +7,7 @@ import cv2
 
 from gui_parts import PklSelector, TimeSpanEntry, TempFile
 from main_gui_parts import VideoViewer
-from python_senpai import file_inout
-from python_senpai import vcap
+from python_senpai import keypoints_proc, file_inout, vcap
 import app_detect as v2k
 import app_track_list as tl
 import app_member_edit as k2b
@@ -129,6 +128,7 @@ class App(ttk.Frame):
         self.src_df = file_inout.load_track_file(self.pkl_path)
         if self.src_df is None:
             return
+        self.src_df = keypoints_proc.zero_point_to_nan(self.src_df)
         src_attrs = self.src_df.attrs
         self.pkl_dir = os.path.dirname(self.pkl_path)
         self.cap.set_frame_size(src_attrs["frame_size"])

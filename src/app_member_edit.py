@@ -122,11 +122,7 @@ class App(ttk.Frame):
     def update_tree(self):
         self.tree.delete(*self.tree.get_children())
         members = self.src_df.index.get_level_values(1).unique()
-        if "roi_left_top" in self.src_df.attrs:
-            zero_point = self.src_df.attrs['roi_left_top']
-        else:
-            zero_point = (0, 0)
-        tree_df = keypoints_proc.zero_point_to_nan(self.src_df, zero_point)
+        tree_df = self.src_df
 
         for member in members:
             sliced_df = tree_df.loc[pd.IndexSlice[:, member, :], :]
