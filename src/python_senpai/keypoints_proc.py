@@ -38,6 +38,18 @@ def zero_point_to_nan(src_df):
 
     src_df.loc[(src_df["x"] == left) & (src_df["y"] == top), ["x", "y"]] = [np.nan, np.nan]
 
+    members = src_df.index.get_level_values("member").unique().tolist()
+    gohst_members = []
+    for member in members:
+        sliced_df = src_df.loc[pd.IndexSlice[:, member, :], :]
+        sliced_df = sliced_df.loc[~(sliced_df['x'].isna()) & (~sliced_df['y'].isna())]
+        if len(sliced_df.index.get_level_values(0).unique()) == 0:
+            gohst_members.append(member)
+
+    if len(gohst_members) > 0:
+        print(f"{len(gohst_members)} members has no data")
+        src_df = src_df.drop(gohst_members, level=1)
+
     return src_df
 
 
