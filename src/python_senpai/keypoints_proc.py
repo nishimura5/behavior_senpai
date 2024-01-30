@@ -1,3 +1,5 @@
+import time
+
 import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import pairwise_distances
@@ -32,8 +34,10 @@ def zero_point_to_nan(src_df):
         zero_point = src_df.attrs['roi_left_top']
     else:
         zero_point = (0, 0)
-    src_df['x'] = np.where(src_df['x'] == zero_point[0], np.nan, src_df['x'])
-    src_df['y'] = np.where(src_df['y'] == zero_point[1], np.nan, src_df['y'])
+    left, top = zero_point
+
+    src_df.loc[(src_df["x"] == left) & (src_df["y"] == top), ["x", "y"]] = [np.nan, np.nan]
+
     return src_df
 
 

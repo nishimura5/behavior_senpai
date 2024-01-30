@@ -120,9 +120,6 @@ class App(ttk.Frame):
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
 
         poly_points = [p['point'] for p in self.anchor_points]
-        left, top = self.src_df.attrs["roi_left_top"]
-        # tar_dfのx,yが両方ともzero_pointと同じならnp.nanに置換する
-        tar_df.loc[(tar_df["x"] == left) & (tar_df["y"] == top), ["x", "y"]] = [np.nan, np.nan]
 
         isin_df = keypoints_proc.is_in_poly(tar_df, poly_points, 'is_remove', self.scale)
         # area内を削除したいときはboolを反転する

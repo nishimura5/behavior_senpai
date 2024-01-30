@@ -2,12 +2,13 @@ import os
 import random
 
 import cv2
+import numpy as np
 import pandas as pd
 
 
 class Annotate:
     def set_pose(self, kps):
-        self.kps = [(int(kps[i][0]), int(kps[i][1])) for i in range(len(kps))]
+        self.kps = [(int(kps[i][0]), int(kps[i][1])) if ~np.isnan(kps[i][0]) else (0, 0) for i in range(len(kps))]
         self.line_color = (random.randint(180, 250), random.randint(180, 250), random.randint(180, 250))
 
     def set_track(self, member):
