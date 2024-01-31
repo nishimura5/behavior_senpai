@@ -1,17 +1,7 @@
 import cv2
-import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import ticker, gridspec
-
-try:
-    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-except ImportError:
-    # 環境によってはtkaggが使えないことがあるのでその対策
-    USE_TKAGG = False
-    # 代わりのバックエンドを指定
-    matplotlib.use('Qt5Agg')
-else:
-    USE_TKAGG = True
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 from python_senpai import time_format
 
@@ -28,15 +18,10 @@ class RecurrencePlotter:
         self.recu_ax = self.fig.add_subplot(gs[0, 0])
 
     def pack(self, master):
-        if USE_TKAGG is True:
-            self.canvas = FigureCanvasTkAgg(self.fig, master=master)
-            toolbar = NavigationToolbar2Tk(self.canvas, master)
-            toolbar.pack()
-            self.canvas.get_tk_widget().pack(expand=False)
-        else:
-            # TKAggが使えない場合はplt.show()を使う
-            self.canvas = self.fig.canvas
-            plt.show(block=False)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=master)
+        toolbar = NavigationToolbar2Tk(self.canvas, master)
+        toolbar.pack()
+        self.canvas.get_tk_widget().pack(expand=False)
 
     def set_vcap(self, vcap):
         self.vcap = vcap

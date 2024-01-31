@@ -1,19 +1,10 @@
 import pandas as pd
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import ticker, gridspec
 import seaborn as sns
 
-try:
-    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-except ImportError:
-    # 環境によってはtkaggが使えないことがあるのでその対策
-    USE_TKAGG = False
-    # 代わりのバックエンドを指定
-    matplotlib.use('Qt5Agg')
-else:
-    USE_TKAGG = True 
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 from python_senpai import time_format
 
@@ -37,17 +28,10 @@ class TrajectoryPlotter:
         self.dt_v = None
 
     def pack(self, master):
-        if USE_TKAGG is True:
-            self.canvas = FigureCanvasTkAgg(self.fig, master=master)
-            toolbar = NavigationToolbar2Tk(self.canvas, master)
-            toolbar.pack()
-            self.canvas.get_tk_widget().pack(expand=False)
-        else:
-            print(f"Interactive mode: {matplotlib.is_interactive()}")
-            print(f"matplotlib backend: {matplotlib.rcParams['backend']}")
-            # TKAggが使えない場合はplt.show()を使う
-            self.canvas = self.fig.canvas
-            plt.show(block=False)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=master)
+        toolbar = NavigationToolbar2Tk(self.canvas, master)
+        toolbar.pack()
+        self.canvas.get_tk_widget().pack(expand=False)
 
     def set_draw_param(self, kde_alpha, kde_adjust, kde_thresh, kde_levels):
         self.kde_alpha = kde_alpha
