@@ -33,8 +33,8 @@ class App(ttk.Frame):
         self.pack(padx=14, pady=14)
 
         temp = TempFile()
-        w_width, w_height, dpi = temp.get_window_size()
-        self.w_height = int(w_height * 0.5)
+        w_width, w_height = temp.get_top_window_size()
+        w_height = int(w_height)
 
         # ボタンのフレーム
         buttons_frame = ttk.Frame(self)
@@ -117,7 +117,7 @@ class App(ttk.Frame):
 
         video_frame = ttk.Frame(view_frame)
         video_frame.pack(side=tk.LEFT, anchor=tk.N)
-        self.vw = VideoViewer(video_frame, width=w_width, height=self.w_height)
+        self.vw = VideoViewer(video_frame, width=w_width, height=w_height)
         self.vw.pack()
 
         attrs_frame = ttk.Frame(view_frame)

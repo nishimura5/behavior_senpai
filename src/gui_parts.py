@@ -331,6 +331,17 @@ class TempFile:
                 res = self.data
         return res
 
+    def get_top_window_size(self):
+        if 'top_width' not in self.data.keys() or self.data['top_width'] == '':
+            width = 900
+        else:
+            width = int(self.data['top_width'])
+        if 'top_height' not in self.data.keys() or self.data['top_height'] == '':
+            height = 700
+        else:
+            height = int(self.data['top_height'])
+        return width, height
+
     def get_window_size(self):
         if 'width' not in self.data.keys() or self.data['width'] == '':
             width = 900
