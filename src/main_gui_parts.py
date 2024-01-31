@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from PIL import Image, ImageTk
-import cv2
+import numpy as np
 import pandas as pd
 
 
@@ -74,16 +74,17 @@ class CapCanvas(tk.Canvas):
             self.anno = mediapipe_drawer.Annotate()
             cols_for_anno = ['x', 'y', 'z']
         self.anno_df = src_df.reset_index().set_index(['timestamp', 'member', 'keypoint']).loc[:, cols_for_anno]
+        self.timestamps = self.anno_df.index.get_level_values('timestamp').unique().to_numpy()
 
     def scale_trk(self):
         self.anno_df.loc[:, ['x', 'y']] *= self.scale
 
     def update(self, msec):
-        ok, image_rgb = self.cap.read_at(msec, scale=self.scale, rgb=True)
+        msec = self.timestamps[np.fabs(self.timestamps-msec).argsort()[:1]][0]
+        ok, image_rgb = self.cap.read_at(msec, scale=self.scale, rgb=True, read_anyway=True)
         if ok is False:
             return
         if self.anno_df is not None:
-            msec = self.cap.get(cv2.CAP_PROP_POS_MSEC)
             # msecの有無判定
             if msec in self.anno_df.index.get_level_values("timestamp"):
                 tar_df = self.anno_df.loc[pd.IndexSlice[msec, :, :], :]

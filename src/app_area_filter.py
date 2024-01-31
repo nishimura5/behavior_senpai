@@ -84,7 +84,7 @@ class App(ttk.Frame):
         width = int(self.height * ratio)
         self.scale = width / src_attrs["frame_size"][0]
         self.canvas.config(width=width, height=self.height)
-        ok, image_rgb = self.cap.read_at(30*1000, scale=self.scale, rgb=True)
+        ok, image_rgb = self.cap.read_at(1000, scale=self.scale, rgb=True)
         if ok is False:
             return
         image_pil = Image.fromarray(image_rgb)

@@ -17,14 +17,19 @@ class VideoCap(cv2.VideoCapture):
         if ok is False:
             print(f"Failed to open {file_path}")
 
-    def read_at(self, msec, scale=None, rgb=False):
+    def read_at(self, msec, scale=None, rgb=False, read_anyway=False):
         '''
         ミリ秒を指定してreadする
         '''
         self.set(cv2.CAP_PROP_POS_MSEC, msec)
         ok, frame = self.read()
+        msec = self.get(cv2.CAP_PROP_POS_MSEC)
         if ok is False:
-            return ok, frame
+            if read_anyway is False:
+                return ok, frame
+            else:
+                ok = True
+                frame = self.dummy_frame
         if rgb is True:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         if scale is not None:
@@ -37,7 +42,7 @@ class VideoCap(cv2.VideoCapture):
         '''
         ok, frame = self.read()
         if ok is False:
-            frame = np.zeros((self.frame_size[1], self.frame_size[0], 3), dtype=np.uint8)
+            frame = self.dummy_frame
         return frame
 
     def get_frame_size(self):
@@ -48,6 +53,7 @@ class VideoCap(cv2.VideoCapture):
         read_anyway()を見越してフレームのwidthとheightをsetする(resizeはしない)
         '''
         self.frame_size = frame_size
+        self.dummy_frame = np.zeros((self.frame_size[1], self.frame_size[0], 3), dtype=np.uint8)
 
     def set_max_msec(self, max_msec):
         self.max_msec = max_msec

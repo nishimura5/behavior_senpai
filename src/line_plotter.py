@@ -61,7 +61,8 @@ class LinePlotter:
             self.anno = mediapipe_drawer.Annotate()
             cols_for_anno = ['x', 'y', 'z']
         self.anno_df = trk_df.reset_index().set_index(['timestamp', 'member', 'keypoint']).loc[:, cols_for_anno]
-        self.anno_df = self.anno_df.sort_index()
+        # sortによってkeypointの順番が変わる
+#        self.anno_df = self.anno_df.sort_index(level=['timestamp', 'member'])
 
     def set_plot(self, plot_df, member: str, data_col_names: list, thinning: int):
         self.member = member
@@ -152,7 +153,7 @@ class LinePlotter:
 
         time_format.copy_to_clipboard(timestamp_msec)
 
-        ret, frame = self.vcap.read_at(timestamp_msec)
+        ret, frame = self.vcap.read_at(timestamp_msec, read_anyway=True)
         if ret is False:
             return
 
