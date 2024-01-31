@@ -9,10 +9,10 @@ import ttkthemes
 from gui_parts import PklSelector, TimeSpanEntry, TempFile
 from main_gui_parts import VideoViewer
 from python_senpai import keypoints_proc, file_inout, vcap
+import export_mp4
 import app_detect as v2k
 import app_track_list as tl
 import app_member_edit as k2b
-import app_make_mp4
 import app_trajplot as k2t
 import app_recuplot as k2r
 import app_area_filter as af
@@ -125,7 +125,7 @@ class App(ttk.Frame):
         self.attrs_textbox = tk.Text(attrs_frame, relief=tk.FLAT, padx=10, pady=10)
         self.attrs_textbox.pack(fill=tk.BOTH, expand=True, padx=(10, 0))
 
-        self.k2m = app_make_mp4.MakeMp4()
+        self.k2m = export_mp4.MakeMp4()
         self.cap = vcap.VideoCap()
         self.load()
 
