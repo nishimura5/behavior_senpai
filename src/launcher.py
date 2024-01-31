@@ -12,7 +12,7 @@ from python_senpai import keypoints_proc, file_inout, vcap
 import app_detect as v2k
 import app_track_list as tl
 import app_member_edit as k2b
-import app_make_mp4 as k2m
+import app_make_mp4
 import app_trajplot as k2t
 import app_recuplot as k2r
 import app_area_filter as af
@@ -70,8 +70,6 @@ class App(ttk.Frame):
 
         vis_label = ttk.Label(buttons_frame, text="Visualization")
         vis_label.pack(side=tk.TOP, pady=(8, 0))
-        k2m_button = ttk.Button(buttons_frame, text="Make MP4", command=lambda: self.launch_window(k2m.App, grab=True), width=20)
-        k2m_button.pack(side=tk.TOP, pady=4)
         k2f_button = ttk.Button(buttons_frame, text="Trajplot", command=lambda: self.launch_window(k2t.App), width=20)
         k2f_button.pack(side=tk.TOP, pady=4)
         k2r_button = ttk.Button(buttons_frame, text="Recuplot", command=lambda: self.launch_window(k2r.App), width=20)
@@ -95,22 +93,27 @@ class App(ttk.Frame):
 
         main_frame = ttk.Frame(self)
         main_frame.pack(side=tk.RIGHT, anchor=tk.NE, padx=(24, 0))
-        load_frame = ttk.Frame(main_frame)
-        load_frame.pack(pady=(0, 20), anchor=tk.W)
+        head_frame = ttk.Frame(main_frame)
+        head_frame.pack(anchor=tk.N, expand=True, fill=tk.X)
+        load_frame = ttk.Frame(head_frame)
+        load_frame.pack(side=tk.LEFT, anchor=tk.W, pady=(0, 20))
         self.pkl_selector = PklSelector(load_frame)
         self.pkl_selector.pack()
         self.pkl_selector.set_command(cmd=self.load)
         self.time_span_entry = TimeSpanEntry(load_frame)
         self.time_span_entry.pack(side=tk.LEFT)
 
-        save_frame = ttk.Frame(main_frame)
-        save_frame.pack(pady=5, anchor=tk.E)
+        save_frame = ttk.Frame(head_frame)
+        save_frame.pack(anchor=tk.E)
         self.save_button = ttk.Button(save_frame, text="Overwrite", command=self.overwrite)
-        self.save_button.pack(side=tk.LEFT)
-        self.save_button["state"] = "disable"
+        self.save_button.pack()
+        self.save_button["state"] = tk.DISABLED
+
+        self.mp4_button = ttk.Button(save_frame, text="Export MP4", command=self.export_mp4)
+        self.mp4_button.pack(pady=(5, 0))
 
         view_frame = ttk.Frame(main_frame)
-        view_frame.pack(pady=5, anchor=tk.W)
+        view_frame.pack(pady=(10, 0), anchor=tk.W)
 
         video_frame = ttk.Frame(view_frame)
         video_frame.pack(side=tk.LEFT, anchor=tk.N)
@@ -122,6 +125,7 @@ class App(ttk.Frame):
         self.attrs_textbox = tk.Text(attrs_frame, relief=tk.FLAT, padx=10, pady=10)
         self.attrs_textbox.pack(fill=tk.BOTH, expand=True, padx=(10, 0))
 
+        self.k2m = app_make_mp4.MakeMp4()
         self.cap = vcap.VideoCap()
         self.load()
 
@@ -143,6 +147,8 @@ class App(ttk.Frame):
 
         self.vw.set_cap(self.cap, src_attrs["frame_size"], anno_trk=self.src_df)
         self.update_attrs()
+        args = {"src_df": self.src_df, "time_span_msec": self.time_span_msec, "cap": self.cap, "pkl_dir": self.pkl_dir}
+        self.k2m.load(args)
 
     def update_attrs(self):
         src_attrs = self.src_df.attrs
@@ -194,6 +200,9 @@ class App(ttk.Frame):
     def overwrite(self):
         file_inout.overwrite_track_file(self.pkl_path, self.src_df)
         print("overwrite done.")
+
+    def export_mp4(self):
+        self.k2m.export()
 
     def _find_data_dir(self):
         if getattr(sys, "frozen", False):

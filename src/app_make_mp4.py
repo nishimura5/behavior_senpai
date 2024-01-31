@@ -1,6 +1,4 @@
 import os
-import tkinter as tk
-from tkinter import ttk
 
 import pandas as pd
 import cv2
@@ -11,31 +9,9 @@ import mediapipe_drawer
 from python_senpai import keypoints_proc
 
 
-class App(ttk.Frame):
-    def __init__(self, master, args):
-        super().__init__(master)
-        master.title("Make MP4")
-        self.pack(padx=10, pady=10)
-
-        proc_frame = ttk.Frame(self)
-        proc_frame.pack(pady=5)
-        # allのチェックボックス
-        self.draw_all_chk_val = tk.BooleanVar()
-        self.draw_all_chk_val.set(False)
-        all_check = ttk.Checkbutton(proc_frame, text="draw all", variable=self.draw_all_chk_val)
-        all_check.pack(side=tk.LEFT)
-
-        self.member_combo = ttk.Combobox(proc_frame, state='readonly', width=12)
-        self.member_combo.pack(side=tk.LEFT, padx=5)
-
-        draw_btn = ttk.Button(proc_frame, text="Export", command=self.export)
-        draw_btn.pack(side=tk.LEFT)
-
-        plot_frame = ttk.Frame(self)
-        plot_frame.pack(pady=5)
-
+class MakeMp4:
+    def __init__(self):
         self.out = cv2.VideoWriter()
-        self.load(args)
 
     def load(self, args):
         self.src_df = args['src_df']
@@ -44,13 +20,7 @@ class App(ttk.Frame):
         self.time_min, self.time_max = args['time_span_msec']
         self.pkl_dir = args['pkl_dir']
 
-        # UIの更新
-        self.member_combo["values"] = self.src_df.index.get_level_values("member").unique().tolist()
-        self.member_combo.current(0)
-
     def export(self):
-        current_member = self.member_combo.get()
-
         # timestampの範囲を抽出
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
         # memberとkeypointのインデックス値を文字列に変換
@@ -68,10 +38,13 @@ class App(ttk.Frame):
 
         # VideoWriter
         file_name = os.path.splitext(self.src_attrs['video_name'])[0]
-        if self.draw_all_chk_val.get() is True:
-            suffix = "all"
-        else:
-            suffix = f"{current_member}"
+        if self.src_attrs['model'] == "YOLOv8 x-pose-p6":
+            anno = yolo_drawer.Annotate()
+            suffix = "yolov8"
+        elif self.src_attrs['model'] == "MediaPipe Holistic":
+            anno = mediapipe_drawer.Annotate()
+            suffix = "mediapipe"
+
         dst_dir = os.path.join(self.pkl_dir, os.pardir, 'mp4')
         os.makedirs(dst_dir, exist_ok=True)
         out_file_path = os.path.join(dst_dir, f'{file_name}_{suffix}.mp4')
@@ -79,11 +52,6 @@ class App(ttk.Frame):
         size = self.src_attrs['frame_size']
         size = (int(size[0] * scale), int(size[1] * scale))
         self.out.open(out_file_path, fourcc, fps, size, params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
-
-        if self.src_attrs['model'] == "YOLOv8 x-pose-p6":
-            anno = yolo_drawer.Annotate()
-        elif self.src_attrs['model'] == "MediaPipe Holistic":
-            anno = mediapipe_drawer.Annotate()
 
         out_df = tar_df
         max_frame_num = out_df.index.unique(level='frame').max() + 1
@@ -97,13 +65,8 @@ class App(ttk.Frame):
             if i in frames:
                 frame_df = out_df.loc[pd.IndexSlice[i, :, :], :]
                 indexes = frame_df.sort_index().index
-                # draw_allなら全員の姿勢を描画
-                if self.draw_all_chk_val.get() is True:
-                    for member in indexes.get_level_values('member').unique():
-                        dst_img = self._draw(out_df, i, member, indexes, anno, scale)
-                # out_dfにi, current_memberの組み合わせがない場合はスキップ
-                else:
-                    dst_img = self._draw(out_df, i, current_member, indexes, anno, scale)
+                for member in indexes.get_level_values('member').unique():
+                    dst_img = self._draw(out_df, i, member, indexes, anno, scale)
             else:
                 dst_img = frame
             cv2.imshow("dst", dst_img)
@@ -123,19 +86,3 @@ class App(ttk.Frame):
         anno.set_track(member)
         dst_img = anno.draw()
         return dst_img
-
-
-def quit(root):
-    root.quit()
-    root.destroy()
-
-
-def main():
-    root = tk.Tk()
-    app = App(root)
-    root.protocol("WM_DELETE_WINDOW", lambda: quit(root))
-    app.mainloop()
-
-
-if __name__ == "__main__":
-    main()
