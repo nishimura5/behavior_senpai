@@ -98,6 +98,7 @@ class App(ttk.Frame):
         load_frame = ttk.Frame(main_frame)
         load_frame.pack(pady=(0, 20), anchor=tk.W)
         self.pkl_selector = PklSelector(load_frame)
+        self.pkl_selector.pack()
         self.pkl_selector.set_command(cmd=self.load)
         self.time_span_entry = TimeSpanEntry(load_frame)
         self.time_span_entry.pack(side=tk.LEFT)

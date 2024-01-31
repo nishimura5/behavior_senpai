@@ -61,6 +61,7 @@ class LinePlotter:
             self.anno = mediapipe_drawer.Annotate()
             cols_for_anno = ['x', 'y', 'z']
         self.anno_df = trk_df.reset_index().set_index(['timestamp', 'member', 'keypoint']).loc[:, cols_for_anno]
+        self.anno_df = self.anno_df.sort_index()
 
     def set_plot(self, plot_df, member: str, data_col_names: list, thinning: int):
         self.member = member
@@ -156,6 +157,8 @@ class LinePlotter:
             return
 
         if self.draw_anno is True:
+            if (timestamp_msec, self.member) not in self.anno_df.index:
+                return
             tar_df = self.anno_df.loc[pd.IndexSlice[timestamp_msec, self.member, :], :]
             kps = tar_df.to_numpy()
             self.anno.set_img(frame)

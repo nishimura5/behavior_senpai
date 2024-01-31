@@ -6,7 +6,6 @@ import glob
 
 import pandas as pd
 
-from gui_parts import TempFile
 from python_senpai import windows_and_mac
 
 
@@ -17,28 +16,18 @@ class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
         master.title("Track List")
-        self.pack(padx=10, pady=10)
+        self.pack(padx=14, pady=14)
 
-        # Tempファイルからtrkのパスを取得
-        tmp = TempFile()
-        data = tmp.load()
-        self.folder_path = os.path.dirname(data['trk_path'])
-
-        load_frame = ttk.Frame(self)
-        load_frame.pack(pady=5)
-        folder_select_btn = ttk.Button(load_frame, text="Select Folder", command=self.select_folder)
-        folder_select_btn.pack(side=tk.LEFT)
-        self.folder_path_label = ttk.Label(load_frame, text=self.folder_path)
-        self.folder_path_label.pack(side=tk.LEFT)
+        self.folder_path = args['pkl_dir']
 
         take_part_frame = ttk.Frame(self)
         take_part_frame.pack(pady=5)
-        take_label = ttk.Label(take_part_frame, text="Take")
-        take_label.pack(side=tk.LEFT)
+        take_label = ttk.Label(take_part_frame, text="take:")
+        take_label.pack(side=tk.LEFT, padx=(0, 3))
         self.take_entry = ttk.Entry(take_part_frame, width=10)
-        self.take_entry.pack(side=tk.LEFT, padx=5)
-        part_label = ttk.Label(take_part_frame, text="Part")
-        part_label.pack(side=tk.LEFT)
+        self.take_entry.pack(side=tk.LEFT, padx=(0, 10))
+        part_label = ttk.Label(take_part_frame, text="part:")
+        part_label.pack(side=tk.LEFT, padx=(0, 3))
         self.part_combo = ttk.Combobox(take_part_frame, state='readonly', width=5)
         self.part_combo.pack(side=tk.LEFT)
         # 文字列でソートする都合で9までに対応、(''も想定しているので10以上に拡張するときは注意)
@@ -72,16 +61,6 @@ class App(ttk.Frame):
 
         if self.folder_path != '':
             self.load_folder()
-
-    def select_folder(self):
-        self.folder_path = filedialog.askdirectory()
-        if self.folder_path == '':
-            self.folder_path = ''
-            self.folder_path_label["text"] = "No Folder selected"
-            return
-
-        self.folder_path_label["text"] = self.folder_path
-        self.load_folder()
 
     def load_folder(self):
         for item in self.tree.get_children(''):
