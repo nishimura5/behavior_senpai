@@ -109,7 +109,7 @@ class App(ttk.Frame):
         self.anchor_points = self.init_anchor_points.copy()
         self.selected_id = None
         poly_points = sum([list(p['point']) for p in self.anchor_points], [])
-        self.poly_id = self.canvas.create_polygon(*poly_points, fill="", outline="black")
+        self.poly_id = self.canvas.create_polygon(*poly_points, fill="", outline="magenta")
         for point in self.anchor_points:
             x = point['point'][0]
             y = point['point'][1]

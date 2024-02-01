@@ -17,7 +17,7 @@ class VideoCap(cv2.VideoCapture):
         if ok is False:
             print(f"Failed to open {file_path}")
 
-    def read_at(self, msec, scale=None, rgb=False, read_anyway=False):
+    def read_at(self, msec, scale=None, rgb=False, read_anyway=True):
         '''
         ミリ秒を指定してreadする
         '''

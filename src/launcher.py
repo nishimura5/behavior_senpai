@@ -122,11 +122,13 @@ class App(ttk.Frame):
 
         attrs_frame = ttk.Frame(view_frame)
         attrs_frame.pack(side=tk.RIGHT, anchor=tk.N)
-        self.attrs_textbox = tk.Text(attrs_frame, relief=tk.FLAT, padx=10, pady=10)
+        self.attrs_textbox = tk.Text(attrs_frame, relief=tk.FLAT, width=40, padx=10, pady=10)
         self.attrs_textbox.pack(fill=tk.BOTH, expand=True, padx=(10, 0))
 
         self.k2m = export_mp4.MakeMp4()
         self.cap = vcap.VideoCap()
+        self.time_span_msec = None
+        self.pkl_dir = None
         self.load()
 
     def load(self):
@@ -175,6 +177,7 @@ class App(ttk.Frame):
         self.wait_window(dlg_modal)
 
         # ダイアログを閉じた後の処理
+        cv2.destroyAllWindows()
         if edit_df is False:
             return
         if hasattr(self.a, "dst_df") is False:

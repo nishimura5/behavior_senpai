@@ -1,4 +1,3 @@
-import sys
 import os
 import tkinter as tk
 from tkinter import ttk
@@ -63,11 +62,10 @@ class App(ttk.Frame):
         self.rcap = vcap.RoiCap()
 
     def select_video(self):
-        init_dir = self._find_data_dir()
         if self.bat_chk_val.get() is True:
-            self.tar_path = filedialog.askdirectory(initialdir=init_dir)
+            self.tar_path = filedialog.askdirectory(initialdir="~")
         else:
-            self.tar_path = filedialog.askopenfilename(initialdir=init_dir)
+            self.tar_path = filedialog.askopenfilename(initialdir="~")
         if self.tar_path:
             self.video_path_label["text"] = self.tar_path
         if self.tar_path == "":
@@ -116,16 +114,6 @@ class App(ttk.Frame):
         self.open_btn['state'] = tk.DISABLED
         self.go_to_folder_btn['state'] = tk.DISABLED
         self.exec_detector_btn['state'] = tk.DISABLED
-
-    def _find_data_dir(self):
-        if getattr(sys, "frozen", False):
-            # The application is frozen
-            datadir = os.path.dirname(sys.executable)
-        else:
-            # The application is not frozen
-            # Change this bit to match where you store your data files:
-            datadir = os.path.dirname(__file__)
-        return datadir
 
 
 def quit(root):

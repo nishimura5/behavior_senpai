@@ -5,6 +5,9 @@ from PIL import Image, ImageTk
 import numpy as np
 import pandas as pd
 
+import yolo_drawer
+import mediapipe_drawer
+
 
 class VideoViewer(ttk.Frame):
     def __init__(self, master, width, height):
@@ -64,9 +67,6 @@ class CapCanvas(tk.Canvas):
         self.config(width=canvas_width, height=self.height)
 
     def set_trk(self, src_df):
-        import yolo_drawer
-        import mediapipe_drawer
-
         if src_df.attrs['model'] == "YOLOv8 x-pose-p6":
             self.anno = yolo_drawer.Annotate()
             cols_for_anno = ['x', 'y', 'conf']
@@ -81,21 +81,19 @@ class CapCanvas(tk.Canvas):
 
     def update(self, msec):
         msec = self.timestamps[np.fabs(self.timestamps-msec).argsort()[:1]][0]
-        ok, image_rgb = self.cap.read_at(msec, scale=self.scale, rgb=True, read_anyway=True)
+        ok, image_rgb = self.cap.read_at(msec, scale=self.scale, rgb=True)
         if ok is False:
             return
         if self.anno_df is not None:
-            # msecの有無判定
-            if msec in self.anno_df.index.get_level_values("timestamp"):
-                tar_df = self.anno_df.loc[pd.IndexSlice[msec, :, :], :]
-                members = tar_df.index.get_level_values("member").unique().tolist()
-                for member in members:
-                    member_df = tar_df.loc[pd.IndexSlice[:, member, :], :]
-                    kps = member_df.to_numpy()
-                    self.anno.set_img(image_rgb)
-                    self.anno.set_pose(kps)
-                    self.anno.set_track(member)
-                    image_rgb = self.anno.draw()
+            tar_df = self.anno_df.loc[pd.IndexSlice[msec, :, :], :]
+            members = tar_df.index.get_level_values("member").unique().tolist()
+            for member in members:
+                member_df = tar_df.loc[pd.IndexSlice[:, member, :], :]
+                kps = member_df.to_numpy()
+                self.anno.set_img(image_rgb)
+                self.anno.set_pose(kps)
+                self.anno.set_track(member)
+                image_rgb = self.anno.draw()
 
         image_pil = Image.fromarray(image_rgb)
         self.image_tk = ImageTk.PhotoImage(image_pil)

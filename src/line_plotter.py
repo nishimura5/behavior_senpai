@@ -139,7 +139,7 @@ class LinePlotter:
 
         time_format.copy_to_clipboard(timestamp_msec)
 
-        ret, frame = self.vcap.read_at(timestamp_msec, read_anyway=True)
+        ret, frame = self.vcap.read_at(timestamp_msec)
         if ret is False:
             return
 
