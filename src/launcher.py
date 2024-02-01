@@ -205,6 +205,9 @@ class App(ttk.Frame):
         self.vw.set_trk(self.src_df)
 
         self.save_button["state"] = "normal"
+        args['src_df'] = self.src_df
+        self.k2m.load(args)
+
         member_count = self.src_df.index.get_level_values(1).unique().size
         print(member_count)
 
