@@ -6,18 +6,19 @@ from tkinter import ttk
 import cv2
 import ttkthemes
 
-from gui_parts import PklSelector, TimeSpanEntry, TempFile
-from main_gui_parts import VideoViewer
+from gui_parts import TimeSpanEntry, TempFile
+from main_gui_parts import PklSelector, VideoViewer
 from python_senpai import keypoints_proc, file_inout, vcap
 import export_mp4
-import app_detect as v2k
-import app_track_list as tl
-import app_member_edit as k2b
+import app_detect
+import app_track_list
+import app_member_edit
+import app_area_filter
+import app_smoothing
+import app_scene_table
 import app_trajplot as k2t
 import app_recuplot as k2r
-import app_area_filter as af
 import app_calc_vector as k2v
-import app_scene_table
 import pref_list
 import license_view
 
@@ -42,25 +43,31 @@ class App(ttk.Frame):
 
         detect_label = ttk.Label(buttons_frame, text="Preparation")
         detect_label.pack(side=tk.TOP)
-        v2k_button = ttk.Button(buttons_frame, text="Detect", command=lambda: self.launch_window(v2k.App, grab=True), width=20)
+        v2k_button = ttk.Button(buttons_frame, text="Detect", command=lambda: self.launch_window(app_detect.App, grab=True), width=20)
         v2k_button.pack(side=tk.TOP, pady=4)
-        tl_button = ttk.Button(buttons_frame, text="Track list", command=lambda: self.launch_window(tl.App, grab=True), width=20)
+        tl_button = ttk.Button(buttons_frame, text="Track list", command=lambda: self.launch_window(app_track_list.App, grab=True), width=20)
         tl_button.pack(side=tk.TOP, pady=4)
 
         edit_label = ttk.Label(buttons_frame, text="Edit")
         edit_label.pack(side=tk.TOP, pady=(8, 0))
-        k2b_button = ttk.Button(
+        member_edit_button = ttk.Button(
             buttons_frame,
             text="Member",
-            command=lambda: self.launch_window(k2b.App, edit_df=True, grab=True),
+            command=lambda: self.launch_window(app_member_edit.App, edit_df=True, grab=True),
             width=20)
-        k2b_button.pack(side=tk.TOP, pady=4)
-        af_button = ttk.Button(
+        member_edit_button.pack(side=tk.TOP, pady=4)
+        area_filter_button = ttk.Button(
             buttons_frame,
             text="Area",
-            command=lambda: self.launch_window(af.App, edit_df=True, grab=True),
+            command=lambda: self.launch_window(app_area_filter.App, edit_df=True, grab=True),
             width=20)
-        af_button.pack(side=tk.TOP, pady=4)
+        area_filter_button.pack(side=tk.TOP, pady=4)
+        smooth_button = ttk.Button(
+            buttons_frame,
+            text="Smooth",
+            command=lambda: self.launch_window(app_smoothing.App, edit_df=True, grab=True),
+            width=20)
+        smooth_button.pack(side=tk.TOP, pady=4)
         scene_table_button = ttk.Button(
             buttons_frame,
             text="Scene table",
@@ -137,6 +144,7 @@ class App(ttk.Frame):
         if self.src_df is None:
             return
         self.src_df = keypoints_proc.zero_point_to_nan(self.src_df)
+        self.src_df = self.src_df[~self.src_df.index.duplicated(keep="first")]
         src_attrs = self.src_df.attrs
         self.pkl_dir = os.path.dirname(self.pkl_path)
         self.cap.set_frame_size(src_attrs["frame_size"])

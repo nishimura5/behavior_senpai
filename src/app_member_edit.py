@@ -27,7 +27,6 @@ class App(ttk.Frame):
 
         control_frame = ttk.Frame(self)
         control_frame.pack(fill=tk.X, pady=(0, 20))
-        # Frameの色を赤にする
         setting_frame = ttk.Frame(control_frame)
         setting_frame.pack(fill=tk.X, expand=True, side=tk.LEFT)
 
@@ -95,7 +94,6 @@ class App(ttk.Frame):
         self.time_min, self.time_max = args['time_span_msec']
 
         # UIの更新
-        self.current_dt_span = None
         self.update_tree()
         self.clear()
 

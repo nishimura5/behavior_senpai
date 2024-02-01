@@ -50,7 +50,7 @@ class LinePlotter:
         # sortによってkeypointの順番が変わる
 #        self.anno_df = self.anno_df.sort_index(level=['timestamp', 'member'])
 
-    def set_plot(self, plot_df, member: str, data_col_names: list, thinning: int):
+    def set_plot(self, plot_df, member: str, data_col_names: list):
         self.member = member
         # multiindexが重複していたらdrop
         plot_df = plot_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])

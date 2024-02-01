@@ -277,13 +277,19 @@ def calc_moving_average(src_df, window_size: int):
     '''
     timestamp以外の全てのカラムを移動平均する
     indexがframe-memberの場合にのみ対応
-    TODO: frame-member-keypointにも対応する
     '''
     rolling_df = pd.DataFrame()
     columns = src_df.columns.drop('timestamp')
-    rolling_df = src_df[columns].reset_index(["member"])
-    rolling_df = rolling_df.groupby(['member'], as_index=True).rolling(window=window_size, center=True).mean()
-    rolling_df = rolling_df.swaplevel('frame', 'member').sort_index()
+    # indexのlevelが2つの場合
+    if len(src_df.index.levels) == 2:
+        rolling_df = src_df[columns].reset_index(["member"])
+        rolling_df = rolling_df.groupby(['member'], as_index=True).rolling(window=window_size, center=True).mean()
+        rolling_df = rolling_df.swaplevel('frame', 'member').sort_index()
+    elif len(src_df.index.levels) == 3:
+        rolling_df = src_df[columns].reset_index(["member", "keypoint"])
+        rolling_df = rolling_df.groupby(['member', 'keypoint'], as_index=True).rolling(window=window_size, center=True).mean()
+        rolling_df = rolling_df.swaplevel('frame', 'member')
+        rolling_df = rolling_df.swaplevel('member', 'keypoint').sort_index()
     rolling_df['timestamp'] = src_df['timestamp']
     return rolling_df
 
