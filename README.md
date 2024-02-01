@@ -65,25 +65,19 @@ rye sync
 
 ### Mac
 
-MacではRyeの使用を推奨していません(※)。[Python3.6.11](https://www.python.org/downloads/macos/)をインストールしてください。
+Macでは、RyeがダウンロードするCPythonではなく別途pyenv等でPythonをダウンロードまたはビルドし、手動でtoolchainに追加する必要があります。具体的な手順の一例としては
 
-作業フォルダに本プロジェクトをcloneし、shellスクリプトを実行します。以下のコマンドを順に実行してください。このとき、親フォルダに日本語が使用されていないことを確認してください。
+ - pyenv install 3.11.6
+ - pyenv which python でpythonのpathを得る
+ - .python-versionファイルを開き"pyenv@3.11.6"に書き換える
+ - rye toolchain register --name=pyenv /path/to/pyenv/python3.11
+ - rye fetch 3.11.6
+ - git clone https://github.com/nishimura5/behavior_senpai.git
+ - cd behavior_senpai
+ - rye sync
+ - . ./launcher.sh
 
-```
-git clone https://github.com/nishimura5/behavior_senpai.git
-cd behavior_senpai
-. ./venv_mac.sh
-```
-
-環境構築後はlauncher.shを実行することでアプリケーションが起動します。
-
-※Mac&Rye環境において、tkinterのバックエンドに関連する不具合を確認しています。たとえば、Mac&Ryeではmatplotlib.backends.backend_tkaggのimportに失敗することを確認しています。この問題については対策としてbackend_tkaggのimportに失敗したとき用の分岐を設けていますが、ほかにもtkinter周辺で動作が安定しないところがあります。
-
-MacでRyeを使用する場合はpyproject.tomlの以下のコメントアウトを外してください。
-
-```
-"pyqt5>=5.15.10",
-```
+で導入が完了します。
 
 ## Applications
 
@@ -109,7 +103,6 @@ Track fileを編集します。Attributesの追加や編集も含みます。
 
 Track file（またはCalculated Track file）のデータを可視化します。
 
- - [app_make_mp4.py][app_make_mp4]：Track fileのデータを動画ファイルにアノテーションして保存します。
  - [app_trajplot.py][app_trajplot]：x-y座標の時系列折れ線グラフを描画します。
  - [app_recuplot.py][app_recuplot]：リカレンスプロットを描画します。
 
