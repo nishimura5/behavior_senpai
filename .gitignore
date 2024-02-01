@@ -9,6 +9,7 @@ wheels/
 # venv
 .venv
 *.lock
+.python-version
 
 # mac
 .DS_Store
