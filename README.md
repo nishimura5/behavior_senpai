@@ -44,24 +44,7 @@ Behavior SenpaiはWindows11(23H2)上の[Rye](https://rye-up.com)で構築したP
 
 WindowsでのPython環境構築については[こちらの動画](https://youtu.be/tU4Q5q07A1Y)を参考にしてください。
 
-YOLOv8でCUDAを使用する場合はrye syncの前に[pyproject.toml][pyproject]内の以下のコメントアウトを外してください。
-
-```
-[[tool.rye.sources]]
-name = "torch"
-url = "https://download.pytorch.org/whl/cu118"
-type = "index"
-```
-
-作業フォルダに本プロジェクトをcloneし、rye syncを実行します。以下のコマンドを順に実行してください。このとき、親フォルダに日本語が使用されていないことを確認してください。
-
-```
-git clone https://github.com/nishimura5/behavior_senpai.git
-cd behavior_senpai
-rye sync
-```
-
-環境構築後はlauncher.batを実行することでアプリケーションが起動します。
+BehaviorSenpai.exeを実行するとアプリケーションが起動します。初回はrye syncが実行され仮想環境が構築されたのち、アプリケーションが起動します。
 
 ### Mac
 
