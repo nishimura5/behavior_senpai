@@ -5,6 +5,8 @@ from tkinter import filedialog
 import glob
 import datetime
 
+import ttkthemes
+
 from python_senpai import vcap
 import detector_proc
 from python_senpai import windows_and_mac
@@ -122,10 +124,18 @@ def quit(root):
 
 
 def main():
-    root = tk.Tk()
-    app = App(root)
-    root.protocol("WM_DELETE_WINDOW", lambda: quit(root))
+    bg_color = "#e8e8e8"
+    root = ttkthemes.ThemedTk(theme="breeze")
+    root.configure(background=bg_color)
+    root.option_add("*background", bg_color)
+    root.option_add("*Canvas.background", bg_color)
+    root.option_add("*Text.background", "#fcfcfc")
+    s = ttk.Style(root)
+    s.configure(".", background=bg_color)
+    app = App(root, None)
+    root.protocol("WM_DELETE_WINDOW", lambda: [quit(root), exit()])
     app.mainloop()
+
 
 
 if __name__ == "__main__":
