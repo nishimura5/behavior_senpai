@@ -127,10 +127,9 @@ class App(ttk.Frame):
         self.plot.draw()
 
     def on_ok(self):
-        if self.current_df is None:
-            return
-        self.dst_df = self.current_df.copy()
-        if len(self.dst_df) == 0:
+        if self.current_df is not None:
+            self.dst_df = self.current_df.copy()
+        if self.dst_df is not None and len(self.dst_df) == 0:
             print("No data in DataFrame")
             self.dst_df = None
         self.master.destroy()
