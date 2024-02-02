@@ -6,7 +6,7 @@ import json
 
 
 class App(ttk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, args):
         super().__init__(master)
         master.title("Licenses")
         self.pack(padx=10, pady=10)
@@ -31,6 +31,9 @@ class App(ttk.Frame):
             self.lic_infos[f"{row['Name']}({row['Version']})"] = json.dumps(row, indent=4).replace('\\n', '\n')
 
         self.lic_combo['values'] = tuple(self.lic_infos.keys())
+        self.lic_combo.current(0)
+        self.text.delete(1.0, tk.END)
+        self.text.insert(1.0, self.lic_infos[self.lic_combo.get()])
 
     def _change_text(self, event):
         self.text.delete(1.0, tk.END)

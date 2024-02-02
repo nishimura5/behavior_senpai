@@ -93,7 +93,7 @@ class App(ttk.Frame):
         pref_list_button.pack(side=tk.TOP, pady=4)
 
         # srcにlicense.jsonがある場合はボタンを表示
-        license_path = os.path.join(self._find_data_dir(), 'license.json')
+        license_path = 'license.json'
         if os.path.exists(license_path):
             license_button = ttk.Button(buttons_frame, text="License", command=lambda: self.launch_window(license_view.App), width=20)
             license_button.pack(side=tk.TOP, pady=4)
@@ -217,16 +217,6 @@ class App(ttk.Frame):
 
     def export_mp4(self):
         self.k2m.export()
-
-    def _find_data_dir(self):
-        if getattr(sys, "frozen", False):
-            # The application is frozen
-            datadir = os.path.dirname(sys.executable)
-        else:
-            # The application is not frozen
-            # Change this bit to match where you store your data files:
-            datadir = os.path.dirname(__file__)
-        return datadir
 
 
 def quit(root):
