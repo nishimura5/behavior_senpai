@@ -32,19 +32,18 @@ Behavior Senpai(ビヘイビア センパイ)は、定量的行動観察を行�
 
 ## Requirement
 
- - 空き容量: 8GB以上
- - 搭載RAM: 8GB以上 (16GB以上推奨)
- - Python: 3.11 (3.12以上はインストール時にエラーが発生するようです)
+ - 空き容量: 9GB～
+ - 搭載RAM: 8GB～ (16GB以上推奨)
+ - GPU: RTX2060～ (キーポイント検出にYOLOv8を使用する場合)
+ - [Rye](https://rye-up.com)
 
-Behavior SenpaiはWindows11(23H2)上の[Rye](https://rye-up.com)で構築したPython環境で開発と動作確認をおこなっています。使用しているライブラリ等については[pyproject.toml][pyproject]等を参照してください。
+Behavior SenpaiはWindows11(23H2)で開発と動作確認をおこなっています。
 
 ## Usage
 
 ### Windows
 
-WindowsでのPython環境構築については[こちらの動画](https://youtu.be/tU4Q5q07A1Y)を参考にしてください。
-
-BehaviorSenpai.exeを実行するとアプリケーションが起動します。初回はrye syncが実行され仮想環境が構築されたのち、アプリケーションが起動します。
+BehaviorSenpai.exeを実行するとアプリケーションが起動します。
 
 ### Mac
 
@@ -61,40 +60,6 @@ Macでは、RyeがダウンロードするCPythonではなく別途pyenv等でPy
  - . ./launcher.sh
 
 で導入が完了します。
-
-## Applications
-
-### GUI
-
-以下のそれぞれ独立したアプリケーションを[launcher.py][launcher]が呼び出す構成になっています。
-
-#### Detection
-
-キーポイント検出を実行し動画ファイルからTrack fileを作成します。
-
- - [app_detect.py][app_detect]
-
-#### Edit
-
-Track fileを編集します。Attributesの追加や編集も含みます。
-
- - [app_track_list.py][app_track_list]：Track fileの順番を設定します。
- - [app_member_edit.py][app_member_edit]：Track fileに記録されたmemberの名称を編集します。
- - [app_scene_table.py][app_scene_table]
-
-#### Visualization
-
-Track file（またはCalculated Track file）のデータを可視化します。
-
- - [app_trajplot.py][app_trajplot]：x-y座標の時系列折れ線グラフを描画します。
- - [app_recuplot.py][app_recuplot]：リカレンスプロットを描画します。
-
-#### Calculation
-
-Track fileのデータに対して計算を行い、Calculated Track fileを作成します。
-
- - [app_area_filter.py][app_area_filter]：指定した領域内にキーポイントが存在するかを判定し結果を出力します。
- - [app_calc_vector.py][app_calc_vector]：3点のキーポイントからベクトルの和、内積、外積を計算し結果を出力します。
 
 ## Interface
 
