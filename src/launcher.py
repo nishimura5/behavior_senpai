@@ -84,7 +84,7 @@ class App(ttk.Frame):
 
         calc_label = ttk.Label(buttons_frame, text="Calculation")
         calc_label.pack(side=tk.TOP, pady=(8, 0))
-        k2c_button = ttk.Button(buttons_frame, text="Vector.py", command=lambda: self.launch_window(k2v.App), width=20)
+        k2c_button = ttk.Button(buttons_frame, text="Vector", command=lambda: self.launch_window(k2v.App), width=20)
         k2c_button.pack(side=tk.TOP, pady=4)
 
         pref_label = ttk.Label(buttons_frame, text="MISC")
