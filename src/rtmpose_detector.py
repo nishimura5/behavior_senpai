@@ -11,12 +11,12 @@ from mmpose.structures import merge_data_samples
 
 class RTMPoseDetector:
     def __init__(self, show=True):
-        config = "./mm_model/rtmpose-x_8xb256-700e_body8-halpe26-384x288.py"
-        checkpoint = "./mm_model/rtmpose-x_simcc-body7_pt-body7-halpe26_700e-384x288-7fb6e239_20230606.pth"
-        det_config = "./mm_model/rtmdet_m_640-8xb32_coco-person.py"
-        det_checkpoint = "./mm_model/rtmdet_m_8xb32-100e_coco-obj365-person-235e8209.pth"
-        self.pose_model = init_model(config, checkpoint, device='cuda:0')
+        config = "./mm_config/rtmpose-x_8xb256-700e_body8-halpe26-384x288.py"
+        checkpoint = "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/rtmpose-x_simcc-body7_pt-body7-halpe26_700e-384x288-7fb6e239_20230606.pth"
+        det_config = "./mm_config/rtmdet_m_640-8xb32_coco-person.py"
+        det_checkpoint = "https://download.openmmlab.com/mmpose/v1/projects/rtmpose/rtmdet_m_8xb32-100e_coco-obj365-person-235e8209.pth"
         self.det_model = init_detector(det_config, det_checkpoint, device='cuda:0')
+        self.pose_model = init_model(config, checkpoint, device='cuda:0')
         self.visualizer = VISUALIZERS.build(self.pose_model.cfg.visualizer)
         self.visualizer.set_dataset_meta(self.pose_model.dataset_meta)
 
@@ -41,9 +41,9 @@ class RTMPoseDetector:
                 ret, frame = self.cap.read()
             rgb_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-#            scope = self.det_model.cfg.get('default_scope', 'mmdet')
-#            if scope is not None:
-#                init_default_scope(scope)
+            scope = self.det_model.cfg.get('default_scope', 'mmdet')
+            if scope is not None:
+                init_default_scope(scope)
             # bbox検出
             det_result = inference_detector(self.det_model, rgb_img)
             pred_instance = det_result.pred_instances.cpu().numpy()
