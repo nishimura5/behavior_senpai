@@ -6,6 +6,7 @@ import cv2
 from gui_parts import TempFile
 import yolo_drawer
 import mediapipe_drawer
+import rtmpose_drawer
 from python_senpai import keypoints_proc
 
 
@@ -44,6 +45,9 @@ class MakeMp4:
         elif self.src_attrs['model'] == "MediaPipe Holistic":
             anno = mediapipe_drawer.Annotate()
             suffix = "mediapipe"
+        elif self.src_attrs['model'] == "MMPose RTMPose-x":
+            anno = rtmpose_drawer.Annotate()
+            suffix = "rtmpose"
 
         dst_dir = os.path.join(self.pkl_dir, os.pardir, 'mp4')
         os.makedirs(dst_dir, exist_ok=True)

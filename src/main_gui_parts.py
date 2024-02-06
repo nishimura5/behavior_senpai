@@ -9,6 +9,7 @@ import pandas as pd
 from python_senpai import file_inout
 import yolo_drawer
 import mediapipe_drawer
+import rtmpose_drawer
 from gui_parts import TempFile
 
 
@@ -146,6 +147,9 @@ class CapCanvas(tk.Canvas):
         elif src_df.attrs['model'] == "MediaPipe Holistic":
             self.anno = mediapipe_drawer.Annotate()
             cols_for_anno = ['x', 'y', 'z']
+        elif src_df.attrs['model'] == "MMPose RTMPose-x":
+            self.anno = rtmpose_drawer.Annotate()
+            cols_for_anno = ['x', 'y', 'score']
         self.anno_df = src_df.reset_index().set_index(['timestamp', 'member', 'keypoint']).loc[:, cols_for_anno]
         self.timestamps = self.anno_df.index.get_level_values('timestamp').unique().to_numpy()
 

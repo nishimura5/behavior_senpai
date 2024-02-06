@@ -7,6 +7,9 @@ from matplotlib import ticker, gridspec
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 from python_senpai import time_format
+import yolo_drawer
+import mediapipe_drawer
+import rtmpose_drawer
 
 
 class LinePlotter:
@@ -37,15 +40,15 @@ class LinePlotter:
 
     def set_trk_df(self, trk_df):
         self.draw_anno = True
-        import yolo_drawer
-        import mediapipe_drawer
-
         if trk_df.attrs['model'] == "YOLOv8 x-pose-p6":
             self.anno = yolo_drawer.Annotate()
             cols_for_anno = ['x', 'y', 'conf']
         elif trk_df.attrs['model'] == "MediaPipe Holistic":
             self.anno = mediapipe_drawer.Annotate()
             cols_for_anno = ['x', 'y', 'z']
+        elif trk_df.attrs['model'] == "MMPose RTMPose-x":
+            self.anno = rtmpose_drawer.Annotate()
+            cols_for_anno = ['x', 'y', 'score']
         self.anno_df = trk_df.reset_index().set_index(['timestamp', 'member', 'keypoint']).loc[:, cols_for_anno]
         # sortによってkeypointの順番が変わる
 #        self.anno_df = self.anno_df.sort_index(level=['timestamp', 'member'])
