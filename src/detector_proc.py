@@ -2,6 +2,7 @@ import os
 
 from yolo_detector import YoloDetector
 from mediapipe_detector import MediaPipeDetector
+from rtmpose_detector import RTMPoseDetector
 
 
 def exec(rcap, model_name, video_path, use_roi=False):
@@ -21,6 +22,8 @@ def exec(rcap, model_name, video_path, use_roi=False):
         model = YoloDetector()
     elif model_name == "MediaPipe Holistic":
         model = MediaPipeDetector()
+    elif model_name == "MMPose RTMPose-x":
+        model = RTMPoseDetector()
 
     model.set_cap(rcap)
     model.detect(roi=use_roi)

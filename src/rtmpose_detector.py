@@ -1,0 +1,109 @@
+import cv2
+import pandas as pd
+import numpy as np
+from mmengine.registry import init_default_scope
+from mmdet.apis import inference_detector, init_detector
+from mmpose.apis import inference_topdown, init_model
+from mmpose.evaluation.functional import nms
+from mmpose.registry import VISUALIZERS
+from mmpose.structures import merge_data_samples
+
+
+class RTMPoseDetector:
+    def __init__(self, show=True):
+        config = "./mm_model/rtmpose-x_8xb256-700e_body8-halpe26-384x288.py"
+        checkpoint = "./mm_model/rtmpose-x_simcc-body7_pt-body7-halpe26_700e-384x288-7fb6e239_20230606.pth"
+        det_config = "./mm_model/rtmdet_m_640-8xb32_coco-person.py"
+        det_checkpoint = "./mm_model/rtmdet_m_8xb32-100e_coco-obj365-person-235e8209.pth"
+        self.pose_model = init_model(config, checkpoint, device='cuda:0')
+        self.det_model = init_detector(det_config, det_checkpoint, device='cuda:0')
+        self.visualizer = VISUALIZERS.build(self.pose_model.cfg.visualizer)
+        self.visualizer.set_dataset_meta(self.pose_model.dataset_meta)
+
+        self.number_of_keypoints = 26
+        self.det_threshold = 0.2
+        self.det_cat_id = 0
+        self.show = show
+
+    def set_cap(self, cap):
+        self.cap = cap
+        self.total_frame_num = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.frame_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.frame_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    def detect(self, roi=False):
+        # データの初期化
+        data_dict = {"frame": [], "member": [], "keypoint": [], "x": [], "y": [], "visible":[], "score": [], "timestamp": []}
+        for i in range(self.total_frame_num):
+            if roi is True:
+                ret, frame = self.cap.get_roi_frame()
+            else:
+                ret, frame = self.cap.read()
+            rgb_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+#            scope = self.det_model.cfg.get('default_scope', 'mmdet')
+#            if scope is not None:
+#                init_default_scope(scope)
+            # bbox検出
+            det_result = inference_detector(self.det_model, rgb_img)
+            pred_instance = det_result.pred_instances.cpu().numpy()
+            bboxes = np.concatenate((pred_instance.bboxes, pred_instance.scores[:, None]), axis=1)
+            bboxes = bboxes[np.logical_and(pred_instance.labels == self.det_cat_id, pred_instance.scores > self.det_threshold)]
+            bboxes = bboxes[nms(bboxes, 0.3), :4]
+            # keypoint検出
+            results = inference_topdown(self.pose_model, rgb_img, bboxes)
+            data_samples = merge_data_samples(results)
+            timestamp = self.cap.get(cv2.CAP_PROP_POS_MSEC)
+
+            # 検出結果を描画、xキーで途中終了
+            if self.show is True:
+                frame = self._draw(frame, data_samples)
+                self._put_frame_pos(frame, i)
+                cv2.imshow("dst", frame)
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord('x'):
+                    break
+
+            # 検出結果の取り出し
+            for member_id, keypoints in enumerate(results):
+                pred_instance = keypoints.pred_instances.cpu().numpy()
+                result_keypoints = np.concatenate((pred_instance.keypoints[0,:], pred_instance.keypoints_visible.T, pred_instance.keypoint_scores.T), axis=1)
+                for k in range(self.number_of_keypoints):
+                    keypoint_id = k
+                    x = result_keypoints[k][0]
+                    y = result_keypoints[k][1]
+                    visible = result_keypoints[k][2]
+                    score = result_keypoints[k][3]
+
+                    # データの詰め込み
+                    data_dict["frame"].append(i)
+                    data_dict["member"].append(member_id)
+                    data_dict["keypoint"].append(keypoint_id)
+                    data_dict["x"].append(x)
+                    data_dict["y"].append(y)
+                    data_dict["visible"].append(visible)
+                    data_dict["score"].append(score)
+                    data_dict["timestamp"].append(timestamp)
+
+        # keypointはここではintで保持する、indexでソートしたくなるかもしれないので
+        self.dst_df = pd.DataFrame(data_dict).set_index(["frame", "member", "keypoint"])
+        cv2.destroyAllWindows()
+
+    def get_result(self):
+        return self.dst_df
+
+    def _draw(self, anno_img, data_samples):
+        self.visualizer.add_datasample(
+            'result',
+            anno_img,
+            data_sample=data_samples,
+            show=False,
+            draw_gt=False,
+        )
+        return self.visualizer.get_image()
+
+    def _put_frame_pos(self, src_img, pos=0, font_size=2):
+        txt_font = cv2.FONT_HERSHEY_PLAIN
+        text_pos = (font_size*5, font_size*15)
+        cv2.putText(src_img, f"{pos}/{self.total_frame_num}", text_pos, txt_font, font_size, (0, 0, 0), font_size*3)
+        cv2.putText(src_img, f"{pos}/{self.total_frame_num}", text_pos, txt_font, font_size, (255, 255, 255), font_size)

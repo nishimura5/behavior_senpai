@@ -38,7 +38,7 @@ class App(ttk.Frame):
         self.roi_chk_val = tk.BooleanVar()
         self.roi_chk = ttk.Checkbutton(bat_mode_frame, text="ROI", variable=self.roi_chk_val)
         self.roi_chk.pack(side=tk.LEFT, padx=(10, 15))
-        self.model_cbox = ttk.Combobox(bat_mode_frame, values=["YOLOv8 x-pose-p6", "MediaPipe Holistic"], state='readonly')
+        self.model_cbox = ttk.Combobox(bat_mode_frame, values=["YOLOv8 x-pose-p6", "MediaPipe Holistic", "MMPose RTMPose-x"], state='readonly')
         self.model_cbox.pack(side=tk.LEFT)
         self.model_cbox.current(0)
 
