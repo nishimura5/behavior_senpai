@@ -1,8 +1,29 @@
 import os
+import importlib.util
 
-from yolo_detector import YoloDetector
 from mediapipe_detector import MediaPipeDetector
-from rtmpose_detector import RTMPoseDetector
+
+
+def is_module_available(module_name):
+    spec = importlib.util.find_spec(module_name)
+    return spec is not None
+
+
+# CUDAが使えない環境ではrye sync時にultralyticsとmmposeをインストールしていない
+if is_module_available("ultralytics"):
+    from yolo_detector import YoloDetector
+    YOLOV8_AVAILABLE = True
+else:
+    YOLOV8_AVAILABLE = False
+if is_module_available("mmpose"):
+    from rtmpose_detector import RTMPoseDetector
+    MMPOSE_AVAILABLE = True
+else:
+    MMPOSE_AVAILABLE = False
+
+
+def check_gpu():
+    return YOLOV8_AVAILABLE, MMPOSE_AVAILABLE
 
 
 def exec(rcap, model_name, video_path, use_roi=False):

@@ -38,7 +38,13 @@ class App(ttk.Frame):
         self.roi_chk_val = tk.BooleanVar()
         self.roi_chk = ttk.Checkbutton(bat_mode_frame, text="ROI", variable=self.roi_chk_val)
         self.roi_chk.pack(side=tk.LEFT, padx=(10, 15))
-        self.model_cbox = ttk.Combobox(bat_mode_frame, values=["YOLOv8 x-pose-p6", "MediaPipe Holistic", "MMPose RTMPose-x"], state='readonly')
+
+        yolo_ok, mmpose_ok = detector_proc.check_gpu()
+        if yolo_ok and mmpose_ok:
+            combo_list = ["YOLOv8 x-pose-p6", "MediaPipe Holistic", "MMPose RTMPose-x"]
+        else:
+            combo_list = ["MediaPipe Holistic"]
+        self.model_cbox = ttk.Combobox(bat_mode_frame, values=combo_list, state='readonly')
         self.model_cbox.pack(side=tk.LEFT)
         self.model_cbox.current(0)
 
@@ -135,7 +141,6 @@ def main():
     app = App(root, None)
     root.protocol("WM_DELETE_WINDOW", lambda: [quit(root), exit()])
     app.mainloop()
-
 
 
 if __name__ == "__main__":

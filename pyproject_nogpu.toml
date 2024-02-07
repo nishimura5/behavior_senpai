@@ -1,0 +1,33 @@
+[project]
+name = "behavior-senpai"
+version = "1.1.0"
+description = "A collection of Python scripts and applications for supporting Quantitative Behavioral Observation using videos."
+dependencies = [
+    "torch==2.1",
+    "mediapipe~=0.10",
+    "scikit-learn~=1.4",
+    "pyperclip~=1.8",
+    "ttkthemes~=3.2",
+    "pandas~=2.2",
+    "seaborn~=0.13",
+]
+readme = "README.md"
+requires-python = ">= 3.11"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "pip-licenses~=4.3.3",
+]
+
+[tool.rye.scripts]
+launcher = "python src/launcher.py"
+detector = "python src/app_detect.py"
+license = "pip-licenses --order=license -u -l --no-license-path --format=json --output-file src/license.json"
+
+[tool.hatch.metadata]
+allow-direct-references = true
