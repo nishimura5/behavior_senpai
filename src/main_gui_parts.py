@@ -105,14 +105,15 @@ class VideoViewer(ttk.Frame):
 
     def set_cap(self, cap, frame_size, anno_trk=None):
         if anno_trk is not None:
+            self.time_min = anno_trk["timestamp"].min()
             self.time_max = anno_trk["timestamp"].max()
             self.canvas.set_trk(anno_trk)
         else:
+            self.time_min = 0
             self.time_max = cap.get_max_msec()
 
         self.canvas.set_cap(cap, frame_size)
         self.canvas.scale_trk()
-        self.time_min = 0
         self.slider.config(from_=self.time_min, to=self.time_max)
         self.canvas.update(self.time_min)
         self.slider.set(0)
