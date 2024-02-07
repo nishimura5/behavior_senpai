@@ -97,7 +97,7 @@ Track fileに格納されているDataFrameの例を以下に示します。な�
 
 ### Calculated Track file
 
-[app_calc_vector.py][app_calc_vector]や[app_area_filter][app_area_filter]で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で保存されますが、データの構造が少し異なります。ファイル拡張子は'.pkl'です。
+[app_calc_vector.py][app_calc_vector]で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で保存されますが、データの構造が少し異なります。ファイル拡張子は'.pkl'です。
 
 Calculated Track fileは2-level-multi-indexでデータを保持しています。indexの名称はlevel 0から順に'frame', 'member'です。columnsの名称は計算の内容に準じますが、必ず'timestamp'が含まれています。
 
@@ -116,10 +116,11 @@ print(trk_df.attrs)
 
 #### model
 
-キーポイント検出に使用したAIモデルの名称が記録されています。attrsへの追加は[app_detector.py][app_detect]（[detector_proc.py][detector_proc]）で行われます。
+キーポイント検出に使用したAI画像処理フレームワーク/モデルの名称が記録されています。attrsへの追加は[app_detector.py][app_detect]（[detector_proc.py][detector_proc]）で行われます。
 
  - YOLOv8 x-pose-p6
  - MediaPipe Holistic
+ - MMPose RTMPose-x
 
 #### frame_size
 
