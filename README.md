@@ -19,31 +19,39 @@
 
 Behavior Senpai(ビヘイビア センパイ)は、定量的行動観察を行うためのアプリケーションです。ビデオカメラで撮影した人の行動をkeypoint検出AIを使用して時系列座標データ化し、その時系列座標データを用いて人の行動を定量的に分析することができます。
 
-現在Behavior Senpaiが対応しているAIモデルは以下のとおりです。
+Behavior Senpaiは以下の3種類のAI画像処理フレームワーク/モデルを使った、動画ファイルに対するkeypoint検出を実現します。
 
- - YOLOv8
+ - YOLOv8 Pose
  - MediaPipe Holistic
-
-また、Behavior SenpaiはPythonを使用したデータ解析を学ぶためのプロジェクトでもあります。Pythonの基礎(if文やfor文、リスト内包表記、classあたりを指します)を習得した人が、実用的なアプリケーションの開発に挑戦するための足掛かりにできるよう構成しています。とりわけ以下のライブラリの使用方法について学習することができます。
-
- - PandasのMultiIndex
- - Matplotlibでの時系列データ描画
- - OpenCV(cv2)のVideoCapture
+ - RTMPose Body8-Halpe26 (MMPose)
 
 ## Requirement
 
- - 空き容量: 9GB～
- - 搭載RAM: 8GB～ (16GB以上推奨)
- - GPU: RTX2060～ (キーポイント検出にYOLOv8を使用する場合)
- - [Rye](https://rye-up.com)
-
 Behavior SenpaiはWindows11(23H2)で開発と動作確認をおこなっています。
+
+### CUDAを使用する場合
+
+ - 空き容量: 10GB～
+ - 搭載RAM: 16GB～
+ - GPU: RTX2060～
+ - [Rye](https://rye-up.com)
+ - .NET 8.0
+ - CUDA 12.1
+
+### CUDAを使用しない場合
+
+CUDA対応GPUを搭載していない場合はMediaPipe Holisticのみが使用可能です。
+
+ - 空き容量: 8GB～
+ - 搭載RAM: 16GB～
+ - [Rye](https://rye-up.com)
+ - .NET 8.0
 
 ## Usage
 
 ### Windows
 
-BehaviorSenpai.exeを実行するとアプリケーションが起動します。
+BehaviorSenpai.exeを実行するとアプリケーションが起動します。CUDAを使用する場合は初回起動時に「Enable features using CUDA」にチェックを入れてから「OK」ボタンをクリックしてください。
 
 ### Mac
 
