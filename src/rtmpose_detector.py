@@ -21,7 +21,9 @@ class RTMPoseDetector:
         self.visualizer.set_dataset_meta(self.pose_model.dataset_meta)
 
         self.number_of_keypoints = 26
-        self.det_threshold = 0.2
+        self.det_score_threshold = 0.4
+        self.pose_score_threshold = 0.3
+        self.retain_threshold = 0.3
         self.det_cat_id = 0
         self.show = show
 
@@ -48,8 +50,8 @@ class RTMPoseDetector:
             det_result = inference_detector(self.det_model, rgb_img)
             pred_instance = det_result.pred_instances.cpu().numpy()
             bboxes = np.concatenate((pred_instance.bboxes, pred_instance.scores[:, None]), axis=1)
-            bboxes = bboxes[np.logical_and(pred_instance.labels == self.det_cat_id, pred_instance.scores > self.det_threshold)]
-            bboxes = bboxes[nms(bboxes, 0.3), :4]
+            bboxes = bboxes[np.logical_and(pred_instance.labels == self.det_cat_id, pred_instance.scores > self.det_score_threshold)]
+            bboxes = bboxes[nms(bboxes, self.retain_threshold), :4]
             # keypoint検出
             results = inference_topdown(self.pose_model, rgb_img, bboxes)
             data_samples = merge_data_samples(results)
@@ -67,11 +69,16 @@ class RTMPoseDetector:
             # 検出結果の取り出し
             for member_id, keypoints in enumerate(results):
                 pred_instance = keypoints.pred_instances.cpu().numpy()
-                result_keypoints = np.concatenate((pred_instance.keypoints[0,:], pred_instance.keypoints_visible.T, pred_instance.keypoint_scores.T), axis=1)
+                if np.any(pred_instance.keypoint_scores < self.pose_score_threshold):
+                    continue
+                result_keypoints = np.concatenate((pred_instance.keypoints[0, :], pred_instance.keypoints_visible.T, pred_instance.keypoint_scores.T), axis=1)
                 for k in range(self.number_of_keypoints):
                     keypoint_id = k
                     x = result_keypoints[k][0]
                     y = result_keypoints[k][1]
+                    if roi is True:
+                        x += self.cap.left_top_point[0]
+                        y += self.cap.left_top_point[1]
                     visible = result_keypoints[k][2]
                     score = result_keypoints[k][3]
 
