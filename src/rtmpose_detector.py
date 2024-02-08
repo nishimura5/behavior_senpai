@@ -21,7 +21,7 @@ class RTMPoseDetector:
         self.visualizer.set_dataset_meta(self.pose_model.dataset_meta)
 
         self.number_of_keypoints = 26
-        self.det_score_threshold = 0.4
+        self.det_score_threshold = 0.3
         self.pose_score_threshold = 0.3
         self.retain_threshold = 0.3
         self.det_cat_id = 0
@@ -69,8 +69,11 @@ class RTMPoseDetector:
             # 検出結果の取り出し
             for member_id, keypoints in enumerate(results):
                 pred_instance = keypoints.pred_instances.cpu().numpy()
-                if np.any(pred_instance.keypoint_scores < self.pose_score_threshold):
-                    continue
+                print("======")
+                print(pred_instance.keypoints)
+                pred_instance.keypoints[pred_instance.keypoint_scores < self.pose_score_threshold] = 0
+                print("------")
+                print(pred_instance.keypoints)
                 result_keypoints = np.concatenate((pred_instance.keypoints[0, :], pred_instance.keypoints_visible.T, pred_instance.keypoint_scores.T), axis=1)
                 for k in range(self.number_of_keypoints):
                     keypoint_id = k
