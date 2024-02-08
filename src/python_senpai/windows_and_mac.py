@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+import tkinter as tk
 
 
 def open_file(filepath):
@@ -36,3 +37,14 @@ def go_to_folder(filepath, samedir):
     # Mac
     elif sys.platform.startswith('darwin'):
         subprocess.call(['open', tar_dir])
+
+
+def set_app_icon(root):
+    '''
+    rootにアイコンを設定する
+    '''
+    if sys.platform.startswith('win32'):
+        root.iconbitmap(default="./src/img/icon.ico")
+    elif sys.platform.startswith('darwin'):
+        img = tk.Image("photo", file="./src/img/icon.png")
+        root.tk.call('wm', 'iconphoto', root._w, img)

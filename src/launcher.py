@@ -7,7 +7,7 @@ import ttkthemes
 
 from gui_parts import TimeSpanEntry, TempFile
 from main_gui_parts import PklSelector, VideoViewer
-from python_senpai import keypoints_proc, file_inout, vcap
+from python_senpai import keypoints_proc, windows_and_mac, file_inout, vcap
 import export_mp4
 import app_detect
 import app_track_list
@@ -230,7 +230,7 @@ def main():
     root.option_add("*background", bg_color)
     root.option_add("*Canvas.background", bg_color)
     root.option_add("*Text.background", "#fcfcfc")
-    root.iconbitmap(default="./src/img/icon.ico")
+    windows_and_mac.set_app_icon(root)
     s = ttk.Style(root)
     s.configure(".", background=bg_color)
     app = App(root)
