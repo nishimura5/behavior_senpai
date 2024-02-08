@@ -92,7 +92,7 @@ class App(ttk.Frame):
         pref_list_button.pack(side=tk.TOP, pady=4)
 
         # srcにlicense.jsonがある場合はボタンを表示
-        license_path = 'license.json'
+        license_path = './src/license.json'
         if os.path.exists(license_path):
             license_button = ttk.Button(buttons_frame, text="License", command=lambda: self.launch_window(license_view.App), width=20)
             license_button.pack(side=tk.TOP, pady=4)
@@ -230,6 +230,7 @@ def main():
     root.option_add("*background", bg_color)
     root.option_add("*Canvas.background", bg_color)
     root.option_add("*Text.background", "#fcfcfc")
+    root.iconbitmap(default="./src/img/icon.ico")
     s = ttk.Style(root)
     s.configure(".", background=bg_color)
     app = App(root)
