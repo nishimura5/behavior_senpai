@@ -19,13 +19,37 @@ class Annotate:
 
     def draw(self):
         if self.member in ["right_hand", "left_hand"]:
-            cv2.line(self.dst_img, self.kps[0], self.kps[5], self.line_color, 1, cv2.LINE_AA)
-            cv2.line(self.dst_img, self.kps[5], self.kps[9], self.line_color, 1, cv2.LINE_AA)
-            cv2.line(self.dst_img, self.kps[9], self.kps[13], self.line_color, 1, cv2.LINE_AA)
-            cv2.line(self.dst_img, self.kps[13], self.kps[17], self.line_color, 1, cv2.LINE_AA)
-            cv2.line(self.dst_img, self.kps[17], self.kps[0], self.line_color, 1, cv2.LINE_AA)
+            kps = [self.kps[0], self.kps[5], self.kps[9], self.kps[13], self.kps[17]]
+            self.lines(kps, True)
+            kps = [self.kps[0], self.kps[1], self.kps[2], self.kps[3], self.kps[4]]
+            self.lines(kps, False)
+            kps = [self.kps[5], self.kps[6], self.kps[7], self.kps[8]]
+            self.lines(kps, False)
+            kps = [self.kps[9], self.kps[10], self.kps[11], self.kps[12]]
+            self.lines(kps, False)
+            kps = [self.kps[13], self.kps[14], self.kps[15], self.kps[16]]
+            self.lines(kps, False)
+            kps = [self.kps[17], self.kps[18], self.kps[19], self.kps[20]]
+            self.lines(kps, False)
+        elif self.member == "face":
+            kps = [self.kps[33], self.kps[7], self.kps[163], self.kps[144], self.kps[145], self.kps[153], self.kps[154], self.kps[155], self.kps[133], self.kps[173], self.kps[157], self.kps[158], self.kps[159], self.kps[160], self.kps[161], self.kps[246]]
+            self.lines(kps, True)
+            kps = [self.kps[263], self.kps[249], self.kps[390], self.kps[373], self.kps[374], self.kps[380], self.kps[381], self.kps[382], self.kps[362], self.kps[398], self.kps[384], self.kps[385], self.kps[386], self.kps[387], self.kps[388], self.kps[466]]
+            self.lines(kps, True)
+            kps = [self.kps[13], self.kps[312], self.kps[311], self.kps[310], self.kps[415], self.kps[308], self.kps[324], self.kps[318], self.kps[402], self.kps[317], self.kps[14], self.kps[87], self.kps[178], self.kps[88], self.kps[95], self.kps[78], self.kps[191], self.kps[80], self.kps[81], self.kps[82]]
+            self.lines(kps, True)
+            kps = [self.kps[0], self.kps[267], self.kps[269], self.kps[270], self.kps[409], self.kps[291], self.kps[375], self.kps[321], self.kps[405], self.kps[314], self.kps[17], self.kps[84], self.kps[181], self.kps[91], self.kps[146], self.kps[61], self.kps[185], self.kps[40], self.kps[39], self.kps[37]]
+            self.lines(kps, True)
+            kps = [self.kps[10], self.kps[151], self.kps[9], self.kps[8], self.kps[168], self.kps[6], self.kps[197], self.kps[195], self.kps[5], self.kps[4], self.kps[1], self.kps[19], self.kps[94], self.kps[2], self.kps[164], self.kps[0]]
+            self.lines(kps, False)
+            kps = [self.kps[17], self.kps[18], self.kps[200], self.kps[175], self.kps[152]]
+            self.lines(kps, False)
+            kps = [self.kps[64], self.kps[48], self.kps[115], self.kps[220], self.kps[45], self.kps[4], self.kps[275], self.kps[440], self.kps[344], self.kps[278], self.kps[294]]
+            self.lines(kps, False)
         for i in range(len(self.kps)):
-            if self.member in ["right_hand", "left_hand"]:
+            if self.member == "left_hand":
+                cv2.circle(self.dst_img, self.kps[i], 2, (250, 70, 70), -1)
+            elif self.member == "right_hand":
                 cv2.circle(self.dst_img, self.kps[i], 2, (50, 250, 50), -1)
             elif self.member == "face":
                 cv2.circle(self.dst_img, self.kps[i], 1, (150, 50, 150), -1)
@@ -34,6 +58,10 @@ class Annotate:
 
         return self.dst_img
 
+    def lines(self, kps, close):
+        pts = np.array(kps, np.int32)
+        pts = np.reshape(pts, (-1, 1, 2))
+        cv2.polylines(self.dst_img, [pts], close, self.line_color, 1, cv2.LINE_AA)
 
 if __name__ == "__main__":
     video_path = "cup.mp4"
