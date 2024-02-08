@@ -35,8 +35,8 @@ Behavior SenpaiはWindows11(23H2)で開発と動作確認をおこなってい�
  - 搭載RAM: 16GB～
  - GPU: RTX2060～
  - [Rye](https://rye-up.com)
- - .NET 8.0
- - CUDA 12.1
+ - [.NET 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
+ - [CUDA 12.1](https://developer.nvidia.com/cuda-12-1-0-download-archive)
 
 ### CUDAを使用しない場合
 
@@ -45,7 +45,7 @@ CUDA対応GPUを搭載していない場合はMediaPipe Holisticのみが使用�
  - 空き容量: 8GB～
  - 搭載RAM: 16GB～
  - [Rye](https://rye-up.com)
- - .NET 8.0
+ - [.NET 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
 
 ## Usage
 
