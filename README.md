@@ -1,29 +1,26 @@
-# Behavior Senpai
+# Behavior Senpai v.1.1.0
 
 [pyproject]: https://github.com/nishimura5/python_senpai/blob/master/pyproject.toml
-[launcher]: https://github.com/nishimura5/python_senpai/blob/master/src/launcher.py
 [app_detect]: https://github.com/nishimura5/python_senpai/blob/master/src/app_detect.py
 [app_track_list]: https://github.com/nishimura5/python_senpai/blob/master/src/app_track_list.py
-[app_member_edit]: https://github.com/nishimura5/python_senpai/blob/master/src/app_member_edit.py
-[app_make_mp4]: https://github.com/nishimura5/python_senpai/blob/master/src/app_make_mp4.py
-[app_trajplot]: https://github.com/nishimura5/python_senpai/blob/master/src/app_trajplot.py
-[app_area_filter]: https://github.com/nishimura5/python_senpai/blob/master/src/app_area_filter.py
 [app_calc_vector]: https://github.com/nishimura5/python_senpai/blob/master/src/app_calc_vector.py
-[app_recuplot]: https://github.com/nishimura5/python_senpai/blob/master/src/app_recuplot.py
-[app_scene_table]: https://github.com/nishimura5/python_senpai/blob/master/src/app_scene_table.py
 [gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
-[print_track_file]: https://github.com/nishimura5/python_senpai/blob/master/src/samplecode/print_track_file.py
 [detector_proc]: https://github.com/nishimura5/python_senpai/blob/master/src/detector_proc.py
 
 ![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/git_behavior_senpai_trajplot.png)
+Nishimura, E. (2024). Behavior Senpai (Version 1.0.0) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
 
 Behavior Senpai(ビヘイビア センパイ)は、定量的行動観察を行うためのアプリケーションです。ビデオカメラで撮影した人の行動をkeypoint検出AIを使用して時系列座標データ化し、その時系列座標データを用いて人の行動を定量的に分析することができます。
 
 Behavior Senpaiは以下の3種類のAI画像処理フレームワーク/モデルを使った、動画ファイルに対するkeypoint検出を実現します。
 
- - YOLOv8 Pose
- - MediaPipe Holistic
- - RTMPose Body8-Halpe26 (MMPose)
+ - [YOLOv8 Pose](https://github.com/ultralytics/ultralytics/issues/1915)
+ - [MediaPipe Holistic](https://github.com/google/mediapipe/blob/master/docs/solutions/holistic.md)
+ - [RTMPose Body8-Halpe26 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#26-keypoints)
+
+<p align="center">
+  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
+</p>
 
 ## Requirement
 
@@ -73,7 +70,7 @@ Macでは、RyeがダウンロードするCPythonではなく別途pyenv等でPy
 
 ### Track file
 
-app_detect.pyでキーポイント検出を行った結果としての時系列座標データは、Pickle化されたPandasのDataFrame型で保存されます。Behavior SenpaiはこれをTrack fileと呼んでいます。ファイル拡張子は'.pkl'です。Track fileはキーポイント検出を行った動画ファイルと同じディレクトリに生成される'trk'フォルダに保存されます。
+app_detect.pyでキーポイント検出を行った結果としての時系列座標データは、[Pickle化](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html)されたPandasのDataFrame型で保存されます。Behavior SenpaiはこれをTrack fileと呼んでいます。ファイル拡張子は'.pkl'です。Track fileはキーポイント検出を行った動画ファイルと同じディレクトリに生成される'trk'フォルダに保存されます。
 
 Track fileは3-level-multi-indexで時系列座標データを保持しています。indexの名称はlevel 0から順に'frame', 'member', 'keypoint'です。frameは0から始まる整数で、動画のフレーム番号と対応しています。memberとkeypointはモデルが検出したkeypointsのIDです。Track fileには必ず'x', 'y', 'timestamp'の3つのcolumnsが含まれています。x,yの単位はpx、timestampの単位はミリ秒です。
 
