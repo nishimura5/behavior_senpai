@@ -34,7 +34,11 @@ class Annotate:
         elif self.member == "face":
             kps = [self.kps[33], self.kps[7], self.kps[163], self.kps[144], self.kps[145], self.kps[153], self.kps[154], self.kps[155], self.kps[133], self.kps[173], self.kps[157], self.kps[158], self.kps[159], self.kps[160], self.kps[161], self.kps[246]]
             self.lines(kps, True)
+            kps = [self.kps[130], self.kps[25], self.kps[110], self.kps[24], self.kps[23], self.kps[22], self.kps[26], self.kps[112], self.kps[243], self.kps[190], self.kps[56], self.kps[28], self.kps[27], self.kps[29], self.kps[30], self.kps[247]]
+            self.lines(kps, True)
             kps = [self.kps[263], self.kps[249], self.kps[390], self.kps[373], self.kps[374], self.kps[380], self.kps[381], self.kps[382], self.kps[362], self.kps[398], self.kps[384], self.kps[385], self.kps[386], self.kps[387], self.kps[388], self.kps[466]]
+            self.lines(kps, True)
+            kps = [self.kps[359], self.kps[255], self.kps[339], self.kps[254], self.kps[253], self.kps[252], self.kps[256], self.kps[341], self.kps[463], self.kps[414], self.kps[286], self.kps[258], self.kps[257], self.kps[259], self.kps[260], self.kps[467]]
             self.lines(kps, True)
             kps = [self.kps[13], self.kps[312], self.kps[311], self.kps[310], self.kps[415], self.kps[308], self.kps[324], self.kps[318], self.kps[402], self.kps[317], self.kps[14], self.kps[87], self.kps[178], self.kps[88], self.kps[95], self.kps[78], self.kps[191], self.kps[80], self.kps[81], self.kps[82]]
             self.lines(kps, True)
@@ -43,8 +47,6 @@ class Annotate:
             kps = [self.kps[10], self.kps[151], self.kps[9], self.kps[8], self.kps[168], self.kps[6], self.kps[197], self.kps[195], self.kps[5], self.kps[4], self.kps[1], self.kps[19], self.kps[94], self.kps[2], self.kps[164], self.kps[0]]
             self.lines(kps, False)
             kps = [self.kps[17], self.kps[18], self.kps[200], self.kps[175], self.kps[152]]
-            self.lines(kps, False)
-            kps = [self.kps[129], self.kps[209], self.kps[198], self.kps[236], self.kps[3], self.kps[195], self.kps[248], self.kps[456], self.kps[420], self.kps[429], self.kps[358]]
             self.lines(kps, False)
             kps = [self.kps[98], self.kps[64], self.kps[48], self.kps[115], self.kps[220], self.kps[45], self.kps[4], self.kps[275], self.kps[440], self.kps[344], self.kps[278], self.kps[294], self.kps[327]]
             self.lines(kps, False)
@@ -57,10 +59,10 @@ class Annotate:
                 cv2.circle(self.dst_img, self.kps[i], 2, (250, 70, 70), -1)
             elif self.member == "right_hand":
                 cv2.circle(self.dst_img, self.kps[i], 2, (50, 250, 50), -1)
-#            elif self.member == "face":
-#                cv2.circle(self.dst_img, self.kps[i], 1, (150, 50, 150), -1)
-#            else:
-#                cv2.circle(self.dst_img, self.kps[i], 1, (150, 50, 150), -1)
+            elif self.member == "face":
+                cv2.circle(self.dst_img, self.kps[i], 1, (150, 50, 150), -1)
+            else:
+                cv2.circle(self.dst_img, self.kps[i], 1, (150, 50, 150), -1)
 
         return self.dst_img
 
