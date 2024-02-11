@@ -5,7 +5,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from vector_gui_parts import MemberKeypointComboboxesForCross
+from vector_gui_parts import MemberKeypointComboboxesFor2Point
 from gui_parts import ThinningOption, TempFile
 from line_plotter import LinePlotter
 from python_senpai import keypoints_proc
@@ -30,8 +30,8 @@ class App(ttk.Frame):
         cross_frame.pack(pady=5)
         calc_type_label = ttk.Label(cross_frame, text="Calc:")
         calc_type_label.pack(side=tk.LEFT, padx=5)
-        self.calc_type_combo = ttk.Combobox(cross_frame, state='readonly', width=18)
-        self.calc_type_combo["values"] = ["all", "cross_product (AB×AC)", "dot_product (AB・AC)", "plus (AB+AC)", "norms (|AB||AC|)"]
+        self.calc_type_combo = ttk.Combobox(cross_frame, state='readonly', width=22)
+        self.calc_type_combo["values"] = ["all", "xy_component (AB_x, AB_y)", "norm (|AB|)"]
         self.calc_type_combo.current(0)
         self.calc_type_combo.pack(side=tk.LEFT, padx=5)
         data_dir = self._find_data_dir()
@@ -39,7 +39,7 @@ class App(ttk.Frame):
         self.img = tk.PhotoImage(file=img_path)
         self.img_label = ttk.Label(cross_frame, image=self.img)
         self.img_label.pack(side=tk.LEFT, padx=5)
-        self.member_combo = MemberKeypointComboboxesForCross(cross_frame)
+        self.member_combo = MemberKeypointComboboxesFor2Point(cross_frame)
         self.member_combo.pack(side=tk.LEFT, padx=5)
 
         setting_frame = ttk.Frame(self)
@@ -66,6 +66,7 @@ class App(ttk.Frame):
     def load(self, args):
         self.src_df = args['src_df']
         self.cap = args['cap']
+        self.pkl_dir = args['pkl_dir']
         self.src_attrs = self.src_df.attrs
         self.time_min, self.time_max = args['time_span_msec']
 
@@ -75,7 +76,7 @@ class App(ttk.Frame):
         self.clear()
 
     def draw(self):
-        current_member, kp0, kp1, kp2 = self.member_combo.get_selected()
+        current_member, kp0, kp1 = self.member_combo.get_selected()
 
         # timestampの範囲を抽出
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
@@ -86,16 +87,14 @@ class App(ttk.Frame):
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
-        if self.calc_type_combo.get() == 'cross_product (AB×AC)':
-            prod_df = keypoints_proc.calc_cross_product(tar_df, kp0, kp1, kp2)
-        elif self.calc_type_combo.get() == 'dot_product (AB・AC)':
-            prod_df = keypoints_proc.calc_dot_product(tar_df, kp0, kp1, kp2)
-        elif self.calc_type_combo.get() == 'plus (AB+AC)':
-            prod_df = keypoints_proc.calc_plus(tar_df, kp0, kp1, kp2)
-        elif self.calc_type_combo.get() == 'norms (|AB||AC|)':
-            prod_df = keypoints_proc.calc_norms(tar_df, kp0, kp1, kp2)
+        if self.calc_type_combo.get() == 'xy_component (AB_x, AB_y)':
+            prod_df = keypoints_proc.calc_xy_component(tar_df, kp0, kp1)
+        elif self.calc_type_combo.get() == 'norm (|AB|)':
+            prod_df = keypoints_proc.calc_norm(tar_df, kp0, kp1)
         elif self.calc_type_combo.get() == 'all':
-            prod_df = keypoints_proc.calc_cross_dot_plus_angle(tar_df, kp0, kp1, kp2)
+            xy_df = keypoints_proc.calc_xy_component(tar_df, kp0, kp1)
+            norm_df = keypoints_proc.calc_norm(tar_df, kp0, kp1)
+            prod_df = pd.concat([xy_df, norm_df], axis=1)
 
         col_names = prod_df.columns
 
@@ -119,12 +118,14 @@ class App(ttk.Frame):
         if len(self.calc_df) == 0:
             print("No data to export.")
             return
+        file_name = os.path.splitext(self.src_attrs['video_name'])[0]
         timestamp_df = self.timestamp_df
         timestamp_df = timestamp_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         self.calc_df = self.calc_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
         export_df = pd.concat([self.calc_df, timestamp_df], axis=1)
         export_df.attrs = self.src_attrs
-        file_inout.save_pkl(self.pkl_path, export_df, proc_history="vector")
+        dst_path = os.path.join(self.pkl_dir, file_name + "_2p.pkl")
+        file_inout.save_pkl(dst_path, export_df, proc_history="2p_vector")
 
     def clear(self):
         self.lineplot.clear()
@@ -139,19 +140,3 @@ class App(ttk.Frame):
             # Change this bit to match where you store your data files:
             datadir = os.path.dirname(__file__)
         return datadir
-
-
-def quit(root):
-    root.quit()
-    root.destroy()
-
-
-def main():
-    root = tk.Tk()
-    app = App(root)
-    root.protocol("WM_DELETE_WINDOW", lambda: quit(root))
-    app.mainloop()
-
-
-if __name__ == "__main__":
-    main()

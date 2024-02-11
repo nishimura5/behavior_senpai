@@ -61,14 +61,6 @@ class MemberKeypointComboboxes(ttk.Frame):
         return member, keypoint
 
 
-    def get_selected(self):
-        member = self.member_combo.get()
-        keypoint_a = self.keypoint_combo_a.get()
-        keypoint_b = self.keypoint_combo_b.get()
-        keypoint_c = self.keypoint_combo_c.get()
-        return member, keypoint_a, keypoint_b, keypoint_c
-
-
 class ProcOptions(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
