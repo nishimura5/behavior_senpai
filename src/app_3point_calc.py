@@ -13,13 +13,12 @@ from python_senpai import file_inout
 
 class App(ttk.Frame):
     """
-    外積の結果を描画するためのGUIです。
     以下の機能を有します
-     - 以上の処理で得られたデータをLinePlotterに渡す機能
+     - 3点の座標からベクトルの内積、外積を計算
     """
     def __init__(self, master, args):
         super().__init__(master)
-        master.title("Calc Vector")
+        master.title("3 Point Calculation")
         self.pack(padx=10, pady=10)
 
         temp = TempFile()
