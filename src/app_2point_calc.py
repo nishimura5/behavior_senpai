@@ -15,11 +15,11 @@ from python_senpai import file_inout
 class App(ttk.Frame):
     """
     以下の機能を有します
-     - 3点の座標からベクトルの内積、外積を計算
+     - 2点の座標からベクトルを計算
     """
     def __init__(self, master, args):
         super().__init__(master)
-        master.title("3 Point Calculation")
+        master.title("2 Point Calculation")
         self.pack(padx=10, pady=10)
 
         temp = TempFile()
