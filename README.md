@@ -131,6 +131,24 @@ print(trk_df.attrs)
 
 ビデオカメラで撮影した長時間の動画ファイルは、カメラの仕様で録画時に分割されることがあります。Track fileは動画ファイルと対になっているためTrack fileも分かれてしまいます。nextとprevは分かれているTrack fileの前後関係を記録するためのものです。attrsへの追加は[app_track_list.py][app_track_list]で行われます。
 
+### Folder Structure
+
+この節ではBehavior Senpaiが出力するデータのデフォルトの保存場所について説明します。Behavior Senpaiは"trk"フォルダにTrack fileを、"calc"フォルダにCalculated Track fileを保存します。キーポイントを描画した動画は"mp4"フォルダに保存します。以下は、あるフォルダに"ABC.MP4"というファイルと"XYZ.MOV"というファイルがあった場合の一例です。
+
+```
+├── ABC.MP4
+├── XYZ.MOV
+├── calc
+│   └── XYZ.pkl
+├── mp4
+│   └── ABC.mp4
+└── trk
+    ├── ABC.pkl
+    └── XYZ.pkl
+```
+
+Behavior SenpaiがTrack fileを読み込む際、親フォルダに動画が存在する場合はその動画ファイルを同時に読み込みます。読み込む動画のファイル名はAttributes of Track fileの"video_name"です。動画ファイルが見つからなかった場合は黒色の背景で代替されます。
+
 ### Temporary file
 
 アプリケーションの設定値や直近で読み込まれたTrack fileのパスは、Pickle化されたPythonのdictionary型で保存されます。ファイル名は'temp.pkl'です。このファイルが存在しない場合はアプリケーションが(初期値を用いて)自動生成します。したがって、設定値をクリアする等の目的で、ファイルを手動で削除(ゴミ箱に移動)することができます。
