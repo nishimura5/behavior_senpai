@@ -65,6 +65,24 @@ Macでは、RyeがダウンロードするCPythonではなく別途pyenv等でPy
 
 で導入が完了します。
 
+## Keypoints
+
+Behavior Senpaiで取り扱うkeypointsのIDは各datasetのIDと同じです。YOLOv8ではCOCO、RTMPoseではHalpe26に準拠します。
+
+<p align="center">
+  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_body_110.png">
+</p>
+
+MediaPipe Holisticにおける顔のkeypoints(landmarks)のIDは以下のとおりです。
+
+<p align="center">
+  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_face_110.png">
+</p>
+
+<p align="center">
+  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_eyemouth_110.png">
+</p>
+
 ## Interface
 
 ### Track file
