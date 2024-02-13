@@ -8,7 +8,7 @@ class MediaPipeDetector:
         self.mph = mp.solutions.holistic
         self.model = self.mph.Holistic(model_complexity=2, refine_face_landmarks=True)
 
-        self.number_of_keypoints = {'face': 468, 'right_hand': 21, 'left_hand': 21}
+        self.number_of_keypoints = {'face': 478, 'right_hand': 21, 'left_hand': 21}
         self.show = show
         if self.show is True:
             self.drawing = mp.solutions.drawing_utils
@@ -18,7 +18,7 @@ class MediaPipeDetector:
         self.total_frame_num = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         self.frame_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.frame_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
- 
+
     def detect(self, roi=False):
         # データの初期化
         data_dict = {"frame": [], "member": [], "keypoint": [], "x": [], "y": [], "z": [], "timestamp": []}
