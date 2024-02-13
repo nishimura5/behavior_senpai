@@ -32,13 +32,15 @@ class Annotate:
             kps = [self.kps[17], self.kps[18], self.kps[19], self.kps[20]]
             self.lines(kps, False)
         elif self.member == "face":
+            # right eye
             kps = [self.kps[33], self.kps[7], self.kps[163], self.kps[144], self.kps[145], self.kps[153], self.kps[154], self.kps[155], self.kps[133], self.kps[173], self.kps[157], self.kps[158], self.kps[159], self.kps[160], self.kps[161], self.kps[246]]
             self.lines(kps, True)
-            kps = [self.kps[130], self.kps[25], self.kps[110], self.kps[24], self.kps[23], self.kps[22], self.kps[26], self.kps[112], self.kps[243], self.kps[190], self.kps[56], self.kps[28], self.kps[27], self.kps[29], self.kps[30], self.kps[247]]
+            kps = [self.kps[226], self.kps[110], self.kps[24], self.kps[23], self.kps[22], self.kps[26], self.kps[112], self.kps[243], self.kps[190], self.kps[56], self.kps[28], self.kps[27], self.kps[29], self.kps[30], self.kps[247]]
             self.lines(kps, True)
+            # left eye
             kps = [self.kps[263], self.kps[249], self.kps[390], self.kps[373], self.kps[374], self.kps[380], self.kps[381], self.kps[382], self.kps[362], self.kps[398], self.kps[384], self.kps[385], self.kps[386], self.kps[387], self.kps[388], self.kps[466]]
             self.lines(kps, True)
-            kps = [self.kps[359], self.kps[255], self.kps[339], self.kps[254], self.kps[253], self.kps[252], self.kps[256], self.kps[341], self.kps[463], self.kps[414], self.kps[286], self.kps[258], self.kps[257], self.kps[259], self.kps[260], self.kps[467]]
+            kps = [self.kps[446], self.kps[339], self.kps[254], self.kps[253], self.kps[252], self.kps[256], self.kps[341], self.kps[463], self.kps[414], self.kps[286], self.kps[258], self.kps[257], self.kps[259], self.kps[260], self.kps[467]]
             self.lines(kps, True)
             kps = [self.kps[13], self.kps[312], self.kps[311], self.kps[310], self.kps[415], self.kps[308], self.kps[324], self.kps[318], self.kps[402], self.kps[317], self.kps[14], self.kps[87], self.kps[178], self.kps[88], self.kps[95], self.kps[78], self.kps[191], self.kps[80], self.kps[81], self.kps[82]]
             self.lines(kps, True)
@@ -50,6 +52,10 @@ class Annotate:
             self.lines(kps, False)
             kps = [self.kps[98], self.kps[64], self.kps[48], self.kps[115], self.kps[220], self.kps[45], self.kps[4], self.kps[275], self.kps[440], self.kps[344], self.kps[278], self.kps[294], self.kps[327]]
             self.lines(kps, False)
+            kps = [self.kps[35], self.kps[116], self.kps[123], self.kps[147], self.kps[213], self.kps[138], self.kps[135], self.kps[169], self.kps[211], self.kps[204], self.kps[106], self.kps[43], self.kps[57], self.kps[186], self.kps[92], self.kps[165], self.kps[203], self.kps[142], self.kps[100], self.kps[120], self.kps[231], self.kps[230], self.kps[229], self.kps[228]]
+            self.lines(kps, True)
+            kps = [self.kps[265], self.kps[345], self.kps[352], self.kps[376], self.kps[433], self.kps[367], self.kps[364], self.kps[394], self.kps[431], self.kps[424], self.kps[335], self.kps[273], self.kps[287], self.kps[410], self.kps[322], self.kps[391], self.kps[423], self.kps[371], self.kps[329], self.kps[349], self.kps[451], self.kps[450], self.kps[449], self.kps[448]]
+            self.lines(kps, True)
 #            kps = [self.kps[238], self.kps[20], self.kps[60], self.kps[75], self.kps[59], self.kps[166], self.kps[79], self.kps[239]]
 #            self.lines(kps, True)
 #            kps = [self.kps[458], self.kps[250], self.kps[290], self.kps[305], self.kps[289], self.kps[392], self.kps[309], self.kps[459]]
@@ -60,7 +66,7 @@ class Annotate:
             elif self.member == "right_hand":
                 cv2.circle(self.dst_img, self.kps[i], 2, (50, 250, 50), -1)
             elif self.member == "face":
-                cv2.circle(self.dst_img, self.kps[i], 1, (150, 50, 150), -1)
+                cv2.circle(self.dst_img, self.kps[i], 0, (150, 50, 150), -1)
             else:
                 cv2.circle(self.dst_img, self.kps[i], 1, (150, 50, 150), -1)
 
