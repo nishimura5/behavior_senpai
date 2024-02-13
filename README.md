@@ -30,10 +30,9 @@ Behavior SenpaiはWindows11(23H2)で開発と動作確認をおこなってい�
 
  - 空き容量: 10GB～
  - 搭載RAM: 16GB～
- - GPU: RTX2060～
+ - GPU: RTX2060～ (CUDA: 12.1)
  - [Rye](https://rye-up.com)
  - [.NET 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
- - [CUDA 12.1](https://developer.nvidia.com/cuda-12-1-0-download-archive)
 
 ### CUDAを使用しない場合
 
@@ -133,15 +132,15 @@ print(trk_df.attrs)
 
 ### Folder Structure
 
-この節ではBehavior Senpaiが出力するデータのデフォルトの保存場所について説明します。Behavior Senpaiは"trk"フォルダにTrack fileを、"calc"フォルダにCalculated Track fileを保存します。キーポイントを描画した動画は"mp4"フォルダに保存します。以下は、あるフォルダに"ABC.MP4"というファイルと"XYZ.MOV"というファイルがあった場合の一例です。
+この節ではBehavior Senpaiが出力するデータのデフォルトの保存場所について説明します。Behavior Senpaiは"trk"フォルダにTrack fileを、"calc"フォルダにCalculated Track fileを保存します。キーポイントを描画した動画は"mp4"フォルダに保存します。以下は、あるフォルダに"ABC.MP4"というファイルと"XYZ.MOV"というファイルがあった場合の一例です。出力ファイルのファイル名にはモデルや計算種別に応じたsuffixが付きます。
 
 ```
 ├── ABC.MP4
 ├── XYZ.MOV
 ├── calc
-│   └── XYZ.pkl
+│   └── XYZ_2p.pkl
 ├── mp4
-│   └── ABC.mp4
+│   └── ABC_mediapipe.mp4
 └── trk
     ├── ABC.pkl
     └── XYZ.pkl
