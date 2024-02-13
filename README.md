@@ -3,7 +3,8 @@
 [pyproject]: https://github.com/nishimura5/python_senpai/blob/master/pyproject.toml
 [app_detect]: https://github.com/nishimura5/python_senpai/blob/master/src/app_detect.py
 [app_track_list]: https://github.com/nishimura5/python_senpai/blob/master/src/app_track_list.py
-[app_calc_vector]: https://github.com/nishimura5/python_senpai/blob/master/src/app_calc_vector.py
+[app_2point_calc]: https://github.com/nishimura5/python_senpai/blob/master/src/app_2point_calc.py
+[app_3point_calc]: https://github.com/nishimura5/python_senpai/blob/master/src/app_3point_calc.py
 [gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
 [detector_proc]: https://github.com/nishimura5/python_senpai/blob/master/src/detector_proc.py
 
@@ -111,7 +112,7 @@ Track fileに格納されているDataFrameの例を以下に示します。な�
 
 ### Calculated Track file
 
-[app_calc_vector.py][app_calc_vector]で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で保存されますが、データの構造が少し異なります。ファイル拡張子は'.pkl'です。
+[app_2point_calc.py][app_2point_calc]や[app_3point_calc.py][app_3point_calc]で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で保存されますが、データの構造が少し異なります。ファイル拡張子は'.pkl'です。
 
 Calculated Track fileは2-level-multi-indexでデータを保持しています。indexの名称はlevel 0から順に'frame', 'member'です。columnsの名称は計算の内容に準じますが、必ず'timestamp'が含まれています。
 
