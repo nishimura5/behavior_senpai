@@ -1,100 +1,194 @@
-# Behavior Senpai
+# Behavior Senpai v.1.1.0
 
 [pyproject]: https://github.com/nishimura5/python_senpai/blob/master/pyproject.toml
-[launcher]: https://github.com/nishimura5/python_senpai/blob/master/src/launcher.py
 [app_detect]: https://github.com/nishimura5/python_senpai/blob/master/src/app_detect.py
 [app_track_list]: https://github.com/nishimura5/python_senpai/blob/master/src/app_track_list.py
-[app_member_edit]: https://github.com/nishimura5/python_senpai/blob/master/src/app_member_edit.py
-[app_make_mp4]: https://github.com/nishimura5/python_senpai/blob/master/src/app_make_mp4.py
-[app_trajplot]: https://github.com/nishimura5/python_senpai/blob/master/src/app_trajplot.py
-[app_area_filter]: https://github.com/nishimura5/python_senpai/blob/master/src/app_area_filter.py
-[app_calc_vector]: https://github.com/nishimura5/python_senpai/blob/master/src/app_calc_vector.py
-[app_recuplot]: https://github.com/nishimura5/python_senpai/blob/master/src/app_recuplot.py
-[app_scene_table]: https://github.com/nishimura5/python_senpai/blob/master/src/app_scene_table.py
+[app_2point_calc]: https://github.com/nishimura5/python_senpai/blob/master/src/app_2point_calc.py
+[app_3point_calc]: https://github.com/nishimura5/python_senpai/blob/master/src/app_3point_calc.py
 [gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
-[print_track_file]: https://github.com/nishimura5/python_senpai/blob/master/src/samplecode/print_track_file.py
 [detector_proc]: https://github.com/nishimura5/python_senpai/blob/master/src/detector_proc.py
 
-![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/behaviorsenpai/git_behavior_senpai_trajplot.png)
+![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/bs_capture_110.jpg)
 
-Behavior Senpai is an application designed for quantitative behavioral observation. It converts the behavior of people recorded on video cameras into time-series coordinate data using keypoint detection AI. This time-series coordinate data is then used to quantitatively analyze human behavior.
+Behavior Senpai is an application for quantitative behavioral observation. It converts human actions captured by a video camera into time-series coordinate data using keypoint detection AI, and allows for quantitative analysis of human behavior using this time-series coordinate data.
 
-Additionally, Behavior Senpai serves as a project for learning data analysis using Python. It is structured to provide a stepping stone for individuals who have mastered the basics of Python (such as if statements, for loops, list comprehensions, and classes) to challenge themselves in developing practical applications. In particular, it offers the opportunity to learn about the following libraries:
+Behavior Senpai utilizes the following three types of AI image processing frameworks/models for keypoint detection in video files:
 
- - MultiIndex in Pandas
- - Time-series data plotting with Matplotlib
- - VideoCapture in OpenCV (cv2)
+ - [YOLOv8 Pose](https://github.com/ultralytics/ultralytics/issues/1915)
+ - [MediaPipe Holistic](https://github.com/google/mediapipe/blob/master/docs/solutions/holistic.md)
+ - [RTMPose Body8-Halpe26 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#26-keypoints)
 
-The AI models currently supported by Behavior Senpai are as follows:
+<p align="center">
+  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
+</p>
 
- - YOLOv8
- - MediaPipe Holistic
+## Requirement
 
-## Requirement 
+Behavior Senpai has been developed and tested on Windows11(23H2).
 
- - Free Space: More than 8GB
- - RAM: More than 8GB (16GB or more recommended)
+### If using CUDA
 
-Behavior Senpai has been developed and tested in a Python environment constructed on Rye running on Windows 11 (23H2). For information about the libraries being used, please refer to pyproject.toml or similar documents.
+ - Free space: 10GB or more
+ - Installed RAM: 16GB or more
+ - GPU: RTX2060 or higher (CUDA: 12.1)
+ - [Rye](https://rye-up.com)
+ - [.NET 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
 
-However, since Behavior Senpai only utilizes libraries that can be installed via pip, it is possible to set up the environment using other methods apart from Rye, such as Miniconda.
+### Without CUDA
+
+If a CUDA-compatible GPU is not installed, only MediaPipe Holistic can be used.
+
+ - Free space: 8GB or more
+ - Installed RAM: 16GB or more
+ - [Rye](https://rye-up.com)
+ - [.NET 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
 
 ## Usage
 
 ### Windows
-For setting up a Python environment on Windows, please refer to this video.
 
-Clone this project into your working folder. Execute the following commands. Ensure that the parent folder does not contain any Japanese characters.
+Launching BehaviorSenpai.exe starts the application. If using CUDA, check "Enable features using CUDA" upon first launch and then click "OK".
 
-```
-git clone https://github.com/nishimura5/behavior_senpai.git
-cd behavior_senpai
-```
-
-If you are using Rye, simply execute the following to prepare for launching Behavior Senpai.
-
-```
-rye sync
-```
-
-If you want to enable CUDA, remove the comment out in [pyproject.toml][pyproject] before sync.
-
-```
-[[tool.rye.sources]]
-name = "torch"
-url = "https://download.pytorch.org/whl/cu118"
-type = "index"
-```
-
-After setting up the environment, either run launcher.bat or execute [launcher.py][launcher] with the following command to start the application.
-
-```
-python src/launcher.py
-```
+To uninstall or replace with the latest version, simply delete the folder containing BehaviorSenpai.exe.
 
 ### Mac
-On Mac, we recommend using Miniconda. Please set up the environment using pip.
+
+On Mac, instead of the CPython downloaded by Rye, download or build Python separately using pyenv or a similar tool and manually add it to the toolchain. For example:
+
+ - pyenv install 3.11.6
+ - Obtain the path to python using `pyenv which python`
+ - Open the .python-version file and change it to "pyenv@3.11.6"
+ - rye toolchain register --name=pyenv /path/to/pyenv/python3.11
+ - rye fetch 3.11.6
+ - git clone https://github.com/nishimura5/behavior_senpai.git
+ - cd behavior_senpai
+ - rye sync
+ - . ./launcher.sh
+
+Installation is complete with these steps.
+
+## Keypoints
+
+The IDs for keypoints handled by Behavior Senpai are the same as those in each dataset. For YOLOv8, it complies with COCO; for RTMPose, with Halpe26. The IDs for each keypoint are as follows:
+
+<p align="center">
+  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_body_110.png">
+</p>
+
+The IDs for facial keypoints (landmarks) in MediaPipe Holistic are as follows. For a complete list of all IDs, refer [here](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png).
+
+<p align="center
+
+">
+  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_face_110.png">
+</p>
+
+<p align="center">
+  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_eyemouth_110.png">
+</p>
+
+The IDs for hand keypoints (landmarks) in MediaPipe Holistic are as follows:
+
+<p align="center">
+  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_hands_110.png">
+</p>
+
+## Interface
+
+> [!IMPORTANT]
+Behavior Senpai handles files in Pickle format. Due to security risks associated with Pickle format, only open files from trusted sources (e.g., avoid opening files from unknown sources available on the internet). For details, refer [here](https://docs.python.org/3/library/pickle.html).
+
+### Track file
+
+The time-series coordinate data resulting from keypoint detection by app_detect.py is saved as a [Pickle-serialized Pandas DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html). Behavior Senpai refers to these as Track files. The file extension is '.pkl'. Track files are saved in the "trk" folder generated in the same directory as the video file on which keypoint detection was performed.
+
+Track files hold time-series coordinate data with a 3-level-multi-index. The index names are 'frame', 'member', and 'keypoint' from level 0 onwards. 'Frame' is an integer starting from 0, corresponding to the video frame number. 'Member' and 'keypoint' are the IDs of keypoints detected by the model. Track files always include three columns: 'x', 'y', 'timestamp', where x,y are in pixels and timestamp is in milliseconds.
+
+Example of a DataFrame stored in a Track file, which might also include other columns such as 'z' or 'conf' depending on the AI model's specifications:
+
+|  |  |  | x | y | timestamp |
+| - | - | - | - | - | - |
+| frame | member | keypoint |  |  |  |
+| 0 | 1 | 0 | 1365.023560 | 634.258484 | 0.0 |
+|  |  | 1 | 1383.346191 | 610.686951 | 0.0 |
+|  |  | 2 | 1342.362061 | 621.434998 | 0.0 |
+|  |  | ... | ... | ... | ... |
+|  |  | 16 | 1417.897583 | 893.739258 | 0.0 |
+|  | 2 | 0 | 2201.367920 | 846.174194 | 0.0 |
+|  |  | 1 | 2270.834473 | 1034.986328 | 0.0 |
+|  |  | ... | ... | ... | ... |
+|  |  | 16 | 2328.100098 | 653.919312 | 0.0 |
+| 1 | 1 | 0 | 1365.023560 | 634.258484 | 33.333333 |
+|  |  | 1 | 1383.346191 | 610.686951 | 33.333333 |
+|  |  | ... | ... | ... | ... |
+
+### Calculated Track file
+
+Data processed by [app_2point_calc.py][app_2point_calc] or [app_3point_calc.py][app_3point_calc] is saved in the same Pickle-serialized Pandas DataFrame format as Track files and stored in the "calc" folder. The file extension is '.pkl', the same as for Track files.
+
+Calculated Track files hold data with a 2-level-multi-index, with index names 'frame' and 'member' from level 0 onwards. Column names correspond to the calculations performed, but 'timestamp' is always included.
+
+### Attributes of Track file
+
+The [attrs property](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.attrs.html) of the DataFrame stored in Track and Calculated Track files records information such as the original video file name, its frame size, and the name of the AI model used for keypoint detection.
+
+To load a Track file and check the contents recorded in attrs, the Python code
+
+ is as follows. The attrs property is of dictionary type:
 
 ```
-pip install torch
-pip install ultralytics
-pip install lapx
-pip install mediapipe
-pip install scikit-learn
-pip install pyperclip
+trk_df = pd.read_pickle("path/to/track_file.pkl")
+print(trk_df.attrs)
 ```
 
-After setting up the environment, execute [launcher.py][launcher] with the following command to start the application.
+Main contents of attrs include, but are not limited to:
+
+#### model
+
+The name of the AI image processing framework/model used for keypoint detection. Addition to attrs is done by [app_detector.py][app_detect] ([detector_proc.py][detector_proc]).
+
+ - YOLOv8 x-pose-p6
+ - MediaPipe Holistic
+ - MMPose RTMPose-x
+
+#### frame_size
+
+The frame size of the video on which keypoint detection was performed is recorded as a tuple (width, height) in pixels. Addition to attrs is done by [app_detector.py][app_detect] ([detector_proc.py][detector_proc]).
+
+#### video_name
+
+The file name of the video on which keypoint detection was performed is recorded. Addition to attrs is done by [app_detector.py][app_detect] ([detector_proc.py][detector_proc]).
+
+#### next, prev
+
+Long videos captured by a video camera may be split during recording due to camera specifications. Since Track files are paired with video files, they are also split. 'Next' and 'prev' record the sequence of split Track files. Addition to attrs is done by [app_track_list.py][app_track_list].
+
+### Annotated Video file
+
+Behavior Senpai can output videos in mp4 format with detected keypoints drawn on them.
+
+### Folder Structure
+
+This section explains the default locations for data output by Behavior Senpai. Track files are saved in the "trk" folder, Calculated Track files in the "calc" folder, and videos with keypoints drawn are saved in the "mp4" folder. If a Track file is edited and overwritten, the old Track file is saved in the "backup" folder (only one backup is kept). These folders are automatically generated at the time of file saving.
+
+Below is an example of the folder structure when there are files named "ABC.MP4" and "XYZ.MOV" in a folder. Output file names include suffixes according to the model or type of calculation. To avoid file read/write failures, use alphanumeric characters for folder and file names, especially when the file path contains Japanese characters.
 
 ```
-python src/launcher.py
+├── ABC.MP4
+├── XYZ.MOV
+├── calc
+│   └── XYZ_2p.pkl
+├── mp4
+│   └── ABC_mediapipe.mp4
+└── trk
+    ├── ABC.pkl
+    ├── XYZ.pkl
+    └── backup
+        └── ABC.pkl
 ```
 
-※In the Mac&Rye environment, we have identified issues related to the tkinter backend, which may cause instability. For example, we have confirmed a failure in importing matplotlib.backends.backend_tkagg on Mac&Rye. To address this issue, we have implemented an alternative branch for cases when the import of backend_tkagg fails.
+When Behavior Senpai loads a Track file, if a video file exists in the parent folder, it also loads that video file. The file name of the video to be loaded is referred from the "video_name" value in Attributes of Track file. If the video file is not found, a black background is used as a substitute.
 
-Also, if you are using Rye on Mac, please remove the comment out in pyproject.toml.
+### Temporary file
 
-```
-"pyqt5>=5.15.10",
-```
-
+The application's settings and the path of the most recently loaded Track file are saved as a Pickle-serialized dictionary. The file name is "temp.pkl". If this file does not exist, the application automatically generates it (using default values). To reset the settings, delete the temp.pkl file. The Temporary file is managed by [gui_parts.py][gui_parts].
