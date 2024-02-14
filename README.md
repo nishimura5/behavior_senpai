@@ -68,13 +68,13 @@ Macでは、RyeがダウンロードするCPythonではなく別途pyenv等でPy
 
 ## Keypoints
 
-Behavior Senpaiで取り扱うkeypointsのIDは各datasetのIDと同じです。YOLOv8ではCOCO、RTMPoseではHalpe26に準拠します。
+Behavior Senpaiで取り扱うkeypointsのIDは各datasetのIDと同じです。YOLOv8ではCOCO、RTMPoseではHalpe26に準拠します。各keypointsのIDは以下のとおりです。
 
 <p align="center">
   <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_body_110.png">
 </p>
 
-MediaPipe Holisticにおける顔のkeypoints(landmarks)のIDは以下のとおりです。
+MediaPipe Holisticにおける顔のkeypoints(landmarks)のIDは以下のとおりです。すべてのIDが記載された資料は[こちら](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png)を参照してください。
 
 <p align="center">
   <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_face_110.png">
@@ -82,6 +82,12 @@ MediaPipe Holisticにおける顔のkeypoints(landmarks)のIDは以下のとお�
 
 <p align="center">
   <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_eyemouth_110.png">
+</p>
+
+MediaPipe Holisticにおける手のkeypoints(landmarks)のIDは以下のとおりです。
+
+<p align="center">
+  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_hands_110.png">
 </p>
 
 ## Interface
@@ -151,7 +157,9 @@ print(trk_df.attrs)
 
 ### Folder Structure
 
-この節ではBehavior Senpaiが出力するデータのデフォルトの保存場所について説明します。Behavior Senpaiは"trk"フォルダにTrack fileを、"calc"フォルダにCalculated Track fileを保存します。キーポイントを描画した動画は"mp4"フォルダに保存します。以下は、あるフォルダに"ABC.MP4"というファイルと"XYZ.MOV"というファイルがあった場合の一例です。出力ファイルのファイル名にはモデルや計算種別に応じたsuffixが付きます。
+この節ではBehavior Senpaiが出力するデータのデフォルトの保存場所について説明します。Behavior Senpaiは"trk"フォルダにTrack fileを、"calc"フォルダにCalculated Track fileを保存します。キーポイントを描画した動画は"mp4"フォルダに保存します。Track fileを編集し上書きすると、古いTrack fileは"backup"フォルダに保存されます。それぞれのフォルダはファイル保存時に自動生成されます。
+
+以下は、あるフォルダに"ABC.MP4"というファイルと"XYZ.MOV"というファイルがあった場合の一例です。出力ファイルのファイル名にはモデルや計算種別に応じたsuffixが付きます。
 
 ```
 ├── ABC.MP4
@@ -162,10 +170,12 @@ print(trk_df.attrs)
 │   └── ABC_mediapipe.mp4
 └── trk
     ├── ABC.pkl
-    └── XYZ.pkl
+    ├── XYZ.pkl
+    └── backup
+        └── ABC.pkl
 ```
 
-Behavior SenpaiがTrack fileを読み込む際、親フォルダに動画が存在する場合はその動画ファイルを同時に読み込みます。読み込む動画のファイル名はAttributes of Track fileの"video_name"です。動画ファイルが見つからなかった場合は黒色の背景で代替されます。
+Behavior SenpaiがTrack fileを読み込む際、親フォルダに動画が存在する場合はその動画ファイルを同時に読み込みます。読み込む動画のファイル名はAttributes of Track fileの"video_name"の値が参照されます。動画ファイルが見つからなかった場合は黒色の背景で代替されます。
 
 ### Temporary file
 
