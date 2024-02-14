@@ -8,7 +8,7 @@
 [gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
 [detector_proc]: https://github.com/nishimura5/python_senpai/blob/master/src/detector_proc.py
 
-![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/git_behavior_senpai_trajplot.png)
+![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/bs_capture_110.jpg)
 Nishimura, E. (2024). Behavior Senpai (Version 1.0.0) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
 
 Behavior Senpai(ビヘイビア センパイ)は、定量的行動観察を行うためのアプリケーションです。ビデオカメラで撮影した人の行動をkeypoint検出AIを使用して時系列座標データ化し、その時系列座標データを用いて人の行動を定量的に分析することができます。
@@ -92,9 +92,12 @@ MediaPipe Holisticにおける手のkeypoints(landmarks)のIDは以下のとお�
 
 ## Interface
 
+> [!IMPORTANT]
+Behavior SenpaiはPickle形式のファイルを取り扱います。Pickle形式にはセキュリティ上のリスクが存在するため、信頼できるファイルだけを開くようにしてください（たとえば、インターネット上に公開されている出典が不明なファイルを開こうとしないでください）。詳細は[こちら](https://docs.python.org/3/library/pickle.html)を参照してください。
+
 ### Track file
 
-app_detect.pyでキーポイント検出を行った結果としての時系列座標データは、[Pickle化](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html)されたPandasのDataFrame型で保存されます。Behavior SenpaiはこれをTrack fileと呼んでいます。ファイル拡張子は'.pkl'です。Track fileはキーポイント検出を行った動画ファイルと同じディレクトリに生成される'trk'フォルダに保存されます。
+app_detect.pyでキーポイント検出を行った結果としての時系列座標データは、[Pickle化されたPandasのDataFrame型](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html)で保存されます。Behavior SenpaiはこれをTrack fileと呼んでいます。ファイル拡張子は'.pkl'です。Track fileはキーポイント検出を行った動画ファイルと同じディレクトリに生成される"trk"フォルダに保存されます。
 
 Track fileは3-level-multi-indexで時系列座標データを保持しています。indexの名称はlevel 0から順に'frame', 'member', 'keypoint'です。frameは0から始まる整数で、動画のフレーム番号と対応しています。memberとkeypointはモデルが検出したkeypointsのIDです。Track fileには必ず'x', 'y', 'timestamp'の3つのcolumnsが含まれています。x,yの単位はpx、timestampの単位はミリ秒です。
 
@@ -118,7 +121,7 @@ Track fileに格納されているDataFrameの例を以下に示します。な�
 
 ### Calculated Track file
 
-[app_2point_calc.py][app_2point_calc]や[app_3point_calc.py][app_3point_calc]で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で保存されますが、データの構造が少し異なります。ファイル拡張子は'.pkl'です。
+[app_2point_calc.py][app_2point_calc]や[app_3point_calc.py][app_3point_calc]で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で"calc"フォルダに保存されます。ファイル拡張子はTrack fileと同様'.pkl'です。
 
 Calculated Track fileは2-level-multi-indexでデータを保持しています。indexの名称はlevel 0から順に'frame', 'member'です。columnsの名称は計算の内容に準じますが、必ず'timestamp'が含まれています。
 
@@ -155,9 +158,13 @@ print(trk_df.attrs)
 
 ビデオカメラで撮影した長時間の動画ファイルは、カメラの仕様で録画時に分割されることがあります。Track fileは動画ファイルと対になっているためTrack fileも分かれてしまいます。nextとprevは分かれているTrack fileの前後関係を記録するためのものです。attrsへの追加は[app_track_list.py][app_track_list]で行われます。
 
+### Annotated Video file
+
+Behavior Senpaiは、検出したkeypointを描画してmp4形式の動画に出力することができます。
+
 ### Folder Structure
 
-この節ではBehavior Senpaiが出力するデータのデフォルトの保存場所について説明します。Behavior Senpaiは"trk"フォルダにTrack fileを、"calc"フォルダにCalculated Track fileを保存します。キーポイントを描画した動画は"mp4"フォルダに保存します。Track fileを編集し上書きすると、古いTrack fileは"backup"フォルダに保存されます。それぞれのフォルダはファイル保存時に自動生成されます。
+この節ではBehavior Senpaiが出力するデータのデフォルトの保存場所について説明します。Behavior Senpaiは"trk"フォルダにTrack fileを、"calc"フォルダにCalculated Track fileを保存します。キーポイントを描画した動画は"mp4"フォルダに保存します。Track fileを編集し上書きすると、古いTrack fileは（ひとつだけ）"backup"フォルダに保存されます。それぞれのフォルダはファイル保存時に自動生成されます。
 
 以下は、あるフォルダに"ABC.MP4"というファイルと"XYZ.MOV"というファイルがあった場合の一例です。出力ファイルのファイル名にはモデルや計算種別に応じたsuffixが付きます。
 
@@ -179,5 +186,5 @@ Behavior SenpaiがTrack fileを読み込む際、親フォルダに動画が存�
 
 ### Temporary file
 
-アプリケーションの設定値や直近で読み込まれたTrack fileのパスは、Pickle化されたPythonのdictionary型で保存されます。ファイル名は'temp.pkl'です。このファイルが存在しない場合はアプリケーションが(初期値を用いて)自動生成します。したがって、設定値をクリアする等の目的で、ファイルを手動で削除(ゴミ箱に移動)することができます。
-'temp.pkl'は[gui_parts.py][gui_parts]が管理しています。
+アプリケーションの設定値や直近で読み込まれたTrack fileのパスは、Pickle化されたdictionary型で保存されます。ファイル名は"temp.pkl"です。このファイルが存在しない場合はアプリケーションが(初期値を用いて)自動生成します。設定値を初期化する際はこのtemp.pklファイルを削除してください。
+Temporaryファイルは[gui_parts.py][gui_parts]が管理しています。
