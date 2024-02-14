@@ -9,7 +9,6 @@
 [detector_proc]: https://github.com/nishimura5/python_senpai/blob/master/src/detector_proc.py
 
 ![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/bs_capture_110.jpg)
-Nishimura, E. (2024). Behavior Senpai (Version 1.0.0) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
 
 Behavior Senpai(ビヘイビア センパイ)は、定量的行動観察を行うためのアプリケーションです。ビデオカメラで撮影した人の行動をkeypoint検出AIを使用して時系列座標データ化し、その時系列座標データを用いて人の行動を定量的に分析することができます。
 
@@ -166,7 +165,7 @@ Behavior Senpaiは、検出したkeypointを描画してmp4形式の動画に出
 
 この節ではBehavior Senpaiが出力するデータのデフォルトの保存場所について説明します。Behavior Senpaiは"trk"フォルダにTrack fileを、"calc"フォルダにCalculated Track fileを保存します。キーポイントを描画した動画は"mp4"フォルダに保存します。Track fileを編集し上書きすると、古いTrack fileは（ひとつだけ）"backup"フォルダに保存されます。それぞれのフォルダはファイル保存時に自動生成されます。
 
-以下は、あるフォルダに"ABC.MP4"というファイルと"XYZ.MOV"というファイルがあった場合の一例です。出力ファイルのファイル名にはモデルや計算種別に応じたsuffixが付きます。
+以下は、あるフォルダに"ABC.MP4"というファイルと"XYZ.MOV"というファイルがあった場合の一例です。出力ファイルのファイル名にはモデルや計算種別に応じたsuffixが付きます。動画のファイルパスに日本語が使用されているとファイルの読み書きに失敗するため、フォルダやファイルの名称には半角英数を使用してください。
 
 ```
 ├── ABC.MP4
