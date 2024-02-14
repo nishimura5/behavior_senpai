@@ -49,6 +49,8 @@ CUDA対応GPUを搭載していない場合はMediaPipe Holisticのみが使用�
 
 BehaviorSenpai.exeを実行するとアプリケーションが起動します。CUDAを使用する場合は初回起動時に「Enable features using CUDA」にチェックを入れてから「OK」ボタンをクリックしてください。
 
+アンインストールする場合、または最新版に差し替える場合ははBehaviorSenpai.exeが入ったフォルダを丸ごと削除してください。
+
 ### Mac
 
 Macでは、RyeがダウンロードするCPythonではなく別途pyenv等でPythonをダウンロードまたはビルドし、手動でtoolchainに追加する必要があります。具体的な手順の一例としては
