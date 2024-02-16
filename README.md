@@ -101,9 +101,6 @@ MediaPipe Holisticにおける手のkeypoints(landmarks)のIDは以下のとお�
 
 ## Interface
 
-> [!IMPORTANT]
-Behavior SenpaiはPickle形式のファイルを取り扱います。Pickle形式にはセキュリティ上のリスクが存在するため、信頼できるファイルだけを開くようにしてください（たとえば、インターネット上に公開されている出典が不明なファイルを開こうとしないでください）。詳細は[こちら](https://docs.python.org/3/library/pickle.html)を参照してください。
-
 ### Track file
 
 app_detect.pyでキーポイント検出を行った結果としての時系列座標データは、[Pickle化されたPandasのDataFrame型](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html)で保存されます。Behavior SenpaiはこれをTrack fileと呼んでいます。ファイル拡張子は'.pkl'です。Track fileはキーポイント検出を行った動画ファイルと同じディレクトリに生成される"trk"フォルダに保存されます。
@@ -166,6 +163,10 @@ print(trk_df.attrs)
 #### next, prev
 
 ビデオカメラで撮影した長時間の動画ファイルは、カメラの仕様で録画時に分割されることがあります。Track fileは動画ファイルと対になっているためTrack fileも分かれてしまいます。nextとprevは分かれているTrack fileの前後関係を記録するためのものです。attrsへの追加は[app_track_list.py][app_track_list]で行われます。
+
+### Security Considerations
+
+上記のとおり、Behavior SenpaiはPickle形式のファイルを取り扱います。Pickle形式にはセキュリティ上のリスクが存在するため、信頼できるファイルだけを開くようにしてください（たとえば、インターネット上に公開されている出典が不明なファイルを開こうとしないでください）。詳細は[こちら](https://docs.python.org/3/library/pickle.html)を参照してください。
 
 ### Annotated Video file
 
