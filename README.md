@@ -26,7 +26,7 @@ Behavior Senpaiは、ユーザーが選択したAIモデルによって動画内
   <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
 </p>
 
-Behavior Senpaiは[九州大学芸術工学部](https://www.design.kyushu-u.ac.jp)で開発されたオープンソースのソフトウェアです。研究教育目的のほか、商用利用も可能です（各AI画像処理フレームワークの商用利用については個別にライセンスをご確認ください）。
+Behavior Senpaiは[九州大学芸術工学部](https://www.design.kyushu-u.ac.jp)で開発されたオープンソースのソフトウェアです。
 
 ## Requirement
 
@@ -53,7 +53,11 @@ BehaviorSenpai.exeを実行するとアプリケーションが起動します�
 
 BehaviorSenpai.exeは、[Rye](https://rye-up.com)によるPython環境の構築とBehavior Senpai本体の起動を自動化するためのアプリケーションです。
 
-アンインストールする場合、または最新版に差し替える場合にはBehaviorSenpai.exeが入ったフォルダを丸ごと削除してください。
+Behavior Senpaiをアンインストールする場合、または最新版に差し替える場合にはBehaviorSenpai.exeが入ったフォルダを丸ごと削除してください。そのほか、Ryeのアンインストールには以下をターミナルから実行してください。
+
+```
+rye self uninstall
+```
 
 ### Mac
 
@@ -193,3 +197,11 @@ Behavior SenpaiがTrack fileを読み込む際、親フォルダに動画が存�
 
 アプリケーションの設定値や直近で読み込まれたTrack fileのパスは、Pickle化されたdictionary型で保存されます。ファイル名は"temp.pkl"です。このファイルが存在しない場合はアプリケーションが(初期値を用いて)自動生成します。設定値を初期化する際はこのtemp.pklファイルを削除してください。
 Temporaryファイルは[gui_parts.py][gui_parts]が管理しています。
+
+## Citation
+
+引用の際は以下をご参照ください。
+
+```
+Nishimura, E. (2024). Behavior Senpai (Version 1.1.0) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
+```
