@@ -26,19 +26,17 @@ Behavior Senpaiは、ユーザーが選択したAIモデルによって動画内
   <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
 </p>
 
-Behavior SenpaiはAGPL-3.0 licenseで公開されたオープンソースのソフトウェアです。研究目的のほか、商用利用も可能です。
+Behavior Senpaiは[九州大学芸術工学部](https://www.design.kyushu-u.ac.jp)で開発されたオープンソースのソフトウェアです。研究教育目的のほか、商用利用も可能です（各AI画像処理フレームワークの商用利用については個別にライセンスをご確認ください）。
 
 ## Requirement
 
-Behavior SenpaiはWindows11(23H2)で開発と動作確認をおこなっています。
+Behavior Senpaiを使用するには以下の性能を満たすPCが必要です。動作確認はWindows11(23H2)でおこなっています。
 
 ### CUDAを使用する場合
 
- - 空き容量: 10GB～
+ - 空き容量: 12GB～
  - 搭載RAM: 16GB～
  - GPU: RTX2060～ (CUDA: 12.1)
- - [Rye](https://rye-up.com)
- - [.NET 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
 
 ### CUDAを使用しない場合
 
@@ -46,14 +44,14 @@ CUDA対応GPUを搭載していない場合はMediaPipe Holisticのみが使用�
 
  - 空き容量: 8GB～
  - 搭載RAM: 16GB～
- - [Rye](https://rye-up.com)
- - [.NET 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
 
 ## Usage
 
 ### Windows
 
 BehaviorSenpai.exeを実行するとアプリケーションが起動します。CUDAを使用する場合は初回起動時に「Enable features using CUDA」にチェックを入れてから「OK」ボタンをクリックしてください。
+
+BehaviorSenpai.exeは、[Rye](https://rye-up.com)によるPython環境の構築とBehavior Senpai本体の起動を自動化するためのアプリケーションです。
 
 アンインストールする場合、または最新版に差し替える場合にはBehaviorSenpai.exeが入ったフォルダを丸ごと削除してください。
 
