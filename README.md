@@ -8,7 +8,7 @@
 [gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
 [detector_proc]: https://github.com/nishimura5/python_senpai/blob/master/src/detector_proc.py
 
-![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/bs_capture_110.jpg)
+![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/bs_capture_110.jpg)
 
 Behavior Senpai(ビヘイビア センパイ)は、ビデオ観察法における定量的行動観察を支援するアプリケーションです。ビデオカメラで撮影した人の行動をkeypoint検出AIを使用して時系列座標データ化し、人の行動の定量的な分析や可視化を可能にします。
 
@@ -23,7 +23,7 @@ Behavior Senpaiは以下の3種類のAI画像処理フレームワーク/モデ�
 Behavior Senpaiは、ユーザーが選択したAIモデルによって動画内の人の姿勢推定を行い、時系列座標データを出力します。
 
 <p align="center">
-  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
+  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
 </p>
 
 Behavior Senpaiは[九州大学芸術工学部](https://www.design.kyushu-u.ac.jp)で開発されたオープンソースのソフトウェアです。
@@ -80,23 +80,23 @@ Macでは、RyeがダウンロードするCPythonではなく別途pyenv等でPy
 Behavior Senpaiで取り扱うkeypointsのIDは各datasetのIDと同じです。YOLOv8ではCOCO、RTMPoseではHalpe26に準拠します。各keypointsのIDは以下のとおりです。
 
 <p align="center">
-  <img width="60%" alt="Keypoints of body (YOLOv8 and MMPose)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_body_110.png">
+  <img width="60%" alt="Keypoints of body (YOLOv8 and MMPose)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_body_110.png">
 </p>
 
 MediaPipe Holisticにおける顔のkeypoints(landmarks)のIDは以下のとおりです。すべてのIDが記載された資料は[こちら](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png)を参照してください。
 
 <p align="center">
-  <img width="60%" alt="Keypoints of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_face_110.png">
+  <img width="60%" alt="Keypoints of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_face_110.png">
 </p>
 
 <p align="center">
-  <img width="60%" alt="Keypoints of parts of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_eyemouth_110.png">
+  <img width="60%" alt="Keypoints of parts of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_eyemouth_110.png">
 </p>
 
 MediaPipe Holisticにおける手のkeypoints(landmarks)のIDは以下のとおりです。
 
 <p align="center">
-  <img width="60%" alt="Keypoints of hands (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_hands_110.png">
+  <img width="60%" alt="Keypoints of hands (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_hands_110.png">
 </p>
 
 ## Interface
