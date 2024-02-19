@@ -10,13 +10,17 @@
 
 ![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/bs_capture_110.jpg)
 
-Behavior Senpai is an application for quantitative behavioral observation. It converts human actions captured by a video camera into time-series coordinate data using keypoint detection AI, and allows for quantitative analysis of human behavior using this time-series coordinate data.
+Behavior Senpai is an application that supports quantitative behavior observation in video observation methods. It converts human behavior captured by video cameras into time-series coordinate data using keypoint detection AI, enabling quantitative analysis and visualization of human behavior.
 
-Behavior Senpai utilizes the following three types of AI image processing frameworks/models for keypoint detection in video files:
+Behavior Senpai features multiple AI models that can be used in the same interface with no code. Behavior Senpai is unique in that it allows multiple AI models to be used in the same interface with no code.
+
+Behavior Senpai supports the following three AI image processing frameworks/models
 
  - [YOLOv8 Pose](https://github.com/ultralytics/ultralytics/issues/1915)
  - [MediaPipe Holistic](https://github.com/google/mediapipe/blob/master/docs/solutions/holistic.md)
  - [RTMPose Body8-Halpe26 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#26-keypoints)
+
+Behavior Senpai performs posture estimation of a person in a video using a user-selected AI model and outputs time-series coordinate data.
 
 <p align="center">
   <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
@@ -192,3 +196,22 @@ When Behavior Senpai loads a Track file, if a video file exists in the parent fo
 ### Temporary file
 
 The application's settings and the path of the most recently loaded Track file are saved as a Pickle-serialized dictionary. The file name is "temp.pkl". If this file does not exist, the application automatically generates it (using default values). To reset the settings, delete the temp.pkl file. The Temporary file is managed by [gui_parts.py][gui_parts].
+
+## Citation
+
+Please acknowledge and cite the use of this software and its authors when results are used in publications or published elsewhere.
+
+```
+Nishimura, E. (2024). Behavior Senpai (Version 1.1.0) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
+```
+
+```
+@misc{behavior-senpai-software,
+  title = {Behavior Senpai},
+  author = {Nishimura, Eigo},
+  year = {2024},
+  publisher = {Kyushu University},
+  doi = {10.48708/7160651},
+  note = {Available at: \url{https://hdl.handle.net/2324/7160651}},
+}
+```

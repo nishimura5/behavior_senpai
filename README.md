@@ -201,8 +201,19 @@ Temporaryファイルは[gui_parts.py][gui_parts]が管理しています。
 
 ## Citation
 
-引用の際は以下をご参照ください。
+結果が出版物や他の場所で使用される場合は以下の内容にて引用してください。
 
 ```
 Nishimura, E. (2024). Behavior Senpai (Version 1.1.0) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
+```
+
+```
+@misc{behavior-senpai-software,
+  title = {Behavior Senpai},
+  author = {Nishimura, Eigo},
+  year = {2024},
+  publisher = {Kyushu University},
+  doi = {10.48708/7160651},
+  note = {Available at: \url{https://hdl.handle.net/2324/7160651}},
+}
 ```
