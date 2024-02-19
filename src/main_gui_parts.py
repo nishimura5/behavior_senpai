@@ -49,6 +49,9 @@ class PklSelector(ttk.Frame):
             self.trk_path = ''
             self.pkl_path_label["text"] = "No Track file loaded"
 
+    def rename_pkl_path_label(self, new_name):
+        self.pkl_path_label["text"] = new_name
+
     def set_prev_next(self, attr_dict):
         dir_path = os.path.dirname(self.trk_path)
         if 'prev' in attr_dict and attr_dict['prev'] != '' and attr_dict['prev'] is not None:

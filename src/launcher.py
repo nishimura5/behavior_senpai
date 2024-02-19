@@ -137,14 +137,18 @@ class App(ttk.Frame):
         self.k2m = export_mp4.MakeMp4()
         self.cap = vcap.VideoCap()
         self.time_span_msec = None
+        self.pkl_path = ""
         self.pkl_dir = None
         self.load()
 
     def load(self):
-        self.pkl_path = self.pkl_selector.get_trk_path()
-        self.src_df = file_inout.load_track_file(self.pkl_path)
-        if self.src_df is None:
+        pkl_path = self.pkl_selector.get_trk_path()
+        load_df = file_inout.load_track_file(pkl_path)
+        if load_df is None:
+            self.pkl_selector.rename_pkl_path_label(self.pkl_path)
             return
+        self.pkl_path = pkl_path
+        self.src_df = load_df
         self.src_df = keypoints_proc.zero_point_to_nan(self.src_df)
         self.src_df = self.src_df[~self.src_df.index.duplicated(keep="first")]
         src_attrs = self.src_df.attrs
