@@ -52,6 +52,8 @@ class RTMPoseDetector:
             bboxes = np.concatenate((pred_instance.bboxes, pred_instance.scores[:, None]), axis=1)
             bboxes = bboxes[np.logical_and(pred_instance.labels == self.det_cat_id, pred_instance.scores > self.det_score_threshold)]
             bboxes = bboxes[nms(bboxes, self.retain_threshold), :4]
+            # x座標でソート
+            bboxes = bboxes[bboxes[:, 0].argsort()]
             # keypoint検出
             results = inference_topdown(self.pose_model, rgb_img, bboxes)
             data_samples = merge_data_samples(results)
