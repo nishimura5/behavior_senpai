@@ -139,6 +139,7 @@ class App(ttk.Frame):
         self.time_span_msec = None
         self.pkl_path = ""
         self.pkl_dir = None
+        self.src_df = None
         self.load()
 
     def load(self):
