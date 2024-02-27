@@ -52,6 +52,7 @@ CUDA対応GPUを搭載していない場合はMediaPipe Holisticのみが使用�
 BehaviorSenpai.exeを実行するとアプリケーションが起動します。CUDAを使用する場合は初回起動時に「Enable features using CUDA」にチェックを入れてから「OK」ボタンをクリックしてください。
 
 BehaviorSenpai.exeは、[Rye](https://rye-up.com)によるPython環境の構築とBehavior Senpai本体の起動を自動化するためのアプリケーションです。
+BehaviorSenpai.exeによる初回起動時のセットアップには時間がかかります。ターミナル(黒い画面)が自動的に閉じるまでお待ちください。
 
 Behavior Senpaiをアンインストールする場合、または最新版に差し替える場合にはBehaviorSenpai.exeが入ったフォルダを丸ごと削除してください。そのほか、Ryeのアンインストールには以下をターミナルから実行してください。
 
