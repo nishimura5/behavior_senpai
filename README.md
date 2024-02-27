@@ -1,4 +1,4 @@
-# Behavior Senpai v.1.1.0
+# Behavior Senpai v.1.1.1
 
 [pyproject]: https://github.com/nishimura5/python_senpai/blob/master/pyproject.toml
 [app_detect]: https://github.com/nishimura5/python_senpai/blob/master/src/app_detect.py
@@ -204,7 +204,7 @@ Temporaryファイルは[gui_parts.py][gui_parts]が管理しています。
 結果が出版物や他の場所で使用される場合は以下の内容にて引用してください。
 
 ```
-Nishimura, E. (2024). Behavior Senpai (Version 1.1.0) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
+Nishimura, E. (2024). Behavior Senpai (Version 1.1.1) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
 ```
 
 ```
