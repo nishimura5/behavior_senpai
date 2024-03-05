@@ -1,4 +1,4 @@
-# Behavior Senpai v.1.1.1
+# Behavior Senpai v.1.2.0
 
 [pyproject]: https://github.com/nishimura5/python_senpai/blob/master/pyproject.toml
 [app_detect]: https://github.com/nishimura5/python_senpai/blob/master/src/app_detect.py
