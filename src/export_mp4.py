@@ -84,12 +84,12 @@ class MakeMp4:
     def _draw(self, out_df, frame_num, member, all_indexes, anno, scale):
         if (frame_num, member) not in all_indexes.droplevel(2):
             return anno.dst_img
-        keypoints = out_df.loc[pd.IndexSlice[frame_num, member, :], :]
-        print(keypoints)
+        keypoints = out_df.loc[pd.IndexSlice[frame_num, member, :], :].copy()
         if 'x' in keypoints.columns:
             keypoints.loc[:, ['x', 'y']] *= scale
         kps = keypoints.to_numpy()
         anno.set_pose(kps)
         anno.set_track(member)
+        anno.mosaic(240*scale)
         dst_img = anno.draw()
         return dst_img

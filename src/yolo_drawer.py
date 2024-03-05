@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 import torch
 
+from python_senpai import img_draw
+
 
 def draw(src_img, result):
     anno = Annotate()
@@ -45,12 +47,22 @@ class Annotate:
     def set_track(self, trk):
         if self.nose[0] != 0 and self.nose[1] != 0:
             self.pos = self.nose
+        elif self.left_ear[0] != 0 and self.left_ear[1] != 0 and self.right_ear[0] != 0 and self.right_ear[1] != 0:
+            self.pos = ((self.left_ear[0] + self.right_ear[0]) // 2, (self.left_ear[1] + self.right_ear[1]) // 2)
+        elif self.left_ear[0] != 0 and self.left_ear[1] != 0:
+            self.pos = self.left_ear
+        elif self.right_ear[0] != 0 and self.right_ear[1] != 0:
+            self.pos = self.right_ear
         else:
             self.pos = self.right_shoulder
         self.id = trk
 
     def set_img(self, src_img):
         self.dst_img = src_img.copy()
+
+    def mosaic(self, size):
+        self.dst_img = img_draw.mosaic(self.dst_img, self.pos, size)
+        return self.dst_img
 
     # poseを描画
     def draw(self):
