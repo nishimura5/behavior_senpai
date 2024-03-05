@@ -1,4 +1,4 @@
-# Behavior Senpai v.1.1.0
+# Behavior Senpai v.1.1.1
 
 [pyproject]: https://github.com/nishimura5/python_senpai/blob/master/pyproject.toml
 [app_detect]: https://github.com/nishimura5/python_senpai/blob/master/src/app_detect.py
@@ -52,6 +52,7 @@ CUDA対応GPUを搭載していない場合はMediaPipe Holisticのみが使用�
 BehaviorSenpai.exeを実行するとアプリケーションが起動します。CUDAを使用する場合は初回起動時に「Enable features using CUDA」にチェックを入れてから「OK」ボタンをクリックしてください。
 
 BehaviorSenpai.exeは、[Rye](https://rye-up.com)によるPython環境の構築とBehavior Senpai本体の起動を自動化するためのアプリケーションです。
+BehaviorSenpai.exeによる初回起動時のセットアップには時間がかかります。ターミナル(黒い画面)が自動的に閉じるまでお待ちください。
 
 Behavior Senpaiをアンインストールする場合、または最新版に差し替える場合にはBehaviorSenpai.exeが入ったフォルダを丸ごと削除してください。そのほか、Ryeのアンインストールには以下をターミナルから実行してください。
 
@@ -204,7 +205,7 @@ Temporaryファイルは[gui_parts.py][gui_parts]が管理しています。
 結果が出版物や他の場所で使用される場合は以下の内容にて引用してください。
 
 ```
-Nishimura, E. (2024). Behavior Senpai (Version 1.1.0) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
+Nishimura, E. (2024). Behavior Senpai (Version 1.1.1) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
 ```
 
 ```
