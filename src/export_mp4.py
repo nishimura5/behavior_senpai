@@ -90,6 +90,6 @@ class MakeMp4:
         kps = keypoints.to_numpy()
         anno.set_pose(kps)
         anno.set_track(member)
-        anno.mosaic(240*scale)
+        # anno.mosaic(240*scale)
         dst_img = anno.draw()
         return dst_img
