@@ -111,6 +111,9 @@ class App(ttk.Frame):
 
         # timestampの範囲を抽出
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
+        # 重複インデックス削除
+        tar_df = tar_df.reset_index().drop_duplicates(subset=['frame', 'member', 'keypoint'], keep='last').set_index(['frame', 'member', 'keypoint'])
+
         # keypointのインデックス値を文字列に変換
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
@@ -149,6 +152,7 @@ class App(ttk.Frame):
             return
         # indexのtypeを表示
         self.src_df = self.src_df.rename(index={old_member: new_member}, level=1)
+        self.src_df = self.src_df.reset_index().drop_duplicates(subset=['frame', 'member', 'keypoint'], keep='last').set_index(['frame', 'member', 'keypoint'])
         self.update_tree()
         print(f"renamed {old_member} to {new_member}")
 
