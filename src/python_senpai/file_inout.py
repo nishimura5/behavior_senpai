@@ -48,7 +48,8 @@ def overwrite_track_file(tar_path, tar_df):
     # バックアップ先にファイルがあったら上書きする
     os.replace(tar_path, backup_path)
     tar_df.to_pickle(tar_path)
-    print("overwrite_track_file() done.")
+    pkl_name = os.path.basename(tar_path)
+    messagebox.showinfo("overwrite", f"Overwritten.\nfile name: {pkl_name}")
 
 
 def save_pkl(org_pkl_path, dst_df, proc_history=None):
