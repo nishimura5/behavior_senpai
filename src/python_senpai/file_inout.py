@@ -1,5 +1,5 @@
 import os
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 
 import pandas as pd
 
@@ -73,3 +73,23 @@ def save_pkl(org_pkl_path, dst_df, proc_history=None):
         return
     dst_df.to_pickle(file_name)
     print("export() done.")
+
+
+def pkl_to_csv(init_dir="~"):
+    '''
+    pklファイルをcsvファイルに変換する
+    ダイアログを開きファイルを選択させ、同じディレクトリにcsvファイルを保存する
+    '''
+    pkl_path = filedialog.askopenfilename(
+        initialdir=init_dir,
+        title="Select pkl file",
+        filetypes=[("pkl files", "*.pkl")]
+    )
+    if pkl_path == "":
+        print("pkl_to_csv() canceled.")
+        return
+    csv_path = os.path.splitext(pkl_path)[0] + ".csv"
+    df = pd.read_pickle(pkl_path)
+    df.to_csv(csv_path)
+    csv_name = os.path.basename(csv_path)
+    messagebox.showinfo("pkl_to_csv", f"Conversion finished.\nfile name: {csv_name}")

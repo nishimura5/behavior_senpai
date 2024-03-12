@@ -94,6 +94,9 @@ class App(ttk.Frame):
         pref_list_button = ttk.Button(buttons_frame, text="Preference", command=lambda: self.launch_window(pref_list.App), width=20)
         pref_list_button.pack(side=tk.TOP, pady=4)
 
+        pkl_to_csv_button = ttk.Button(buttons_frame, text="PKL to CSV", command=self.pkl_to_csv, width=20)
+        pkl_to_csv_button.pack(side=tk.TOP, pady=4)
+
         # srcにlicense.jsonがある場合はボタンを表示
         license_path = './src/license.json'
         if os.path.exists(license_path):
@@ -217,6 +220,11 @@ class App(ttk.Frame):
 
         member_count = self.src_df.index.get_level_values(1).unique().size
         print(member_count)
+
+    def pkl_to_csv(self):
+        dir_path = os.path.dirname(self.pkl_path)
+        file_inout.pkl_to_csv(dir_path)
+        print("pkl to csv done.")
 
     def overwrite(self):
         file_inout.overwrite_track_file(self.pkl_path, self.src_df)
