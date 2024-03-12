@@ -55,8 +55,8 @@ class LinePlotter:
 
     def set_plot(self, plot_df, member: str, data_col_names: list):
         self.member = member
-        # multiindexが重複していたらdrop
-        plot_df = plot_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
+        # 重複インデックス削除
+        plot_df = plot_df[~plot_df.index.duplicated(keep="last")] 
         plot_df = plot_df.loc[pd.IndexSlice[:, member], :]
 
         for col_name in data_col_names:

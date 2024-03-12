@@ -81,7 +81,7 @@ class App(ttk.Frame):
         # timestampの範囲を抽出
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
         # 重複インデックス削除
-        tar_df = tar_df.reset_index().drop_duplicates(subset=['frame', 'member', 'keypoint'], keep='last').set_index(['frame', 'member', 'keypoint'])
+        tar_df = tar_df[~tar_df.index.duplicated(keep="last")] 
 
         # memberとkeypointのインデックス値を文字列に変換
         idx = tar_df.index
@@ -122,8 +122,8 @@ class App(ttk.Frame):
             return
         file_name = os.path.splitext(self.src_attrs['video_name'])[0]
         timestamp_df = self.timestamp_df
-        timestamp_df = timestamp_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
-        self.calc_df = self.calc_df.reset_index().drop_duplicates(subset=['frame', 'member'], keep='last').set_index(['frame', 'member'])
+        timestamp_df = timestamp_df[~timestamp_df.index.duplicated(keep="last")] 
+        self.calc_df = self.calc_df[~self.calc_df.index.duplicated(keep="last")] 
         export_df = pd.concat([self.calc_df, timestamp_df], axis=1)
         export_df.attrs = self.src_attrs
         dst_path = os.path.join(self.pkl_dir, file_name + "_3p.pkl")

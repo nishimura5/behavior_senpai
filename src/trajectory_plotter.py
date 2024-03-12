@@ -43,8 +43,8 @@ class TrajectoryPlotter:
         self.vcap = vcap
 
     def draw(self, plot_df, member: str, keypoint: str, dt_span: int, thinning: int):
-        # multiindexが重複していたらdrop
-        plot_df = plot_df.reset_index().drop_duplicates(subset=['frame', 'member', 'keypoint'], keep='last').set_index(['frame', 'member', 'keypoint'])
+        # 重複インデックス削除
+        plot_df = plot_df[~plot_df.index.duplicated(keep="last")] 
         plot_df = plot_df.loc[pd.IndexSlice[:, member, keypoint], :]
         plot_len = len(plot_df['x'])
         width, height = self.vcap.get_frame_size()
