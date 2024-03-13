@@ -8,6 +8,8 @@ from mmpose.evaluation.functional import nms
 from mmpose.registry import VISUALIZERS
 from mmpose.structures import merge_data_samples
 
+from python_senpai import img_draw
+
 
 class RTMPoseDetector:
     def __init__(self, show=True):
@@ -35,7 +37,7 @@ class RTMPoseDetector:
 
     def detect(self, roi=False):
         # データの初期化
-        data_dict = {"frame": [], "member": [], "keypoint": [], "x": [], "y": [], "visible":[], "score": [], "timestamp": []}
+        data_dict = {"frame": [], "member": [], "keypoint": [], "x": [], "y": [], "visible": [], "score": [], "timestamp": []}
         for i in range(self.total_frame_num):
             if roi is True:
                 ret, frame = self.cap.get_roi_frame()
@@ -62,7 +64,8 @@ class RTMPoseDetector:
             # 検出結果を描画、xキーで途中終了
             if self.show is True:
                 frame = self._draw(frame, data_samples)
-                self._put_frame_pos(frame, i)
+                img_draw.put_frame_pos(frame, i, self.total_frame_num)
+                img_draw.put_message(frame, "'x' key to exit.", font_size=1.5, y=55)
                 cv2.imshow("dst", frame)
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord('x'):
@@ -109,9 +112,3 @@ class RTMPoseDetector:
             draw_gt=False,
         )
         return self.visualizer.get_image()
-
-    def _put_frame_pos(self, src_img, pos=0, font_size=2):
-        txt_font = cv2.FONT_HERSHEY_PLAIN
-        text_pos = (font_size*5, font_size*15)
-        cv2.putText(src_img, f"{pos}/{self.total_frame_num}", text_pos, txt_font, font_size, (0, 0, 0), font_size*3)
-        cv2.putText(src_img, f"{pos}/{self.total_frame_num}", text_pos, txt_font, font_size, (255, 255, 255), font_size)

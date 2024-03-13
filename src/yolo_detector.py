@@ -3,6 +3,7 @@ from ultralytics import YOLO
 import pandas as pd
 
 import yolo_drawer
+from python_senpai import img_draw
 
 
 class YoloDetector:
@@ -35,7 +36,8 @@ class YoloDetector:
                     resize_height = 720
                     resize_width = int(frame.shape[1] * resize_height / frame.shape[0])
                     anno_img = cv2.resize(anno_img, (resize_width, resize_height))
-                self._put_frame_pos(anno_img, i)
+                img_draw.put_frame_pos(anno_img, i, self.total_frame_num)
+                img_draw.put_message(frame, "'x' key to exit.", font_size=1.5, y=55)
                 cv2.imshow("dst", anno_img)
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord('x'):
@@ -70,12 +72,6 @@ class YoloDetector:
 
     def get_result(self):
         return self.dst_df
-
-    def _put_frame_pos(self, src_img, pos=0, font_size=2):
-        txt_font = cv2.FONT_HERSHEY_PLAIN
-        text_pos = (font_size*5, font_size*15)
-        cv2.putText(src_img, f"{pos}/{self.total_frame_num}", text_pos, txt_font, font_size, (0, 0, 0), font_size*3)
-        cv2.putText(src_img, f"{pos}/{self.total_frame_num}", text_pos, txt_font, font_size, (255, 255, 255), font_size)
 
 
 def detect_from_picture(src_path):

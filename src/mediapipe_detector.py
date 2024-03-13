@@ -2,6 +2,8 @@ import cv2
 import mediapipe as mp
 import pandas as pd
 
+from python_senpai import img_draw
+
 
 class MediaPipeDetector:
     def __init__(self, show=True):
@@ -34,7 +36,8 @@ class MediaPipeDetector:
             # 検出結果を描画、xキーで途中終了
             if self.show is True:
                 self._draw(frame, results)
-                self._put_frame_pos(frame, i)
+                img_draw.put_frame_pos(frame, i, self.total_frame_num)
+                img_draw.put_message(frame, "'x' key to exit.", font_size=1.5, y=55)
                 cv2.imshow("dst", frame)
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord('x'):
@@ -97,9 +100,3 @@ class MediaPipeDetector:
             self.drawing.DrawingSpec(color=(10, 50, 200), thickness=1, circle_radius=1),
             self.drawing.DrawingSpec(color=(180, 180, 180), thickness=1, circle_radius=1),
         )
-
-    def _put_frame_pos(self, src_img, pos=0, font_size=2):
-        txt_font = cv2.FONT_HERSHEY_PLAIN
-        text_pos = (font_size*5, font_size*15)
-        cv2.putText(src_img, f"{pos}/{self.total_frame_num}", text_pos, txt_font, font_size, (0, 0, 0), font_size*3)
-        cv2.putText(src_img, f"{pos}/{self.total_frame_num}", text_pos, txt_font, font_size, (255, 255, 255), font_size)
