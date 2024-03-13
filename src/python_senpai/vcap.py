@@ -144,19 +144,12 @@ class RoiCap(cv2.VideoCapture):
         imshow()を使ったGUIでROIを指定
         '''
         ret, frame = self.read()
-        if frame.shape[0] > 1080:
-            resize_height = 1080 
-            resize_width = int(frame.shape[1] * resize_height / frame.shape[0])
-            scale = frame.shape[0] / resize_height
-            frame = cv2.resize(frame, (resize_width, resize_height))
-        else:
-            scale = 1
+        scale, frame = resize_frame(frame, target_height=500)
         img_draw.put_message(frame, "LEFT click: left-top", font_size=1.5, y=30)
         img_draw.put_message(frame, "RIGHT click: right-bottom", font_size=1.5, y=55)
         img_draw.put_message(frame, "SPACE key: progress", font_size=1.5, y=80)
         src_img = frame.copy()
 
-#        cv2.namedWindow("ROI", cv2.WINDOW_NORMAL)
         cv2.imshow("ROI", src_img)
         cv2.setMouseCallback("ROI", self.mouse_callback)
 
@@ -193,3 +186,14 @@ class RoiCap(cv2.VideoCapture):
             self.left_top_point = (x, y)
         if event == cv2.EVENT_RBUTTONDOWN:
             self.right_bottom_point = (x, y)
+
+
+def resize_frame(src_img, target_height=1080):
+    if src_img.shape[0] > target_height:
+        scale = target_height / src_img.shape[0]
+        dst_img = cv2.resize(src_img, None, fx=scale, fy=scale)
+        scale = 1 / scale
+    else:
+        scale = 1.0
+        dst_img = src_img
+    return scale, dst_img
