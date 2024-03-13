@@ -76,6 +76,7 @@ class App(ttk.Frame):
     def load(self, args):
         self.src_df = args['src_df']
         self.cap = args['cap']
+        current_position = args['current_position']
         src_attrs = self.src_df.attrs
         self.time_min, self.time_max = args['time_span_msec']
 
@@ -84,7 +85,7 @@ class App(ttk.Frame):
         width = int(self.height * ratio)
         self.scale = width / src_attrs["frame_size"][0]
         self.canvas.config(width=width, height=self.height)
-        ok, image_rgb = self.cap.read_at(1000, scale=self.scale, rgb=True)
+        ok, image_rgb = self.cap.read_at(current_position, scale=self.scale, rgb=True)
         if ok is False:
             return
         image_pil = Image.fromarray(image_rgb)

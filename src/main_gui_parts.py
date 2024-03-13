@@ -129,6 +129,9 @@ class VideoViewer(ttk.Frame):
         msec = float(msec)
         self.canvas.update(msec)
 
+    def get_current_position(self):
+        return self.slider.get()
+
 
 class CapCanvas(tk.Canvas):
     def __init__(self, master, width, height):

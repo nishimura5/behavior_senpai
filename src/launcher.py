@@ -190,7 +190,13 @@ class App(ttk.Frame):
         if grab is True:
             dlg_modal.grab_set()
         dlg_modal.transient(self.master)
-        args = {"src_df": self.src_df, "time_span_msec": self.time_span_msec, "cap": self.cap, "pkl_dir": self.pkl_dir}
+        current_position = self.vw.get_current_position()
+        args = {
+            "src_df": self.src_df,
+            "time_span_msec": self.time_span_msec,
+            "cap": self.cap,
+            "pkl_dir": self.pkl_dir,
+            "current_position": current_position}
         self.a = app(dlg_modal, args)
         dlg_modal.protocol("WM_DELETE_WINDOW", lambda: [dlg_modal.destroy(), cv2.destroyAllWindows()])
         self.wait_window(dlg_modal)
