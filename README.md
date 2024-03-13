@@ -36,6 +36,7 @@ Behavior Senpaiを使用するには以下の性能を満たすPCが必要です
 
  - 空き容量: 12GB～
  - 搭載RAM: 16GB～
+ - 画面解像度： 1920x1080〜
  - GPU: RTX2060～ (CUDA: 12.1)
 
 ### CUDAを使用しない場合
@@ -44,6 +45,7 @@ CUDA対応GPUを搭載していない場合はMediaPipe Holisticのみが使用�
 
  - 空き容量: 8GB～
  - 搭載RAM: 16GB～
+ - 画面解像度： 1920x1080〜
 
 ## Usage
 
