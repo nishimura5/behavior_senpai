@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+from python_senpai import img_draw
+
 
 class VideoCap(cv2.VideoCapture):
     def __init__(self):
@@ -142,10 +144,21 @@ class RoiCap(cv2.VideoCapture):
         imshow()を使ったGUIでROIを指定
         '''
         ret, frame = self.read()
+        if frame.shape[0] > 1080:
+            resize_height = 1080 
+            resize_width = int(frame.shape[1] * resize_height / frame.shape[0])
+            scale = frame.shape[0] / resize_height
+            frame = cv2.resize(frame, (resize_width, resize_height))
+        else:
+            scale = 1
+        img_draw.put_message(frame, "LEFT click: left-top", font_size=1.5, y=30)
+        img_draw.put_message(frame, "RIGHT click: right-bottom", font_size=1.5, y=55)
+        img_draw.put_message(frame, "SPACE key: progress", font_size=1.5, y=80)
         src_img = frame.copy()
-        cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
-        cv2.imshow("frame", src_img)
-        cv2.setMouseCallback("frame", self.mouse_callback)
+
+#        cv2.namedWindow("ROI", cv2.WINDOW_NORMAL)
+        cv2.imshow("ROI", src_img)
+        cv2.setMouseCallback("ROI", self.mouse_callback)
 
         left_top_circle_pos = (0, 0)
         right_bottom_circle_pos = (self.width, self.height)
@@ -154,7 +167,7 @@ class RoiCap(cv2.VideoCapture):
         self.right_bottom_point = right_bottom_circle_pos
 
         while True:
-            cv2.imshow("frame", src_img)
+            cv2.imshow("ROI", src_img)
             if self.left_top_point != left_top_circle_pos or self.right_bottom_point != right_bottom_circle_pos:
                 src_img = frame.copy()
                 cv2.rectangle(src_img, self.left_top_point, self.right_bottom_point, (0, 255, 0), 2)
@@ -168,6 +181,8 @@ class RoiCap(cv2.VideoCapture):
                 self.right_bottom_point = (self.width, self.height)
                 break
             if key == ord(' '):
+                self.left_top_point = (int(self.left_top_point[0] * scale), int(self.left_top_point[1] * scale))
+                self.right_bottom_point = (int(self.right_bottom_point[0] * scale), int(self.right_bottom_point[1] * scale))
                 break
         cv2.destroyAllWindows()
         self.set(cv2.CAP_PROP_POS_FRAMES, 0)
