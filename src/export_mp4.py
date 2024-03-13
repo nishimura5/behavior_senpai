@@ -80,6 +80,8 @@ class MakeMp4:
             self.out.write(dst_img)
         cv2.destroyAllWindows()
         self.out.release()
+        mp4_name = os.path.basename(out_file_path)
+        return mp4_name
 
     def _draw(self, out_df, frame_num, member, all_indexes, anno, scale):
         if (frame_num, member) not in all_indexes.droplevel(2):

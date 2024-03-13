@@ -1,6 +1,7 @@
 import os
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 
 import cv2
 import ttkthemes
@@ -219,19 +220,20 @@ class App(ttk.Frame):
         self.k2m.load(args)
 
         member_count = self.src_df.index.get_level_values(1).unique().size
-        print(member_count)
+        print(f"member_num = {member_count}")
 
     def pkl_to_csv(self):
         dir_path = os.path.dirname(self.pkl_path)
-        file_inout.pkl_to_csv(dir_path)
-        print("pkl to csv done.")
+        csv_name = file_inout.pkl_to_csv(dir_path)
+        messagebox.showinfo("PKL to CSV", f"Conversion finished.\nfile name: {csv_name}")
 
     def overwrite(self):
-        file_inout.overwrite_track_file(self.pkl_path, self.src_df)
-        print("overwrite done.")
+        pkl_name = file_inout.overwrite_track_file(self.pkl_path, self.src_df)
+        messagebox.showinfo("Overwrite", f"Overwritten.\nfile name: {pkl_name}")
 
     def export_mp4(self):
-        self.k2m.export()
+        mp4_name = self.k2m.export()
+        messagebox.showinfo("Export MP4", f"Export finished.\nfile name: {mp4_name}")
 
 
 def quit(root):

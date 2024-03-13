@@ -1,5 +1,5 @@
 import os
-from tkinter import filedialog, messagebox
+from tkinter import filedialog
 
 import pandas as pd
 
@@ -49,7 +49,7 @@ def overwrite_track_file(tar_path, tar_df):
     os.replace(tar_path, backup_path)
     tar_df.to_pickle(tar_path)
     pkl_name = os.path.basename(tar_path)
-    messagebox.showinfo("overwrite", f"Overwritten.\nfile name: {pkl_name}")
+    return pkl_name
 
 
 def save_pkl(org_pkl_path, dst_df, proc_history=None):
@@ -93,4 +93,4 @@ def pkl_to_csv(init_dir="~"):
     df = pd.read_pickle(pkl_path)
     df.to_csv(csv_path)
     csv_name = os.path.basename(csv_path)
-    messagebox.showinfo("pkl_to_csv", f"Conversion finished.\nfile name: {csv_name}")
+    return csv_name
