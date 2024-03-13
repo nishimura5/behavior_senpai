@@ -92,20 +92,20 @@ class App(ttk.Frame):
         self.clear()
         self.plot.set_vcap(self.cap)
 
-        if 'scene_table' not in src_attrs.keys():
-            print("scene_table is not in attrs")
-            return
+        if 'scene_table' in src_attrs.keys():
+            self.scene_table = src_attrs['scene_table']
+        else:
+            self.scene_table = {'start': [], 'end': [], 'description': []}
 
-        scene_table = src_attrs['scene_table']
         # self.treeをクリアしてattrs['scene_table']の値を入れる
         for item in self.tree.get_children(''):
             self.tree.delete(item)
 
         # attrsにdescriptionがなかったら空のリストを入れる
-        if 'description' not in scene_table.keys():
-            scene_table['description'] = [''] * len(scene_table['start'])
+        if 'description' not in self.scene_table.keys():
+            self.scene_table['description'] = [''] * len(self.scene_table['start'])
 
-        for start, end, description in zip(scene_table['start'], scene_table['end'], scene_table['description']):
+        for start, end, description in zip(self.scene_table['start'], self.scene_table['end'], self.scene_table['description']):
             duration = pd.to_timedelta(end) - pd.to_timedelta(start)
             duration_str = time_format.timedelta_to_str(duration)
             self.tree.insert("", "end", values=(start, end, duration_str, description))
@@ -120,10 +120,7 @@ class App(ttk.Frame):
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
         plot_df = tar_df
 
-        if 'scene_table' not in self.src_df.attrs.keys():
-            print("scene_table is not in attrs")
-            return
-        rects = self.src_df.attrs['scene_table']
+        rects = self.scene_table
 
         self.plot.set_trk_df(plot_df)
         self.plot.set_plot_rect(plot_df, current_member, rects, self.time_min, self.time_max)
@@ -131,6 +128,7 @@ class App(ttk.Frame):
 
     def on_ok(self):
         self.dst_df = self.src_df.copy()
+        self.dst_df.attrs['scene_table'] = self.scene_table
         if len(self.dst_df) == 0:
             print("No data in DataFrame")
             self.dst_df = None
@@ -158,6 +156,7 @@ class App(ttk.Frame):
 
         # tree_viewをstartカラムでソート
         self._treeview_sort_column(self.tree, "start")
+        self._update()
 
     def _treeview_sort_column(self, tv, col):
         tar_list = [(tv.set(k, col), k) for k in tv.get_children('')]
@@ -169,6 +168,7 @@ class App(ttk.Frame):
         selected = self.tree.selection()
         for item in selected:
             self.tree.delete(item)
+        self._update()
 
     def _update(self):
         scene_table = {'start': [], 'end': [], 'description': []}
@@ -176,7 +176,7 @@ class App(ttk.Frame):
             scene_table['start'].append(self.tree.item(item)['values'][0])
             scene_table['end'].append(self.tree.item(item)['values'][1])
             scene_table['description'].append(self.tree.item(item)['values'][3])
-        self.src_df.attrs['scene_table'] = scene_table
+        self.scene_table = scene_table
 
     def clear(self):
         self.plot.clear()
