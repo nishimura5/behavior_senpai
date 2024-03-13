@@ -23,21 +23,24 @@ class App(ttk.Frame):
         width, height, dpi = temp.get_window_size()
         self.plot = LinePlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
 
-        setting_frame = ttk.Frame(self)
-        setting_frame.pack(pady=5)
+        control_frame = ttk.Frame(self)
+        control_frame.pack(fill=tk.X, pady=(0, 20))
+        setting_frame = ttk.Frame(control_frame)
+        setting_frame.pack(fill=tk.X, expand=True, side=tk.LEFT)
 
-        member_label = ttk.Label(setting_frame, text="member")
+        draw_frame = ttk.Frame(setting_frame)
+        draw_frame.pack(pady=5)
+        member_label = ttk.Label(draw_frame, text="Member:")
         member_label.pack(side=tk.LEFT)
-        self.member_combo = ttk.Combobox(setting_frame, state='readonly', width=18)
-        self.member_combo.pack(side=tk.LEFT, padx=5)
+        self.member_combo = ttk.Combobox(draw_frame, state='readonly', width=18)
+        self.member_combo.pack(side=tk.LEFT)
 
-        draw_btn = ttk.Button(setting_frame, text="Draw", command=self.draw)
-        draw_btn.pack(side=tk.LEFT)
+        draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw)
+        draw_btn.pack(side=tk.LEFT, padx=(10, 0))
+        clear_btn = ttk.Button(draw_frame, text="Clear", command=self.clear)
+        clear_btn.pack(side=tk.LEFT, padx=(10, 0))
 
-        clear_btn = ttk.Button(setting_frame, text="Clear", command=self.clear)
-        clear_btn.pack(side=tk.LEFT)
-
-        entry_frame = ttk.Frame(self)
+        entry_frame = ttk.Frame(setting_frame)
         entry_frame.pack(pady=5)
         self.time_span_entry = TimeSpanEntry(entry_frame)
         self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
@@ -50,8 +53,13 @@ class App(ttk.Frame):
         add_btn.pack(side=tk.LEFT, padx=5)
         delete_btn = ttk.Button(entry_frame, text="Delete Selected", command=self._delete_selected)
         delete_btn.pack(side=tk.LEFT, padx=5)
-        update_btn = ttk.Button(entry_frame, text="OK", command=self.on_ok)
-        update_btn.pack(side=tk.LEFT, padx=5)
+
+        ok_frame = ttk.Frame(control_frame)
+        ok_frame.pack(anchor=tk.NE, padx=(20, 0))
+        ok_btn = ttk.Button(ok_frame, text="OK", command=self.on_ok)
+        ok_btn.pack(pady=(0, 5))
+        cancel_btn = ttk.Button(ok_frame, text="Cancel", command=self.cancel)
+        cancel_btn.pack()
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
@@ -125,6 +133,10 @@ class App(ttk.Frame):
         self.plot.set_trk_df(plot_df)
         self.plot.set_plot_rect(plot_df, current_member, rects, self.time_min, self.time_max)
         self.plot.draw()
+
+    def cancel(self):
+        self.dst_df = None
+        self.master.destroy()
 
     def on_ok(self):
         self.dst_df = self.src_df.copy()
