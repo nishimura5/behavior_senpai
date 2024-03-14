@@ -95,7 +95,7 @@ class App(ttk.Frame):
         pref_list_button = ttk.Button(buttons_frame, text="Preference", command=lambda: self.launch_window(pref_list.App), width=20)
         pref_list_button.pack(side=tk.TOP, pady=4)
 
-        pkl_to_csv_button = ttk.Button(buttons_frame, text="PKL to CSV", command=self.pkl_to_csv, width=20)
+        pkl_to_csv_button = ttk.Button(buttons_frame, text="PKL to CSV tool", command=self.pkl_to_csv, width=20)
         pkl_to_csv_button.pack(side=tk.TOP, pady=4)
 
         # srcにlicense.jsonがある場合はボタンを表示
