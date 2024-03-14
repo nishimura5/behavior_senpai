@@ -9,6 +9,7 @@ from mmpose.registry import VISUALIZERS
 from mmpose.structures import merge_data_samples
 
 from python_senpai import img_draw
+from python_senpai import vcap
 
 
 class RTMPoseDetector:
@@ -64,6 +65,7 @@ class RTMPoseDetector:
             # 検出結果を描画、xキーで途中終了
             if self.show is True:
                 frame = self._draw(frame, data_samples)
+                _, frame = vcap.resize_frame(frame)
                 img_draw.put_frame_pos(frame, i, self.total_frame_num)
                 img_draw.put_message(frame, "'x' key to exit.", font_size=1.5, y=55)
                 cv2.imshow("dst", frame)

@@ -144,7 +144,7 @@ class RoiCap(cv2.VideoCapture):
         imshow()を使ったGUIでROIを指定
         '''
         ret, frame = self.read()
-        scale, frame = resize_frame(frame, target_height=500)
+        scale, frame = resize_frame(frame)
         img_draw.put_message(frame, "LEFT click: left-top", font_size=1.5, y=30)
         img_draw.put_message(frame, "RIGHT click: right-bottom", font_size=1.5, y=55)
         img_draw.put_message(frame, "SPACE key: progress", font_size=1.5, y=80)
