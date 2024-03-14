@@ -2,6 +2,7 @@ import os
 import importlib.util
 
 from mediapipe_detector import MediaPipeDetector
+from python_senpai import file_inout
 
 
 def is_module_available(module_name):
@@ -51,10 +52,10 @@ def exec(rcap, model_name, video_path, use_roi=False):
     result_df = model.get_result()
 
     # attrsを埋め込み
-    result_df.attrs["model"] = model_name
-    result_df.attrs["frame_size"] = (rcap.width, rcap.height)
-    result_df.attrs["video_name"] = os.path.basename(video_path)
-    result_df.attrs["roi_left_top"] = rcap.get_left_top()
+    result_df.attrs['model'] = model_name
+    result_df.attrs['frame_size'] = (rcap.width, rcap.height)
+    result_df.attrs['video_name'] = os.path.basename(video_path)
+    result_df.attrs['roi_left_top'] = rcap.get_left_top()
 
-    result_df.to_pickle(pkl_path)
+    file_inout.overwrite_track_file(pkl_path, result_df, not_found_ok=True)
     rcap.release()

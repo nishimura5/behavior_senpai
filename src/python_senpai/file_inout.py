@@ -32,12 +32,17 @@ def load_track_file(tar_path, allow_calculated_track_file=False):
     return src_df
 
 
-def overwrite_track_file(tar_path, tar_df):
+def overwrite_track_file(tar_path, tar_df, not_found_ok=False):
     '''
     上書きしようとしているファイルをバックアップしてから上書きする
     バックアップフォルダにバックアップを保存する
     バックアップ先にファイルがあったら上書きする
     '''
+    if os.path.exists(tar_path) is False and not_found_ok is True:
+        tar_df.to_pickle(tar_path)
+        pkl_name = os.path.basename(tar_path)
+        return pkl_name
+
     if os.path.exists(tar_path) is False:
         print("File not found: {}".format(tar_path))
         return
