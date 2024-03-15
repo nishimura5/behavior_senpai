@@ -44,7 +44,7 @@ class TrajectoryPlotter:
 
     def draw(self, plot_df, member: str, keypoint: str, dt_span: int, thinning: int):
         # 重複インデックス削除
-        plot_df = plot_df[~plot_df.index.duplicated(keep="last")] 
+        plot_df = plot_df[~plot_df.index.duplicated(keep="last")]
         plot_df = plot_df.loc[pd.IndexSlice[:, member, keypoint], :]
         plot_len = len(plot_df['x'])
         width, height = self.vcap.get_frame_size()
