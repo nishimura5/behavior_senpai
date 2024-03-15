@@ -39,8 +39,6 @@ class App(ttk.Frame):
 
         rename_frame = ttk.Frame(setting_frame)
         rename_frame.pack(pady=5)
-        remove_btn = ttk.Button(rename_frame, text="Remove", command=self.remove_member)
-        remove_btn.pack(anchor=tk.W, padx=(0, 5))
         rename_member_label = ttk.Label(rename_frame, text="Rename Member")
         rename_member_label.pack(side=tk.LEFT, pady=5)
         self.tar_member_label_var = tk.StringVar()
@@ -53,6 +51,8 @@ class App(ttk.Frame):
         self.new_member_name_entry.pack(side=tk.LEFT, padx=5)
         rename_btn = ttk.Button(rename_frame, text="Rename", command=self.rename_member)
         rename_btn.pack(side=tk.LEFT, padx=5)
+        remove_btn = ttk.Button(rename_frame, text="Remove", command=self.remove_member)
+        remove_btn.pack(padx=(70, 0))
 
         tree_frame = ttk.Frame(setting_frame)
         tree_frame.pack(pady=5)
@@ -112,7 +112,7 @@ class App(ttk.Frame):
         # timestampの範囲を抽出
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
         # 重複インデックス削除
-        tar_df = tar_df[~tar_df.index.duplicated(keep="last")] 
+        tar_df = tar_df[~tar_df.index.duplicated(keep="last")]
 
         # keypointのインデックス値を文字列に変換
         idx = tar_df.index
@@ -152,7 +152,7 @@ class App(ttk.Frame):
             return
         # indexのtypeを表示
         self.src_df = self.src_df.rename(index={old_member: new_member}, level=1)
-        self.src_df = self.src_df[~self.src_df.index.duplicated(keep="last")] 
+        self.src_df = self.src_df[~self.src_df.index.duplicated(keep="last")]
         self.update_tree()
         print(f"renamed {old_member} to {new_member}")
 
