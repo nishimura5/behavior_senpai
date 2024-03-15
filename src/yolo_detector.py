@@ -32,11 +32,11 @@ class YoloDetector:
 
             # 検出結果を描画、xキーで途中終了
             if self.show is True:
-                anno_img = yolo_drawer.draw(frame, result)
-                _, anno_img = vcap.resize_frame(anno_img)
-                img_draw.put_frame_pos(anno_img, i, self.total_frame_num)
+                frame = yolo_drawer.draw(frame, result)
+                _, frame = vcap.resize_frame(frame)
+                img_draw.put_frame_pos(frame, i, self.total_frame_num)
                 img_draw.put_message(frame, "'x' key to exit.", font_size=1.5, y=55)
-                cv2.imshow("dst", anno_img)
+                cv2.imshow("dst", frame)
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord('x'):
                     break
