@@ -142,8 +142,8 @@ def remove_by_bool_col(src_df, bool_col_name: str, drop_member: bool = False):
     src_dfのbool_col_nameがFalseの行のxとyをnanにする
     drop_memberがTrueの場合は、keypointが1つでもFalseならそのmember丸ごとFalseにする
     '''
-    remove_sr = src_df[bool_col_name].astype('float')
-    remove_sr = remove_sr.fillna(True)
+    # concatでNanになった列をfloatにしてTrueで埋めてboolにする
+    remove_sr = src_df[bool_col_name].astype('float').fillna(True).astype('bool')
     if drop_member is True:
         remove_sr = remove_sr.groupby(['frame', 'member']).transform('all') 
 
