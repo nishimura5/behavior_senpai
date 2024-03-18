@@ -140,7 +140,6 @@ class App(ttk.Frame):
 
         self.k2m = export_mp4.MakeMp4()
         self.cap = vcap.VideoCap()
-        self.time_span_msec = None
         self.pkl_path = ""
         self.pkl_dir = None
         self.src_df = None
@@ -163,12 +162,11 @@ class App(ttk.Frame):
 
         # UIの更新
         self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
-        self.time_span_msec = self.time_span_entry.get_start_end()
         self.pkl_selector.set_prev_next(src_attrs)
 
         self.vw.set_cap(self.cap, src_attrs["frame_size"], anno_trk=self.src_df)
         self.update_attrs()
-        args = {"src_df": self.src_df, "time_span_msec": self.time_span_msec, "cap": self.cap, "pkl_dir": self.pkl_dir}
+        args = {"src_df": self.src_df, "time_span_msec": self.time_span_entry.get_start_end(), "cap": self.cap, "pkl_dir": self.pkl_dir}
         self.k2m.load(args)
 
     def update_attrs(self):
@@ -193,7 +191,7 @@ class App(ttk.Frame):
         current_position = self.vw.get_current_position()
         args = {
             "src_df": self.src_df,
-            "time_span_msec": self.time_span_msec,
+            "time_span_msec": self.time_span_entry.get_start_end(),
             "cap": self.cap,
             "pkl_dir": self.pkl_dir,
             "current_position": current_position}
