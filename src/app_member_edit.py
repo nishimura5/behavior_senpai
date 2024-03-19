@@ -143,15 +143,23 @@ class App(ttk.Frame):
 
     def rename_member(self):
         """
-        memberをリネームする、モデルによってはmemberはintで保持されているが、リネーム後はstrになる
+        memberをリネームする
         """
         old_member = self.tar_member_label_var.get()
         new_member = self.new_member_name_entry.get()
         if new_member == "":
             print("new member name is empty")
             return
-        # indexのtypeを表示
-        self.src_df = self.src_df.rename(index={old_member: new_member}, level=1)
+        # self.time_min self.time_maxの間でかつ変更したいmemberを抽出
+        between_sr = self.src_df['timestamp'].between(self.time_min-1, self.time_max+1)
+        tar_member_sr = self.src_df.index.get_level_values(1) == old_member
+        rename_sr = between_sr & tar_member_sr
+        # new_memberを追加してmemberと入れ替える
+        new_member_sr = self.src_df.index.get_level_values(1).where(~rename_sr, new_member)
+        self.src_df['new_member'] = new_member_sr
+        self.src_df = self.src_df.set_index('new_member', append=True).swaplevel()
+        self.src_df = self.src_df.droplevel(level='member').rename_axis(index={'new_member': 'member'})
+
         self.src_df = self.src_df[~self.src_df.index.duplicated(keep="last")]
         self.update_tree()
         print(f"renamed {old_member} to {new_member}")
