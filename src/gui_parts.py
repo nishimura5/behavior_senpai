@@ -142,6 +142,8 @@ class TimeSpanEntry(ttk.Frame):
         self.time_end_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)
         self.time_end_entry.pack(side=tk.LEFT)
         self.time_end_entry.bind("<FocusIn>", self._select_all)
+        self.reset_btn = ttk.Button(master, text="Reset", state='disable', command=self.reset, width=6)
+        self.reset_btn.pack(side=tk.LEFT, padx=(5, 10))
 
     def get_start_end(self):
         start_str = self.time_start_entry.get()
@@ -162,6 +164,15 @@ class TimeSpanEntry(ttk.Frame):
         self.time_start_entry.insert(tk.END, start)
         self.time_end_entry.delete(0, tk.END)
         self.time_end_entry.insert(tk.END, end)
+        self.default_start = start
+        self.default_end = end
+        self.reset_btn['state'] = 'normal'
+
+    def reset(self):
+        self.time_start_entry.delete(0, tk.END)
+        self.time_start_entry.insert(tk.END, self.default_start)
+        self.time_end_entry.delete(0, tk.END)
+        self.time_end_entry.insert(tk.END, self.default_end)
 
     def _select_all(self, event):
         event.widget.select_range(0, tk.END)
