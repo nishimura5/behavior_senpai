@@ -172,8 +172,11 @@ class App(ttk.Frame):
         if current_member == "":
             print("current member is empty")
             return
-        # indexのtypeを表示
-        self.src_df = self.src_df.drop(current_member, level=1)
+        # self.time_min self.time_maxの間でかつdropしたいmemberがmatchする行を削除
+        between_sr = self.src_df['timestamp'].between(self.time_min-1, self.time_max+1)
+        tar_member_sr = self.src_df.index.get_level_values(1) == current_member
+        remove_sr = between_sr & tar_member_sr
+        self.src_df = self.src_df[~remove_sr]
         self.update_tree()
         print(f"removed {current_member}")
 
