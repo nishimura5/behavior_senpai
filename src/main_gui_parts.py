@@ -21,6 +21,7 @@ class PklSelector(ttk.Frame):
         data = tmp.load()
         self.trk_path = data['trk_path']
 
+        self.side = tk.LEFT
         self.prev_pkl_btn = ttk.Button(master, text="<", width=1, state=tk.DISABLED)
         self.prev_pkl_btn.pack(side=tk.LEFT)
         self.next_pkl_btn = ttk.Button(master, text=">", width=1, state=tk.DISABLED)

@@ -129,6 +129,7 @@ class TimeSpanEntry(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
 
+        self.side = tk.LEFT
         caption_time = ttk.Label(master, text='time:')
         caption_time.pack(side=tk.LEFT, padx=(10, 3))
         vcmd = (self.register(self._validate), '%P')
