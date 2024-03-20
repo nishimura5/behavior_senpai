@@ -159,7 +159,15 @@ class App(ttk.Frame):
         in_trk_path = file_inout.open_pkl(self.pkl_dir)
         in_trk_df = file_inout.load_track_file(in_trk_path, allow_calculated_track_file=True)
         pattern = r'(\w+)\((\w+)-(\w+),(\w+)-(\w+)\)'
-        for col in in_trk_df.columns:
+        cols = in_trk_df.columns.tolist()
+
+        # suffix '_x'と'_y'があるときは'_y'を削除、片方しかないときは削除しない
+        contains_x = any(map(lambda x: x.endswith('_x'), cols))
+        contains_y = any(map(lambda x: x.endswith('_y'), cols))
+        if contains_x and contains_y:
+            cols = [item for item in cols if not item.endswith('_y')]
+
+        for col in cols:
             if col == 'timestamp':
                 continue
             match = re.match(pattern, col)

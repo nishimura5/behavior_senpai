@@ -155,7 +155,7 @@ def remove_by_bool_col(src_df, bool_col_name: str, drop_member: bool = False):
 
 
 def calc_xy_component(src_df, kp0: str, kp1: str):
-    col_name = f'({kp0}-{kp1})'
+    col_name = f'component({kp0}-{kp1})'
     point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
     point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
     point1_0 = point1 - point0

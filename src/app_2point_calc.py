@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 import tkinter as tk
 from tkinter import ttk
 
@@ -48,14 +49,17 @@ class App(ttk.Frame):
         self.thinnig_option = ThinningOption(setting_frame)
         self.thinnig_option.pack(side=tk.LEFT, padx=5)
 
-        draw_btn = ttk.Button(setting_frame, text="Draw", command=self.draw)
+        draw_btn = ttk.Button(setting_frame, text="Draw", command=self.manual_draw)
         draw_btn.pack(side=tk.LEFT)
 
         clear_btn = ttk.Button(setting_frame, text="Clear", command=self.clear)
-        clear_btn.pack(side=tk.LEFT)
+        clear_btn.pack(side=tk.LEFT, padx=(5, 0))
 
         export_btn = ttk.Button(setting_frame, text="Export", command=self.export)
-        export_btn.pack(side=tk.LEFT)
+        export_btn.pack(side=tk.LEFT, padx=(5, 50))
+
+        repeat_btn = ttk.Button(setting_frame, text="Repeat Draw", command=self.repeat_pkl)
+        repeat_btn.pack(side=tk.LEFT)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
@@ -75,9 +79,22 @@ class App(ttk.Frame):
         self.lineplot.set_vcap(self.cap)
         self.clear()
 
-    def draw(self):
-        current_member, kp0, kp1 = self.member_combo.get_selected()
+    def _combo_to_calc_code(self):
+        code = ''
+        if self.calc_type_combo.get() == 'xy_component (AB_x, AB_y)':
+            code = 'component'
+        elif self.calc_type_combo.get() == 'norm (|AB|)':
+            code = 'norm'
+        elif self.calc_type_combo.get() == 'all':
+            code = 'all'
+        return code
 
+    def manual_draw(self):
+        current_member, kp0, kp1 = self.member_combo.get_selected()
+        code = self._combo_to_calc_code()
+        self.draw(current_member, code, kp0, kp1)
+
+    def draw(self, current_member, calc_code, kp0, kp1):
         # timestampの範囲を抽出
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
         # 重複インデックス削除
@@ -87,11 +104,11 @@ class App(ttk.Frame):
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
-        if self.calc_type_combo.get() == 'xy_component (AB_x, AB_y)':
+        if calc_code == 'component':
             prod_df = keypoints_proc.calc_xy_component(tar_df, kp0, kp1)
-        elif self.calc_type_combo.get() == 'norm (|AB|)':
+        elif calc_code == 'norm':
             prod_df = keypoints_proc.calc_norm(tar_df, kp0, kp1)
-        elif self.calc_type_combo.get() == 'all':
+        elif calc_code == 'all':
             xy_df = keypoints_proc.calc_xy_component(tar_df, kp0, kp1)
             norm_df = keypoints_proc.calc_norm(tar_df, kp0, kp1)
             prod_df = pd.concat([xy_df, norm_df], axis=1)
@@ -126,6 +143,31 @@ class App(ttk.Frame):
         export_df.attrs = self.src_attrs
         dst_path = os.path.join(self.pkl_dir, file_name + "_2p.pkl")
         file_inout.save_pkl(dst_path, export_df, proc_history="2p_vector")
+
+    def repeat_pkl(self):
+        current_member, _, _ = self.member_combo.get_selected()
+        # file選択ダイアログを開く
+        in_trk_path = file_inout.open_pkl(self.pkl_dir)
+        in_trk_df = file_inout.load_track_file(in_trk_path, allow_calculated_track_file=True)
+        pattern = r'(\w+)\((\w+)-(\w+)\)'
+        cols = in_trk_df.columns.tolist()
+
+        # suffix '_x'と'_y'があるときは'_y'を削除、片方しかないときは削除しない
+        contains_x = any(map(lambda x: x.endswith('_x'), cols))
+        contains_y = any(map(lambda x: x.endswith('_y'), cols))
+        if contains_x and contains_y:
+            cols = [item for item in cols if not item.endswith('_y')]
+
+        for col in cols:
+            if col == 'timestamp':
+                continue
+            match = re.match(pattern, col)
+            if not match:
+                continue
+            calc_code = match.group(1)
+            kp_a = match.group(2)
+            kp_b = match.group(3)
+            self.draw(current_member, calc_code, kp_a, kp_b)
 
     def clear(self):
         self.lineplot.clear()
