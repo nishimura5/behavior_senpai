@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 import tkinter as tk
 from tkinter import ttk
 
@@ -48,14 +49,17 @@ class App(ttk.Frame):
         self.thinnig_option = ThinningOption(setting_frame)
         self.thinnig_option.pack(side=tk.LEFT, padx=5)
 
-        draw_btn = ttk.Button(setting_frame, text="Draw", command=self.draw)
+        draw_btn = ttk.Button(setting_frame, text="Draw", command=self.manual_draw)
         draw_btn.pack(side=tk.LEFT)
 
         clear_btn = ttk.Button(setting_frame, text="Clear", command=self.clear)
-        clear_btn.pack(side=tk.LEFT)
+        clear_btn.pack(side=tk.LEFT, padx=(5, 0))
 
         export_btn = ttk.Button(setting_frame, text="Export", command=self.export)
-        export_btn.pack(side=tk.LEFT)
+        export_btn.pack(side=tk.LEFT, padx=(5, 50))
+
+        repeat_btn = ttk.Button(setting_frame, text="Repeat Draw", command=self.repeat_pkl)
+        repeat_btn.pack(side=tk.LEFT)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
@@ -75,9 +79,26 @@ class App(ttk.Frame):
         self.lineplot.set_vcap(self.cap)
         self.clear()
 
-    def draw(self):
-        current_member, kp0, kp1, kp2 = self.member_combo.get_selected()
+    def _combo_to_calc_code(self):
+        code = ''
+        if self.calc_type_combo.get() == 'cross_product (AB×AC)':
+            code = 'cross'
+        elif self.calc_type_combo.get() == 'dot_product (AB・AC)':
+            code = 'dot'
+        elif self.calc_type_combo.get() == 'plus (AB+AC)':
+            code = 'plus'
+        elif self.calc_type_combo.get() == 'norms (|AB||AC|)':
+            code = 'norms'
+        elif self.calc_type_combo.get() == 'all':
+            code = 'all'
+        return code
 
+    def manual_draw(self):
+        current_member, kp0, kp1, kp2 = self.member_combo.get_selected()
+        code = self._combo_to_calc_code()
+        self.draw(current_member, code, kp0, kp1, kp2)
+
+    def draw(self, current_member, calc_code, kp0, kp1, kp2):
         # timestampの範囲を抽出
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
         # 重複インデックス削除
@@ -87,15 +108,15 @@ class App(ttk.Frame):
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
-        if self.calc_type_combo.get() == 'cross_product (AB×AC)':
+        if calc_code == 'cross':
             prod_df = keypoints_proc.calc_cross_product(tar_df, kp0, kp1, kp2)
-        elif self.calc_type_combo.get() == 'dot_product (AB・AC)':
+        elif calc_code == 'dot':
             prod_df = keypoints_proc.calc_dot_product(tar_df, kp0, kp1, kp2)
-        elif self.calc_type_combo.get() == 'plus (AB+AC)':
+        elif calc_code == 'plus':
             prod_df = keypoints_proc.calc_plus(tar_df, kp0, kp1, kp2)
-        elif self.calc_type_combo.get() == 'norms (|AB||AC|)':
+        elif calc_code == 'norms':
             prod_df = keypoints_proc.calc_norms(tar_df, kp0, kp1, kp2)
-        elif self.calc_type_combo.get() == 'all':
+        elif calc_code == 'all':
             prod_df = keypoints_proc.calc_cross_dot_plus_angle(tar_df, kp0, kp1, kp2)
 
         col_names = prod_df.columns
@@ -128,6 +149,27 @@ class App(ttk.Frame):
         export_df.attrs = self.src_attrs
         dst_path = os.path.join(self.pkl_dir, file_name + "_3p.pkl")
         file_inout.save_pkl(dst_path, export_df, proc_history="3p_vector")
+
+    def repeat_pkl(self):
+        '''
+        pklファイルを読み込んでカラムを解析し、同じ設定で再計算とDrawを行う
+        '''
+        current_member, _, _, _ = self.member_combo.get_selected()
+        # file選択ダイアログを開く
+        in_trk_path = file_inout.open_pkl(self.pkl_dir)
+        in_trk_df = file_inout.load_track_file(in_trk_path, allow_calculated_track_file=True)
+        pattern = r'(\w+)\((\w+)-(\w+),(\w+)-(\w+)\)'
+        for col in in_trk_df.columns:
+            if col == 'timestamp':
+                continue
+            match = re.match(pattern, col)
+            if not match:
+                continue
+            calc_code = match.group(1)
+            kp_a = match.group(2)
+            kp_b = match.group(3)
+            kp_c = match.group(5)
+            self.draw(current_member, calc_code, kp_a, kp_b, kp_c)
 
     def clear(self):
         self.lineplot.clear()
