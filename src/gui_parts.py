@@ -103,7 +103,6 @@ class ProcOptions(ttk.Frame):
 class ThinningOption(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
-        # 一時ファイルからdt_spanとthinningを取得
         tmp = TempFile()
         data = tmp.load()
 
@@ -123,6 +122,30 @@ class ThinningOption(ttk.Frame):
 
     def _validate(self, text):
         return (text.isdigit() or text == "")
+
+
+class CalcCaseEntry(ttk.Frame):
+    def __init__(self, master):
+        super().__init__(master)
+        tmp = TempFile()
+        data = tmp.load()
+        self.invalid_characters = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
+        caption = ttk.Label(master, text='Calc case:')
+        caption.pack(side=tk.LEFT)
+        self.calc_case_entry = ttk.Entry(master, width=10, validate="key", validatecommand=(self.register(self._validate), "%P"))
+        self.calc_case_entry.insert(tk.END, data['calc_case'])
+        self.calc_case_entry.pack(side=tk.LEFT, padx=(0, 5))
+
+    def get_calc_case(self):
+        tmp = TempFile()
+        data = tmp.load()
+        calc_case = self.calc_case_entry.get()
+        data['calc_case'] = calc_case
+        tmp.save(data)
+        return calc_case
+
+    def _validate(self, text):
+        return (all(c not in text for c in self.invalid_characters) or text == "")
 
 
 class TimeSpanEntry(ttk.Frame):
@@ -192,7 +215,7 @@ class TimeSpanEntry(ttk.Frame):
 
 class TempFile:
     def __init__(self):
-        self.data = {'trk_path': '', 'dt_span': 10, 'thinning': 0}
+        self.data = {'trk_path': '', 'calc_case': '', 'dt_span': 10, 'thinning': 0}
 
         file_name = 'temp.pkl'
         self.file_path = os.path.join(self._find_data_dir(), file_name)
@@ -207,7 +230,8 @@ class TempFile:
         res = self.data
         if os.path.exists(self.file_path) is True:
             with open(self.file_path, 'rb') as f:
-                self.data = pickle.load(f)
+                new_data_dict = pickle.load(f)
+                self.data.update(new_data_dict)
                 res = self.data
         return res
 

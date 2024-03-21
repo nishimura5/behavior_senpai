@@ -57,9 +57,9 @@ def overwrite_track_file(tar_path, tar_df, not_found_ok=False):
     return pkl_name
 
 
-def save_pkl(org_pkl_path, dst_df, proc_history=None):
+def save_pkl(org_pkl_path, calc_case, dst_df, proc_history=None):
     file_name = os.path.basename(org_pkl_path)
-    dst_dir = os.path.join(os.path.dirname(org_pkl_path), os.pardir, 'calc')
+    dst_dir = os.path.join(os.path.dirname(org_pkl_path), os.pardir, 'calc', calc_case)
     os.makedirs(dst_dir, exist_ok=True)
 
     if proc_history is not None:

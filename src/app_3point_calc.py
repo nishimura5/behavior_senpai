@@ -7,7 +7,7 @@ from tkinter import ttk
 import pandas as pd
 
 from vector_gui_parts import MemberKeypointComboboxesFor3Point
-from gui_parts import ThinningOption, TempFile
+from gui_parts import ThinningOption, TempFile, CalcCaseEntry
 from line_plotter import LinePlotter
 from python_senpai import keypoints_proc
 from python_senpai import file_inout
@@ -29,6 +29,8 @@ class App(ttk.Frame):
 
         cross_frame = ttk.Frame(self)
         cross_frame.pack(pady=5)
+        self.calc_case_entry = CalcCaseEntry(cross_frame)
+        self.calc_case_entry.pack(side=tk.LEFT, padx=5)
         calc_type_label = ttk.Label(cross_frame, text="Calc:")
         calc_type_label.pack(side=tk.LEFT, padx=5)
         self.calc_type_combo = ttk.Combobox(cross_frame, state='readonly', width=18)
@@ -147,8 +149,9 @@ class App(ttk.Frame):
         self.calc_df = self.calc_df[~self.calc_df.index.duplicated(keep="last")]
         export_df = pd.concat([self.calc_df, timestamp_df], axis=1)
         export_df.attrs = self.src_attrs
+        calc_case = self.calc_case_entry.get_calc_case()
         dst_path = os.path.join(self.pkl_dir, file_name + "_3p.pkl")
-        file_inout.save_pkl(dst_path, export_df, proc_history="3p_vector")
+        file_inout.save_pkl(dst_path, calc_case, export_df, proc_history="3p_vector")
 
     def repeat_pkl(self):
         '''
