@@ -132,7 +132,33 @@ Track fileに格納されているDataFrameの例を以下に示します。な�
 
 [app_2point_calc.py][app_2point_calc]や[app_3point_calc.py][app_3point_calc]で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で"calc"フォルダに保存されます。ファイル拡張子はTrack fileと同様'.pkl'です。
 
-Calculated Track fileは2-level-multi-indexでデータを保持しています。indexの名称はlevel 0から順に'frame', 'member'です。columnsの名称は計算の内容に準じますが、必ず'timestamp'が含まれています。
+Calculated Track fileは2-level-multi-indexでデータを保持しています。indexの名称はlevel 0から順に'frame', 'member'です。columnsには必ず'timestamp'が含まれます。
+
+#### Column name definition
+
+Calculated Track file内のDataFrameにおける'timestamp'以外のcolumnsの名称のフォーマットは以下のとおりです。
+
+```
+{calc_code}({target keypoints}){suffix like _x or _y}
+```
+
+\{calc_code\}には計算の内容に応じて以下の文字列が入ります。
+
+- component: 1つのベクトルのx成分とy成分(suffixに'_x'と'_y')
+- norm: 1つのベクトルのnorm
+- plus: 2つのベクトルの和(suffixに'_x'と'_y')
+- cross: 2つのベクトルの外積
+- dot: 2つのベクトルの内積
+- norms: 2つのベクトルのnormの積
+
+\{target keypoints\}には計算の対象となるkeypointのIDが入ります。'component'や'norm'のように1つのベクトルに対する計算の場合は、'1-2'のように、ベクトルの起点を左側としてハイフンで結合されたkeypointのIDのセットが記述されます。また'plus'や'cross'のような2つのベクトルに対する計算では'1-2,1-3'のように、カンマで区切られた複数のkeypointのIDのセットが記述されます。
+
+具体例として、3つのkeypoint1,2,3における、keypoint=2を起点とした2ベクトルの外積を意味するカラム名は以下のように記述されます。
+
+```
+cross(2-1,2-3)
+```
+
 
 ### Attributes of Track file
 
