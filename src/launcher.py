@@ -256,7 +256,7 @@ def main():
     s = ttk.Style(root)
     s.configure(".", background=bg_color)
     app = App(root)
-    root.protocol("WM_DELETE_WINDOW", lambda: [quit(root), exit()])
+    root.protocol("WM_DELETE_WINDOW", lambda: quit(root))
     app.mainloop()
 
 
