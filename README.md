@@ -26,7 +26,7 @@ Behavior Senpaiは、ユーザーが選択したAIモデルによって動画内
   <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
 </p>
 
-Behavior Senpaiは[九州大学芸術工学部](https://www.design.kyushu-u.ac.jp)で開発されたオープンソースのソフトウェアです。
+Behavior Senpaiは[九州大学芸術工学部](https://www.design.kyushu-u.ac.jp/en/home/)で開発されたオープンソースのソフトウェアです。
 
 ## Requirement
 
@@ -233,7 +233,7 @@ Temporaryファイルは[gui_parts.py][gui_parts]が管理しています。
 結果が出版物や他の場所で使用される場合は以下の内容にて引用してください。
 
 ```
-Nishimura, E. (2024). Behavior Senpai (Version 1.1.1) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
+Nishimura, E. (2024). Behavior Senpai (Version 1.2.0) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
 ```
 
 ```
@@ -246,3 +246,6 @@ Nishimura, E. (2024). Behavior Senpai (Version 1.1.1) [Computer software]. Kyush
   note = {Available at: \url{https://hdl.handle.net/2324/7160651}},
 }
 ```
+### 関連文献
+
+[キーポイント検出技術を用いた定量的行動観察 : ビデオ映像による新しい行動観察手法の開発に向けて](https://hdl.handle.net/2324/7170833)
