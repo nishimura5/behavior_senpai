@@ -36,7 +36,8 @@ class PklSelector(ttk.Frame):
             self.pkl_path_label["text"] = self.trk_path
 
     def _select_trk(self):
-        self.trk_path = file_inout.open_pkl(self.trk_path)
+        init_dir = os.path.dirname(self.trk_path)
+        self.trk_path = file_inout.open_pkl(init_dir, self.trk_path)
         self._load_pkl()
 
     def _load_pkl(self):

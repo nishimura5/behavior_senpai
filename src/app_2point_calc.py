@@ -72,7 +72,7 @@ class App(ttk.Frame):
     def load(self, args):
         self.src_df = args['src_df']
         self.cap = args['cap']
-        self.pkl_dir = args['pkl_dir']
+        self.calc_dir = os.path.join(os.path.dirname(args['pkl_dir']), 'calc')
         self.src_attrs = self.src_df.attrs
         self.time_min, self.time_max = args['time_span_msec']
 
@@ -144,13 +144,16 @@ class App(ttk.Frame):
         export_df = pd.concat([self.calc_df, timestamp_df], axis=1)
         export_df.attrs = self.src_attrs
         calc_case = self.calc_case_entry.get_calc_case()
-        dst_path = os.path.join(self.pkl_dir, file_name + "_2p.pkl")
-        file_inout.save_pkl(dst_path, calc_case, export_df, proc_history="2p_vector")
+        dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_2p.pkl")
+        file_inout.save_pkl(dst_path, export_df, proc_history="2p_vector")
 
     def repeat_pkl(self):
         current_member, _, _ = self.member_combo.get_selected()
-        # file選択ダイアログを開く
-        in_trk_path = file_inout.open_pkl(self.pkl_dir)
+        calc_case = self.calc_case_entry.get_calc_case()
+        init_dir = os.path.join(self.calc_dir, calc_case)
+        in_trk_path = file_inout.open_pkl(init_dir)
+        if in_trk_path is None:
+            return
         in_trk_df = file_inout.load_track_file(in_trk_path, allow_calculated_track_file=True)
         pattern = r'(\w+)\((\w+)-(\w+)\)'
         cols = in_trk_df.columns.tolist()

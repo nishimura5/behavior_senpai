@@ -229,6 +229,8 @@ class App(ttk.Frame):
     def pkl_to_csv(self):
         dir_path = os.path.dirname(self.pkl_path)
         csv_name = file_inout.pkl_to_csv(dir_path)
+        if csv_name is None:
+            return
         messagebox.showinfo("PKL to CSV", f"Conversion finished.\nfile name: {csv_name}")
 
     def overwrite(self):
