@@ -149,6 +149,8 @@ class LinePlotter:
         if self.draw_anno is True:
             if (timestamp_msec, self.member) not in self.anno_df.index:
                 return
+            # indexのtypeを確認
+            print('member:', self.anno_df.index.get_level_values('member').dtype)
             tar_df = self.anno_df.loc[pd.IndexSlice[timestamp_msec, self.member, :], :]
             kps = tar_df.to_numpy()
             self.anno.set_img(frame)

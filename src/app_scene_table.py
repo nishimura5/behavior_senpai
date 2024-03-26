@@ -1,3 +1,5 @@
+import os
+import itertools
 import tkinter as tk
 from tkinter import ttk
 
@@ -7,6 +9,7 @@ from gui_parts import TempFile, TimeSpanEntry
 from line_plotter import LinePlotter
 from python_senpai import time_format
 from python_senpai import keypoints_proc
+from python_senpai import file_inout
 
 
 class App(ttk.Frame):
@@ -27,6 +30,20 @@ class App(ttk.Frame):
         control_frame.pack(fill=tk.X, pady=(0, 20))
         setting_frame = ttk.Frame(control_frame)
         setting_frame.pack(fill=tk.X, expand=True, side=tk.LEFT)
+
+        import_frame = ttk.Frame(setting_frame)
+        import_frame.pack(pady=5)
+        import_btn = ttk.Button(import_frame, text="Import PKL", command=self.import_bool_pkl)
+        import_btn.pack(side=tk.LEFT, padx=(0, 5))
+        self.bool_col_combo = ttk.Combobox(import_frame, state='readonly', width=18)
+        self.bool_col_combo["values"] = ['bool_col']
+        self.bool_col_combo.current(0)
+        self.bool_col_combo.pack(side=tk.LEFT, padx=(0, 5))
+        add_import_bool_btn = ttk.Button(import_frame, text="Add", command=self._add_import_bool)
+        add_import_bool_btn.pack(side=tk.LEFT, padx=(0, 5))
+        self.import_label = ttk.Label(import_frame, text="")
+        self.import_label.pack(side=tk.LEFT)
+        self.bool_df = None
 
         draw_frame = ttk.Frame(setting_frame)
         draw_frame.pack(pady=5)
@@ -49,10 +66,12 @@ class App(ttk.Frame):
         self.description_entry = ttk.Entry(entry_frame, width=40)
         self.description_entry.pack(side=tk.LEFT, padx=(0, 5))
 
-        add_btn = ttk.Button(entry_frame, text="add", command=self._add_row)
+        add_btn = ttk.Button(entry_frame, text="Add", command=self._add_row)
         add_btn.pack(side=tk.LEFT, padx=5)
         delete_btn = ttk.Button(entry_frame, text="Delete Selected", command=self._delete_selected)
         delete_btn.pack(side=tk.LEFT, padx=5)
+        delete_all_btn = ttk.Button(entry_frame, text="Delete All", command=self._delete_all)
+        delete_all_btn.pack(side=tk.LEFT, padx=5)
 
         ok_frame = ttk.Frame(control_frame)
         ok_frame.pack(anchor=tk.NE, padx=(20, 0))
@@ -90,6 +109,7 @@ class App(ttk.Frame):
         self.cap = args['cap']
         src_attrs = self.src_df.attrs
         self.time_min, self.time_max = args['time_span_msec']
+        self.pkl_dir = args['pkl_dir']
 
         # UIの更新
         self.member_combo["values"] = self.src_df.index.get_level_values(1).unique().tolist()
@@ -118,14 +138,49 @@ class App(ttk.Frame):
             duration_str = time_format.timedelta_to_str(duration)
             self.tree.insert("", "end", values=(start, end, duration_str, description))
 
+    def import_bool_pkl(self):
+        bool_pkl_path = file_inout.open_pkl(os.path.dirname(self.pkl_dir))
+        if bool_pkl_path is None:
+            return
+        bool_df = file_inout.load_track_file(bool_pkl_path, allow_calculated_track_file=True)
+        # bool型 or column名がtimestampじゃないカラムは削除
+        self.bool_df = bool_df.loc[:, (bool_df.dtypes == 'bool') | (bool_df.columns == 'timestamp')]
+        cols = self.bool_df.columns.tolist()
+        cols.remove('timestamp')
+        self.bool_col_combo["values"] = cols
+        self.bool_col_combo.current(0)
+        self.import_label["text"] = os.path.basename(bool_pkl_path)
+
+    def _add_import_bool(self):
+        if self.bool_df is None:
+            return
+        bool_df = self.bool_df.copy()
+        tar_col_name = self.bool_col_combo.get()
+
+        # groupby('member')でmemberごとに処理、1行前/1行後との差分を取る
+        diff_prev_sr = bool_df.groupby('member')[tar_col_name].diff().astype(bool)
+        diff_follow_sr = bool_df.groupby('member')[tar_col_name].diff(-1).astype(bool)
+        # (waist_bool and diff)がTrueの部分をラベリング、-1とNaNはastypeでTrueになる
+        starts = bool_df.loc[(bool_df[tar_col_name] & diff_prev_sr), 'timestamp'].values.tolist()
+        ends = bool_df.loc[(bool_df[tar_col_name] & diff_follow_sr), 'timestamp'].values.tolist()
+        # 要素の先頭を比較してstartsの先頭にtime_minを追加
+        if starts[0] > ends[0]:
+            starts.insert(0, self.time_min)
+        for start, end in itertools.zip_longest(starts, ends, fillvalue=self.time_max):
+            start_str = time_format.msec_to_timestr_with_fff(start)
+            end_str = time_format.msec_to_timestr_with_fff(end)
+            duration = end - start
+            duration_str = time_format.msec_to_timestr_with_fff(duration)
+            self.tree.insert("", "end", values=(start_str, end_str, duration_str, tar_col_name))
+        self._update()
+
     def draw(self):
         current_member = self.member_combo.get()
 
         # timestampの範囲を抽出
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
-        # keypointのインデックス値を文字列に変換
         idx = tar_df.index
-        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
+        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
         plot_df = tar_df
 
         rects = self.scene_table
@@ -180,6 +235,10 @@ class App(ttk.Frame):
         selected = self.tree.selection()
         for item in selected:
             self.tree.delete(item)
+        self._update()
+
+    def _delete_all(self):
+        self.tree.delete(*self.tree.get_children())
         self._update()
 
     def _update(self):
