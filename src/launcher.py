@@ -236,6 +236,7 @@ class App(ttk.Frame):
     def overwrite(self):
         pkl_name = file_inout.overwrite_track_file(self.pkl_path, self.src_df)
         messagebox.showinfo("Overwrite", f"Overwritten.\nfile name: {pkl_name}")
+        self.save_button["state"] = tk.DISABLED
 
     def export_mp4(self):
         mp4_name = self.k2m.export()
