@@ -44,65 +44,63 @@ class App(ttk.Frame):
 
         detect_label = ttk.Label(buttons_frame, text="Preparation")
         detect_label.pack(side=tk.TOP)
-        v2k_button = ttk.Button(buttons_frame, text="Detect", command=lambda: self.launch_window(app_detect.App, grab=True), width=20)
-        v2k_button.pack(side=tk.TOP, pady=4)
-        tl_button = ttk.Button(buttons_frame, text="Track list", command=lambda: self.launch_window(app_track_list.App, grab=True), width=20)
-        tl_button.pack(side=tk.TOP, pady=4)
+        v2k_button = ttk.Button(buttons_frame, text="Detect", command=lambda: self.launch_window(app_detect.App, grab=True))
+        v2k_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        tl_button = ttk.Button(buttons_frame, text="Track list", command=lambda: self.launch_window(app_track_list.App, grab=True))
+        tl_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         edit_label = ttk.Label(buttons_frame, text="Edit")
         edit_label.pack(side=tk.TOP, pady=(8, 0))
         member_edit_button = ttk.Button(
             buttons_frame,
             text="Member",
-            command=lambda: self.launch_window(app_member_edit.App, edit_df=True, grab=True),
-            width=20)
-        member_edit_button.pack(side=tk.TOP, pady=4)
+            command=lambda: self.launch_window(app_member_edit.App, edit_df=True, grab=True))
+        member_edit_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         area_filter_button = ttk.Button(
             buttons_frame,
             text="Area",
-            command=lambda: self.launch_window(app_area_filter.App, edit_df=True, grab=True),
-            width=20)
-        area_filter_button.pack(side=tk.TOP, pady=4)
+            command=lambda: self.launch_window(app_area_filter.App, edit_df=True, grab=True))
+        area_filter_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         smooth_button = ttk.Button(
             buttons_frame,
             text="Smooth",
-            command=lambda: self.launch_window(app_smoothing.App, edit_df=True, grab=True),
-            width=20)
-        smooth_button.pack(side=tk.TOP, pady=4)
+            command=lambda: self.launch_window(app_smoothing.App, edit_df=True, grab=True))
+        smooth_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         scene_table_button = ttk.Button(
             buttons_frame,
             text="Scene table",
-            command=lambda: self.launch_window(app_scene_table.App, edit_df=True, grab=True),
-            width=20)
-        scene_table_button.pack(side=tk.TOP, pady=4)
+            command=lambda: self.launch_window(app_scene_table.App, edit_df=True, grab=True))
+        scene_table_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         vis_label = ttk.Label(buttons_frame, text="Visualization")
         vis_label.pack(side=tk.TOP, pady=(8, 0))
-        k2f_button = ttk.Button(buttons_frame, text="Trajplot", command=lambda: self.launch_window(k2t.App), width=20)
-        k2f_button.pack(side=tk.TOP, pady=4)
-        k2r_button = ttk.Button(buttons_frame, text="Recuplot", command=lambda: self.launch_window(k2r.App), width=20)
-        k2r_button.pack(side=tk.TOP, pady=4)
+        k2f_button = ttk.Button(buttons_frame, text="Trajplot", command=lambda: self.launch_window(k2t.App))
+        k2f_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        k2r_button = ttk.Button(buttons_frame, text="Recuplot", command=lambda: self.launch_window(k2r.App))
+        k2r_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         calc_label = ttk.Label(buttons_frame, text="Calculation")
         calc_label.pack(side=tk.TOP, pady=(8, 0))
-        two_point_button = ttk.Button(buttons_frame, text="2 point", command=lambda: self.launch_window(app_2point_calc.App), width=20)
-        two_point_button.pack(side=tk.TOP, pady=4)
-        three_point_button = ttk.Button(buttons_frame, text="3 point", command=lambda: self.launch_window(app_3point_calc.App), width=20)
-        three_point_button.pack(side=tk.TOP, pady=4)
+        vector_frame = ttk.Frame(buttons_frame)
+        vector_frame.pack(side=tk.TOP, fill=tk.X, pady=4)
+        two_point_button = ttk.Button(vector_frame, text="2 point", command=lambda: self.launch_window(app_2point_calc.App), width=6)
+        two_point_button.pack(side=tk.LEFT, padx=(0, 4))
+        three_point_button = ttk.Button(vector_frame, text="3 point", command=lambda: self.launch_window(app_3point_calc.App), width=6)
+        three_point_button.pack(side=tk.TOP)
 
         pref_label = ttk.Label(buttons_frame, text="MISC")
         pref_label.pack(side=tk.TOP, pady=(8, 0))
-        pref_list_button = ttk.Button(buttons_frame, text="Preference", command=lambda: self.launch_window(pref_list.App), width=20)
-        pref_list_button.pack(side=tk.TOP, pady=4)
+        pref_list_button = ttk.Button(buttons_frame, text="Preference", command=lambda: self.launch_window(pref_list.App))
+        pref_list_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
-        pkl_to_csv_button = ttk.Button(buttons_frame, text="PKL to CSV tool", command=self.pkl_to_csv, width=20)
-        pkl_to_csv_button.pack(side=tk.TOP, pady=4)
+        pkl_to_csv_button = ttk.Button(buttons_frame, text="PKL to CSV tool", command=self.pkl_to_csv)
+        pkl_to_csv_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         # srcにlicense.jsonがある場合はボタンを表示
         license_path = './src/license.json'
         if os.path.exists(license_path):
             license_button = ttk.Button(buttons_frame, text="License", command=lambda: self.launch_window(license_view.App), width=20)
-            license_button.pack(side=tk.TOP, pady=4)
+            license_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         main_frame = ttk.Frame(self)
         main_frame.pack(side=tk.RIGHT, anchor=tk.NE, padx=(24, 0))
