@@ -174,7 +174,10 @@ class App(ttk.Frame):
         self.attrs_textbox.delete("1.0", tk.END)
         print_str = ""
         for key, value in src_attrs.items():
-            if isinstance(value, dict):
+            if key == "scene_table":
+                num = len(value['start'])
+                print_str += f"{key}: # {num} scenes.\n"
+            elif isinstance(value, dict):
                 print_str += f"{key}:\n"
                 for key2, value2 in value.items():
                     print_str += f"  {key2}: {value2}\n"

@@ -52,11 +52,6 @@ class App(ttk.Frame):
         self.member_combo = ttk.Combobox(draw_frame, state='readonly', width=18)
         self.member_combo.pack(side=tk.LEFT)
 
-        draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw)
-        draw_btn.pack(side=tk.LEFT, padx=(10, 0))
-        clear_btn = ttk.Button(draw_frame, text="Clear", command=self.clear)
-        clear_btn.pack(side=tk.LEFT, padx=(10, 0))
-
         entry_frame = ttk.Frame(setting_frame)
         entry_frame.pack(pady=5)
         self.time_span_entry = TimeSpanEntry(entry_frame)
@@ -92,7 +87,10 @@ class App(ttk.Frame):
         self.tree.column("end", width=100)
         self.tree.column("duration", width=100)
         self.tree.column("description", width=350)
-        self.tree.pack()
+        self.tree.pack(side=tk.LEFT)
+        scroll = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
+        scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        self.tree.configure(yscrollcommand=scroll.set)
         # rowを選択したときのイベントを設定
         self.tree.bind("<<TreeviewSelect>>", self._select_tree_row)
 
@@ -137,6 +135,7 @@ class App(ttk.Frame):
             duration = pd.to_timedelta(end) - pd.to_timedelta(start)
             duration_str = time_format.timedelta_to_str(duration)
             self.tree.insert("", "end", values=(start, end, duration_str, description))
+        self._update()
 
     def import_bool_pkl(self):
         bool_pkl_path = file_inout.open_pkl(os.path.dirname(self.pkl_dir))
@@ -242,12 +241,14 @@ class App(ttk.Frame):
         self._update()
 
     def _update(self):
+        self.clear()
         scene_table = {'start': [], 'end': [], 'description': []}
         for item in self.tree.get_children(''):
             scene_table['start'].append(self.tree.item(item)['values'][0])
             scene_table['end'].append(self.tree.item(item)['values'][1])
             scene_table['description'].append(self.tree.item(item)['values'][3])
         self.scene_table = scene_table
+        self.draw()
 
     def clear(self):
         self.plot.clear()
