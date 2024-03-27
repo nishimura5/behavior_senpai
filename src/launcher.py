@@ -84,9 +84,9 @@ class App(ttk.Frame):
         vector_frame = ttk.Frame(buttons_frame)
         vector_frame.pack(side=tk.TOP, fill=tk.X, pady=4)
         two_point_button = ttk.Button(vector_frame, text="2 point", command=lambda: self.launch_window(app_2point_calc.App), width=6)
-        two_point_button.pack(side=tk.LEFT, padx=(0, 4))
+        two_point_button.pack(side=tk.LEFT, fill=tk.X, padx=(0, 4))
         three_point_button = ttk.Button(vector_frame, text="3 point", command=lambda: self.launch_window(app_3point_calc.App), width=6)
-        three_point_button.pack(side=tk.TOP)
+        three_point_button.pack(side=tk.TOP, fill=tk.X)
 
         pref_label = ttk.Label(buttons_frame, text="MISC")
         pref_label.pack(side=tk.TOP, pady=(8, 0))
