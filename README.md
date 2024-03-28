@@ -138,7 +138,7 @@ Track fileのデータがあくまでもkeypointの検出結果にすぎない�
 
 #### Column name definition
 
-Feature file内のDataFrameにおける'timestamp'以外のcolumnsの名称のフォーマットは以下のとおりです。
+[app_2point_calc.py][app_2point_calc]や[app_3point_calc.py][app_3point_calc]で処理されたFeature fileは（parseが可能なように）columnsの名称に規則を有しています。Feature file内のDataFrameにおける'timestamp'以外のcolumnsの名称のフォーマットは以下のとおりです。
 
 ```
 {calc_code}({target keypoints}){suffix like _x or _y}
