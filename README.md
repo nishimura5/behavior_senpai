@@ -20,7 +20,7 @@ Behavior Senpaiは以下の3種類のAI画像処理フレームワーク/モデ�
  - [MediaPipe Holistic](https://github.com/google/mediapipe/blob/master/docs/solutions/holistic.md)
  - [RTMPose Body8-Halpe26 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#26-keypoints)
 
-Behavior Senpaiは、ユーザーが選択したAIモデルによって動画内の人の姿勢推定を行い、時系列座標データを出力します。
+Behavior Senpaiは、ユーザーが選択したAIモデルによって動画内の人の姿勢推定を行い、時系列座標データを出力します。（これらはpose estimation、markerless motioin capture、landmark detectionなど、目的や用途によって様々な呼ばれ方をされています。）
 
 <p align="center">
   <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
@@ -128,15 +128,17 @@ Track fileに格納されているDataFrameの例を以下に示します。な�
 |  |  | 1 | 1383.346191 | 610.686951 | 33.333333 |
 |  |  | ... | ... | ... | ... |
 
-### Calculated Track file
+### Feature file
 
-[app_2point_calc.py][app_2point_calc]や[app_3point_calc.py][app_3point_calc]で処理されたデータは、Track fileと同じくPickle化されたPandasのDataFrame型で"calc"フォルダに保存されます。ファイル拡張子はTrack fileと同様'.pkl'です。
+Behavior Senpaiでは複数のキーポイントの位置関係の計算によって得られるデータをFeatureと呼びます。[app_2point_calc.py][app_2point_calc]や[app_3point_calc.py][app_3point_calc]で処理されたデータはFeature fileとして、(Track fileと同じく)Pickle化されたPandasのDataFrame型で"calc"フォルダに保存されます。ファイル拡張子はTrack fileと同様'.pkl'です。
 
-Calculated Track fileは2-level-multi-indexでデータを保持しています。indexの名称はlevel 0から順に'frame', 'member'です。columnsには必ず'timestamp'が含まれます。
+Feature fileは2-level-multi-indexでデータを保持しています。indexの名称はlevel 0から順に'frame', 'member'です。columnsには必ず'timestamp'が含まれます。
+
+Track fileのデータがあくまでもkeypointの検出結果にすぎないのに対して、Feature fileのデータは行動観察の目的に深く関連する特徴量である点に留意する必要があります。
 
 #### Column name definition
 
-Calculated Track file内のDataFrameにおける'timestamp'以外のcolumnsの名称のフォーマットは以下のとおりです。
+Feature file内のDataFrameにおける'timestamp'以外のcolumnsの名称のフォーマットは以下のとおりです。
 
 ```
 {calc_code}({target keypoints}){suffix like _x or _y}
@@ -162,7 +164,7 @@ cross(2-1,2-3)
 
 ### Attributes of Track file
 
-Track fileやCalculated Track fileに格納されたDataFrameの[attrsプロパティ](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.attrs.html)には、元の動画ファイルのファイル名やそのフレームサイズ、キーポイント検出に使用したAIモデルの名称等が記録されています。
+Track fileやFeature fileに格納されたDataFrameの[attrsプロパティ](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.attrs.html)には、元の動画ファイルのファイル名やそのフレームサイズ、キーポイント検出に使用したAIモデルの名称等が記録されています。
 
 Track fileを読み込み、attrsに記録された内容を確認するためのPythonコードは以下のとおりです。attrsプロパティはdictionary型です。
 
@@ -203,7 +205,7 @@ Behavior Senpaiは、検出したkeypointを描画してmp4形式の動画に出
 
 ### Folder Structure
 
-この節ではBehavior Senpaiが出力するデータのデフォルトの保存場所について説明します。Behavior Senpaiは"trk"フォルダにTrack fileを、"calc"フォルダにCalculated Track fileを保存します。キーポイントを描画した動画は"mp4"フォルダに保存します。Track fileを編集し上書きすると、古いTrack fileは（ひとつだけ）"backup"フォルダに保存されます。それぞれのフォルダはファイル保存時に自動生成されます。
+この節ではBehavior Senpaiが出力するデータのデフォルトの保存場所について説明します。Behavior Senpaiは"trk"フォルダにTrack fileを、"calc"フォルダにFeature fileを保存します。キーポイントを描画した動画は"mp4"フォルダに保存します。Track fileを編集し上書きすると、古いTrack fileは（ひとつだけ）"backup"フォルダに保存されます。それぞれのフォルダはファイル保存時に自動生成されます。
 
 以下は、あるフォルダに"ABC.MP4"というファイルと"XYZ.MOV"というファイルがあった場合の一例です。出力ファイルのファイル名にはモデルや計算種別に応じたsuffixが付きます。動画のファイルパスに日本語が使用されているとファイルの読み書きに失敗するため、フォルダやファイルの名称には半角英数を使用してください。
 
