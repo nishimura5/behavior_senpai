@@ -25,10 +25,6 @@ import license_view
 
 
 class App(ttk.Frame):
-    """
-    Launcherに並ぶボタンを押すとそのアプリケーションのGUIが起動します。
-    各アプリケーションは独立しているため、このLauncherを経由しなくても起動できます。
-    """
     def __init__(self, master):
         super().__init__(master)
         master.title("Behavior Senpai")

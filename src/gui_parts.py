@@ -23,7 +23,7 @@ class MemberKeypointComboboxes(ttk.Frame):
         self.member_combo.bind("<<ComboboxSelected>>", self._on_selected)
         keypoint_label = ttk.Label(combos_frame, text="Keypoint:")
         keypoint_label.pack(side=tk.LEFT, padx=(12, 3))
-        self.keypoint_combo = ttk.Combobox(combos_frame, state='readonly', width=10)
+        self.keypoint_combo = ttk.Combobox(combos_frame, state='disabled', width=10)
         self.keypoint_combo.pack(side=tk.LEFT)
 
     def set_df(self, src_df):
@@ -34,9 +34,9 @@ class MemberKeypointComboboxes(ttk.Frame):
             # memberとkeypointのインデックス値を文字列に変換
             idx = combo_df.index
             combo_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
-            self.keypoint_combo.state(['readonly'])
+            self.keypoint_combo['state'] = 'readonly'
         else:
-            self.keypoint_combo.state(['disabled'])
+            self.keypoint_combo['state'] = 'disabled'
 
         self.member_combo["values"] = combo_df.index.get_level_values("member").unique().tolist()
         self.member_combo.current(0)

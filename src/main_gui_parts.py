@@ -27,7 +27,7 @@ class PklSelector(ttk.Frame):
         self.next_pkl_btn = ttk.Button(master, text=">", width=1, state=tk.DISABLED)
         self.next_pkl_btn.pack(side=tk.LEFT, padx=(0, 10))
 
-        self.load_pkl_btn = ttk.Button(master, text="Load", width=6)
+        self.load_pkl_btn = ttk.Button(master, text="Open Track file")
         self.load_pkl_btn.pack(side=tk.LEFT)
         self.pkl_path_label = ttk.Label(master, text="No Track file loaded")
         self.pkl_path_label.pack(side=tk.LEFT, padx=(5, 0))
