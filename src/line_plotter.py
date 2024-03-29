@@ -134,16 +134,20 @@ class LinePlotter:
         return time_format.msec_to_timestr(x)
 
     def _click_graph(self, event):
-        x = event.xdata
-        if x is None:
-            return
-        timestamp_msec = float(x)
+        if event.button == 1:
+            x = event.xdata
+            if x is None:
+                return
+            timestamp_msec = float(x)
+
+        elif event.button == 3:
+            timestamp_msec = self.vcap.get(cv2.CAP_PROP_POS_MSEC)
+            timestamp_msec += 100
 
         # DataFrameにあるself.timestampsからクリックで得たtimestamp_msecに最も近い値を抽出
         timestamp_msec = self.timestamps[np.fabs(self.timestamps-timestamp_msec).argsort()[:1]][0]
 
         time_format.copy_to_clipboard(timestamp_msec)
-
         ret, frame = self.vcap.read_at(timestamp_msec)
         if ret is False:
             return
