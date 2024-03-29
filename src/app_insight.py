@@ -1,9 +1,11 @@
 import os
 import tkinter as tk
 from tkinter import ttk
-import matplotlib.pyplot as plt
-import seaborn as sns
+import datetime
 
+import matplotlib.pyplot as plt
+from matplotlib import ticker
+import seaborn as sns
 import pandas as pd
 import ttkthemes
 
@@ -33,7 +35,7 @@ class App(ttk.Frame):
 
         self.feat_button = ttk.Button(load_frame, text="Open Feature file", command=self.load_feat)
         self.feat_button.pack(side=tk.LEFT, padx=(20, 0))
-        self.feat_path_label = ttk.Label(load_frame, text="No Feature file loaded")
+        self.feat_path_label = ttk.Label(load_frame, text="No Feature file loaded.")
         self.feat_path_label.pack(side=tk.LEFT, padx=(5, 0))
 
         graph_setting_frame = ttk.Frame(self)
@@ -58,6 +60,13 @@ class App(ttk.Frame):
         self.member_combo["values"] = ["member"]
         self.member_combo.current(0)
 
+        # scene filterコンボボックス、初期値はAll
+        self.filter_combo = ttk.Combobox(setting_frame, state="readonly")
+        self.filter_combo.pack(side=tk.LEFT, padx=(5, 0))
+        self.filter_combo["values"] = ["All scenes.", "Longer than 5sec.", "Longer than 10sec."]
+        self.filter_dict = {"All scenes.": 0, "Longer than 5sec.": 5000, "Longer than 10sec.": 10000}
+        self.filter_combo.current(0)
+
         # column選択リストボックス、複数選択
         self.column_listbox = tk.Listbox(setting_frame, selectmode=tk.EXTENDED, exportselection=False)
         self.column_listbox.pack(side=tk.LEFT, padx=(5, 0))
@@ -66,8 +75,8 @@ class App(ttk.Frame):
         self.scene_listbox = tk.Listbox(setting_frame, selectmode=tk.EXTENDED, exportselection=False)
         self.scene_listbox.pack(side=tk.LEFT, padx=(5, 0))
 
-        test_button = ttk.Button(setting_frame, text="Draw", command=self.draw)
-        test_button.pack(side=tk.LEFT, padx=(5, 0))
+        self.test_button = ttk.Button(setting_frame, text="Draw", command=self.draw)
+        self.test_button.pack(side=tk.LEFT, padx=(5, 0))
         self.cap = vcap.VideoCap()
 
         self.load_trk()
@@ -89,18 +98,24 @@ class App(ttk.Frame):
 
         # UIの更新
         self.pkl_selector.set_prev_next(src_attrs)
-        self.scene_dict = self.trk_df.attrs['scene_table']
+        raw_dict = self.trk_df.attrs['scene_table']
         self.scene_listbox.delete(0, tk.END)
-        for scene, start, end in zip(self.scene_dict['description'], self.scene_dict['start'], self.scene_dict['end']):
+        self.scene_dict = {'description': [], 'start': [], 'end': []}
+        filter_value = self.filter_dict[self.filter_combo.get()]
+        for scene, start, end in zip(raw_dict['description'], raw_dict['start'], raw_dict['end']):
             duration = time_format.timestr_to_msec(end) - time_format.timestr_to_msec(start)
-            self.scene_listbox.insert(tk.END, f"{scene} ({duration/1000:.1f}sec)")
+            if duration > filter_value:
+                self.scene_dict['description'].append(scene)
+                self.scene_dict['start'].append(start)
+                self.scene_dict['end'].append(end)
+                self.scene_listbox.insert(tk.END, f"{scene} ({duration/1000:.1f}sec)")
 
     def load_feat(self):
         pkl_path = file_inout.open_pkl(os.path.dirname(self.pkl_dir))
         if pkl_path is None:
             return
         self.feat_path_label["text"] = pkl_path
-        self.feat_path = pkl_path
+        self.feat_name = os.path.basename(pkl_path)
         self.feat_df = file_inout.load_track_file(pkl_path, allow_calculated_track_file=True)
 
         # UIの更新
@@ -121,7 +136,6 @@ class App(ttk.Frame):
         scene_desc = self.scene_dict['description']
         scene_desc = pd.Series(scene_desc)
         scene_suffix = scene_desc.groupby(scene_desc).cumcount().astype(str)
-        print(scene_suffix)
         scene_desc = scene_desc.str.cat(scene_suffix, sep='_').tolist()
         self.scene_dict['description'] = scene_desc
 
@@ -129,16 +143,35 @@ class App(ttk.Frame):
                    "start": self.scene_dict['start'][idx],
                    "end": self.scene_dict['end'][idx]} for idx in scene_selected]
         scene_num = len(scenes)
+        total_duration = time_format.timestr_to_msec(scenes[-1]["end"]) - time_format.timestr_to_msec(scenes[0]["start"])
         column_selected = self.column_listbox.curselection()
         columns = [self.column_listbox.get(idx) for idx in column_selected]
 
         margin = 0.1
         hspace = 0.05
+        width_ratios = [3, 1]
+        gridspec_kw = {'hspace': hspace, 'wspace': 0.1, 'top': 1-margin, 'bottom': margin, 'right': 0.95, 'width_ratios': width_ratios}
         fig_width = int(self.fig_width_entry.get())
         fig_height = int(self.fig_height_entry.get())
-        fig, axes = plt.subplots(scene_num, 2, sharex='col', sharey='all', gridspec_kw={'hspace': hspace, 'wspace': 0.1, 'top': 1-margin, 'bottom': margin})
+        fig, axes = plt.subplots(scene_num, 2, sharex='col', sharey='all', num=self.feat_name, gridspec_kw=gridspec_kw)
         fig.set_size_inches(fig_width, fig_height)
 
+
+        # 今日の日付を取得
+        today = datetime.date.today()
+        head_text = f"{self.feat_name} ({today})"
+        axes[0][0].text(0.5, 0.95, head_text, ha='center', va='top', transform=fig.transFigure, fontsize=10)
+        axes[0][0].xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
+        # durationによってx軸のメモリ間隔を変更
+        interval = 5*60*1000
+        if total_duration < 60*1000:
+            interval = 10*1000
+        elif total_duration < 5*60*1000:
+            interval = 30*1000
+        elif total_duration < 10*60*1000:
+            interval = 60*1000
+        axes[0][0].xaxis.set_major_locator(ticker.MultipleLocator(interval))
+ 
         idx = pd.IndexSlice
         for i, scene in enumerate(scenes):
             start_ms = time_format.timestr_to_msec(scene["start"])
@@ -151,23 +184,30 @@ class App(ttk.Frame):
             scene_dfm = scene_df.melt(id_vars='timestamp', var_name='column', value_name='value')
 
             # グラフの外側(左側)に複数行のtextを表示
-            text_step = 1 - (margin + (1-margin-hspace*1.75) * i / scene_num)
             text_content = f"{scene['description']}\n{scene['start']}-{scene['end']}\n{duration/1000:.1f}sec"
-            axes[i][0].text(0.03, text_step, text_content, ha='left', va='top',
+            axp = axes[i][0].get_position()
+            text_pos = axp.y1 - (axp.y1 - axp.y0) * 0.1
+            axes[i][0].text(0.03, text_pos, text_content, ha='left', va='top',
                             transform=fig.transFigure, fontsize=8, linespacing=1.5)
             plot = sns.lineplot(data=scene_dfm, x='timestamp', y='value', hue='column', ax=axes[i][0])
-            plot.set_xlabel("timestamp")
-            plot.set_ylabel("value")
+            plot.set_ylabel(None)
+            plot.set_xlabel(None)
             scene_df = scene_df.drop(columns='timestamp')
-            violin = sns.violinplot(data=scene_df, ax=axes[i][1])
-            print(scene["description"], scene["start"], scene["end"])
-            print(scene_df)
+            violin = sns.violinplot(data=scene_df, ax=axes[i][1], linewidth=0.1)
+
+            # 縦線
+            axes[i][0].grid(which='major', axis='x', linewidth=0.3)
+
             # i=0だけlegendを表示
-            if i == 0:
-                axes[i][0].legend(loc='upper right')
-            else:
+            if i > 0:
                 axes[i][0].get_legend().remove()
+            else:
+                axes[0][0].legend(loc='upper right', fontsize=8, title='feature')
+
         plt.show()
+
+    def _format_timedelta(self, x, pos):
+        return time_format.msec_to_timestr(x)
 
 
 def quit(root):
