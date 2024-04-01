@@ -124,6 +124,7 @@ class LinePlotter:
         self.timestamps = show_df.index.get_level_values('timestamp').unique().to_numpy()
 
     def draw(self):
+        self.vline = self.line_ax.axvline(x=0, color='gray', linewidth=0.5)
         self.canvas.draw_idle()
 
     def clear(self):
@@ -146,6 +147,9 @@ class LinePlotter:
 
         # DataFrameにあるself.timestampsからクリックで得たtimestamp_msecに最も近い値を抽出
         timestamp_msec = self.timestamps[np.fabs(self.timestamps-timestamp_msec).argsort()[:1]][0]
+
+        self.vline.set_xdata([timestamp_msec])
+        self.fig.canvas.draw_idle()
 
         time_format.copy_to_clipboard(timestamp_msec)
         ret, frame = self.vcap.read_at(timestamp_msec)

@@ -3,6 +3,8 @@ import tkinter as tk
 from tkinter import ttk
 import datetime
 
+import numpy as np
+import cv2
 import matplotlib.pyplot as plt
 from matplotlib import ticker
 import seaborn as sns
@@ -66,6 +68,7 @@ class App(ttk.Frame):
         self.filter_combo["values"] = ["All scenes.", "Longer than 5sec.", "Longer than 10sec."]
         self.filter_dict = {"All scenes.": 0, "Longer than 5sec.": 5000, "Longer than 10sec.": 10000}
         self.filter_combo.current(0)
+        self.filter_combo.bind("<<ComboboxSelected>>", lambda e: self.load_trk())
 
         # column選択リストボックス、複数選択
         self.column_listbox = tk.Listbox(setting_frame, selectmode=tk.EXTENDED, exportselection=False)
@@ -77,7 +80,7 @@ class App(ttk.Frame):
 
         self.test_button = ttk.Button(setting_frame, text="Draw", command=self.draw)
         self.test_button.pack(side=tk.LEFT, padx=(5, 0))
-        self.cap = vcap.VideoCap()
+        self.vcap = vcap.VideoCap()
 
         self.load_trk()
 
@@ -93,8 +96,8 @@ class App(ttk.Frame):
         self.trk_df = self.trk_df[~self.trk_df.index.duplicated(keep="first")]
         src_attrs = self.trk_df.attrs
         self.pkl_dir = os.path.dirname(self.pkl_path)
-        self.cap.set_frame_size(src_attrs["frame_size"])
-        self.cap.open_file(os.path.join(self.pkl_dir, os.pardir, src_attrs["video_name"]))
+        self.vcap.set_frame_size(src_attrs["frame_size"])
+        self.vcap.open_file(os.path.join(self.pkl_dir, os.pardir, src_attrs["video_name"]))
 
         # UIの更新
         self.pkl_selector.set_prev_next(src_attrs)
@@ -143,6 +146,8 @@ class App(ttk.Frame):
                    "start": self.scene_dict['start'][idx],
                    "end": self.scene_dict['end'][idx]} for idx in scene_selected]
         scene_num = len(scenes)
+        if scene_num == 0:
+            return
         total_duration = time_format.timestr_to_msec(scenes[-1]["end"]) - time_format.timestr_to_msec(scenes[0]["start"])
         column_selected = self.column_listbox.curselection()
         columns = [self.column_listbox.get(idx) for idx in column_selected]
@@ -153,14 +158,14 @@ class App(ttk.Frame):
         gridspec_kw = {'hspace': hspace, 'wspace': 0.1, 'top': 1-margin, 'bottom': margin, 'right': 0.95, 'width_ratios': width_ratios}
         fig_width = int(self.fig_width_entry.get())
         fig_height = int(self.fig_height_entry.get())
-        fig, axes = plt.subplots(scene_num, 2, sharex='col', sharey='all', num=self.feat_name, gridspec_kw=gridspec_kw)
-        fig.set_size_inches(fig_width, fig_height)
-
+        self.fig, axes = plt.subplots(scene_num, 2, sharex='col', sharey='all', num=self.feat_name, gridspec_kw=gridspec_kw)
+        self.fig.set_size_inches(fig_width, fig_height)
+        self.fig.canvas.mpl_connect("button_press_event", self._click_graph)
 
         # 今日の日付を取得
         today = datetime.date.today()
         head_text = f"{self.feat_name} ({today})"
-        axes[0][0].text(0.5, 0.95, head_text, ha='center', va='top', transform=fig.transFigure, fontsize=10)
+        axes[0][0].text(0.5, 0.95, head_text, ha='center', va='top', transform=self.fig.transFigure, fontsize=10)
         axes[0][0].xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         # durationによってx軸のメモリ間隔を変更
         interval = 5*60*1000
@@ -171,7 +176,8 @@ class App(ttk.Frame):
         elif total_duration < 10*60*1000:
             interval = 60*1000
         axes[0][0].xaxis.set_major_locator(ticker.MultipleLocator(interval))
- 
+
+        self.vlines = []
         idx = pd.IndexSlice
         for i, scene in enumerate(scenes):
             start_ms = time_format.timestr_to_msec(scene["start"])
@@ -183,12 +189,14 @@ class App(ttk.Frame):
             scene_df = scene_df.reset_index(level=1, drop=True)
             scene_dfm = scene_df.melt(id_vars='timestamp', var_name='column', value_name='value')
 
+            vline = axes[i][0].axvline(0, color='gray', linewidth=0.5)
+            self.vlines.append(vline)
+
             # グラフの外側(左側)に複数行のtextを表示
             text_content = f"{scene['description']}\n{scene['start']}-{scene['end']}\n{duration/1000:.1f}sec"
             axp = axes[i][0].get_position()
             text_pos = axp.y1 - (axp.y1 - axp.y0) * 0.1
-            axes[i][0].text(0.03, text_pos, text_content, ha='left', va='top',
-                            transform=fig.transFigure, fontsize=8, linespacing=1.5)
+            axes[i][0].text(0.03, text_pos, text_content, ha='left', va='top', transform=self.fig.transFigure, fontsize=8, linespacing=1.5)
             plot = sns.lineplot(data=scene_dfm, x='timestamp', y='value', hue='column', ax=axes[i][0])
             plot.set_ylabel(None)
             plot.set_xlabel(None)
@@ -204,10 +212,41 @@ class App(ttk.Frame):
             else:
                 axes[0][0].legend(loc='upper right', fontsize=8, title='feature')
 
+        self.timestamps = self.feat_df['timestamp'].unique()
         plt.show()
 
     def _format_timedelta(self, x, pos):
         return time_format.msec_to_timestr(x)
+
+    def _click_graph(self, event):
+        if event.button == 1:
+            x = event.xdata
+            if x is None:
+                return
+            timestamp_msec = float(x)
+
+        elif event.button == 3:
+            timestamp_msec = self.vcap.get(cv2.CAP_PROP_POS_MSEC)
+            timestamp_msec += 100
+
+        timestamp_msec = self.timestamps[np.fabs(self.timestamps-timestamp_msec).argsort()[:1]][0]
+
+        for vline in self.vlines:
+            vline.set_xdata([timestamp_msec])
+
+        time_format.copy_to_clipboard(timestamp_msec)
+        ret, frame = self.vcap.read_at(timestamp_msec)
+        if ret is False:
+            return
+
+        if frame.shape[0] >= 1080:
+            resize_height = 720
+            resize_width = int(frame.shape[1] * resize_height / frame.shape[0])
+            frame = cv2.resize(frame, (resize_width, resize_height))
+        if ret is True:
+            cv2.imshow("frame", frame)
+            cv2.waitKey(1)
+        self.fig.canvas.draw()
 
 
 def quit(root):
