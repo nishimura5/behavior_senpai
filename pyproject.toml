@@ -30,7 +30,7 @@ dev-dependencies = [
 
 [tool.rye.scripts]
 launcher = "python src/launcher.py"
-featplot = "python src/app_insight.py"
+insight = "python src/app_insight.py"
 detector = "python src/app_detect.py"
 license = "pip-licenses --order=license -u -l --no-license-path --format=json --output-file src/license.json"
 
