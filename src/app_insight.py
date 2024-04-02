@@ -47,12 +47,19 @@ class App(ttk.Frame):
         fig_size_label.pack(side=tk.LEFT)
         self.fig_width_entry = ttk.Entry(graph_setting_frame, width=5)
         self.fig_width_entry.insert(tk.END, '24')
-        self.fig_width_entry.pack(side=tk.LEFT, padx=(0, 5))
+        self.fig_width_entry.pack(side=tk.LEFT)
         fig_height_label = ttk.Label(graph_setting_frame, text="x")
         fig_height_label.pack(side=tk.LEFT)
         self.fig_height_entry = ttk.Entry(graph_setting_frame, width=5)
         self.fig_height_entry.insert(tk.END, '8')
-        self.fig_height_entry.pack(side=tk.LEFT, padx=(0, 5))
+        self.fig_height_entry.pack(side=tk.LEFT)
+
+        # hline entry
+        hline_label = ttk.Label(graph_setting_frame, text="Horizontal line at:")
+        hline_label.pack(side=tk.LEFT, padx=(15, 0))
+        self.hline_entry = ttk.Entry(graph_setting_frame, width=5)
+        self.hline_entry.insert(tk.END, '0')
+        self.hline_entry.pack(side=tk.LEFT)
 
         setting_frame = ttk.Frame(self)
         setting_frame.pack(side=tk.TOP, anchor=tk.NW, pady=(6, 0))
@@ -97,7 +104,8 @@ class App(ttk.Frame):
         src_attrs = self.trk_df.attrs
         self.pkl_dir = os.path.dirname(self.pkl_path)
         self.vcap.set_frame_size(src_attrs["frame_size"])
-        self.vcap.open_file(os.path.join(self.pkl_dir, os.pardir, src_attrs["video_name"]))
+        self.video_name = src_attrs["video_name"]
+        self.vcap.open_file(os.path.join(self.pkl_dir, os.pardir, self.video_name))
 
         # UIの更新
         self.pkl_selector.set_prev_next(src_attrs)
@@ -158,15 +166,11 @@ class App(ttk.Frame):
         gridspec_kw = {'hspace': hspace, 'wspace': 0.1, 'top': 1-margin, 'bottom': margin, 'right': 0.95, 'width_ratios': width_ratios}
         fig_width = int(self.fig_width_entry.get())
         fig_height = int(self.fig_height_entry.get())
+        hline_value = float(self.hline_entry.get())
         self.fig, axes = plt.subplots(scene_num, 2, sharex='col', sharey='all', num=self.feat_name, gridspec_kw=gridspec_kw)
         self.fig.set_size_inches(fig_width, fig_height)
         self.fig.canvas.mpl_connect("button_press_event", self._click_graph)
 
-        # 今日の日付を取得
-        today = datetime.date.today()
-        head_text = f"{self.feat_name} ({today})"
-        axes[0][0].text(0.5, 0.95, head_text, ha='center', va='top', transform=self.fig.transFigure, fontsize=10)
-        axes[0][0].xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         # durationによってx軸のメモリ間隔を変更
         interval = 5*60*1000
         if total_duration < 60*1000:
@@ -179,10 +183,12 @@ class App(ttk.Frame):
 
         self.vlines = []
         idx = pd.IndexSlice
+        duration_sum = 0
         for i, scene in enumerate(scenes):
             start_ms = time_format.timestr_to_msec(scene["start"])
             end_ms = time_format.timestr_to_msec(scene["end"])
             duration = end_ms - start_ms
+            duration_sum += duration
             scene_df = keypoints_proc.filter_by_timerange(self.feat_df, start_ms, end_ms)
             scene_df = scene_df.loc[idx[:, tar_member], columns+['timestamp']]
             # level=1のindexを削除
@@ -191,13 +197,14 @@ class App(ttk.Frame):
 
             vline = axes[i][0].axvline(0, color='gray', linewidth=0.5)
             self.vlines.append(vline)
+            axes[i][0].axhline(hline_value, color='gray', linewidth=0.5)
 
             # グラフの外側(左側)に複数行のtextを表示
             text_content = f"{scene['description']}\n{scene['start']}-{scene['end']}\n{duration/1000:.1f}sec"
             axp = axes[i][0].get_position()
             text_pos = axp.y1 - (axp.y1 - axp.y0) * 0.1
             axes[i][0].text(0.03, text_pos, text_content, ha='left', va='top', transform=self.fig.transFigure, fontsize=8, linespacing=1.5)
-            plot = sns.lineplot(data=scene_dfm, x='timestamp', y='value', hue='column', ax=axes[i][0])
+            plot = sns.lineplot(data=scene_dfm, x='timestamp', y='value', hue='column', ax=axes[i][0], linewidth=0.8)
             plot.set_ylabel(None)
             plot.set_xlabel(None)
             scene_df = scene_df.drop(columns='timestamp')
@@ -211,6 +218,12 @@ class App(ttk.Frame):
                 axes[i][0].get_legend().remove()
             else:
                 axes[0][0].legend(loc='upper right', fontsize=8, title='feature')
+
+        # ヘッダテキスト
+        today = datetime.date.today()
+        head_text = f"{self.feat_name} (duration_sum:{duration_sum/1000:.1f}sec, draw_date:{today}, video_name:{self.video_name})"
+        axes[0][0].text(0.5, 0.95, head_text, ha='center', va='top', transform=self.fig.transFigure, fontsize=10)
+        axes[0][0].xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
 
         self.timestamps = self.feat_df['timestamp'].unique()
         plt.show()
