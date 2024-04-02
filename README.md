@@ -49,8 +49,6 @@ CUDA対応GPUを搭載していない場合はMediaPipe Holisticのみが使用�
 
 ## Usage
 
-### Windows
-
 BehaviorSenpai.exeを実行するとアプリケーションが起動します。CUDAを使用する場合は初回起動時に「Enable features using CUDA」にチェックを入れてから「OK」ボタンをクリックしてください。
 
 BehaviorSenpai.exeは、[Rye](https://rye-up.com)によるPython環境の構築とBehavior Senpai本体の起動を自動化するためのアプリケーションです。
@@ -61,22 +59,6 @@ Behavior Senpaiをアンインストールする場合、または最新版に�
 ```
 rye self uninstall
 ```
-
-### Mac
-
-Macでは、RyeがダウンロードするCPythonではなく別途pyenv等でPythonをダウンロードまたはビルドし、手動でtoolchainに追加する必要があります。具体的な手順の一例としては
-
- - pyenv install 3.11.6
- - pyenv which python でpythonのpathを得る
- - .python-versionファイルを開き"pyenv@3.11.6"に書き換える
- - rye toolchain register --name=pyenv /path/to/pyenv/python3.11
- - rye fetch 3.11.6
- - git clone https://github.com/nishimura5/behavior_senpai.git
- - cd behavior_senpai
- - rye sync
- - . ./launcher.sh
-
-で導入が完了します。
 
 ## Keypoints
 
