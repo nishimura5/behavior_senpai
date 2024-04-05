@@ -129,7 +129,10 @@ class TrajectoryPlotter:
             self.x_h.set_ydata(x)
             self.y_v.set_xdata(x)
             self.dt_v.set_xdata(x)
-        self.canvas.draw_idle()
+        self.x_time_ax.figure.canvas.draw_idle()
+        self.y_time_ax.figure.canvas.draw_idle()
+        self.traj_ax.figure.canvas.draw_idle()
+        self.speed_ax.figure.canvas.draw_idle()
 
     def _click_graph(self, event):
         center_ind = event.ind[int(len(event.ind)/2)]
@@ -147,4 +150,4 @@ class TrajectoryPlotter:
         if self.vcap.isOpened() is True:
             ok, frame = self.vcap.read_at(timestamp_msec, rgb=True)
             self.traj_img.set_data(frame)
-        self.canvas.draw_idle()
+        self.traj_ax.figure.canvas.draw_idle()

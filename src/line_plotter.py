@@ -149,7 +149,7 @@ class LinePlotter:
         timestamp_msec = self.timestamps[np.fabs(self.timestamps-timestamp_msec).argsort()[:1]][0]
 
         self.vline.set_xdata([timestamp_msec])
-        self.fig.canvas.draw_idle()
+        self.line_ax.figure.canvas.draw_idle()
 
         time_format.copy_to_clipboard(timestamp_msec)
         ret, frame = self.vcap.read_at(timestamp_msec)
