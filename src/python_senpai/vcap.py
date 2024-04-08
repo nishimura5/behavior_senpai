@@ -144,6 +144,9 @@ class RoiCap(cv2.VideoCapture):
         imshow()を使ったGUIでROIを指定
         '''
         ret, frame = self.read()
+        if ret is False:
+            print("Failed to read frame.")
+            return
         scale, frame = resize_frame(frame)
         img_draw.put_message(frame, "LEFT click: left-top", font_size=1.5, y=30)
         img_draw.put_message(frame, "RIGHT click: right-bottom", font_size=1.5, y=55)
