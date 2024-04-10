@@ -26,6 +26,9 @@ class YoloDetector:
                 ret, frame = self.cap.get_roi_frame()
             else:
                 ret, frame = self.cap.read()
+            if ret is False:
+                print("Failed to read frame.")
+                continue
 
             result = self.model.track(frame, verbose=False, persist=True, classes=0)
             timestamp = self.cap.get(cv2.CAP_PROP_POS_MSEC)

@@ -44,6 +44,9 @@ class RTMPoseDetector:
                 ret, frame = self.cap.get_roi_frame()
             else:
                 ret, frame = self.cap.read()
+            if ret is False:
+                print("Failed to read frame.")
+                continue
             rgb_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
             scope = self.det_model.cfg.get('default_scope', 'mmdet')
