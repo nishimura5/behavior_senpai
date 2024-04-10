@@ -1,4 +1,5 @@
 import os
+import time
 import importlib.util
 
 from mediapipe_detector import MediaPipeDetector
@@ -56,6 +57,7 @@ def exec(rcap, model_name, video_path, use_roi=False):
     result_df.attrs['frame_size'] = (rcap.width, rcap.height)
     result_df.attrs['video_name'] = os.path.basename(video_path)
     result_df.attrs['roi_left_top'] = rcap.get_left_top()
+    result_df.attrs['created'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
     file_inout.overwrite_track_file(pkl_path, result_df, not_found_ok=True)
     rcap.release()
