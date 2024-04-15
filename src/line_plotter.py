@@ -59,7 +59,7 @@ class LinePlotter:
         plot_df = plot_df[~plot_df.index.duplicated(keep="last")]
         plot_df = plot_df.loc[pd.IndexSlice[:, member], :]
 
-        plot_df.plot(ax=self.line_ax, x='timestamp', y=data_col_names)
+        self.line_ax = plot_df.plot(x='timestamp', y=data_col_names)
         self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         self.line_ax.legend(loc='upper right')
 
