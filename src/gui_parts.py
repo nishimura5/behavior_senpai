@@ -241,7 +241,7 @@ class TempFile:
         else:
             width = int(self.data['top_width'])
         if 'top_height' not in self.data.keys() or self.data['top_height'] == '':
-            height = 700
+            height = 550
         else:
             height = int(self.data['top_height'])
         return width, height
@@ -252,7 +252,7 @@ class TempFile:
         else:
             width = int(self.data['width'])
         if 'height' not in self.data.keys() or self.data['height'] == '':
-            height = 700
+            height = 500
         else:
             height = int(self.data['height'])
         if 'dpi' not in self.data.keys() or self.data['dpi'] == '':

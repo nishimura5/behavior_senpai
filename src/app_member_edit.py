@@ -57,7 +57,7 @@ class App(ttk.Frame):
         tree_frame = ttk.Frame(setting_frame)
         tree_frame.pack(pady=5)
         cols = ("member", "start", "end", "duration", "keypoints/frame")
-        self.tree = ttk.Treeview(tree_frame, columns=cols, show='headings', selectmode="extended")
+        self.tree = ttk.Treeview(tree_frame, columns=cols, height=6, show='headings', selectmode="extended")
         self.tree.heading("member", text="member")
         self.tree.heading("start", text="start")
         self.tree.heading("end", text="end")

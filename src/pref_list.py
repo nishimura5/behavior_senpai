@@ -43,7 +43,7 @@ class App(ttk.Frame):
         mp4_scale_label.pack(side=tk.LEFT, padx=(10, 0))
         self.mp4_scale_entry = ttk.Entry(mp4_frame, width=5, validate="key", validatecommand=(self.register(self._validate_float), "%P"))
         self.mp4_scale_entry.pack(side=tk.LEFT, padx=(0, 5))
- 
+
         save_btn = ttk.Button(pref_frame, text="Save", command=self.save)
         save_btn.pack(side=tk.TOP)
 
