@@ -8,7 +8,7 @@
 [gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
 [detector_proc]: https://github.com/nishimura5/python_senpai/blob/master/src/detector_proc.py
 
-![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/bs_capture_110.jpg)
+![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.2.0%20_%20Python%20senpai_files/bs_capture_120.jpg)
 
 Behavior Senpai(ビヘイビア センパイ)は、ビデオ観察法における定量的行動観察を支援するアプリケーションです。ビデオカメラで撮影した人の行動をkeypoint検出AIを使用して時系列座標データ化し、人の行動の定量的な分析や可視化を可能にします。
 
