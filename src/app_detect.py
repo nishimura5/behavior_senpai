@@ -94,6 +94,7 @@ class App(ttk.Frame):
 
     def exec_folder(self):
         video_paths = glob.glob(os.path.join(self.tar_path, "*.mp4"))
+        video_paths += glob.glob(os.path.join(self.tar_path, "*.mov"))
         for video_path in video_paths:
             self.exec_video(video_path)
         print(f"{datetime.datetime.now()} Done")
