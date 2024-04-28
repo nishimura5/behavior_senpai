@@ -69,17 +69,17 @@ The ID of keypoints handled by Behavior Senpai is the same as the ID of each dat
 The IDs of the keypoints (landmarks) of the faces in MediaPipe Holistic are as follows. See [here](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png) for a document with all IDs.
 
 <p align="center">
-  <img width="60%" alt="Keypoints of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20 _%20Python%20Senpai_files/keypoints_face_110.png">
+  <img width="60%" alt="Keypoints of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_face_110.png">
 </p>
 
 <p align="center">
-  <img width="60%" alt="Keypoints of parts of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1 .1.0%20_%20Python%20Senpai_files/keypoints_eyemouth_110.png">
+  <img width="60%" alt="Keypoints of parts of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_eyemouth_110.png">
 </p>
 
 The IDs of the keypoints (landmarks) of the hands in MediaPipe Holistic are as follows
 
 <p align="center">
-  <img width="60%" alt="Keypoints of hands (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0% 20_%20Python%20Senpai_files/keypoints_hands_110.png">
+  <img width="60%" alt="Keypoints of hands (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_hands_110.png">
 </p>
 
 ## Interface
@@ -89,7 +89,7 @@ Behavior Senpai handles files in Pickle format. Due to security risks associated
 
 ### Track file
 
-The time-series coordinate data resulting from keypoint detection in app_detect.py is stored in a [Pickle-ized Pandas DataFrame type](https://pandas.pydata.org/docs/reference/api/pandas. DataFrame.to_pickle.html).
+The time-series coordinate data resulting from keypoint detection in app_detect.py is stored in a [Pickle-ized Pandas DataFrame type]((https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html)).
 Behavior Senpai calls this a Track file.
 The Track file is saved in the "trk" folder created in the same directory as the video file where the keypoint detection was performed.
 
@@ -125,6 +125,34 @@ The feature file holds data in 2-level-multi-index format, and the names of the 
 Columns always include a 'timestamp'.
 
 It should be noted that the data in the Track file is only the result of keypoint detection, while the data in the Feature file are features that are deeply related to the purpose of behavior observation.
+
+#### Column name definition
+
+The feature files processed by [app_2point_calc.py][app_2point_calc] and [app_3point_calc.py][app_3point_calc] have rules for columns names (to enable parsing).
+The format of columns names in the DataFrame in the feature file, except for timestamp, is as follows.
+
+```
+{calc_code}({target keypoints}){suffix like _x or _y}
+```
+
+\{calc_code\} contains the following strings, depending on the calculation.
+
+- component: x and y components of one vector (suffixes like '_x' and '_y')
+- norm: norm of one vector
+- plus: the sum of two vectors (suffixes '_x' and '_y')
+- cross: cross product of two vectors
+- dot: inner product of two vectors
+- norms: product of the norms of two vectors
+
+\{target keypoints\} contains the IDs of the keypoints to be calculated.
+In the case of a calculation for a single vector, such as 'component' or 'norm', a hyphenated set of keypoint IDs is written with the starting point of the vector on the left, such as '1-2'.
+For calculations on two vectors such as 'plus' and 'cross', a comma-separated set of keypoint IDs is written, such as '1-2,1-3'.
+
+As a concrete example, a column name meaning the outer product of two vectors starting from keypoint=2 at three keypoints1,2,3 would be written as follows.
+
+```
+cross(2-1,2-3)
+```
 
 ### Attributes of Track file
 
