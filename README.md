@@ -60,7 +60,9 @@ rye self uninstall
 
 ## Keypoints
 
-The ID of keypoints handled by Behavior Senpai is the same as the ID of each dataset: COCO for YOLOv8 and Halpe26 for RTMPose. The ID of each keypoints is as follows
+The ID of keypoints handled by Behavior Senpai is the same as the ID of each dataset.
+YOLOv8 complies with COCO and RTMPose complies with Halpe26.
+The IDs of each keypoints are as follows.
 
 <p align="center">
   <img width="60%" alt="Keypoints of body (YOLOv8 and MMPose)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_body_110.png">
