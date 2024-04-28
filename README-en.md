@@ -60,28 +60,26 @@ rye self uninstall
 
 ## Keypoints
 
-The IDs for keypoints handled by Behavior Senpai are the same as those in each dataset. For YOLOv8, it complies with COCO; for RTMPose, with Halpe26. The IDs for each keypoint are as follows:
+The ID of keypoints handled by Behavior Senpai is the same as the ID of each dataset: COCO for YOLOv8 and Halpe26 for RTMPose. The ID of each keypoints is as follows
 
 <p align="center">
-  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_body_110.png">
+  <img width="60%" alt="Keypoints of body (YOLOv8 and MMPose)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20 20Python%20Senpai_files/keypoints_body_110.png">
 </p>
 
-The IDs for facial keypoints (landmarks) in MediaPipe Holistic are as follows. For a complete list of all IDs, refer [here](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png).
+The IDs of the keypoints (landmarks) of the faces in MediaPipe Holistic are as follows. See [here](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png) for a document with all IDs.
 
-<p align="center
-
-">
-  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_face_110.png">
+<p align="center">
+  <img width="60%" alt="Keypoints of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20 _%20Python%20Senpai_files/keypoints_face_110.png">
 </p>
 
 <p align="center">
-  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_eyemouth_110.png">
+  <img width="60%" alt="Keypoints of parts of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1 .1.0%20_%20Python%20Senpai_files/keypoints_eyemouth_110.png">
 </p>
 
-The IDs for hand keypoints (landmarks) in MediaPipe Holistic are as follows:
+The IDs of the keypoints (landmarks) of the hands in MediaPipe Holistic are as follows
 
 <p align="center">
-  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/keypoints_hands_110.png">
+  <img width="60%" alt="Keypoints of hands (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0% 20_%20Python%20Senpai_files/keypoints_hands_110.png">
 </p>
 
 ## Interface
@@ -91,11 +89,17 @@ Behavior Senpai handles files in Pickle format. Due to security risks associated
 
 ### Track file
 
-The time-series coordinate data resulting from keypoint detection by app_detect.py is saved as a [Pickle-serialized Pandas DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html). Behavior Senpai refers to these as Track files. The file extension is '.pkl'. Track files are saved in the "trk" folder generated in the same directory as the video file on which keypoint detection was performed.
+The time-series coordinate data resulting from keypoint detection in app_detect.py is stored in a [Pickle-ized Pandas DataFrame type](https://pandas.pydata.org/docs/reference/api/pandas. DataFrame.to_pickle.html).
+Behavior Senpai calls this a Track file.
+The Track file is saved in the "trk" folder created in the same directory as the video file where the keypoint detection was performed.
 
-Track files hold time-series coordinate data with a 3-level-multi-index. The index names are 'frame', 'member', and 'keypoint' from level 0 onwards. 'Frame' is an integer starting from 0, corresponding to the video frame number. 'Member' and 'keypoint' are the IDs of keypoints detected by the model. Track files always include three columns: 'x', 'y', 'timestamp', where x,y are in pixels and timestamp is in milliseconds.
+The track file holds time-series coordinate data in 3-level-multi-index format.
+The indexes are named 'frame', 'member', and 'keypoint', starting from level 0. frame is an integer starting from 0, corresponding to the frame number of the video.
+member and keypoint are the IDs of keypoints detected by the model.
+The Track file always contains three columns: 'x', 'y', and 'timestamp'. x and y are in px and timestamp is in milliseconds.
 
-Example of a DataFrame stored in a Track file, which might also include other columns such as 'z' or 'conf' depending on the AI model's specifications:
+An example of a DataFrame stored in the Track file is shown below.
+Note that columns may include other columns such as 'z' and 'conf' depending on the specification of the AI model.
 
 |  |  |  | x | y | timestamp |
 | - | - | - | - | - | - |
@@ -113,11 +117,14 @@ Example of a DataFrame stored in a Track file, which might also include other co
 |  |  | 1 | 1383.346191 | 610.686951 | 33.333333 |
 |  |  | ... | ... | ... | ... |
 
-### Calculated Track file
+### Feature file
 
-Data processed by [app_2point_calc.py][app_2point_calc] or [app_3point_calc.py][app_3point_calc] is saved in the same Pickle-serialized Pandas DataFrame format as Track files and stored in the "calc" folder. The file extension is '.pkl', the same as for Track files.
+In Behavior Senpai, the data obtained by calculating the positional relationship of multiple keypoints is called a Feature. The data processed by [app_2point_calc.py][app_2point_calc] or [app_3point_calc.py][app_3point_calc] is stored in a Pickle-ized The data processed by [app_3point_calc][app_3point_calc] is saved as a feature file in the "calc" folder in a Pickle-ized Pandas DataFrame type (just like the Track file). The file extension is '.pkl' as in the Track file.
 
-Calculated Track files hold data with a 2-level-multi-index, with index names 'frame' and 'member' from level 0 onwards. Column names correspond to the calculations performed, but 'timestamp' is always included.
+The feature file holds data in 2-level-multi-index format, and the names of the indices are 'frame' and 'member' starting from level 0.
+Columns always include a 'timestamp'.
+
+It should be noted that the data in the Track file is only the result of keypoint detection, while the data in the Feature file are features that are deeply related to the purpose of behavior observation.
 
 ### Attributes of Track file
 
