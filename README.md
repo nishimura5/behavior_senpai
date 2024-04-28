@@ -11,14 +11,15 @@
 ![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.2.0%20_%20Python%20senpai_files/bs_capture_120.jpg)
 
 Behavior Senpai is an application that supports quantitative behavior observation in video observation methods. It converts video files into time-series coordinate data using keypoint detection AI, enabling quantitative analysis and visualization of human behavior.
-Behavior Senpai is distinctive in that it permits the utilization of multiple AI models without the necessity for coding. The software supports the following three AI image processing frameworks/models:
+Behavior Senpai is distinctive in that it permits the utilization of multiple AI models without the necessity for coding. 
 
  The following AI image processing frameworks/models are supported by Behavior Senpai:
 - [YOLOv8 Pose](https://github.com/ultralytics/ultralytics/issues/1915)
 - [MediaPipe Holistic](https://github.com/google/mediapipe/blob/master/docs/solutions/holistic.md)
 - [RTMPose Body8 -Halpe26 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#26-keypoints)
-The Behavior Senpai software performs pose estimation of a person in a video using an AI model selected by the user, and outputs time-series coordinate data.
-(These are variously referred to as pose estimation, markerless motion capture, landmark detection, and so forth, depending on the intended purpose and application.)
+
+Behavior Senpai performs pose estimation of a person in a video using an AI model selected by the user, and outputs time-series coordinate data.
+(These are variously referred to as "pose estimation", "markerless motion capture", "landmark detection", and so forth, depending on the intended purpose and application.)
 
 <p align="center">
   <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
