@@ -241,3 +241,9 @@ Nishimura, E. (2024). Behavior Senpai (Version 1.2.0) [Computer software]. Kyush
   note = {Available at: \url{https://hdl.handle.net/2324/7160651}},
 }
 ```
+
+### Related Documents
+[Sample Videos for Behavioral Observation Using Keypoint Detection Technology](https://hdl.handle.net/2324/7172619)
+
+[Quantitative Behavioral Observation Using Keypoint Detection Technology:
+ Towards the Development of a New Behavioral Observation Method through Video Imagery](https://hdl.handle.net/2324/7170833)
