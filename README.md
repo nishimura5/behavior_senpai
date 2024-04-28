@@ -116,7 +116,7 @@ Note that columns may include other columns such as 'z' and 'conf' depending on 
 
 ### Feature file
 
-In Behavior Senpai, the data obtained by calculating the positional relationship of multiple keypoints is called a Feature. The data processed by [app_2point_calc.py][app_2point_calc] or [app_3point_calc.py][app_3point_calc] is stored in a Pickle-ized The data processed by [app_3point_calc][app_3point_calc] is saved as a feature file in the "calc" folder in a Pickle-ized Pandas DataFrame type (just like the Track file). The file extension is '.pkl' as in the Track file.
+In Behavior Senpai, the data obtained by calculating the positional relationship of multiple keypoints is called a Feature. The data processed by [app_2point_calc.py][app_2point_calc] or [app_3point_calc.py][app_3point_calc] is stored in a Pickled data processed by [app_3point_calc][app_3point_calc] is saved as a feature file in the "calc" folder in a Pickled Pandas DataFrame (just like the Track file). The file extension is '.pkl' as in the Track file.
 
 The feature file holds data in 2-level-multi-index format, and the names of the indices are 'frame' and 'member' starting from level 0.
 Columns always include a 'timestamp'.
@@ -185,6 +185,10 @@ The file name of the video on which keypoint detection was performed is recorded
 #### next, prev
 
 Long videos captured by a video camera may be split during recording due to camera specifications. Since Track files are paired with video files, they are also split. 'Next' and 'prev' record the sequence of split Track files. Addition to attrs is done by [app_track_list.py][app_track_list].
+
+### Security Considerations
+
+As mentioned above, Behavior Senpai handles pickle format files, and because of the security risks associated with pickle format files, please only open files that you trust (e.g., do not open files from unknown sources that are available on the Internet). (For example, do not try to open files of unknown origin published on the Internet). See [here](https://docs.python.org/3/library/pickle.html) for more information.
 
 ### Annotated Video file
 
