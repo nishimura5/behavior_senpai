@@ -63,7 +63,7 @@ rye self uninstall
 The ID of keypoints handled by Behavior Senpai is the same as the ID of each dataset: COCO for YOLOv8 and Halpe26 for RTMPose. The ID of each keypoints is as follows
 
 <p align="center">
-  <img width="60%" alt="Keypoints of body (YOLOv8 and MMPose)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20 20Python%20Senpai_files/keypoints_body_110.png">
+  <img width="60%" alt="Keypoints of body (YOLOv8 and MMPose)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_body_110.png">
 </p>
 
 The IDs of the keypoints (landmarks) of the faces in MediaPipe Holistic are as follows. See [here](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png) for a document with all IDs.
@@ -84,12 +84,9 @@ The IDs of the keypoints (landmarks) of the hands in MediaPipe Holistic are as f
 
 ## Interface
 
-> [!IMPORTANT]
-Behavior Senpai handles files in Pickle format. Due to security risks associated with Pickle format, only open files from trusted sources (e.g., avoid opening files from unknown sources available on the internet). For details, refer [here](https://docs.python.org/3/library/pickle.html).
-
 ### Track file
 
-The time-series coordinate data resulting from keypoint detection in app_detect.py is stored in a [Pickle-ized Pandas DataFrame type]((https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html)).
+The time-series coordinate data resulting from keypoint detection in app_detect.py is stored in a [Pickled Pandas DataFrame]((https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html)).
 Behavior Senpai calls this a Track file.
 The Track file is saved in the "trk" folder created in the same directory as the video file where the keypoint detection was performed.
 
