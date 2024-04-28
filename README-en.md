@@ -214,14 +214,14 @@ When Behavior Senpai loads a Track file, if a video file exists in the parent fo
 
 ### Temporary file
 
-The application's settings and the path of the most recently loaded Track file are saved as a Pickle-serialized dictionary. The file name is "temp.pkl". If this file does not exist, the application automatically generates it (using default values). To reset the settings, delete the temp.pkl file. The Temporary file is managed by [gui_parts.py][gui_parts].
+The application's settings and the path of the most recently loaded Track file are saved as a Pickled dictionary. The file name is "temp.pkl". If this file does not exist, the application automatically generates it (using default values). To reset the settings, delete the temp.pkl file. The Temporary file is managed by [gui_parts.py][gui_parts].
 
 ## Citation
 
 Please acknowledge and cite the use of this software and its authors when results are used in publications or published elsewhere.
 
 ```
-Nishimura, E. (2024). Behavior Senpai (Version 1.1.0) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
+Nishimura, E. (2024). Behavior Senpai (Version 1.2.0) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
 ```
 
 ```
