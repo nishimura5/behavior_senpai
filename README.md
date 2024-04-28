@@ -10,9 +10,9 @@
 
 ![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.2.0%20_%20Python%20senpai_files/bs_capture_120.jpg)
 
-Behavior Senpai(ビヘイビア センパイ)は、ビデオ観察法における定量的行動観察を支援するアプリケーションです。ビデオカメラで撮影した人の行動をkeypoint検出AIを使用して時系列座標データ化し、人の行動の定量的な分析や可視化を可能にします。
+Behavior Senpai(ビヘイビア センパイ)は、ビデオ観察法における定量的行動観察を支援するアプリケーションです。Behavior Senpaiは動画ファイルに対しkeypoint検出AIを使用して時系列座標データ化し、人の行動の定量的な分析や可視化を可能にします。
 
-近年進展の著しいAI画像処理技術を行動観察に応用するにあたり、環境構築や調査比較、機能実装のためのコストが大きな課題となっていました。Behavior Senpaiは複数のAIモデルをノーコードで非情報系の研究者にも使用できるようにした点が特長です。
+近年はAI画像処理技術の進歩が著しく、行動観察にこれらの技術を応用するには環境構築や調査比較、機能実装のためのコストが大きな課題となっていました。Behavior Senpaiは複数のAIモデルをノーコードで使用できるようにした点が特長です。
 
 Behavior Senpaiは以下の3種類のAI画像処理フレームワーク/モデルをサポートしています。
 
@@ -20,7 +20,7 @@ Behavior Senpaiは以下の3種類のAI画像処理フレームワーク/モデ�
  - [MediaPipe Holistic](https://github.com/google/mediapipe/blob/master/docs/solutions/holistic.md)
  - [RTMPose Body8-Halpe26 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#26-keypoints)
 
-Behavior Senpaiは、ユーザーが選択したAIモデルによって動画内の人の姿勢推定を行い、時系列座標データを出力します。（これらはpose estimation、markerless motioin capture、landmark detectionなど、目的や用途によって様々な呼ばれ方をされています。）
+Behavior Senpaiは、ユーザーが選択したAIモデルを用いて動画内の人の姿勢推定を行い、時系列座標データを出力します。（これらはpose estimation、markerless motioin capture、landmark detectionなど、目的や用途によって様々な呼ばれ方をされています。）
 
 <p align="center">
   <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
