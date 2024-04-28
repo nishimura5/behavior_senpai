@@ -1,4 +1,4 @@
-# Behavior Senpai v.1.1.0
+# Behavior Senpai v.1.2.0
 
 [pyproject]: https://github.com/nishimura5/python_senpai/blob/master/pyproject.toml
 [app_detect]: https://github.com/nishimura5/python_senpai/blob/master/src/app_detect.py
@@ -8,68 +8,55 @@
 [gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
 [detector_proc]: https://github.com/nishimura5/python_senpai/blob/master/src/detector_proc.py
 
-![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/bs_capture_110.jpg)
+![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.2.0%20_%20Python%20senpai_files/bs_capture_120.jpg)
 
-Behavior Senpai is an application that supports quantitative behavior observation in video observation methods. It converts human behavior captured by video cameras into time-series coordinate data using keypoint detection AI, enabling quantitative analysis and visualization of human behavior.
+Behavior Senpai is an application that supports quantitative behavior observation in video observation methods. It converts video files into time-series coordinate data using keypoint detection AI, enabling quantitative analysis and visualization of human behavior.
+Behavior Senpai is distinctive in that it permits the utilization of multiple AI models without the necessity for coding. The software supports the following three AI image processing frameworks/models:
 
-Behavior Senpai features multiple AI models that can be used in the same interface with no code. Behavior Senpai is unique in that it allows multiple AI models to be used in the same interface with no code.
-
-Behavior Senpai supports the following three AI image processing frameworks/models
-
- - [YOLOv8 Pose](https://github.com/ultralytics/ultralytics/issues/1915)
- - [MediaPipe Holistic](https://github.com/google/mediapipe/blob/master/docs/solutions/holistic.md)
- - [RTMPose Body8-Halpe26 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#26-keypoints)
-
-Behavior Senpai performs posture estimation of a person in a video using a user-selected AI model and outputs time-series coordinate data.
+ The following AI image processing frameworks/models are supported by Behavior Senpai:
+- [YOLOv8 Pose](https://github.com/ultralytics/ultralytics/issues/1915)
+- [MediaPipe Holistic](https://github.com/google/mediapipe/blob/master/docs/solutions/holistic.md)
+- [RTMPose Body8 -Halpe26 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#26-keypoints)
+The Behavior Senpai software performs pose estimation of a person in a video using an AI model selected by the user, and outputs time-series coordinate data.
+(These are variously referred to as pose estimation, markerless motion capture, landmark detection, and so forth, depending on the intended purpose and application.)
 
 <p align="center">
-  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
+  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
 </p>
+
+Behavior Senpai is an open source software developed at [Faculty of Design, Kyushu University](https://www.design.kyushu-u.ac.jp/en/home/).
 
 ## Requirement
 
-Behavior Senpai has been developed and tested on Windows11(23H2).
+In order to use Behavior Senpai, you need a PC that meets the following performance requirements. The functionality has been confirmed on Windows 11 (23H2).
 
-### If using CUDA
+### When using CUDA
 
- - Free space: 10GB or more
- - Installed RAM: 16GB or more
- - GPU: RTX2060 or higher (CUDA: 12.1)
- - [Rye](https://rye-up.com)
- - [.NET 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
+ - Disk space: 12GB or more
+ - RAM: 16GB or more
+ - Screen resolution: 1920x1080 or higher
+ - GPU: RTX2060~ (CUDA: 12.1)
 
 ### Without CUDA
 
-If a CUDA-compatible GPU is not installed, only MediaPipe Holistic can be used.
+If you do not have a CUDA-compatible GPU, only MediaPipe Holistic can be used.
 
- - Free space: 8GB or more
- - Installed RAM: 16GB or more
- - [Rye](https://rye-up.com)
- - [.NET 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
+ - Disk space: 8GB or more
+ - RAM: 16GB or more
+ - Screen resolution: 1920x1080 or higher
 
 ## Usage
 
-### Windows
+Running BehaviorSenpai.exe will start the application; if you want to use CUDA, check the "Enable features using CUDA" checkbox the first time you start the application and click the "OK" button.
 
-Launching BehaviorSenpai.exe starts the application. If using CUDA, check "Enable features using CUDA" upon first launch and then click "OK".
+BehaviorSenpai.exe is an application to automate the construction of the Python environment by [Rye](https://rye-up.com) and the startup of Behavior Senpai itself.
+The initial setup by BehaviorSenpai.exe takes some time. Please wait until the terminal (black screen) closes automatically.
 
-To uninstall or replace with the latest version, simply delete the folder containing BehaviorSenpai.exe.
+To uninstall Behavior Senpai or replace it with the latest version, delete the entire folder containing BehaviorSenpai.exe. In addition, to uninstall Rye, run the following from a terminal
 
-### Mac
-
-On Mac, instead of the CPython downloaded by Rye, download or build Python separately using pyenv or a similar tool and manually add it to the toolchain. For example:
-
- - pyenv install 3.11.6
- - Obtain the path to python using `pyenv which python`
- - Open the .python-version file and change it to "pyenv@3.11.6"
- - rye toolchain register --name=pyenv /path/to/pyenv/python3.11
- - rye fetch 3.11.6
- - git clone https://github.com/nishimura5/behavior_senpai.git
- - cd behavior_senpai
- - rye sync
- - . ./launcher.sh
-
-Installation is complete with these steps.
+```
+rye self uninstall
+```
 
 ## Keypoints
 
