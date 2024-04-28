@@ -185,9 +185,13 @@ The frame size of the video on which keypoint detection was performed is recorde
 
 The file name of the video on which keypoint detection was performed is recorded. Addition to attrs is done by [app_detector.py][app_detect] ([detector_proc.py][detector_proc]).
 
+#### created
+
+Dates and times when the track file was created are recorded in the format "%Y-%m-%d %H-%M-%S". additions to attrs are made in [app_detector.py][app_detect] ([detector_proc.py][detector_proc]).
+
 #### next, prev
 
-Long videos captured by a video camera may be split during recording due to camera specifications. Since Track files are paired with video files, they are also split. 'Next' and 'prev' record the sequence of split Track files. Addition to attrs is done by [app_track_list.py][app_track_list].
+Long videos captured by a video camera may be split during recording due to camera specifications. Since Track files are paired with video files, they are also split. 'next' and 'prev' record the sequence of split Track files. Addition to attrs is done by [app_track_list.py][app_track_list].
 
 ### Security Considerations
 
@@ -221,7 +225,7 @@ When Behavior Senpai loads a Track file, if a video file exists in the parent fo
 
 ### Temporary file
 
-The application's settings and the path of the most recently loaded Track file are saved as a Pickled dictionary. The file name is "temp.pkl". If this file does not exist, the application automatically generates it (using default values). To reset the settings, delete the temp.pkl file. The Temporary file is managed by [gui_parts.py][gui_parts].
+The application's settings and the path of the most recently loaded Track file are saved as a Pickled dictionary. The file name is "temp.pkl". If this file does not exist, the application automatically generates it (using default values). To reset the settings, delete the "temp.pkl" file. The Temporary file is managed by [gui_parts.py][gui_parts].
 
 ## Citation
 
