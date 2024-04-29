@@ -89,17 +89,10 @@ The IDs of the keypoints (landmarks) of the hands in MediaPipe Holistic are as f
 
 ### Track file
 
-The time-series coordinate data resulting from keypoint detection in app_detect.py is stored in a [Pickled Pandas DataFrame]((https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html)).
-Behavior Senpai calls this a Track file.
-The Track file is saved in the "trk" folder created in the same directory as the video file where the keypoint detection was performed.
+The time-series coordinate data resulting from keypoint detection in app_detect.py is stored in a [Pickled Pandas DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html). This data is referred to by Behavior Senpai as a "Track file". The Track file is saved in the "trk" folder, which is created in the same directory as the video file where the keypoint detection was performed.
+The Track file holds time-series coordinate data in a 3-level-multi-index format. The indexes are designated as "frame" "member", and "keypoint", starting from level 0. "Frame" is an integer, starting from 0, corresponding to the frame number of the video. "Member" and "keypoint" are the identifiers of keypoints detected by the model. The Track file always contains three columns: "x," "y," and "timestamp." "X" and "y" are in pixels, while "timestamp" is in milliseconds.
 
-The track file holds time-series coordinate data in 3-level-multi-index format.
-The indexes are named 'frame', 'member', and 'keypoint', starting from level 0. frame is an integer starting from 0, corresponding to the frame number of the video.
-member and keypoint are the IDs of keypoints detected by the model.
-The Track file always contains three columns: 'x', 'y', and 'timestamp'. x and y are in px and timestamp is in milliseconds.
-
-An example of a DataFrame stored in the Track file is shown below.
-Note that columns may include other columns such as 'z' and 'conf' depending on the specification of the AI model.
+An illustrative example of a DataFrame stored in the Track file is presented below. It should be noted that the columns may include additional columns such as 'z' and 'conf', contingent on the specifications of the AI model.
 
 |  |  |  | x | y | timestamp |
 | - | - | - | - | - | - |
@@ -119,12 +112,7 @@ Note that columns may include other columns such as 'z' and 'conf' depending on 
 
 ### Feature file
 
-In Behavior Senpai, the data obtained by calculating the positional relationship of multiple keypoints is called a Feature. The data processed by [app_2point_calc.py][app_2point_calc] or [app_3point_calc.py][app_3point_calc] is stored in a Pickled data processed by [app_3point_calc][app_3point_calc] is saved as a feature file in the "calc" folder in a Pickled Pandas DataFrame (just like the Track file). The file extension is '.pkl' as in the Track file.
-
-The feature file holds data in 2-level-multi-index format, and the names of the indices are 'frame' and 'member' starting from level 0.
-Columns always include a 'timestamp'.
-
-It should be noted that the data in the Track file is only the result of keypoint detection, while the data in the Feature file are features that are deeply related to the purpose of behavior observation.
+In Behavior Senpai, the data obtained by calculating the positional relationship of multiple keypoints is referred to as a feature. The data processed by [app_2point_calc.py][app_2point_calc] or [app_3point_calc.py][app_3point_calc] is stored in a pickled format. The data processed by [app_3point_calc][app_3point_calc] is saved as a "Feature file" in the "calc" folder. The file extension is ".pkl", as in the Track file. The Feature file holds time-series data in 2-level-multi-index format, with the indices designated as "frame" and "member", respectively, and the columns including a "timestamp". It should be noted that the data in the Track file is only the result of keypoint detection, while the data in the Feature file are features that are deeply related to the purpose of behavior observation.
 
 #### Column name definition
 
@@ -156,7 +144,7 @@ cross(2-1,2-3)
 
 ### Attributes of Track file
 
-The [attrs property](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.attrs.html) of the DataFrame stored in Track and Calculated Track files records information such as the original video file name, its frame size, and the name of the AI model used for keypoint detection.
+The [attrs property](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.attrs.html) of the DataFrame stored in Track file (and Feature files) records information such as the original video file name, its frame size, and the name of the AI model used for keypoint detection.
 
 To load a Track file and check the contents recorded in attrs, the Python code
 
@@ -187,7 +175,7 @@ The file name of the video on which keypoint detection was performed is recorded
 
 #### created
 
-Dates and times when the track file was created are recorded in the format "%Y-%m-%d %H-%M-%S". additions to attrs are made in [app_detector.py][app_detect] ([detector_proc.py][detector_proc]).
+Dates and times when the Track file was created are recorded in the format "%Y-%m-%d %H-%M-%S". Additions to attrs are made in [app_detector.py][app_detect] ([detector_proc.py][detector_proc]).
 
 #### next, prev
 
@@ -203,7 +191,7 @@ Behavior Senpai can output videos in mp4 format with detected keypoints drawn on
 
 ### Folder Structure
 
-This section explains the default locations for data output by Behavior Senpai. Track files are saved in the "trk" folder, Calculated Track files in the "calc" folder, and videos with keypoints drawn are saved in the "mp4" folder. If a Track file is edited and overwritten, the old Track file is saved in the "backup" folder (only one backup is kept). These folders are automatically generated at the time of file saving.
+This section explains the default locations for data output by Behavior Senpai. Track files are saved in the "trk" folder, Feature files in the "calc" folder, and videos with keypoints drawn are saved in the "mp4" folder. If a Track file is edited and overwritten, the old Track file is saved in the "backup" folder (only one backup is kept). These folders are automatically generated at the time of file saving.
 
 Below is an example of the folder structure when there are files named "ABC.MP4" and "XYZ.MOV" in a folder. Output file names include suffixes according to the model or type of calculation. To avoid file read/write failures, use alphanumeric characters for folder and file names, especially when the file path contains Japanese characters.
 
