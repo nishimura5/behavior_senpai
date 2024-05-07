@@ -59,12 +59,13 @@ class LinePlotter:
         plot_df = plot_df[~plot_df.index.duplicated(keep="last")]
         plot_df = plot_df.loc[pd.IndexSlice[:, member], :]
 
-        self.line_ax = plot_df.plot(x='timestamp', y=data_col_names)
+        plot_df.plot(ax=self.line_ax, x='timestamp', y=data_col_names)
         self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         self.line_ax.legend(loc='upper right')
 
         show_df = plot_df.reset_index().set_index(['timestamp', 'member']).loc[:, :]
         self.timestamps = show_df.index.get_level_values('timestamp').unique().to_numpy()
+        print(show_df)
 
     def set_plot_band(self, plot_df, member: str, time_min_msec: int, time_max_msec: int):
         self.member = member
