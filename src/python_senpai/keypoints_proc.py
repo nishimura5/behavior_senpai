@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.decomposition import PCA
+from umap import UMAP
 
 
 def has_keypoint(src_df):
@@ -92,9 +93,14 @@ def pca(src_df, tar_cols: list):
     PCA: principal component analysis(主成分分析)
     src_dfのtar_colsを次元削減する
     '''
-    pca = PCA(n_components=1)
-    pca.fit(src_df[tar_cols])
-    reduced_arr = pca.transform(src_df[tar_cols])
+    model = PCA(n_components=1)
+    reduced_arr = model.fit_transform(src_df[tar_cols])
+    return reduced_arr
+
+
+def umap(src_df, tar_cols: list, n_components: int = 1, n_neighbors: int = 15):
+    model = UMAP(n_components=n_components, n_neighbors=n_neighbors)
+    reduced_arr = model.fit_transform(src_df[tar_cols])
     return reduced_arr
 
 
@@ -102,8 +108,8 @@ def calc_recurrence(src_arr, threshold: float):
     '''
     recurrence plotを計算する
     '''
-    distance_mat = pairwise_distances(src_arr)
-    print(distance_mat.max())
+    distance_mat = pairwise_distances(src_arr, metric='euclidean')
+    print(f"distance max:{distance_mat.max()}")
     if threshold == 0:
         dst_mat = distance_mat
     else:

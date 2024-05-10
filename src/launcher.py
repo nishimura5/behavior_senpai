@@ -18,6 +18,7 @@ import app_smoothing
 import app_scene_table
 import app_trajplot as k2t
 import app_recuplot as k2r
+import app_dimredu
 import app_2point_calc
 import app_3point_calc
 import pref_list
@@ -74,6 +75,8 @@ class App(ttk.Frame):
         k2f_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         k2r_button = ttk.Button(buttons_frame, text="Recuplot", command=lambda: self.launch_window(k2r.App))
         k2r_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        dimredu_button = ttk.Button(buttons_frame, text="Dim-reduction plot", command=lambda: self.launch_window(app_dimredu.App))
+        dimredu_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         calc_label = ttk.Label(buttons_frame, text="Calculation")
         calc_label.pack(side=tk.TOP, pady=(8, 0))
