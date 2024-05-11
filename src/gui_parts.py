@@ -125,15 +125,13 @@ class ThinningOption(ttk.Frame):
 
 
 class CalcCaseEntry(ttk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, default=""):
         super().__init__(master)
-        tmp = TempFile()
-        data = tmp.load()
         self.invalid_characters = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
         caption = ttk.Label(master, text='Calc case:')
         caption.pack(side=tk.LEFT)
         self.calc_case_entry = ttk.Entry(master, width=10, validate="key", validatecommand=(self.register(self._validate), "%P"))
-        self.calc_case_entry.insert(tk.END, data['calc_case'])
+        self.calc_case_entry.insert(tk.END, default)
         self.calc_case_entry.pack(side=tk.LEFT, padx=(0, 5))
 
     def get_calc_case(self):
@@ -153,8 +151,8 @@ class TimeSpanEntry(ttk.Frame):
         super().__init__(master)
 
         self.side = tk.LEFT
-        caption_time = ttk.Label(master, text='time:')
-        caption_time.pack(side=tk.LEFT, padx=(10, 3))
+        caption_time = ttk.Label(master, text='Time:')
+        caption_time.pack(side=tk.LEFT, padx=(0, 1))
         vcmd = (self.register(self._validate), '%P')
         invcmd = (self.register(self._invalid_start), '%P')
         self.time_start_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)
@@ -211,6 +209,79 @@ class TimeSpanEntry(ttk.Frame):
 
     def _invalid_end(self, text):
         self.time_end_entry.delete(0, tk.END)
+
+
+class IntEntry(ttk.Frame):
+    def __init__(self, master, label: str, default: str, width=5):
+        super().__init__(master)
+        self.default = default
+        self.frame = ttk.Frame(master)
+        caption = ttk.Label(self.frame, text=label)
+        caption.pack(side=tk.LEFT, padx=(0, 1))
+        self.entry = ttk.Entry(self.frame, width=5, validate="key", validatecommand=(self.register(self._validate), "%P"))
+        self.entry.bind("<FocusOut>", self._set_default)
+        self.entry.insert(tk.END, self.default)
+        self.entry.pack(side=tk.LEFT)
+
+    def pack_horizontal(self, anchor=tk.E, padx=0, pady=0):
+        self.frame.pack(side=tk.LEFT, anchor=anchor, padx=padx, pady=pady)
+
+    def pack_vertical(self, anchor=tk.E, padx=0, pady=0):
+        self.frame.pack(side=tk.TOP, anchor=anchor, padx=padx, pady=pady)
+
+    def get(self):
+        return int(self.entry.get())
+
+    def save_to_temp(self, key):
+        tmp = TempFile()
+        data = tmp.load()
+        thinning = self.entry.get()
+        data[key] = thinning
+        tmp.save(data)
+        return thinning
+
+    def _validate(self, text):
+        return (text.isdigit() or text == "")
+
+    def _set_default(self, event):
+        if self.entry.get() == "":
+            self.entry.delete(0, tk.END)
+            self.entry.insert(tk.END, self.default)
+
+
+class Combobox(ttk.Frame):
+    def __init__(self, master, label: str, values: list, width=5):
+        super().__init__(master)
+        self.frame = ttk.Frame(master)
+        caption = ttk.Label(self.frame, text=label)
+        caption.pack(side=tk.LEFT, padx=(0, 1))
+        self.combobox = ttk.Combobox(self.frame, state='readonly', width=width)
+        self.combobox["values"] = values
+        self.combobox.current(0)
+        self.combobox.pack(side=tk.LEFT)
+
+    def pack_horizontal(self, anchor=tk.E, padx=0, pady=0):
+        self.frame.pack(side=tk.LEFT, anchor=anchor, padx=padx, pady=pady)
+
+    def pack_vertical(self, anchor=tk.E, padx=0, pady=0):
+        self.frame.pack(side=tk.TOP, anchor=anchor, padx=padx, pady=pady)
+
+    def set_selected_bind(self, func):
+        self.combobox.bind("<<ComboboxSelected>>", func)
+
+    def get(self):
+        return self.combobox.get()
+
+    def set_values(self, values):
+        self.combobox["values"] = values
+
+    def save_to_temp(self, key):
+        tmp = TempFile()
+        data = tmp.load()
+        thinning = self.combobox.get()
+        data[key] = thinning
+        tmp.save(data)
+        return thinning
 
 
 class TempFile:

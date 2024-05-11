@@ -3,7 +3,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from gui_parts import TempFile, MemberKeypointComboboxes
+from gui_parts import TempFile, MemberKeypointComboboxes, IntEntry
 from line_plotter import LinePlotter
 from python_senpai import keypoints_proc
 
@@ -42,11 +42,9 @@ class App(ttk.Frame):
         self.smoothing_type_combo["values"] = ["moving average"]
         self.smoothing_type_combo.current(0)
         self.smoothing_type_combo.pack(side=tk.LEFT, padx=(0, 10))
-        window_size_label = ttk.Label(calc_frame, text="Window size:")
-        window_size_label.pack(side=tk.LEFT, padx=(0, 5))
-        self.window_size_entry = ttk.Entry(calc_frame, width=5)
-        self.window_size_entry.pack(side=tk.LEFT, padx=(0, 5))
-        self.window_size_entry.insert(0, "5")
+
+        self.window_size_entry = IntEntry(calc_frame, label="Window size:", default=5)
+        self.window_size_entry.pack_horizontal(padx=5)
         calc_button = ttk.Button(calc_frame, text="Calc", command=self.calc)
         calc_button.pack(side=tk.LEFT, padx=(10, 0))
 
@@ -101,7 +99,7 @@ class App(ttk.Frame):
     def calc(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
         smoothing_type = self.smoothing_type_combo.get()
-        window_size = int(self.window_size_entry.get())
+        window_size = self.window_size_entry.get()
 
         # timestampの範囲を抽出
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)

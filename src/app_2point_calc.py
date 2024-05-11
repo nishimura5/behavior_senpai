@@ -7,7 +7,7 @@ from tkinter import ttk
 import pandas as pd
 
 from vector_gui_parts import MemberKeypointComboboxesFor2Point
-from gui_parts import ThinningOption, TempFile, CalcCaseEntry
+from gui_parts import IntEntry, Combobox, TempFile, CalcCaseEntry
 from line_plotter import LinePlotter
 from python_senpai import keypoints_proc
 from python_senpai import file_inout
@@ -29,14 +29,11 @@ class App(ttk.Frame):
 
         cross_frame = ttk.Frame(self)
         cross_frame.pack(pady=5)
-        self.calc_case_entry = CalcCaseEntry(cross_frame)
+        self.calc_case_entry = CalcCaseEntry(cross_frame, temp.data['calc_case'])
         self.calc_case_entry.pack(side=tk.LEFT, padx=5)
-        calc_type_label = ttk.Label(cross_frame, text="Calc:")
-        calc_type_label.pack(side=tk.LEFT, padx=5)
-        self.calc_type_combo = ttk.Combobox(cross_frame, state='readonly', width=22)
-        self.calc_type_combo["values"] = ["all", "xy_component (AB_x, AB_y)", "norm (|AB|)"]
-        self.calc_type_combo.current(0)
-        self.calc_type_combo.pack(side=tk.LEFT, padx=5)
+        vals = ["all", "xy_component (AB_x, AB_y)", "norm (|AB|)"]
+        self.calc_type_combo = Combobox(cross_frame, label="Calc:", width=22, values=vals)
+        self.calc_type_combo.pack_horizontal(padx=5)
         data_dir = self._find_data_dir()
         img_path = os.path.join(data_dir, "img", "vector_2.gif")
         self.img = tk.PhotoImage(file=img_path)
@@ -48,8 +45,8 @@ class App(ttk.Frame):
         setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
 
-        self.thinnig_option = ThinningOption(setting_frame)
-        self.thinnig_option.pack(side=tk.LEFT, padx=5)
+        self.thinning_entry = IntEntry(setting_frame, label="Thinning:", default=temp.data['thinning'])
+        self.thinning_entry.pack_horizontal(padx=5)
 
         draw_btn = ttk.Button(setting_frame, text="Draw", command=self.manual_draw)
         draw_btn.pack(side=tk.LEFT)
@@ -128,8 +125,9 @@ class App(ttk.Frame):
                 self.calc_df = pd.concat([self.calc_df, add_df], axis=1)
 
         # thinningの値だけframeを間引く
-        thinning = self.thinnig_option.get_thinning()
-        plot_df = keypoints_proc.thinning(plot_df, int(thinning))
+        thinning = self.thinning_entry.get()
+        self.thinning_entry.save_to_temp('thinning')
+        plot_df = keypoints_proc.thinning(plot_df, thinning)
 
         self.lineplot.set_trk_df(self.src_df)
         self.lineplot.set_plot(plot_df, current_member, col_names)
