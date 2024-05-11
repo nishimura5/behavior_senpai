@@ -3,7 +3,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from gui_parts import MemberKeypointComboboxes, ProcOptions, TempFile
+from gui_parts import MemberKeypointComboboxes, IntEntry, TempFile
 from recurrence_plotter import RecurrencePlotter
 from python_senpai import keypoints_proc
 
@@ -29,7 +29,11 @@ class App(ttk.Frame):
         proc_frame = ttk.Frame(self)
         proc_frame.pack(pady=5)
         self.member_keypoints_combos = MemberKeypointComboboxes(proc_frame)
-        self.proc_options = ProcOptions(proc_frame)
+
+        self.diff_entry = IntEntry(proc_frame, label="Diff period:", default=temp.data['dt_span'])
+        self.diff_entry.pack_horizontal(padx=5)
+        self.thinning_entry = IntEntry(proc_frame, label="Thinning:", default=temp.data['thinning'])
+        self.thinning_entry.pack_horizontal(padx=5)
 
         setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
@@ -70,7 +74,7 @@ class App(ttk.Frame):
 
         idx = tar_df.index
         if 'keypoint' in idx.names:
-            dt_span = self.proc_options.get_dt_span()
+            dt_span = self.diff_entry.get()
             if self.current_dt_span != dt_span:
                 # speedとaccelerationを計算してsrc_dfに追加
                 speed_df = keypoints_proc.calc_speed(tar_df, int(dt_span))
@@ -90,7 +94,7 @@ class App(ttk.Frame):
         tar_df.index = tar_df.index.set_levels(levels)
 
         # thinningの値だけframeを間引く
-        thinning = self.proc_options.get_thinning()
+        thinning = self.thinning_entry.get()
         plot_df = keypoints_proc.thinning(tar_df, int(thinning))
 
         timestamps = plot_df.loc[idx, 'timestamp'].dropna().values

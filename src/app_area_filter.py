@@ -7,7 +7,7 @@ from PIL import Image, ImageTk
 import numpy as np
 import cv2
 
-from gui_parts import TempFile
+from gui_parts import TempFile, Combobox
 from python_senpai import keypoints_proc
 
 
@@ -38,16 +38,12 @@ class App(ttk.Frame):
         setting_frame = ttk.Frame(control_frame)
         setting_frame.pack(side=tk.LEFT)
 
-        in_out_label = ttk.Label(setting_frame, text="Target:")
-        in_out_label.pack(side=tk.LEFT, padx=(0, 3))
-        self.keypoint_member_combo = ttk.Combobox(setting_frame, state='readonly', width=18)
-        self.keypoint_member_combo.pack(side=tk.LEFT, padx=(0, 5))
-        self.keypoint_member_combo["values"] = ("only keyoints", "member")
-        self.keypoint_member_combo.current(0)
-        self.in_out_combo = ttk.Combobox(setting_frame, state='readonly', width=18)
-        self.in_out_combo.pack(side=tk.LEFT)
-        self.in_out_combo["values"] = ("within area", "outside area")
-        self.in_out_combo.current(0)
+        vals = ("only keyoints", "member")
+        self.keypoint_member_combo = Combobox(setting_frame, "Target:", values=vals, width=18)
+        self.keypoint_member_combo.pack_horizontal(padx=5)
+        vals = ("within area", "outside area")
+        self.in_out_combo = Combobox(setting_frame, "", values=vals, width=18)
+        self.in_out_combo.pack_horizontal(padx=5)
 
         calc_button = ttk.Button(setting_frame, text="Remove", command=self.calc_in_out)
         calc_button.pack(side=tk.LEFT, padx=(10, 0))

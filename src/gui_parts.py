@@ -61,67 +61,46 @@ class MemberKeypointComboboxes(ttk.Frame):
         return member, keypoint
 
 
-class ProcOptions(ttk.Frame):
-    def __init__(self, master):
+class StrEntry(ttk.Frame):
+    def __init__(self, master, label: str, default="", width=10):
         super().__init__(master)
-        # 一時ファイルからdt_spanとthinningを取得
+        self.default = default
+        self.invalid_characters = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
+        self.frame = ttk.Frame(master)
+        caption = ttk.Label(self.frame, text=label)
+        caption.pack(side=tk.LEFT, padx=(0, 1))
+        self.entry = ttk.Entry(self.frame, width=width, validate="key", validatecommand=(self.register(self._validate), "%P"))
+        self.entry.bind("<FocusOut>", self._set_default)
+        self.entry.insert(tk.END, self.default)
+        self.entry.pack(side=tk.LEFT)
+
+    def pack_horizontal(self, anchor=tk.W, padx=0, pady=0):
+        self.frame.pack(side=tk.LEFT, anchor=anchor, padx=padx, pady=pady)
+
+    def pack_vertical(self, anchor=tk.E, padx=0, pady=0):
+        self.frame.pack(side=tk.TOP, anchor=anchor, padx=padx, pady=pady)
+
+    def get(self):
+        return self.entry.get()
+    
+    def save_to_temp(self, key):
         tmp = TempFile()
         data = tmp.load()
-
-        dt_span_label = ttk.Label(master, text="diff period:")
-        dt_span_label.pack(side=tk.LEFT)
-        self.dt_span_entry = ttk.Entry(master, width=5, validate="key", validatecommand=(self.register(self._validate), "%P"))
-        self.dt_span_entry.insert(tk.END, data['dt_span'])
-        self.dt_span_entry.pack(side=tk.LEFT, padx=(0, 5))
-
-        thinning_label = ttk.Label(master, text="thinning:")
-        thinning_label.pack(side=tk.LEFT)
-        self.thinning_entry = ttk.Entry(master, width=5, validate="key", validatecommand=(self.register(self._validate), "%P"))
-        self.thinning_entry.insert(tk.END, data['thinning'])
-        self.thinning_entry.pack(side=tk.LEFT, padx=(0, 5))
-
-    def get_dt_span(self):
-        tmp = TempFile()
-        data = tmp.load()
-        dt_span = self.dt_span_entry.get()
-        data['dt_span'] = dt_span
+        data[key] = self.entry.get()
         tmp.save(data)
-        return dt_span
+        return data[key]
 
-    def get_thinning(self):
-        tmp = TempFile()
-        data = tmp.load()
-        thinning = self.thinning_entry.get()
-        data['thinning'] = thinning
-        tmp.save(data)
-        return thinning
+    def update(self, text):
+        self.entry.delete(0, tk.END)
+        self.entry.insert(tk.END, text)
 
     def _validate(self, text):
-        return (text.isdigit() or text == "")
+        return (all(c not in text for c in self.invalid_characters) or text == "")
 
-
-class ThinningOption(ttk.Frame):
-    def __init__(self, master):
-        super().__init__(master)
-        tmp = TempFile()
-        data = tmp.load()
-
-        thinning_label = ttk.Label(master, text="thinning:")
-        thinning_label.pack(side=tk.LEFT)
-        self.thinning_entry = ttk.Entry(master, width=5, validate="key", validatecommand=(self.register(self._validate), "%P"))
-        self.thinning_entry.insert(tk.END, data['thinning'])
-        self.thinning_entry.pack(side=tk.LEFT, padx=(0, 5))
-
-    def get_thinning(self):
-        tmp = TempFile()
-        data = tmp.load()
-        thinning = self.thinning_entry.get()
-        data['thinning'] = thinning
-        tmp.save(data)
-        return thinning
-
-    def _validate(self, text):
-        return (text.isdigit() or text == "")
+    def _set_default(self, event):
+        if self.entry.get() == "":
+            self.entry.delete(0, tk.END)
+            self.entry.insert(tk.END, self.default)
 
 
 class CalcCaseEntry(ttk.Frame):
@@ -218,7 +197,7 @@ class IntEntry(ttk.Frame):
         self.frame = ttk.Frame(master)
         caption = ttk.Label(self.frame, text=label)
         caption.pack(side=tk.LEFT, padx=(0, 1))
-        self.entry = ttk.Entry(self.frame, width=5, validate="key", validatecommand=(self.register(self._validate), "%P"))
+        self.entry = ttk.Entry(self.frame, width=width, validate="key", validatecommand=(self.register(self._validate), "%P"))
         self.entry.bind("<FocusOut>", self._set_default)
         self.entry.insert(tk.END, self.default)
         self.entry.pack(side=tk.LEFT)
@@ -235,10 +214,9 @@ class IntEntry(ttk.Frame):
     def save_to_temp(self, key):
         tmp = TempFile()
         data = tmp.load()
-        thinning = self.entry.get()
-        data[key] = thinning
+        data[key] = self.entry.get()
         tmp.save(data)
-        return thinning
+        return data[key]
 
     def _validate(self, text):
         return (text.isdigit() or text == "")
@@ -271,6 +249,9 @@ class Combobox(ttk.Frame):
 
     def get(self):
         return self.combobox.get()
+    
+    def set(self, value):
+        self.combobox.set(value)
 
     def set_values(self, values):
         self.combobox["values"] = values

@@ -3,7 +3,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from gui_parts import TempFile, MemberKeypointComboboxes, IntEntry
+from gui_parts import TempFile, Combobox, MemberKeypointComboboxes, IntEntry
 from line_plotter import LinePlotter
 from python_senpai import keypoints_proc
 
@@ -36,12 +36,9 @@ class App(ttk.Frame):
 
         calc_frame = ttk.Frame(setting_frame)
         calc_frame.pack(fill=tk.X, expand=True, pady=(5, 0))
-        smoothing_type_label = ttk.Label(calc_frame, text="Smoothing type:")
-        smoothing_type_label.pack(side=tk.LEFT, padx=(0, 10))
-        self.smoothing_type_combo = ttk.Combobox(calc_frame, state='readonly', width=18)
-        self.smoothing_type_combo["values"] = ["moving average"]
-        self.smoothing_type_combo.current(0)
-        self.smoothing_type_combo.pack(side=tk.LEFT, padx=(0, 10))
+        vals = ["moving average"]
+        self.smoothing_type_combo = Combobox(calc_frame, "Smoothing type:", values=vals, width=18)
+        self.smoothing_type_combo.pack_horizontal(padx=5)
 
         self.window_size_entry = IntEntry(calc_frame, label="Window size:", default=5)
         self.window_size_entry.pack_horizontal(padx=5)

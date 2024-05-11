@@ -50,10 +50,8 @@ class App(ttk.Frame):
         self.n_neighbors_combobox = Combobox(combos_frame, label="N_neighbors:", values=vals)
         self.n_neighbors_combobox.pack_vertical(pady=5)
 
-        c_frame = ttk.Frame(combos_frame)
-        c_frame.pack(pady=5, anchor=tk.E)
-        draw_btn = ttk.Button(c_frame, text="Draw", command=self.draw)
-        draw_btn.pack(side=tk.LEFT)
+        draw_btn = ttk.Button(combos_frame, text="Draw", command=self.draw)
+        draw_btn.pack(side=tk.LEFT, expand=True, pady=5, fill=tk.X)
 
         draw_frame = ttk.Frame(setting_frame)
         draw_frame.pack(anchor=tk.NW, fill=tk.X, expand=True, padx=5)

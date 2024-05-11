@@ -3,7 +3,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from gui_parts import MemberKeypointComboboxes, ProcOptions, TempFile
+from gui_parts import MemberKeypointComboboxes, IntEntry, TempFile
 from trajectory_plotter import TrajectoryPlotter
 from python_senpai import keypoints_proc
 
@@ -28,7 +28,11 @@ class App(ttk.Frame):
         setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
         self.member_keypoints_combos = MemberKeypointComboboxes(setting_frame)
-        self.proc_options = ProcOptions(setting_frame)
+
+        self.diff_entry = IntEntry(setting_frame, label="Diff period:", default=temp.data['dt_span'])
+        self.diff_entry.pack_horizontal(padx=5)
+        self.thinning_entry = IntEntry(setting_frame, label="Thinning:", default=temp.data['thinning'])
+        self.thinning_entry.pack_horizontal(padx=5)
 
         draw_btn = ttk.Button(setting_frame, text="Draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT)
@@ -59,14 +63,14 @@ class App(ttk.Frame):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
 
         # speedを計算してsrc_dfに追加
-        dt_span = self.proc_options.get_dt_span()
+        dt_span = self.diff_entry.get()
         if self.current_dt_span != dt_span:
             speed_df = keypoints_proc.calc_speed(self.src_df, int(dt_span))
             self.src_speed_df = pd.concat([self.src_df, speed_df], axis=1)
             self.current_dt_span = dt_span
 
         # thinningの値だけframeを間引く
-        thinning = self.proc_options.get_thinning()
+        thinning = self.thinning_entry.get()
         plot_df = keypoints_proc.thinning(self.src_speed_df, int(thinning))
 
         # memberとkeypointのインデックス値を文字列に変換

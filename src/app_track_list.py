@@ -1,13 +1,12 @@
 import os
 import tkinter as tk
 from tkinter import ttk
-from tkinter import filedialog
 import glob
 
 import pandas as pd
 
 from python_senpai import windows_and_mac
-
+from gui_parts import Combobox, StrEntry
 
 class App(ttk.Frame):
     """
@@ -22,17 +21,13 @@ class App(ttk.Frame):
 
         take_part_frame = ttk.Frame(self)
         take_part_frame.pack(pady=5)
-        take_label = ttk.Label(take_part_frame, text="take:")
-        take_label.pack(side=tk.LEFT, padx=(0, 3))
-        self.take_entry = ttk.Entry(take_part_frame, width=10)
-        self.take_entry.pack(side=tk.LEFT, padx=(0, 10))
-        part_label = ttk.Label(take_part_frame, text="part:")
-        part_label.pack(side=tk.LEFT, padx=(0, 3))
-        self.part_combo = ttk.Combobox(take_part_frame, state='readonly', width=5)
-        self.part_combo.pack(side=tk.LEFT)
+        self.take_entry = StrEntry(take_part_frame, label="take:", width=10)
+        self.take_entry.pack_horizontal(padx=(0, 10))
+
         # 文字列でソートする都合で9までに対応、(''も想定しているので10以上に拡張するときは注意)
-        self.part_combo["values"] = ("1", "2", "3", "4", "5", "6", "7", "8", "9")
-        self.part_combo.set("1")
+        vals = ("1", "2", "3", "4", "5", "6", "7", "8", "9")
+        self.part_combo = Combobox(take_part_frame, "part:", values=vals, width=5)
+        self.part_combo.pack_horizontal(padx=5)
         assign_btn = ttk.Button(take_part_frame, text="Assign", command=self.assign)
         assign_btn.pack(side=tk.LEFT, padx=5)
         overwrite_btn = ttk.Button(take_part_frame, text="Overwrite", command=self.overwrite)
@@ -97,8 +92,7 @@ class App(ttk.Frame):
             return
         take = self.tree.item(selected_items[0])['values'][0]
         part = self.tree.item(selected_items[0])['values'][1]
-        self.take_entry.delete(0, tk.END)
-        self.take_entry.insert(tk.END, take)
+        self.take_entry.update(take)
         self.part_combo.set(part)
 
     def assign(self):

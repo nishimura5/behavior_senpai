@@ -3,7 +3,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from gui_parts import TempFile
+from gui_parts import TempFile, StrEntry
 from line_plotter import LinePlotter
 from python_senpai import time_format
 from python_senpai import keypoints_proc
@@ -45,10 +45,8 @@ class App(ttk.Frame):
         self.tar_member_label_var.set("None")
         tar_member_label = ttk.Label(rename_frame, textvariable=self.tar_member_label_var)
         tar_member_label.pack(side=tk.LEFT, padx=5)
-        to_label = ttk.Label(rename_frame, text="to")
-        to_label.pack(side=tk.LEFT, padx=5)
-        self.new_member_name_entry = ttk.Entry(rename_frame, width=12)
-        self.new_member_name_entry.pack(side=tk.LEFT, padx=5)
+        self.new_member_name_entry = StrEntry(rename_frame, label="to", width=12)
+        self.new_member_name_entry.pack_horizontal(padx=(0, 5))
         rename_btn = ttk.Button(rename_frame, text="Rename", command=self.rename_member)
         rename_btn.pack(side=tk.LEFT, padx=5)
         remove_btn = ttk.Button(rename_frame, text="Remove", command=self.remove_member)

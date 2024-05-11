@@ -5,7 +5,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from gui_parts import TempFile, TimeSpanEntry
+from gui_parts import TempFile, TimeSpanEntry, StrEntry
 from line_plotter import LinePlotter
 from python_senpai import time_format
 from python_senpai import keypoints_proc
@@ -56,10 +56,9 @@ class App(ttk.Frame):
         entry_frame.pack(pady=5)
         self.time_span_entry = TimeSpanEntry(entry_frame)
         self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
-        description_label = ttk.Label(entry_frame, text="description")
-        description_label.pack(side=tk.LEFT)
-        self.description_entry = ttk.Entry(entry_frame, width=40)
-        self.description_entry.pack(side=tk.LEFT, padx=(0, 5))
+
+        self.description_entry = StrEntry(entry_frame, label="Description:", width=40)
+        self.description_entry.pack_horizontal(padx=5)
 
         add_btn = ttk.Button(entry_frame, text="Add", command=self._add_row)
         add_btn.pack(side=tk.LEFT, padx=5)
@@ -264,5 +263,4 @@ class App(ttk.Frame):
         end_msec = time_format.timestr_to_msec(end)
         self.time_span_entry.update_entry(start_msec, end_msec)
         description = self.tree.item(selected)['values'][3]
-        self.description_entry.delete(0, tk.END)
-        self.description_entry.insert(0, description)
+        self.description_entry.update(description)
