@@ -1,15 +1,14 @@
 import cv2
-import numpy as np
-import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib import ticker, gridspec
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-
-from python_senpai import time_format
-import yolo_drawer
 import mediapipe_drawer
+import numpy as np
+import pandas as pd
 import rtmpose_drawer
+import yolo_drawer
+from matplotlib import gridspec, ticker
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from python_senpai import time_format
 
 
 class LinePlotter:

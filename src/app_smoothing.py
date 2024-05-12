@@ -2,8 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-
-from gui_parts import TempFile, Combobox, MemberKeypointComboboxes, IntEntry
+from gui_parts import Combobox, IntEntry, MemberKeypointComboboxes, TempFile
 from line_plotter import LinePlotter
 from python_senpai import keypoints_proc
 

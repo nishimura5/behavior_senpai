@@ -2,12 +2,11 @@ import operator
 import tkinter as tk
 from tkinter import ttk
 
-import pandas as pd
-from PIL import Image, ImageTk
-import numpy as np
 import cv2
-
-from gui_parts import TempFile, Combobox
+import numpy as np
+import pandas as pd
+from gui_parts import Combobox, TempFile
+from PIL import Image, ImageTk
 from python_senpai import keypoints_proc
 
 

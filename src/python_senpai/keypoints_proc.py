@@ -1,9 +1,7 @@
-import time
-
-import pandas as pd
 import numpy as np
-from sklearn.metrics.pairwise import pairwise_distances
+import pandas as pd
 from sklearn.decomposition import PCA
+from sklearn.metrics.pairwise import pairwise_distances
 from umap import UMAP
 
 
@@ -151,7 +149,7 @@ def remove_by_bool_col(src_df, bool_col_name: str, drop_member: bool = False):
     # concatでNanになった列をfloatにしてTrueで埋めてboolにする
     remove_sr = src_df[bool_col_name].astype('float').fillna(True).astype('bool')
     if drop_member is True:
-        remove_sr = remove_sr.groupby(['frame', 'member']).transform('all') 
+        remove_sr = remove_sr.groupby(['frame', 'member']).transform('all')
 
     x_sr = np.where(remove_sr == False, np.nan, src_df['x'])
     y_sr = np.where(remove_sr == False, np.nan, src_df['y'])
@@ -329,7 +327,7 @@ if __name__ == "__main__":
     # テストデータ生成
     frame_num = 1000
     frames = range(frame_num)
-    members = ['test1', 'test2'] 
+    members = ['test1', 'test2']
     keypoints = [f'{i}' for i in range(1, 11)]
     data = {'frame': [], 'member': [], 'keypoint': [], 'x': [], 'y': [], 'timestamp': []}
     for f in frames:

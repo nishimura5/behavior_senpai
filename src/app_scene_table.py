@@ -1,15 +1,12 @@
-import os
 import itertools
+import os
 import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-
-from gui_parts import TempFile, TimeSpanEntry, StrEntry
+from gui_parts import StrEntry, TempFile, TimeSpanEntry
 from line_plotter import LinePlotter
-from python_senpai import time_format
-from python_senpai import keypoints_proc
-from python_senpai import file_inout
+from python_senpai import file_inout, keypoints_proc, time_format
 
 
 class App(ttk.Frame):
@@ -130,7 +127,7 @@ class App(ttk.Frame):
         if 'description' not in self.scene_table.keys():
             self.scene_table['description'] = [''] * len(self.scene_table['start'])
 
-        for start, end, description in zip(self.scene_table['start'], self.scene_table['end'], self.scene_table['description']):
+        for start, end, description in zip(self.scene_table['start'], self.scene_table['end'], self.scene_table['description'], strict=False):
             duration = pd.to_timedelta(end) - pd.to_timedelta(start)
             duration_str = time_format.timedelta_to_str(duration)
             self.tree.insert("", "end", values=(start, end, duration_str, description))
@@ -226,7 +223,7 @@ class App(ttk.Frame):
     def _treeview_sort_column(self, tv, col):
         tar_list = [(tv.set(k, col), k) for k in tv.get_children('')]
         tar_list.sort()
-        for index, (val, k) in enumerate(tar_list):
+        for index, (_val, k) in enumerate(tar_list):
             tv.move(k, '', index)
 
     def _delete_selected(self):

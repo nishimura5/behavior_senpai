@@ -1,9 +1,7 @@
 import cv2
 import mediapipe as mp
 import pandas as pd
-
-from python_senpai import img_draw
-from python_senpai import vcap
+from python_senpai import img_draw, vcap
 
 
 class MediaPipeDetector:

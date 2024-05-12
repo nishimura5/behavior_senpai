@@ -1,14 +1,12 @@
-import sys
 import os
-import re
 import pickle
+import re
+import sys
 import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-
-from python_senpai import keypoints_proc
-from python_senpai import time_format
+from python_senpai import keypoints_proc, time_format
 
 
 class MemberKeypointComboboxes(ttk.Frame):
@@ -82,7 +80,7 @@ class StrEntry(ttk.Frame):
 
     def get(self):
         return self.entry.get()
-    
+
     def save_to_temp(self, key):
         tmp = TempFile()
         data = tmp.load()
@@ -249,7 +247,7 @@ class Combobox(ttk.Frame):
 
     def get(self):
         return self.combobox.get()
-    
+
     def set(self, value):
         self.combobox.set(value)
 

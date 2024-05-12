@@ -1,9 +1,8 @@
 import cv2
-import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import ticker, gridspec
+import numpy as np
+from matplotlib import gridspec, ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-
 from python_senpai import time_format
 
 

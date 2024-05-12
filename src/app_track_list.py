@@ -1,12 +1,12 @@
+import glob
 import os
 import tkinter as tk
 from tkinter import ttk
-import glob
 
 import pandas as pd
-
-from python_senpai import windows_and_mac
 from gui_parts import Combobox, StrEntry
+from python_senpai import windows_and_mac
+
 
 class App(ttk.Frame):
     """
@@ -107,7 +107,7 @@ class App(ttk.Frame):
     def _treeview_sort_column(self, tv):
         tar_list = [(tv.set(k, "take"), tv.set(k, "part"), k) for k in tv.get_children('')]
         tar_list.sort()
-        for index, (val_take, val_part, k) in enumerate(tar_list):
+        for index, (_val_take, _val_part, k) in enumerate(tar_list):
             tv.move(k, '', index)
 
     def _open_video(self):

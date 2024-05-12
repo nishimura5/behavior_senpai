@@ -2,10 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-
-from gui_parts import MemberKeypointComboboxes, IntEntry, TempFile
-from trajectory_plotter import TrajectoryPlotter
+from gui_parts import IntEntry, MemberKeypointComboboxes, TempFile
 from python_senpai import keypoints_proc
+from trajectory_plotter import TrajectoryPlotter
 
 
 class App(ttk.Frame):

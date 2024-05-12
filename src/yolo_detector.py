@@ -1,10 +1,8 @@
 import cv2
-from ultralytics import YOLO
 import pandas as pd
-
 import yolo_drawer
-from python_senpai import img_draw
-from python_senpai import vcap
+from python_senpai import img_draw, vcap
+from ultralytics import YOLO
 
 
 class YoloDetector:
@@ -47,7 +45,7 @@ class YoloDetector:
             # 検出結果の取り出し
             result_keypoints = result[0].keypoints.data
             result_boxes = result[0].boxes.data
-            for keypoints, boxes in zip(result_keypoints, result_boxes):
+            for keypoints, boxes in zip(result_keypoints, result_boxes, strict=False):
                 member_id = int(boxes[4])
                 for k in range(self.number_of_keypoints):
                     keypoint_id = k

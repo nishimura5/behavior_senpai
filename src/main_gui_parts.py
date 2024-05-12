@@ -2,15 +2,14 @@ import os
 import tkinter as tk
 from tkinter import ttk
 
-from PIL import Image, ImageTk
+import mediapipe_drawer
 import numpy as np
 import pandas as pd
-
-from python_senpai import file_inout
-import yolo_drawer
-import mediapipe_drawer
 import rtmpose_drawer
+import yolo_drawer
 from gui_parts import TempFile
+from PIL import Image, ImageTk
+from python_senpai import file_inout
 
 
 class PklSelector(ttk.Frame):

@@ -1,15 +1,12 @@
+import datetime
+import glob
 import os
 import tkinter as tk
-from tkinter import ttk
-from tkinter import filedialog
-import glob
-import datetime
+from tkinter import filedialog, ttk
 
-import ttkthemes
-
-from python_senpai import vcap
 import detector_proc
-from python_senpai import windows_and_mac
+import ttkthemes
+from python_senpai import vcap, windows_and_mac
 
 
 class App(ttk.Frame):

@@ -125,4 +125,4 @@ if __name__ == "__main__":
         if i == 0:
             cv2.waitKey(0)
         else:
-            cv2.waitKey(30) 
+            cv2.waitKey(30)

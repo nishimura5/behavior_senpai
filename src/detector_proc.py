@@ -1,6 +1,6 @@
+import importlib.util
 import os
 import time
-import importlib.util
 
 from mediapipe_detector import MediaPipeDetector
 from python_senpai import file_inout

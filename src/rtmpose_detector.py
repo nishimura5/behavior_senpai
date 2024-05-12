@@ -1,15 +1,13 @@
 import cv2
-import pandas as pd
 import numpy as np
-from mmengine.registry import init_default_scope
+import pandas as pd
 from mmdet.apis import inference_detector, init_detector
+from mmengine.registry import init_default_scope
 from mmpose.apis import inference_topdown, init_model
 from mmpose.evaluation.functional import nms
 from mmpose.registry import VISUALIZERS
 from mmpose.structures import merge_data_samples
-
-from python_senpai import img_draw
-from python_senpai import vcap
+from python_senpai import img_draw, vcap
 
 
 class RTMPoseDetector:

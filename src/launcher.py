@@ -1,28 +1,26 @@
 import os
 import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 
-import cv2
-import ttkthemes
-
-from gui_parts import TimeSpanEntry, TempFile
-from main_gui_parts import PklSelector, VideoViewer
-from python_senpai import keypoints_proc, windows_and_mac, file_inout, vcap
-import export_mp4
-import app_detect
-import app_track_list
-import app_member_edit
-import app_area_filter
-import app_smoothing
-import app_scene_table
-import app_trajplot as k2t
-import app_recuplot as k2r
-import app_dimredu
 import app_2point_calc
 import app_3point_calc
-import pref_list
+import app_area_filter
+import app_detect
+import app_dimredu
+import app_member_edit
+import app_recuplot as k2r
+import app_scene_table
+import app_smoothing
+import app_track_list
+import app_trajplot as k2t
+import cv2
+import export_mp4
 import license_view
+import pref_list
+import ttkthemes
+from gui_parts import TempFile, TimeSpanEntry
+from main_gui_parts import PklSelector, VideoViewer
+from python_senpai import file_inout, keypoints_proc, vcap, windows_and_mac
 
 
 class App(ttk.Frame):

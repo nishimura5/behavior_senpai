@@ -5,7 +5,6 @@ import cv2
 import numpy as np
 import pandas as pd
 import torch
-
 from python_senpai import img_draw
 
 
@@ -15,7 +14,7 @@ def draw(src_img, result):
     result_keypoints = result[0].keypoints.data
     result_boxes = result[0].boxes.data
     dst_img = src_img
-    for keypoints, boxes in zip(result_keypoints, result_boxes):
+    for keypoints, boxes in zip(result_keypoints, result_boxes, strict=False):
         member = int(boxes[4])
         anno.set_pose(keypoints)
         anno.set_track(member)

@@ -1,12 +1,11 @@
 import os
 
-import pandas as pd
 import cv2
-
-from gui_parts import TempFile
-import yolo_drawer
 import mediapipe_drawer
+import pandas as pd
 import rtmpose_drawer
+import yolo_drawer
+from gui_parts import TempFile
 from python_senpai import keypoints_proc
 
 

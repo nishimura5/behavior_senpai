@@ -1,8 +1,8 @@
-import sys
+import json
 import os
+import sys
 import tkinter as tk
 from tkinter import ttk
-import json
 
 
 class App(ttk.Frame):

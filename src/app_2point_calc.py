@@ -1,16 +1,14 @@
-import sys
 import os
 import re
+import sys
 import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-
-from vector_gui_parts import MemberKeypointComboboxesFor2Point
-from gui_parts import IntEntry, Combobox, TempFile, CalcCaseEntry
+from gui_parts import CalcCaseEntry, Combobox, IntEntry, TempFile
 from line_plotter import LinePlotter
-from python_senpai import keypoints_proc
-from python_senpai import file_inout
+from python_senpai import file_inout, keypoints_proc
+from vector_gui_parts import MemberKeypointComboboxesFor2Point
 
 
 class App(ttk.Frame):

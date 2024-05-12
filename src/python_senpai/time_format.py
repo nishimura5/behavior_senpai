@@ -1,5 +1,5 @@
-import pyperclip
 import pandas as pd
+import pyperclip
 
 
 def msec_to_timestr(x):
