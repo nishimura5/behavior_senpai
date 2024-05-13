@@ -16,7 +16,7 @@ class App(ttk.Frame):
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
-        self.drp = DimensionalReductionPlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
+        self.drp = DimensionalReductionPlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         left_frame = ttk.Frame(self)
         left_frame.pack(side=tk.LEFT, anchor=tk.NW)
@@ -36,13 +36,13 @@ class App(ttk.Frame):
         setting_frame.pack(pady=5)
 
         # column選択リストボックス、複数選択
-        self.column_listbox = tk.Listbox(setting_frame, height=12,  selectmode=tk.EXTENDED, exportselection=False)
+        self.column_listbox = tk.Listbox(setting_frame, height=12, selectmode=tk.EXTENDED, exportselection=False)
         self.column_listbox.pack(side=tk.LEFT, padx=(0, 5))
 
         combos_frame = ttk.Frame(setting_frame)
         combos_frame.pack(side=tk.LEFT, anchor=tk.NW, fill=tk.X, expand=True, padx=5)
 
-        self.thinning_entry = IntEntry(combos_frame, label="Thinning:", default=temp.data['thinning'])
+        self.thinning_entry = IntEntry(combos_frame, label="Thinning:", default=temp.data["thinning"])
         self.thinning_entry.pack_vertical(pady=5)
 
         vals = [10, 20, 30, 40, 50, 100]
@@ -69,14 +69,14 @@ class App(ttk.Frame):
 
         self.drp.pack(plot_frame)
 
-        self.load(args)
+        self._load(args)
         self.feat_df = None
 
-    def load(self, args):
-        self.src_df = args['src_df']
-        self.cap = args['cap']
-        self.time_min, self.time_max = args['time_span_msec']
-        self.pkl_dir = args['pkl_dir']
+    def _load(self, args):
+        self.src_df = args["src_df"]
+        self.cap = args["cap"]
+        self.time_min, self.time_max = args["time_span_msec"]
+        self.pkl_dir = args["pkl_dir"]
         self.drp.set_vcap(self.cap)
 
         # UIの更新
@@ -95,7 +95,7 @@ class App(ttk.Frame):
         self.member_keypoints_combos.set_df(self.feat_df)
         self.column_listbox.delete(0, tk.END)
         for col in self.feat_df.columns:
-            if col == 'timestamp':
+            if col == "timestamp":
                 continue
             self.column_listbox.insert(tk.END, col)
         self.drp.clear()
@@ -113,7 +113,7 @@ class App(ttk.Frame):
         tar_df = keypoints_proc.filter_by_timerange(tar_df, self.time_min, self.time_max)
 
         idx = tar_df.index
-        if 'keypoint' in idx.names:
+        if "keypoint" in idx.names:
             levels = [idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)]
             idx = pd.IndexSlice[:, current_member, current_keypoint]
         else:
@@ -123,11 +123,11 @@ class App(ttk.Frame):
         tar_df.index = tar_df.index.set_levels(levels)
 
         thinning = self.thinning_entry.get()
-        self.thinning_entry.save_to_temp('thinning')
+        self.thinning_entry.save_to_temp("thinning")
         plot_df = keypoints_proc.thinning(tar_df, thinning)
 
         plot_df = plot_df.loc[idx, :].dropna()
-        timestamps = plot_df.loc[idx, 'timestamp'].values
+        timestamps = plot_df.loc[idx, "timestamp"].values
         print(plot_df[cols])
 
         n_neighbors = self.n_neighbors_combobox.get()
@@ -138,19 +138,3 @@ class App(ttk.Frame):
     def combo_selected(self, event):
         self.drp.set_picker_range(int(self.picker_range_combobox.get()))
         self.drp.set_cluster_number(int(self.number_combobox.get()))
-
-
-def quit(root):
-    root.quit()
-    root.destroy()
-
-
-def main():
-    root = tk.Tk()
-    app = App(root)
-    root.protocol("WM_DELETE_WINDOW", lambda: quit(root))
-    app.mainloop()
-
-
-if __name__ == "__main__":
-    main()

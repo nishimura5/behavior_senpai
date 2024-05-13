@@ -8,12 +8,8 @@ from python_senpai import keypoints_proc, time_format
 
 
 class App(ttk.Frame):
-    """
-    帯プロット(Band Plot)を描画するためのGUIです。帯プロットは動画内の各フレームでkeypoint検出に成功しているかを可視化するためのグラフです。
-    以下の機能を有します
-     - 以上の処理で得られたデータをBandPlotterに渡す機能
-     - Trackファイルのmember名を変更する機能
-    """
+    """Application for editing members in the DataFrame."""
+
     def __init__(self, master, args):
         super().__init__(master)
         master.title("Member Edit")
@@ -21,7 +17,7 @@ class App(ttk.Frame):
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
-        self.band = LinePlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
+        self.band = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         control_frame = ttk.Frame(self)
         control_frame.pack(fill=tk.X, pady=(0, 20))
@@ -53,7 +49,7 @@ class App(ttk.Frame):
         tree_frame = ttk.Frame(setting_frame)
         tree_frame.pack(pady=5)
         cols = ("member", "start", "end", "duration", "keypoints/frame")
-        self.tree = ttk.Treeview(tree_frame, columns=cols, height=6, show='headings', selectmode="extended")
+        self.tree = ttk.Treeview(tree_frame, columns=cols, height=6, show="headings", selectmode="extended")
         self.tree.heading("member", text="member")
         self.tree.heading("start", text="start")
         self.tree.heading("end", text="end")
@@ -82,12 +78,12 @@ class App(ttk.Frame):
 
         self.dst_df = None
         self.history = "member_edit"
-        self.load(args)
+        self._load(args)
 
-    def load(self, args):
-        self.src_df = args['src_df']
-        self.cap = args['cap']
-        self.time_min, self.time_max = args['time_span_msec']
+    def _load(self, args):
+        self.src_df = args["src_df"]
+        self.cap = args["cap"]
+        self.time_min, self.time_max = args["time_span_msec"]
 
         # UIの更新
         self.update_tree()
@@ -102,6 +98,7 @@ class App(ttk.Frame):
         print(f"members: {len(members)}")
 
     def draw(self):
+        """Draw the selected member's keypoints within the specified timestamp range."""
         # treeから選択した行のmemberを取得
         current_member = str(self.tree.item(self.tree.selection()[0])["values"][0])
 
@@ -120,56 +117,53 @@ class App(ttk.Frame):
         self.band.draw()
 
     def update_tree(self):
+        """Update the treeview widget with the data from the src_df."""
         self.tree.delete(*self.tree.get_children())
         members = self.src_df.index.get_level_values(1).unique()
         tree_df = self.src_df
 
         for member in members:
             sliced_df = tree_df.loc[pd.IndexSlice[:, member, :], :]
-            sliced_df = sliced_df.loc[~(sliced_df['x'].isna()) & (~sliced_df['y'].isna())]
+            sliced_df = sliced_df.loc[~(sliced_df["x"].isna()) & (~sliced_df["y"].isna())]
             if len(sliced_df.index.get_level_values(0).unique()) == 0:
                 print(f"member {member} has no data")
                 continue
-            kpf = len(sliced_df)/len(sliced_df.index.get_level_values(0).unique())
-            head_timestamp = time_format.msec_to_timestr_with_fff(sliced_df.head(1)['timestamp'].values[0])
-            tail_timestamp = time_format.msec_to_timestr_with_fff(sliced_df.tail(1)['timestamp'].values[0])
-            duration = sliced_df.tail(1)['timestamp'].values[0] - sliced_df.head(1)['timestamp'].values[0]
+            kpf = len(sliced_df) / len(sliced_df.index.get_level_values(0).unique())
+            head_timestamp = time_format.msec_to_timestr_with_fff(sliced_df.head(1)["timestamp"].values[0])
+            tail_timestamp = time_format.msec_to_timestr_with_fff(sliced_df.tail(1)["timestamp"].values[0])
+            duration = sliced_df.tail(1)["timestamp"].values[0] - sliced_df.head(1)["timestamp"].values[0]
             duration_str = time_format.msec_to_timestr_with_fff(duration)
             self.tree.insert("", "end", values=(member, head_timestamp, tail_timestamp, duration_str, f"{kpf:.2f}"))
 
     def rename_member(self):
-        """
-        memberをリネームする
-        """
+        """Rename a member in the DataFrame."""
         old_member = self.tar_member_label_var.get()
         new_member = self.new_member_name_entry.get()
         if new_member == "":
             print("new member name is empty")
             return
         # self.time_min self.time_maxの間でかつ変更したいmemberを抽出
-        between_sr = self.src_df['timestamp'].between(self.time_min-1, self.time_max+1)
+        between_sr = self.src_df["timestamp"].between(self.time_min - 1, self.time_max + 1)
         tar_member_sr = self.src_df.index.get_level_values(1) == old_member
         rename_sr = between_sr & tar_member_sr
         # new_memberを追加してmemberと入れ替える
         new_member_sr = self.src_df.index.get_level_values(1).where(~rename_sr, new_member)
-        self.src_df['new_member'] = new_member_sr
-        self.src_df = self.src_df.set_index('new_member', append=True).swaplevel()
-        self.src_df = self.src_df.droplevel(level='member').rename_axis(index={'new_member': 'member'})
+        self.src_df["new_member"] = new_member_sr
+        self.src_df = self.src_df.set_index("new_member", append=True).swaplevel()
+        self.src_df = self.src_df.droplevel(level="member").rename_axis(index={"new_member": "member"})
 
         self.src_df = self.src_df[~self.src_df.index.duplicated(keep="last")]
         self.update_tree()
         print(f"renamed {old_member} to {new_member}")
 
     def remove_member(self):
-        """
-        memberを削除する
-        """
+        """Remove a member from the DataFrame."""
         current_member = self.tar_member_label_var.get()
         if current_member == "":
             print("current member is empty")
             return
         # self.time_min self.time_maxの間でかつdropしたいmemberがmatchする行を削除
-        between_sr = self.src_df['timestamp'].between(self.time_min-1, self.time_max+1)
+        between_sr = self.src_df["timestamp"].between(self.time_min - 1, self.time_max + 1)
         tar_member_sr = self.src_df.index.get_level_values(1) == current_member
         remove_sr = between_sr & tar_member_sr
         self.src_df = self.src_df[~remove_sr]
@@ -177,7 +171,7 @@ class App(ttk.Frame):
         print(f"removed {current_member}")
 
     def export_tree(self):
-        # treeの内容をCSVで出力
+        """Export the tree data to a CSV file."""
         base_dict = {"member": [], "start": [], "end": [], "duration": []}
         data = self.tree.get_children()
         for d in data:
@@ -190,6 +184,7 @@ class App(ttk.Frame):
         df.to_csv("member_edit.csv", index=False)
 
     def on_ok(self):
+        """Perform the action when the 'OK' button is clicked."""
         self.dst_df = self.src_df.copy()
         if len(self.dst_df) == 0:
             print("No data in DataFrame")
@@ -197,10 +192,12 @@ class App(ttk.Frame):
         self.master.destroy()
 
     def cancel(self):
+        """Cancel the operation and destroy the window."""
         self.dst_df = None
         self.master.destroy()
 
     def clear(self):
+        """Clear the data in the band."""
         self.band.clear()
 
     def _select_tree_row(self, event):
@@ -211,4 +208,4 @@ class App(ttk.Frame):
         self.tar_member_label_var.set(current_member)
 
     def _validate(self, text):
-        return (text.replace(".", "").isdigit() or text == "")
+        return text.replace(".", "").isdigit() or text == ""

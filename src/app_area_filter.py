@@ -11,23 +11,19 @@ from python_senpai import keypoints_proc
 
 
 class App(ttk.Frame):
-    """
-    指定した四角形の中にkeypointが入っているかを判定するためのGUIです。
-    以下の機能を有します
-        - 四角形の位置を指定する機能
-        - 以上の処理で得られたデータをpklに保存する機能
-    """
+    """Application for filtering keypoints by area."""
+
     def __init__(self, master, args):
         super().__init__(master)
         master.title("Area Filter")
         self.pack(padx=10, pady=10)
 
         self.init_anchor_points = [
-            {'point': (100, 100)},
-            {'point': (100, 200)},
-            {'point': (200, 200)},
-            {'point': (200, 100)},
-            ]
+            {"point": (100, 100)},
+            {"point": (100, 200)},
+            {"point": (200, 200)},
+            {"point": (200, 100)},
+        ]
 
         temp = TempFile()
         width, self.height, dpi = temp.get_window_size()
@@ -64,16 +60,16 @@ class App(ttk.Frame):
         self.dst_df = None
         self.history = "area_filter"
 
-        self.load(args)
+        self._load(args)
         self.draw_convex_hull()
         self.reset_anchor_points()
 
-    def load(self, args):
-        self.src_df = args['src_df']
-        self.cap = args['cap']
-        current_position = args['current_position']
+    def _load(self, args):
+        self.src_df = args["src_df"]
+        self.cap = args["cap"]
+        current_position = args["current_position"]
         src_attrs = self.src_df.attrs
-        self.time_min, self.time_max = args['time_span_msec']
+        self.time_min, self.time_max = args["time_span_msec"]
 
         # 動画のフレームを描画
         ratio = src_attrs["frame_size"][0] / src_attrs["frame_size"][1]
@@ -104,59 +100,63 @@ class App(ttk.Frame):
     def reset_anchor_points(self):
         self.anchor_points = self.init_anchor_points.copy()
         self.selected_id = None
-        poly_points = sum([list(p['point']) for p in self.anchor_points], [])
+        poly_points = sum([list(p["point"]) for p in self.anchor_points], [])
         self.poly_id = self.canvas.create_polygon(*poly_points, fill="", outline="magenta")
         for point in self.anchor_points:
-            x = point['point'][0]
-            y = point['point'][1]
-            point['id'] = self.canvas.create_rectangle(x-2, y-2, x+2, y+2, fill="white")
+            x = point["point"][0]
+            y = point["point"][1]
+            point["id"] = self.canvas.create_rectangle(x - 2, y - 2, x + 2, y + 2, fill="white")
 
     def calc_in_out(self):
         # timestampの範囲を抽出
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
 
-        poly_points = [p['point'] for p in self.anchor_points]
+        poly_points = [p["point"] for p in self.anchor_points]
 
-        isin_df = keypoints_proc.is_in_poly(tar_df, poly_points, 'is_remove', self.scale)
+        isin_df = keypoints_proc.is_in_poly(tar_df, poly_points, "is_remove", self.scale)
         # area内を削除したいときはboolを反転する
         if self.in_out_combo.get() == "within area":
             isin_df = isin_df.map(operator.not_)
 
         dst_df = pd.concat([self.src_df, isin_df], axis=1)
         k_m_bool = self.keypoint_member_combo.get() == "member"
-        dst_df = keypoints_proc.remove_by_bool_col(dst_df, 'is_remove', k_m_bool)
-        self.src_df = dst_df.drop(columns=['is_remove'])
+        dst_df = keypoints_proc.remove_by_bool_col(dst_df, "is_remove", k_m_bool)
+        self.src_df = dst_df.drop(columns=["is_remove"])
 
         self.draw_convex_hull()
 
-    def cancel(self):
-        self.dst_df = None
-        self.master.destroy()
-
     def on_ok(self):
+        """Perform the action when the 'OK' button is clicked."""
         self.dst_df = self.src_df.copy()
         if len(self.dst_df) == 0:
             print("No data in DataFrame")
             self.dst_df = None
         self.master.destroy()
 
+    def cancel(self):
+        """Cancel the operation and destroy the window."""
+        self.dst_df = None
+        self.master.destroy()
+
     def select(self, event):
+        """Handle the selection of anchor points on the canvas."""
         for point in self.anchor_points:
-            x = point['point'][0]
-            y = point['point'][1]
-            if x-10 < event.x < x+10 and y-10 < event.y < y+10:
-                self.selected_id = point['id']
+            x = point["point"][0]
+            y = point["point"][1]
+            if x - 10 < event.x < x + 10 and y - 10 < event.y < y + 10:
+                self.selected_id = point["id"]
                 break
             else:
                 self.selected_id = None
 
     def motion(self, event):
+        """Handle the motion event when the canvas is being dragged."""
         if self.selected_id is None:
             return
         for point in self.anchor_points:
-            if point['id'] == self.selected_id:
-                point['point'] = (event.x, event.y)
+            if point["id"] == self.selected_id:
+                point["point"] = (event.x, event.y)
                 break
-        poly_points = sum([list(p['point']) for p in self.anchor_points], [])
-        self.canvas.coords(self.selected_id, event.x-2, event.y-2, event.x+2, event.y+2)
+        poly_points = sum([list(p["point"]) for p in self.anchor_points], [])
+        self.canvas.coords(self.selected_id, event.x - 2, event.y - 2, event.x + 2, event.y + 2)
         self.canvas.coords(self.poly_id, *poly_points)

@@ -8,9 +8,8 @@ from python_senpai import keypoints_proc
 
 
 class App(ttk.Frame):
-    """
-    x,y座標の平滑化を実行します
-    """
+    """Application for smoothing keypoints."""
+
     def __init__(self, master, args):
         super().__init__(master)
         master.title("Smoothing")
@@ -18,7 +17,7 @@ class App(ttk.Frame):
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
-        self.plot = LinePlotter(fig_size=(width/dpi, height/dpi), dpi=dpi)
+        self.plot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         control_frame = ttk.Frame(self)
         control_frame.pack(fill=tk.X, pady=(0, 20))
@@ -61,9 +60,9 @@ class App(ttk.Frame):
         self.load(args)
 
     def load(self, args):
-        self.src_df = args['src_df']
-        self.cap = args['cap']
-        self.time_min, self.time_max = args['time_span_msec']
+        self.src_df = args["src_df"]
+        self.cap = args["cap"]
+        self.time_min, self.time_max = args["time_span_msec"]
 
         # UIの更新
         self.member_keypoints_combos.set_df(self.src_df)
@@ -89,7 +88,7 @@ class App(ttk.Frame):
 
         plot_df = tar_df.loc[pd.IndexSlice[:, :, current_keypoint], :]
         self.plot.set_trk_df(tar_df)
-        self.plot.set_plot(plot_df, current_member, ['x', 'y'])
+        self.plot.set_plot(plot_df, current_member, ["x", "y"])
         self.plot.draw()
 
     def calc(self):
@@ -121,6 +120,7 @@ class App(ttk.Frame):
         self.plot.draw()
 
     def on_ok(self):
+        """Perform the action when the 'OK' button is clicked."""
         if self.current_df is not None:
             self.dst_df = self.current_df.copy()
         if self.dst_df is not None and len(self.dst_df) == 0:
@@ -129,8 +129,10 @@ class App(ttk.Frame):
         self.master.destroy()
 
     def cancel(self):
+        """Cancel the operation and destroy the window."""
         self.dst_df = None
         self.master.destroy()
 
     def clear(self):
+        """Clear the plot."""
         self.plot.clear()

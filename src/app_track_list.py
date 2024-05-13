@@ -12,12 +12,13 @@ class App(ttk.Frame):
     """
     Trackファイルの一覧を表示するためのGUIです。
     """
+
     def __init__(self, master, args):
         super().__init__(master)
         master.title("Track List")
         self.pack(padx=14, pady=14)
 
-        self.folder_path = args['pkl_dir']
+        self.folder_path = args["pkl_dir"]
 
         take_part_frame = ttk.Frame(self)
         take_part_frame.pack(pady=5)
@@ -36,7 +37,7 @@ class App(ttk.Frame):
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
         cols = ("take", "part", "track", "model", "video")
-        self.tree = ttk.Treeview(tree_frame, columns=cols, show='headings', selectmode="extended")
+        self.tree = ttk.Treeview(tree_frame, columns=cols, show="headings", selectmode="extended")
         self.tree.heading("take", text="take")
         self.tree.heading("part", text="part")
         self.tree.heading("track", text="track")
@@ -54,44 +55,44 @@ class App(ttk.Frame):
         open_btn = ttk.Button(bottom_btn_frame, text="Open", command=self._open_video)
         open_btn.pack(side=tk.LEFT)
 
-        if self.folder_path != '':
-            self.load_folder()
+        if self.folder_path != "":
+            self._load_folder()
 
-    def load_folder(self):
-        for item in self.tree.get_children(''):
+    def _load_folder(self):
+        for item in self.tree.get_children(""):
             self.tree.delete(item)
 
         self.src_tl = TrackList()
 
-        trk_paths = glob.glob(os.path.join(self.folder_path, '*.pkl'))
+        trk_paths = glob.glob(os.path.join(self.folder_path, "*.pkl"))
         attr_dict = {}
         for trk_path in trk_paths:
-            take, prev_name, next_name = '', None, None
+            take, prev_name, next_name = "", None, None
             tar_df = pd.read_pickle(trk_path)
-            if 'take' in tar_df.attrs.keys():
-                take = tar_df.attrs['take']
-            if 'next' in tar_df.attrs.keys():
-                next_name = tar_df.attrs['next']
-            if 'prev' in tar_df.attrs.keys():
-                prev_name = tar_df.attrs['prev']
-            attr_dict[os.path.basename(trk_path)] = {'model': tar_df.attrs['model'], 'video': tar_df.attrs['video_name']}
+            if "take" in tar_df.attrs.keys():
+                take = tar_df.attrs["take"]
+            if "next" in tar_df.attrs.keys():
+                next_name = tar_df.attrs["next"]
+            if "prev" in tar_df.attrs.keys():
+                prev_name = tar_df.attrs["prev"]
+            attr_dict[os.path.basename(trk_path)] = {"model": tar_df.attrs["model"], "video": tar_df.attrs["video_name"]}
             self.src_tl.append(take, prev_name, next_name, os.path.basename(trk_path))
 
         take_dict = self.src_tl.get_dict()
         for take in take_dict.keys():
             link_list = take_dict[take]
             for part_num, file_name in link_list.items():
-                if take == '':
-                    part_num = ''
+                if take == "":
+                    part_num = ""
                 attr = attr_dict[file_name]
-                self.tree.insert("", "end", values=(take, part_num, file_name, attr['model'], attr['video']))
+                self.tree.insert("", "end", values=(take, part_num, file_name, attr["model"], attr["video"]))
 
     def _on_select(self, event):
         selected_items = self.tree.selection()
         if len(selected_items) == 0:
             return
-        take = self.tree.item(selected_items[0])['values'][0]
-        part = self.tree.item(selected_items[0])['values'][1]
+        take = self.tree.item(selected_items[0])["values"][0]
+        part = self.tree.item(selected_items[0])["values"][1]
         self.take_entry.update(take)
         self.part_combo.set(part)
 
@@ -105,46 +106,46 @@ class App(ttk.Frame):
         self._treeview_sort_column(self.tree)
 
     def _treeview_sort_column(self, tv):
-        tar_list = [(tv.set(k, "take"), tv.set(k, "part"), k) for k in tv.get_children('')]
+        tar_list = [(tv.set(k, "take"), tv.set(k, "part"), k) for k in tv.get_children("")]
         tar_list.sort()
         for index, (_val_take, _val_part, k) in enumerate(tar_list):
-            tv.move(k, '', index)
+            tv.move(k, "", index)
 
     def _open_video(self):
-        video_file_name = self.tree.item(self.tree.selection()[0])['values'][4]
+        video_file_name = self.tree.item(self.tree.selection()[0])["values"][4]
         video_path = os.path.join(self.folder_path, os.pardir, video_file_name)
         windows_and_mac.open_file(video_path)
 
-    # pklを上書きする
     def overwrite(self):
+        """Overwrite the track information in the pickle files based on the selected values in the treeview."""
         take_part_name_list = []
-        for item in self.tree.get_children(''):
+        for item in self.tree.get_children(""):
             take = self.tree.set(item, "take")
             part = self.tree.set(item, "part")
             file_name = self.tree.set(item, "track")
-            take_part_name_list.append({'take': take, 'part': part, 'name': file_name})
+            take_part_name_list.append({"take": take, "part": part, "name": file_name})
         dst_tl = TrackList()
         dst_tl.set_take_part_name_list(take_part_name_list)
-#        dst_tl.show()
+        #        dst_tl.show()
         for take, links in dst_tl.track_dict.items():
             for item in links.link_list:
                 src_take, src_item = self.src_tl.find_by_item_name(item.name)
                 if take == src_take and item.name == src_item.name and item.prev == src_item.prev and item.next == src_item.next:
-                    print(f'same! {item.name} and {src_item.name}')
-                elif take == '':
+                    print(f"same! {item.name} and {src_item.name}")
+                elif take == "":
                     tar_df = pd.read_pickle(os.path.join(self.folder_path, item.name))
-                    tar_df.attrs['prev'] = None
-                    tar_df.attrs['next'] = None
-                    tar_df.attrs['take'] = ''
+                    tar_df.attrs["prev"] = None
+                    tar_df.attrs["next"] = None
+                    tar_df.attrs["take"] = ""
                     tar_df.to_pickle(os.path.join(self.folder_path, item.name))
                 else:
                     tar_df = pd.read_pickle(os.path.join(self.folder_path, item.name))
-                    tar_df.attrs['prev'] = item.prev
-                    tar_df.attrs['next'] = item.next
-                    tar_df.attrs['take'] = take
+                    tar_df.attrs["prev"] = item.prev
+                    tar_df.attrs["next"] = item.next
+                    tar_df.attrs["take"] = take
                     tar_df.to_pickle(os.path.join(self.folder_path, item.name))
-        print('overwrite done')
-        self.load_folder()
+        print("overwrite done")
+        self._load_folder()
 
 
 class TrackList:
@@ -160,15 +161,15 @@ class TrackList:
         self.track_dict = {}
         new_dict = {}
         for row in src_list:
-            take = row['take']
-            part = row['part']
-            name = row['name']
+            take = row["take"]
+            part = row["part"]
+            name = row["name"]
             if take not in new_dict.keys():
                 new_dict[take] = {}
             if part not in new_dict[take].keys():
                 new_dict[take][part] = name
             else:
-                print('duplicate part')
+                print("duplicate part")
         for take, part_dict in new_dict.items():
             self.track_dict[take] = LinkList()
             self.track_dict[take].set_dict(part_dict)
@@ -196,7 +197,6 @@ class TrackList:
         デバッグのprint用
         """
         for take, links in self.track_dict.items():
-
             print(f"<take: {take}>")
             links.sort_links()
             for item in links.link_list:
@@ -217,6 +217,7 @@ class LinkList:
     """
     各要素がnextとprevを持っているリスト
     """
+
     def __init__(self):
         self.link_list = []
 
@@ -225,13 +226,13 @@ class LinkList:
         # 重複データがあったら追加しない
         for item in self.link_list:
             if (src_item.prev is not None) and (src_item.prev == item.prev):
-                print('duplicate prev')
+                print("duplicate prev")
                 return ret
             if (src_item.next is not None) and (src_item.next == item.next):
-                print('duplicate next')
+                print("duplicate next")
                 return ret
-            if (src_item.name == item.name):
-                print('duplicate name')
+            if src_item.name == item.name:
+                print("duplicate name")
                 return ret
         ret = True
         self.link_list.append(src_item)
@@ -245,7 +246,7 @@ class LinkList:
         for i, item in enumerate(self.link_list):
             for j, item2 in enumerate(self.link_list):
                 if item.name == item2.prev:
-                    self.link_list.insert(i+1, self.link_list.pop(j))
+                    self.link_list.insert(i + 1, self.link_list.pop(j))
                     break
 
     def append(self, src_item):
@@ -269,7 +270,7 @@ class LinkList:
         """
         ret_dict = {}
         for i, item in enumerate(self.link_list):
-            ret_dict[str(i+1)] = item.name
+            ret_dict[str(i + 1)] = item.name
         return ret_dict
 
 
@@ -278,19 +279,3 @@ class LinkItem:
         self.name = item
         self.next = None
         self.prev = None
-
-
-def quit(root):
-    root.quit()
-    root.destroy()
-
-
-def main():
-    root = tk.Tk()
-    app = App(root)
-    root.protocol("WM_DELETE_WINDOW", lambda: quit(root))
-    app.mainloop()
-
-
-if __name__ == "__main__":
-    main()
