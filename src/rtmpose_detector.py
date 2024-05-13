@@ -13,11 +13,13 @@ from python_senpai import img_draw, vcap
 class RTMPoseDetector:
     def __init__(self, show=True):
         config = "./mm_config/rtmpose-x_8xb256-700e_body8-halpe26-384x288.py"
-        checkpoint = "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/rtmpose-x_simcc-body7_pt-body7-halpe26_700e-384x288-7fb6e239_20230606.pth"
+        checkpoint = (
+            "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/rtmpose-x_simcc-body7_pt-body7-halpe26_700e-384x288-7fb6e239_20230606.pth"
+        )
         det_config = "./mm_config/rtmdet_m_640-8xb32_coco-person.py"
         det_checkpoint = "https://download.openmmlab.com/mmpose/v1/projects/rtmpose/rtmdet_m_8xb32-100e_coco-obj365-person-235e8209.pth"
-        self.det_model = init_detector(det_config, det_checkpoint, device='cuda:0')
-        self.pose_model = init_model(config, checkpoint, device='cuda:0')
+        self.det_model = init_detector(det_config, det_checkpoint, device="cuda:0")
+        self.pose_model = init_model(config, checkpoint, device="cuda:0")
         self.visualizer = VISUALIZERS.build(self.pose_model.cfg.visualizer)
         self.visualizer.set_dataset_meta(self.pose_model.dataset_meta)
 
@@ -47,7 +49,7 @@ class RTMPoseDetector:
                 continue
             rgb_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            scope = self.det_model.cfg.get('default_scope', 'mmdet')
+            scope = self.det_model.cfg.get("default_scope", "mmdet")
             if scope is not None:
                 init_default_scope(scope)
             # bbox検出
@@ -71,14 +73,16 @@ class RTMPoseDetector:
                 img_draw.put_message(frame, "'x' key to exit.", font_size=1.5, y=55)
                 cv2.imshow("dst", frame)
                 key = cv2.waitKey(1) & 0xFF
-                if key == ord('x'):
+                if key == ord("x"):
                     break
 
             # 検出結果の取り出し
             for member_id, keypoints in enumerate(results):
                 pred_instance = keypoints.pred_instances.cpu().numpy()
                 pred_instance.keypoints[pred_instance.keypoint_scores < self.pose_score_threshold] = 0
-                result_keypoints = np.concatenate((pred_instance.keypoints[0, :], pred_instance.keypoints_visible.T, pred_instance.keypoint_scores.T), axis=1)
+                result_keypoints = np.concatenate(
+                    (pred_instance.keypoints[0, :], pred_instance.keypoints_visible.T, pred_instance.keypoint_scores.T), axis=1
+                )
                 for k in range(self.number_of_keypoints):
                     keypoint_id = k
                     x = result_keypoints[k][0]
@@ -108,7 +112,7 @@ class RTMPoseDetector:
 
     def _draw(self, anno_img, data_samples):
         self.visualizer.add_datasample(
-            'result',
+            "result",
             anno_img,
             data_sample=data_samples,
             show=False,
