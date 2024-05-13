@@ -54,7 +54,6 @@ select = [
     "E", # pycodestyle
     "W", # pycodestyle warnings
     "I", # isort
-    "D", # pydocstyle
 ]
 ignore = []
 # 1行の最大文字数
