@@ -3,11 +3,11 @@ import os
 import pandas as pd
 
 
-def concat_track_file(head_df, trk_dir, trk_prefix=''):
-    '''
+def concat_track_file(head_df, trk_dir, trk_prefix=""):
+    """
     nextが記録されたtrack fileを結合する
     3つ以上のtrack fileを結合するときは、この関数を繰り返し使う
-    '''
+    """
 
     if "next" not in head_df.attrs:
         print("next is not in attrs")
@@ -30,13 +30,13 @@ def concat_track_file(head_df, trk_dir, trk_prefix=''):
     # 新しいdfにはhead_dfのattrsが引き継がれる
     tar_df.attrs = head_df.attrs
     # nextだけはnext_dfの値が引き継がれる
-    tar_df.attrs['next'] = next_df.attrs['next']
+    tar_df.attrs["next"] = next_df.attrs["next"]
 
     # head_dfの総時間(msec)とnext_dfのvideo_nameが新たに記録される
     if "video_name_list" not in tar_df.attrs.keys():
-        tar_df.attrs['video_name_list'] = []
-        tar_df.attrs['total_msec_list'] = []
-    tar_df.attrs['video_name_list'].append(next_df.attrs['video_name'])
-    tar_df.attrs['total_msec_list'].append(head_df.loc[pd.IndexSlice[:, :, :], "timestamp"].max())
+        tar_df.attrs["video_name_list"] = []
+        tar_df.attrs["total_msec_list"] = []
+    tar_df.attrs["video_name_list"].append(next_df.attrs["video_name"])
+    tar_df.attrs["total_msec_list"].append(head_df.loc[pd.IndexSlice[:, :, :], "timestamp"].max())
 
     return tar_df

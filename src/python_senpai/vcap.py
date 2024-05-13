@@ -20,9 +20,9 @@ class VideoCap(cv2.VideoCapture):
             print(f"Failed to open {file_path}")
 
     def read_at(self, msec, scale=None, rgb=False, read_anyway=True):
-        '''
+        """
         ミリ秒を指定してreadする
-        '''
+        """
         self.set(cv2.CAP_PROP_POS_MSEC, msec)
         ok, frame = self.read()
         msec = self.get(cv2.CAP_PROP_POS_MSEC)
@@ -39,9 +39,9 @@ class VideoCap(cv2.VideoCapture):
         return ok, frame
 
     def read_anyway(self):
-        '''
+        """
         readに失敗したら黒画像を返す
-        '''
+        """
         ok, frame = self.read()
         if ok is False:
             frame = self.dummy_frame
@@ -51,9 +51,9 @@ class VideoCap(cv2.VideoCapture):
         return self.frame_size
 
     def set_frame_size(self, frame_size):
-        '''
+        """
         read_anyway()を見越してフレームのwidthとheightをsetする(resizeはしない)
-        '''
+        """
         self.frame_size = frame_size
         self.dummy_frame = np.zeros((self.frame_size[1], self.frame_size[0], 3), dtype=np.uint8)
 
@@ -64,10 +64,11 @@ class VideoCap(cv2.VideoCapture):
         return self.max_msec
 
 
-class MultiVcap():
-    '''
+class MultiVcap:
+    """
     分割されたmp4に対して、通しのmsecでread_atするためのクラス
-    '''
+    """
+
     def __init__(self):
         self.vcaps = []
 
@@ -80,9 +81,9 @@ class MultiVcap():
             self.vcaps.append(vc)
 
     def read_at(self, msec):
-        '''
+        """
         ミリ秒を指定してreadする
-        '''
+        """
         tar_idx = 0
         for tar_msec in self.total_msec_list:
             if msec <= tar_msec:
@@ -93,7 +94,7 @@ class MultiVcap():
         if tar_idx == 0:
             ok, frame = tar_vcap.read_at(msec)
         else:
-            tar_msec = msec - self.total_msec_list[tar_idx-1]
+            tar_msec = msec - self.total_msec_list[tar_idx - 1]
             ok, frame = tar_vcap.read_at(tar_msec)
         return ok, frame
 
@@ -131,18 +132,18 @@ class RoiCap(cv2.VideoCapture):
         return self.left_top_point
 
     def get_roi_frame(self):
-        '''
+        """
         read()と互換
-        '''
+        """
         ok, frame = self.read()
         if ok is True:
-            frame = frame[self.left_top_point[1]:self.right_bottom_point[1], self.left_top_point[0]:self.right_bottom_point[0]]
+            frame = frame[self.left_top_point[1] : self.right_bottom_point[1], self.left_top_point[0] : self.right_bottom_point[0]]
         return ok, frame
 
     def click_roi(self):
-        '''
+        """
         imshow()を使ったGUIでROIを指定
-        '''
+        """
         ret, frame = self.read()
         if ret is False:
             print("Failed to read frame.")
@@ -172,11 +173,11 @@ class RoiCap(cv2.VideoCapture):
 
             # xを押すとキャンセル、スペースを押すと確定
             key = cv2.waitKey(1) & 0xFF
-            if key == ord('x'):
+            if key == ord("x"):
                 self.left_top_point = (0, 0)
                 self.right_bottom_point = (self.width, self.height)
                 break
-            if key == ord(' '):
+            if key == ord(" "):
                 self.left_top_point = (int(self.left_top_point[0] * scale), int(self.left_top_point[1] * scale))
                 self.right_bottom_point = (int(self.right_bottom_point[0] * scale), int(self.right_bottom_point[1] * scale))
                 break

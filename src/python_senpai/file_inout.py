@@ -10,11 +10,7 @@ def open_pkl(init_dir, org_path=None):
     if init_dir == "":
         init_dir = "~"
 
-    trk_path = filedialog.askopenfilename(
-        initialdir=init_dir,
-        title="Select Track file",
-        filetypes=[("pkl files", "*.pkl")]
-    )
+    trk_path = filedialog.askopenfilename(initialdir=init_dir, title="Select Track file", filetypes=[("pkl files", "*.pkl")])
     if trk_path == "":
         print("open_pkl() canceled.")
         return org_path
@@ -35,11 +31,11 @@ def load_track_file(tar_path, allow_calculated_track_file=False):
 
 
 def overwrite_track_file(tar_path, tar_df, not_found_ok=False):
-    '''
+    """
     上書きしようとしているファイルをバックアップしてから上書きする
     バックアップフォルダにバックアップを保存する
     バックアップ先にファイルがあったら上書きする
-    '''
+    """
     if os.path.exists(tar_path) is False and not_found_ok is True:
         tar_df.to_pickle(tar_path)
         pkl_name = os.path.basename(tar_path)
@@ -48,7 +44,7 @@ def overwrite_track_file(tar_path, tar_df, not_found_ok=False):
     if os.path.exists(tar_path) is False:
         print("File not found: {}".format(tar_path))
         return
-    backup_dir = os.path.join(os.path.dirname(tar_path), 'backup')
+    backup_dir = os.path.join(os.path.dirname(tar_path), "backup")
     os.makedirs(backup_dir, exist_ok=True)
     # 古いファイルをbackupに移動
     backup_path = os.path.join(backup_dir, os.path.basename(tar_path))
@@ -65,10 +61,10 @@ def save_pkl(org_pkl_path, dst_df, proc_history=None):
     os.makedirs(dst_dir, exist_ok=True)
 
     if proc_history is not None:
-        if 'proc_history' not in dst_df.attrs.keys():
-            dst_df.attrs['proc_history'] = [proc_history]
+        if "proc_history" not in dst_df.attrs.keys():
+            dst_df.attrs["proc_history"] = [proc_history]
         else:
-            dst_df.attrs['proc_history'].append(proc_history)
+            dst_df.attrs["proc_history"].append(proc_history)
     file_name = filedialog.asksaveasfilename(
         title="Save as",
         filetypes=[("pickle", ".pkl")],
@@ -84,10 +80,10 @@ def save_pkl(org_pkl_path, dst_df, proc_history=None):
 
 
 def pkl_to_csv(init_dir="~"):
-    '''
+    """
     pklファイルをcsvファイルに変換する
     ダイアログを開きファイルを選択させ、同じディレクトリにcsvファイルを保存する
-    '''
+    """
     pkl_path = open_pkl(init_dir)
     if pkl_path == "" or pkl_path is None:
         print("pkl_to_csv() canceled.")
