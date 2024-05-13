@@ -16,12 +16,12 @@ class MemberKeypointComboboxes(ttk.Frame):
         combos_frame.pack(side=tk.LEFT)
         member_label = ttk.Label(combos_frame, text="Member:")
         member_label.pack(side=tk.LEFT, padx=(0, 3))
-        self.member_combo = ttk.Combobox(combos_frame, state='readonly', width=12)
+        self.member_combo = ttk.Combobox(combos_frame, state="readonly", width=12)
         self.member_combo.pack(side=tk.LEFT)
         self.member_combo.bind("<<ComboboxSelected>>", self._on_selected)
         keypoint_label = ttk.Label(combos_frame, text="Keypoint:")
         keypoint_label.pack(side=tk.LEFT, padx=(12, 3))
-        self.keypoint_combo = ttk.Combobox(combos_frame, state='disabled', width=10)
+        self.keypoint_combo = ttk.Combobox(combos_frame, state="disabled", width=10)
         self.keypoint_combo.pack(side=tk.LEFT)
 
     def set_df(self, src_df):
@@ -32,9 +32,9 @@ class MemberKeypointComboboxes(ttk.Frame):
             # memberとkeypointのインデックス値を文字列に変換
             idx = combo_df.index
             combo_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
-            self.keypoint_combo['state'] = 'readonly'
+            self.keypoint_combo["state"] = "readonly"
         else:
-            self.keypoint_combo['state'] = 'disabled'
+            self.keypoint_combo["state"] = "disabled"
 
         self.member_combo["values"] = combo_df.index.get_level_values("member").unique().tolist()
         self.member_combo.current(0)
@@ -63,7 +63,7 @@ class StrEntry(ttk.Frame):
     def __init__(self, master, label: str, default="", width=10):
         super().__init__(master)
         self.default = default
-        self.invalid_characters = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
+        self.invalid_characters = ["<", ">", ":", '"', "/", "\\", "|", "?", "*"]
         self.frame = ttk.Frame(master)
         caption = ttk.Label(self.frame, text=label)
         caption.pack(side=tk.LEFT, padx=(0, 1))
@@ -93,7 +93,7 @@ class StrEntry(ttk.Frame):
         self.entry.insert(tk.END, text)
 
     def _validate(self, text):
-        return (all(c not in text for c in self.invalid_characters) or text == "")
+        return all(c not in text for c in self.invalid_characters) or text == ""
 
     def _set_default(self, event):
         if self.entry.get() == "":
@@ -104,8 +104,8 @@ class StrEntry(ttk.Frame):
 class CalcCaseEntry(ttk.Frame):
     def __init__(self, master, default=""):
         super().__init__(master)
-        self.invalid_characters = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
-        caption = ttk.Label(master, text='Calc case:')
+        self.invalid_characters = ["<", ">", ":", '"', "/", "\\", "|", "?", "*"]
+        caption = ttk.Label(master, text="Calc case:")
         caption.pack(side=tk.LEFT)
         self.calc_case_entry = ttk.Entry(master, width=10, validate="key", validatecommand=(self.register(self._validate), "%P"))
         self.calc_case_entry.insert(tk.END, default)
@@ -115,12 +115,12 @@ class CalcCaseEntry(ttk.Frame):
         tmp = TempFile()
         data = tmp.load()
         calc_case = self.calc_case_entry.get()
-        data['calc_case'] = calc_case
+        data["calc_case"] = calc_case
         tmp.save(data)
         return calc_case
 
     def _validate(self, text):
-        return (all(c not in text for c in self.invalid_characters) or text == "")
+        return all(c not in text for c in self.invalid_characters) or text == ""
 
 
 class TimeSpanEntry(ttk.Frame):
@@ -128,20 +128,20 @@ class TimeSpanEntry(ttk.Frame):
         super().__init__(master)
 
         self.side = tk.LEFT
-        caption_time = ttk.Label(master, text='Time:')
+        caption_time = ttk.Label(master, text="Time:")
         caption_time.pack(side=tk.LEFT, padx=(0, 1))
-        vcmd = (self.register(self._validate), '%P')
-        invcmd = (self.register(self._invalid_start), '%P')
-        self.time_start_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)
+        vcmd = (self.register(self._validate), "%P")
+        invcmd = (self.register(self._invalid_start), "%P")
+        self.time_start_entry = ttk.Entry(master, validate="focusout", validatecommand=vcmd, invalidcommand=invcmd, width=10)
         self.time_start_entry.pack(side=tk.LEFT)
         self.time_start_entry.bind("<FocusIn>", self._select_all)
-        nyoro_time = ttk.Label(master, text='～')
+        nyoro_time = ttk.Label(master, text="～")
         nyoro_time.pack(side=tk.LEFT, padx=1)
-        invcmd = (self.register(self._invalid_end), '%P')
-        self.time_end_entry = ttk.Entry(master, validate='focusout', validatecommand=vcmd, invalidcommand=invcmd, width=10)
+        invcmd = (self.register(self._invalid_end), "%P")
+        self.time_end_entry = ttk.Entry(master, validate="focusout", validatecommand=vcmd, invalidcommand=invcmd, width=10)
         self.time_end_entry.pack(side=tk.LEFT)
         self.time_end_entry.bind("<FocusIn>", self._select_all)
-        self.reset_btn = ttk.Button(master, text="Reset", state='disable', command=self.reset, width=6)
+        self.reset_btn = ttk.Button(master, text="Reset", state="disable", command=self.reset, width=6)
         self.reset_btn.pack(side=tk.LEFT, padx=(5, 10))
 
     def get_start_end(self):
@@ -165,7 +165,7 @@ class TimeSpanEntry(ttk.Frame):
         self.time_end_entry.insert(tk.END, end)
         self.default_start = start
         self.default_end = end
-        self.reset_btn['state'] = 'normal'
+        self.reset_btn["state"] = "normal"
 
     def reset(self):
         self.time_start_entry.delete(0, tk.END)
@@ -177,7 +177,7 @@ class TimeSpanEntry(ttk.Frame):
         event.widget.select_range(0, tk.END)
 
     def _validate(self, text):
-        p = r'\d+:(([0-5][0-9])|([0-9])):(([0-5][0-9])|([0-9])).[0-9]{3}$'
+        p = r"\d+:(([0-5][0-9])|([0-9])):(([0-5][0-9])|([0-9])).[0-9]{3}$"
         m = re.match(p, text)
         return m is not None
 
@@ -217,7 +217,7 @@ class IntEntry(ttk.Frame):
         return data[key]
 
     def _validate(self, text):
-        return (text.isdigit() or text == "")
+        return text.isdigit() or text == ""
 
     def _set_default(self, event):
         if self.entry.get() == "":
@@ -231,7 +231,7 @@ class Combobox(ttk.Frame):
         self.frame = ttk.Frame(master)
         caption = ttk.Label(self.frame, text=label)
         caption.pack(side=tk.LEFT, padx=(0, 1))
-        self.combobox = ttk.Combobox(self.frame, state='readonly', width=width)
+        self.combobox = ttk.Combobox(self.frame, state="readonly", width=width)
         self.combobox["values"] = values
         self.combobox.current(0)
         self.combobox.pack(side=tk.LEFT)
@@ -265,57 +265,72 @@ class Combobox(ttk.Frame):
 
 class TempFile:
     def __init__(self):
-        self.data = {'trk_path': '', 'calc_case': '', 'dt_span': 10, 'thinning': 0}
+        self.data = {"trk_path": "", "calc_case": "", "dt_span": 10, "thinning": 0}
 
-        file_name = 'temp.pkl'
+        file_name = "temp.pkl"
         self.file_path = os.path.join(self._find_data_dir(), file_name)
         self.load()
 
     def save(self, data):
         self.data = data
-        with open(self.file_path, 'wb') as f:
+        with open(self.file_path, "wb") as f:
             pickle.dump(self.data, f)
 
     def load(self):
         res = self.data
         if os.path.exists(self.file_path) is True:
-            with open(self.file_path, 'rb') as f:
+            with open(self.file_path, "rb") as f:
                 new_data_dict = pickle.load(f)
                 self.data.update(new_data_dict)
                 res = self.data
         return res
 
     def get_top_window_size(self):
-        if 'top_width' not in self.data.keys() or self.data['top_width'] == '':
+        if "top_width" not in self.data.keys() or self.data["top_width"] == "":
             width = 900
         else:
-            width = int(self.data['top_width'])
-        if 'top_height' not in self.data.keys() or self.data['top_height'] == '':
+            width = int(self.data["top_width"])
+        if "top_height" not in self.data.keys() or self.data["top_height"] == "":
             height = 550
         else:
-            height = int(self.data['top_height'])
+            height = int(self.data["top_height"])
         return width, height
 
+    def get_scene_table_graph_size(self):
+        if "scene_table_width" not in self.data.keys() or self.data["scene_table_width"] == "":
+            width = 960
+        else:
+            width = int(self.data["scene_table_width"])
+        if "scene_table_height" not in self.data.keys() or self.data["scene_table_height"] == "":
+            height = 260
+        else:
+            height = int(self.data["scene_table_height"])
+        if "scene_table_dpi" not in self.data.keys() or self.data["scene_table_dpi"] == "":
+            dpi = 100
+        else:
+            dpi = int(self.data["scene_table_dpi"])
+        return width, height, dpi
+
     def get_window_size(self):
-        if 'width' not in self.data.keys() or self.data['width'] == '':
+        if "width" not in self.data.keys() or self.data["width"] == "":
             width = 900
         else:
-            width = int(self.data['width'])
-        if 'height' not in self.data.keys() or self.data['height'] == '':
+            width = int(self.data["width"])
+        if "height" not in self.data.keys() or self.data["height"] == "":
             height = 500
         else:
-            height = int(self.data['height'])
-        if 'dpi' not in self.data.keys() or self.data['dpi'] == '':
+            height = int(self.data["height"])
+        if "dpi" not in self.data.keys() or self.data["dpi"] == "":
             dpi = 72
         else:
-            dpi = int(self.data['dpi'])
+            dpi = int(self.data["dpi"])
         return width, height, dpi
 
     def get_mp4_setting(self):
-        if 'mp4_scale' not in self.data.keys() or self.data['mp4_scale'] == '':
+        if "mp4_scale" not in self.data.keys() or self.data["mp4_scale"] == "":
             mp4_scale = 0.5
         else:
-            mp4_scale = float(self.data['mp4_scale'])
+            mp4_scale = float(self.data["mp4_scale"])
         return mp4_scale
 
     def _find_data_dir(self):

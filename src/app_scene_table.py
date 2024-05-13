@@ -18,8 +18,8 @@ class App(ttk.Frame):
         self.pack(padx=10, pady=10)
 
         temp = TempFile()
-        width, height, dpi = temp.get_window_size()
-        self.plot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
+        width, height, dpi = temp.get_scene_table_graph_size()
+        self.plot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi, bottom=0.12)
 
         control_frame = ttk.Frame(self)
         control_frame.pack(fill=tk.X, pady=(0, 20))
@@ -154,7 +154,7 @@ class App(ttk.Frame):
         # groupby('member')でmemberごとに処理、1行前/1行後との差分を取る
         diff_prev_sr = bool_df.groupby("member")[tar_col_name].diff().astype(bool)
         diff_follow_sr = bool_df.groupby("member")[tar_col_name].diff(-1).astype(bool)
-        # (waist_bool and diff)がTrueの部分をラベリング、-1とNaNはastypeでTrueになる
+        # ラベリング、-1とNaNはastypeでTrueになる
         starts = bool_df.loc[(bool_df[tar_col_name] & diff_prev_sr), "timestamp"].values.tolist()
         ends = bool_df.loc[(bool_df[tar_col_name] & diff_follow_sr), "timestamp"].values.tolist()
         # 要素の先頭を比較してstartsの先頭にtime_minを追加
