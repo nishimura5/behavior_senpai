@@ -47,24 +47,16 @@ class App(ttk.Frame):
         edit_label = ttk.Label(buttons_frame, text="Edit")
         edit_label.pack(side=tk.TOP, pady=(8, 0))
         member_edit_button = ttk.Button(
-            buttons_frame,
-            text="Member",
-            command=lambda: self.launch_window(app_member_edit.App, edit_df=True, grab=True))
+            buttons_frame, text="Member", command=lambda: self.launch_window(app_member_edit.App, edit_df=True, grab=True)
+        )
         member_edit_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        area_filter_button = ttk.Button(
-            buttons_frame,
-            text="Area",
-            command=lambda: self.launch_window(app_area_filter.App, edit_df=True, grab=True))
+        area_filter_button = ttk.Button(buttons_frame, text="Area", command=lambda: self.launch_window(app_area_filter.App, edit_df=True, grab=True))
         area_filter_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        smooth_button = ttk.Button(
-            buttons_frame,
-            text="Smooth",
-            command=lambda: self.launch_window(app_smoothing.App, edit_df=True, grab=True))
+        smooth_button = ttk.Button(buttons_frame, text="Smooth", command=lambda: self.launch_window(app_smoothing.App, edit_df=True, grab=True))
         smooth_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         scene_table_button = ttk.Button(
-            buttons_frame,
-            text="Scene table",
-            command=lambda: self.launch_window(app_scene_table.App, edit_df=True, grab=True))
+            buttons_frame, text="Scene table", command=lambda: self.launch_window(app_scene_table.App, edit_df=True, grab=True)
+        )
         scene_table_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         vis_label = ttk.Label(buttons_frame, text="Visualization")
@@ -73,8 +65,6 @@ class App(ttk.Frame):
         k2f_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         k2r_button = ttk.Button(buttons_frame, text="Recuplot", command=lambda: self.launch_window(k2r.App))
         k2r_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        dimredu_button = ttk.Button(buttons_frame, text="Dim-reduction plot", command=lambda: self.launch_window(app_dimredu.App))
-        dimredu_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         calc_label = ttk.Label(buttons_frame, text="Calculation")
         calc_label.pack(side=tk.TOP, pady=(8, 0))
@@ -84,6 +74,8 @@ class App(ttk.Frame):
         two_point_button.pack(side=tk.LEFT, fill=tk.X, padx=(0, 4))
         three_point_button = ttk.Button(vector_frame, text="3 point", command=lambda: self.launch_window(app_3point_calc.App), width=6)
         three_point_button.pack(side=tk.TOP, fill=tk.X)
+        dimredu_button = ttk.Button(buttons_frame, text="Dimension reduction", command=lambda: self.launch_window(app_dimredu.App))
+        dimredu_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         pref_label = ttk.Label(buttons_frame, text="MISC")
         pref_label.pack(side=tk.TOP, pady=(8, 0))
@@ -94,7 +86,7 @@ class App(ttk.Frame):
         pkl_to_csv_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         # srcにlicense.jsonがある場合はボタンを表示
-        license_path = './src/license.json'
+        license_path = "./src/license.json"
         if os.path.exists(license_path):
             license_button = ttk.Button(buttons_frame, text="License", command=lambda: self.launch_window(license_view.App), width=20)
             license_button.pack(side=tk.TOP, fill=tk.X, pady=4)
@@ -170,7 +162,7 @@ class App(ttk.Frame):
         print_str = ""
         for key, value in src_attrs.items():
             if key == "scene_table":
-                num = len(value['start'])
+                num = len(value["start"])
                 print_str += f"{key}: # {num} scenes.\n"
             elif isinstance(value, dict):
                 print_str += f"{key}:\n"
@@ -192,7 +184,8 @@ class App(ttk.Frame):
             "time_span_msec": self.time_span_entry.get_start_end(),
             "cap": self.cap,
             "pkl_dir": self.pkl_dir,
-            "current_position": current_position}
+            "current_position": current_position,
+        }
         self.a = app(dlg_modal, args)
         dlg_modal.protocol("WM_DELETE_WINDOW", lambda: [dlg_modal.destroy(), cv2.destroyAllWindows()])
         self.wait_window(dlg_modal)
@@ -218,7 +211,7 @@ class App(ttk.Frame):
         self.vw.set_trk(self.src_df)
 
         self.save_button["state"] = "normal"
-        args['src_df'] = self.src_df
+        args["src_df"] = self.src_df
         self.k2m.load(args)
 
         member_count = self.src_df.index.get_level_values(1).unique().size
