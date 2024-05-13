@@ -1,6 +1,7 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib import gridspec, ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from python_senpai import time_format
@@ -40,17 +41,16 @@ class DimensionalReductionPlotter:
         self.timestamps = timestamps
         self.plot_mat = plot_mat
         self.picker_range = 5
-        scatter_plot = self.cluster_ax.scatter(self.plot_mat[:, 0], self.plot_mat[:, 1], c=self.class_data, picker=self.picker_range, cmap='tab10')
+        scatter_plot = self.cluster_ax.scatter(self.plot_mat[:, 0], self.plot_mat[:, 1], c=self.class_data, picker=self.picker_range, cmap="tab10")
         legend = self.cluster_ax.legend(*scatter_plot.legend_elements(), title="cluster")
         self.cluster_ax.add_artist(legend)
 
-
         # 0: unclustered
         self.cluster_number = 0
-        self.line_plot, = self.line_ax.plot(timestamps, self.class_data)
+        (self.line_plot,) = self.line_ax.plot(timestamps, self.class_data)
         self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         self.line_ax.set_ylim(0, 10)
-        self.vline = self.line_ax.axvline(x=0, color='gray', linewidth=0.5)
+        self.vline = self.line_ax.axvline(x=0, color="gray", linewidth=0.5)
 
         self.canvas.draw_idle()
 
@@ -69,6 +69,18 @@ class DimensionalReductionPlotter:
     def set_picker_range(self, picker_range):
         self.picker_range = picker_range
 
+    def get_cluster_df(self, names):
+        classes = np.unique(self.class_data)
+        ret_dict = {
+            "timestamp": self.timestamps,
+        }
+        for c in classes:
+            mask = self.class_data == c
+            ret_dict[names[int(c)]] = mask
+
+        ret_df = pd.DataFrame(ret_dict)
+        return ret_df
+
     def _format_timedelta(self, x, pos):
         return time_format.msec_to_timestr(x)
 
@@ -78,7 +90,9 @@ class DimensionalReductionPlotter:
             for ind in event.ind:
                 self.class_data[ind] = self.cluster_number
             self.cluster_ax.cla()
-            scatter_plot = self.cluster_ax.scatter(self.plot_mat[:, 0], self.plot_mat[:, 1], c=self.class_data, picker=self.picker_range, cmap='tab10')
+            scatter_plot = self.cluster_ax.scatter(
+                self.plot_mat[:, 0], self.plot_mat[:, 1], c=self.class_data, picker=self.picker_range, cmap="tab10"
+            )
             legend = self.cluster_ax.legend(*scatter_plot.legend_elements(), title="cluster")
             self.cluster_ax.add_artist(legend)
 
@@ -102,7 +116,6 @@ class DimensionalReductionPlotter:
             cv2.imshow("frame", frame)
             cv2.waitKey(1)
 
-
     def _click_graph(self, event):
         x = event.xdata
         y = event.ydata
@@ -116,7 +129,9 @@ class DimensionalReductionPlotter:
             idx = np.abs(self.timestamps - timestamp_msec).argmin()
             size = np.ones(len(self.timestamps)) * 5
             size[idx] = 40
-            scatter_plot = self.cluster_ax.scatter(self.plot_mat[:, 0], self.plot_mat[:, 1], c=self.class_data, s=size, picker=self.picker_range, cmap='tab10')
+            scatter_plot = self.cluster_ax.scatter(
+                self.plot_mat[:, 0], self.plot_mat[:, 1], c=self.class_data, s=size, picker=self.picker_range, cmap="tab10"
+            )
             legend = self.cluster_ax.legend(*scatter_plot.legend_elements(), title="cluster")
             self.cluster_ax.add_artist(legend)
         elif event.button == 3:

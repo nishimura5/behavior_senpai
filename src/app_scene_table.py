@@ -28,9 +28,9 @@ class App(ttk.Frame):
 
         import_frame = ttk.Frame(setting_frame)
         import_frame.pack(pady=5)
-        import_btn = ttk.Button(import_frame, text="Import PKL", command=self.import_bool_pkl)
+        import_btn = ttk.Button(import_frame, text="Import Feature file", command=self.import_bool_pkl)
         import_btn.pack(side=tk.LEFT, padx=(0, 5))
-        self.bool_col_combo = ttk.Combobox(import_frame, state="readonly", width=18)
+        self.bool_col_combo = ttk.Combobox(import_frame, state="disable", width=18)
         self.bool_col_combo["values"] = ["bool_col"]
         self.bool_col_combo.current(0)
         self.bool_col_combo.pack(side=tk.LEFT, padx=(0, 5))
@@ -132,7 +132,7 @@ class App(ttk.Frame):
         self._update()
 
     def import_bool_pkl(self):
-        bool_pkl_path = file_inout.open_pkl(os.path.dirname(self.pkl_dir))
+        bool_pkl_path = file_inout.open_pkl(os.path.join(os.path.dirname(self.pkl_dir), "calc"))
         if bool_pkl_path is None:
             return
         bool_df = file_inout.load_track_file(bool_pkl_path, allow_calculated_track_file=True)
@@ -141,6 +141,7 @@ class App(ttk.Frame):
         cols = self.bool_df.columns.tolist()
         cols.remove("timestamp")
         self.bool_col_combo["values"] = cols
+        self.bool_col_combo["state"] = "readonly"
         self.bool_col_combo.current(0)
         self.import_label["text"] = os.path.basename(bool_pkl_path)
 
