@@ -47,3 +47,22 @@ type = "find-links"
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.ruff]
+select = [
+    "F", # pyflakes
+    "E", # pycodestyle
+    "W", # pycodestyle warnings
+    "I", # isort
+    "D", # pydocstyle
+]
+ignore = []
+# 1行の最大文字数
+line-length = 150
+
+extend-ignore = [
+    "D105", # undocumented-magic-method
+    "D107", # undocumented-public-init
+    "D205", # blank-line-after-summary
+    "D415" # ends-in-punctuation
+]
