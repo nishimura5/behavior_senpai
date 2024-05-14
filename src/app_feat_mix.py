@@ -48,10 +48,12 @@ class App(ttk.Frame):
 
         draw_frame = ttk.Frame(self)
         draw_frame.pack(anchor=tk.NW, pady=5)
-        self.draw_button = ttk.Button(draw_frame, text="Draw", command=self.draw, state="disabled")
+        self.draw_button = ttk.Button(draw_frame, text="Draw", command=self.manual_draw, state="disabled")
         self.draw_button.pack(side=tk.LEFT, padx=5)
         self.export_button = ttk.Button(draw_frame, text="Export", command=self.export, state="disabled")
-        self.export_button.pack(side=tk.LEFT, padx=5)
+        self.export_button.pack(side=tk.LEFT, padx=(5, 50))
+        self.repeat_draw_button = ttk.Button(draw_frame, text="Repeat Draw", command=self.repeat_draw)
+        self.repeat_draw_button.pack(side=tk.LEFT)
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
@@ -155,18 +157,39 @@ class App(ttk.Frame):
         selected = self.tree.selection()[0]
         self.tree.delete(selected)
 
-    def draw(self):
+    def manual_draw(self):
         self.lineplot.clear()
         idx = self.feat_df.index
         self.feat_df.index = self.feat_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
+        mix_ops = []
+        for tar in self.tree.get_children(""):
+            mix_ops.append(self.tree.item(tar, "values"))
+        self._draw(mix_ops)
+
+    def repeat_draw(self):
+        init_dir = os.path.join(self.calc_dir, self.calc_case)
+        in_trk_path = file_inout.open_pkl(init_dir)
+        if in_trk_path is None:
+            return
+        in_trk_df = file_inout.load_track_file(in_trk_path, allow_calculated_track_file=True)
+        proc_history = in_trk_df.attrs["proc_history"]
+        for history in proc_history:
+            if isinstance(history, dict) and history["proc"] == "mix":
+                mix_ops = history["source_cols"]
+                break
+        for row in mix_ops:
+            self.tree.insert("", "end", values=row)
+        self._draw(mix_ops)
+
+    def _draw(self, mix_ops):
         data_col_names = []
         self.source_cols = []
-        for tar in self.tree.get_children(""):
-            feat_name = self.tree.item(tar, "values")[0]
-            col_a = self.tree.item(tar, "values")[1]
-            op = self.tree.item(tar, "values")[2]
-            col_b = self.tree.item(tar, "values")[3]
-            normalize = self.tree.item(tar, "values")[4]
+        for row in mix_ops:
+            feat_name = row[0]
+            col_a = row[1]
+            op = row[2]
+            col_b = row[3]
+            normalize = row[4]
             data_a = self.feat_df[col_a]
             data_b = self.feat_df[col_b]
             if op == "+":
@@ -182,9 +205,10 @@ class App(ttk.Frame):
             self.feat_df[feat_name] = new_sr
             data_col_names.append(feat_name)
             self.source_cols.append((feat_name, col_a, op, col_b, normalize))
-        member = self.member_combo.get()
+
+        current_member = self.member_combo.get()
         self.lineplot.set_trk_df(self.src_df)
-        self.lineplot.set_plot(self.feat_df, member=member, data_col_names=data_col_names)
+        self.lineplot.set_plot(self.feat_df, member=current_member, data_col_names=data_col_names)
         self.lineplot.draw()
         self.export_button["state"] = "normal"
 

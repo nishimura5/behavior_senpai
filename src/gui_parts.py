@@ -107,7 +107,7 @@ class CalcCaseEntry(ttk.Frame):
         self.invalid_characters = ["<", ">", ":", '"', "/", "\\", "|", "?", "*"]
         caption = ttk.Label(master, text="Calc case:")
         caption.pack(side=tk.LEFT)
-        self.calc_case_entry = ttk.Entry(master, width=10, validate="key", validatecommand=(self.register(self._validate), "%P"))
+        self.calc_case_entry = ttk.Entry(master, width=20, validate="key", validatecommand=(self.register(self._validate), "%P"))
         self.calc_case_entry.insert(tk.END, default)
         self.calc_case_entry.pack(side=tk.LEFT, padx=(0, 5))
 
