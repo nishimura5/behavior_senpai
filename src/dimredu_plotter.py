@@ -68,6 +68,10 @@ class DimensionalReductionPlotter:
 
     def set_picker_range(self, picker_range):
         self.picker_range = picker_range
+        self.cluster_ax.cla()
+        scatter_plot = self.cluster_ax.scatter(self.plot_mat[:, 0], self.plot_mat[:, 1], c=self.class_data, picker=self.picker_range, cmap="tab10")
+        legend = self.cluster_ax.legend(*scatter_plot.legend_elements(), title="cluster")
+        self.cluster_ax.add_artist(legend)
 
     def get_cluster_df(self, names):
         classes = np.unique(self.class_data)
