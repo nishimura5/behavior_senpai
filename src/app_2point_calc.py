@@ -127,12 +127,11 @@ class App(ttk.Frame):
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
         # 重複インデックス削除
         tar_df = tar_df[~tar_df.index.duplicated(keep="last")]
-        # current_memberのみ抽出
-        tar_df = tar_df.loc[pd.IndexSlice[:, current_member, :], :]
-
         # memberとkeypointのインデックス値を文字列に変換
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
+        # current_memberのみ抽出
+        tar_df = tar_df.loc[pd.IndexSlice[:, current_member, :], :]
 
         if calc_code == "component":
             prod_df = keypoints_proc.calc_xy_component(tar_df, kp0, kp1)

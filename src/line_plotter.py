@@ -49,6 +49,8 @@ class LinePlotter:
             self.anno = rtmpose_drawer.Annotate()
             cols_for_anno = ["x", "y", "score"]
         self.anno_df = trk_df.reset_index().set_index(["timestamp", "member", "keypoint"]).loc[:, cols_for_anno]
+        idx = self.anno_df.index
+        self.anno_df.index = self.anno_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
         # sortによってkeypointの順番が変わる
 
     #        self.anno_df = self.anno_df.sort_index(level=['timestamp', 'member'])
