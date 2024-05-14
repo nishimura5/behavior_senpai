@@ -7,6 +7,7 @@ import app_3point_calc
 import app_area_filter
 import app_detect
 import app_dimredu
+import app_feat_mix
 import app_member_edit
 import app_recuplot as k2r
 import app_scene_table
@@ -66,7 +67,7 @@ class App(ttk.Frame):
         k2r_button = ttk.Button(buttons_frame, text="Recuplot", command=lambda: self.launch_window(k2r.App))
         k2r_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
-        calc_label = ttk.Label(buttons_frame, text="Calculation")
+        calc_label = ttk.Label(buttons_frame, text="Feature")
         calc_label.pack(side=tk.TOP, pady=(8, 0))
         vector_frame = ttk.Frame(buttons_frame)
         vector_frame.pack(side=tk.TOP, fill=tk.X, pady=4)
@@ -74,6 +75,8 @@ class App(ttk.Frame):
         two_point_button.pack(side=tk.LEFT, fill=tk.X, padx=(0, 4))
         three_point_button = ttk.Button(vector_frame, text="3 point", command=lambda: self.launch_window(app_3point_calc.App), width=6)
         three_point_button.pack(side=tk.TOP, fill=tk.X)
+        feat_mix_button = ttk.Button(buttons_frame, text="+ - * /", command=lambda: self.launch_window(app_feat_mix.App))
+        feat_mix_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         dimredu_button = ttk.Button(buttons_frame, text="Dimension reduction", command=lambda: self.launch_window(app_dimredu.App))
         dimredu_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 

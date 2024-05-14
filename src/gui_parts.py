@@ -251,8 +251,13 @@ class Combobox(ttk.Frame):
     def set(self, value):
         self.combobox.set(value)
 
+    def set_df(self, src_df):
+        self.combobox["values"] = src_df.index.get_level_values("member").unique().tolist()
+        self.combobox.current(0)
+
     def set_values(self, values):
         self.combobox["values"] = values
+        self.combobox.current(0)
 
     def save_to_temp(self, key):
         tmp = TempFile()
