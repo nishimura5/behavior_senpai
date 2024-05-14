@@ -174,7 +174,8 @@ class App(ttk.Frame):
         export_df.attrs = self.src_attrs
         calc_case = self.calc_case_entry.get_calc_case()
         dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_2p.pkl")
-        file_inout.save_pkl(dst_path, export_df, proc_history="2p_vector")
+        history_dict = {"proc": "2p_vector", "source_cols": []}
+        file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
 
     def clear(self):
         """Clear the lineplot and reset the calc_df."""

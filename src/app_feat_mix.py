@@ -15,6 +15,7 @@ class App(ttk.Frame):
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
+        self.calc_case = temp.data["calc_case"]
         self.lineplot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         load_frame = ttk.Frame(self)
@@ -30,14 +31,12 @@ class App(ttk.Frame):
         tar_frame.pack(anchor=tk.NW, side=tk.TOP, pady=5)
         self.name_entry = StrEntry(tar_frame, label="Name:", default="")
         self.name_entry.pack_horizontal(padx=5)
-        self.col_a_list = ["Select column A"]
-        self.col_a_combo = Combobox(tar_frame, label="col A:", values=self.col_a_list, width=25)
+        self.col_a_combo = Combobox(tar_frame, label="col A:", values=["Select column A"], width=25)
         self.col_a_combo.pack_horizontal(padx=5)
-        self.op_list = ["+", "-", "*", "/"]
-        self.op_combo = Combobox(tar_frame, label="", values=self.op_list, width=3)
+        op_list = ["/", "-", "*", "+"]
+        self.op_combo = Combobox(tar_frame, label="", values=op_list, width=3)
         self.op_combo.pack_horizontal(padx=5)
-        self.col_b_list = ["Select column B"]
-        self.col_b_combo = Combobox(tar_frame, label="col B:", values=self.col_b_list, width=25)
+        self.col_b_combo = Combobox(tar_frame, label="col B:", values=["Select column B"], width=25)
         self.col_b_combo.pack_horizontal(padx=5)
         self.normalize_list = ["No normalize", "MinMax"]
         self.normalize_combo = Combobox(tar_frame, label="Normalize:", values=self.normalize_list, width=15)
@@ -51,6 +50,8 @@ class App(ttk.Frame):
         draw_frame.pack(anchor=tk.NW, pady=5)
         self.draw_button = ttk.Button(draw_frame, text="Draw", command=self.draw, state="disabled")
         self.draw_button.pack(side=tk.LEFT, padx=5)
+        self.export_button = ttk.Button(draw_frame, text="Export", command=self.export, state="disabled")
+        self.export_button.pack(side=tk.LEFT, padx=5)
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
@@ -77,21 +78,33 @@ class App(ttk.Frame):
         self.cap = args["cap"]
         self.time_min, self.time_max = args["time_span_msec"]
         self.pkl_dir = args["pkl_dir"]
+        self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")
         self.lineplot.set_vcap(self.cap)
 
     def load_feat(self):
-        pkl_path = file_inout.open_pkl(os.path.join(os.path.dirname(self.pkl_dir), "calc"))
+        init_dir = os.path.join(self.calc_dir, self.calc_case)
+        if os.path.exists(init_dir) is False:
+            init_dir = self.calc_dir
+        pkl_path = file_inout.open_pkl(init_dir)
         if pkl_path is None:
             return
+        # update calc_case
+        new_calc_case = os.path.basename(os.path.dirname(pkl_path))
+        temp = TempFile()
+        data = temp.data
+        self.calc_case = new_calc_case
+        data["calc_case"] = new_calc_case
+        temp.save(data)
+
         self.feat_path = pkl_path
         self.feat_path_label["text"] = pkl_path.replace(os.path.dirname(self.pkl_dir), "..")
         self.feat_name = os.path.basename(pkl_path)
         self.feat_df = file_inout.load_track_file(pkl_path, allow_calculated_track_file=True)
+
+        # update GUI
         cols = self.feat_df.columns.tolist()
-        self.col_a_list = cols
-        self.col_b_list = cols
-        self.col_a_combo.set_values(self.col_a_list)
-        self.col_b_combo.set_values(self.col_b_list)
+        self.col_a_combo.set_values(cols)
+        self.col_b_combo.set_values(cols)
         self.add_button["state"] = "normal"
         self.delete_btn["state"] = "normal"
         self.draw_button["state"] = "normal"
@@ -146,9 +159,8 @@ class App(ttk.Frame):
         self.lineplot.clear()
         idx = self.feat_df.index
         self.feat_df.index = self.feat_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
-        # extract names from tree
-        data_col_names = [self.tree.item(col, "values")[0] for col in self.tree.get_children("")]
-        member = self.member_combo.get()
+        data_col_names = []
+        self.source_cols = []
         for tar in self.tree.get_children(""):
             feat_name = self.tree.item(tar, "values")[0]
             col_a = self.tree.item(tar, "values")[1]
@@ -168,6 +180,30 @@ class App(ttk.Frame):
             if normalize == "MinMax":
                 new_sr = (new_sr - new_sr.min()) / (new_sr.max() - new_sr.min())
             self.feat_df[feat_name] = new_sr
+            data_col_names.append(feat_name)
+            self.source_cols.append((feat_name, col_a, op, col_b, normalize))
+        member = self.member_combo.get()
         self.lineplot.set_trk_df(self.src_df)
         self.lineplot.set_plot(self.feat_df, member=member, data_col_names=data_col_names)
         self.lineplot.draw()
+        self.export_button["state"] = "normal"
+
+    def export(self):
+        """Export the calculated data to a file."""
+        if self.feat_df is None:
+            print("No data to export.")
+            return
+        file_name = os.path.basename(os.path.splitext(self.feat_path)[0])
+        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_featmix.pkl")
+
+        data_col_names = [col[0] for col in self.source_cols] + ["timestamp"]
+
+        export_df = self.feat_df.loc[:, data_col_names]
+        export_df.attrs = self.feat_df.attrs
+        history_dict = {"proc": "mix", "source_cols": self.source_cols}
+        file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
+
+    def clear(self):
+        """Clear the lineplot."""
+        self.lineplot.clear()
+        self.source_cols = []

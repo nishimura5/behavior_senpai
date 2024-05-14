@@ -16,6 +16,7 @@ class App(ttk.Frame):
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
+        self.calc_case = temp.data["calc_case"]
         self.drp = DimensionalReductionPlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         left_frame = ttk.Frame(self)
@@ -90,6 +91,7 @@ class App(ttk.Frame):
         self.cap = args["cap"]
         self.time_min, self.time_max = args["time_span_msec"]
         self.pkl_dir = args["pkl_dir"]
+        self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")
         self.drp.set_vcap(self.cap)
 
         # UIの更新
@@ -99,15 +101,26 @@ class App(ttk.Frame):
             self.tree.insert("", "end", values=(cluster_name, cluster_name))
 
     def load_feat(self):
-        pkl_path = file_inout.open_pkl(os.path.join(os.path.dirname(self.pkl_dir), "calc"))
+        init_dir = os.path.join(self.calc_dir, self.calc_case)
+        if os.path.exists(init_dir) is False:
+            init_dir = self.calc_dir
+        pkl_path = file_inout.open_pkl(init_dir)
         if pkl_path is None:
             return
+        # update calc_case
+        new_calc_case = os.path.basename(os.path.dirname(pkl_path))
+        temp = TempFile()
+        data = temp.data
+        self.calc_case = new_calc_case
+        data["calc_case"] = new_calc_case
+        temp.save(data)
+
         self.feat_path = pkl_path
         self.feat_path_label["text"] = pkl_path.replace(os.path.dirname(self.pkl_dir), "..")
         self.feat_name = os.path.basename(pkl_path)
         self.feat_df = file_inout.load_track_file(pkl_path, allow_calculated_track_file=True)
 
-        # UIの更新
+        # update GUI
         self.member_keypoints_combos.set_df(self.feat_df)
         self.column_listbox.delete(0, tk.END)
         for col in self.feat_df.columns:
@@ -119,10 +132,12 @@ class App(ttk.Frame):
 
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
+        self.source_cols = []
         cols = self.column_listbox.curselection()
         if len(cols) == 0:
             return
         cols = [self.column_listbox.get(i) for i in cols]
+        self.source_cols = cols
 
         # unselect on tree
         self.tree.selection_remove(self.tree.selection())
@@ -148,7 +163,6 @@ class App(ttk.Frame):
 
         plot_df = plot_df.loc[idx, :].dropna()
         timestamps = plot_df.loc[idx, "timestamp"].values
-        print(plot_df[cols])
 
         n_neighbors = self.n_neighbors_combobox.get()
         reduced_arr = keypoints_proc.umap(plot_df, tar_cols=cols, n_components=2, n_neighbors=int(n_neighbors))
@@ -177,10 +191,18 @@ class App(ttk.Frame):
         self.drp.set_cluster_number(int(num))
 
     def export(self):
+        """Export the calculated data to a file."""
+        file_name = os.path.basename(os.path.splitext(self.feat_path)[0])
+        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_dimredu.pkl")
+
         names = self.cluster_names
         cluster_df = self.drp.get_cluster_df(names)
         cluster_df["member"] = self.member_keypoints_combos.get_selected()[0]
         cluster_df = cluster_df.set_index("member")
         cols = self.column_listbox.curselection()
         cluster_df.attrs["features"] = [self.column_listbox.get(i) for i in cols]
-        file_inout.save_pkl(self.feat_path, cluster_df, proc_history="clustered")
+
+        export_df = cluster_df
+        export_df.attrs = self.feat_df.attrs
+        history_dict = {"proc": "dimredu", "source_cols": self.source_cols}
+        file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
