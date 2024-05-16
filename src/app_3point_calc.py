@@ -27,7 +27,7 @@ class App(ttk.Frame):
         cross_frame.pack(pady=5)
         self.calc_case_entry = CalcCaseEntry(cross_frame, temp.data["calc_case"])
         self.calc_case_entry.pack(side=tk.LEFT, padx=5)
-        vals = ["all", "cross_product (AB×AC)", "dot_product (AB・AC)", "plus (AB+AC)", "norms (|AB||AC|)"]
+        vals = ["sin,cos", "cross,dot,plus,norms", "cross_product (AB×AC)", "dot_product (AB・AC)", "plus (AB+AC)", "norms (|AB||AC|)"]
         self.calc_type_combo = Combobox(cross_frame, label="Calc:", width=18, values=vals)
         self.calc_type_combo.pack_horizontal(padx=5)
         data_dir = self._find_data_dir()
@@ -84,8 +84,10 @@ class App(ttk.Frame):
             code = "plus"
         elif self.calc_type_combo.get() == "norms (|AB||AC|)":
             code = "norms"
-        elif self.calc_type_combo.get() == "all":
-            code = "all"
+        elif self.calc_type_combo.get() == "cross,dot,plus,norms":
+            code = "cross_dot_plus_norms"
+        elif self.calc_type_combo.get() == "sin,cos":
+            code = "sin_cos"
         return code
 
     def manual_draw(self):
@@ -138,7 +140,9 @@ class App(ttk.Frame):
         # current_memberのみ抽出
         tar_df = tar_df.loc[pd.IndexSlice[:, current_member, :], :]
 
-        if calc_code == "cross":
+        if calc_code == "sin_cos":
+            prod_df = keypoints_proc.calc_sin_cos(tar_df, kp0, kp1, kp2)
+        elif calc_code == "cross":
             prod_df = keypoints_proc.calc_cross_product(tar_df, kp0, kp1, kp2)
         elif calc_code == "dot":
             prod_df = keypoints_proc.calc_dot_product(tar_df, kp0, kp1, kp2)
@@ -146,8 +150,9 @@ class App(ttk.Frame):
             prod_df = keypoints_proc.calc_plus(tar_df, kp0, kp1, kp2)
         elif calc_code == "norms":
             prod_df = keypoints_proc.calc_norms(tar_df, kp0, kp1, kp2)
-        elif calc_code == "all":
-            prod_df = keypoints_proc.calc_cross_dot_plus_angle(tar_df, kp0, kp1, kp2)
+        elif calc_code == "cross_dot_plus_norms":
+            prod_df = keypoints_proc.calc_cross_dot_plus_norms(tar_df, kp0, kp1, kp2)
+        print(prod_df)
 
         col_names = prod_df.columns
 

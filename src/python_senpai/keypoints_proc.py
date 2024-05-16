@@ -226,6 +226,21 @@ def calc_dot_product(src_df, kp0: str, kp1: str, kp2: str):
     return dot_df
 
 
+def calc_sin_cos(src_df, kp0: str, kp1: str, kp2: str):
+    point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
+    point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
+    point2 = src_df.loc[pd.IndexSlice[:, :, kp2], :].droplevel(2)
+    point1_0 = point1 - point0
+    point2_0 = point2 - point0
+    cos_sr = (point1_0["x"] * point2_0["x"] + point1_0["y"] * point2_0["y"]) / (
+        np.sqrt(point1_0["x"] ** 2 + point1_0["y"] ** 2) * np.sqrt(point2_0["x"] ** 2 + point2_0["y"] ** 2)
+    )
+    sin_sr = np.sqrt(1 - cos_sr**2)
+    sin_cos_df = pd.concat([sin_sr, cos_sr], axis=1)
+    sin_cos_df.columns = [f"sin({kp0}-{kp1},{kp0}-{kp2})", f"cos({kp0}-{kp1},{kp0}-{kp2})"]
+    return sin_cos_df
+
+
 def calc_angle(src_df, kp0: str, kp1: str, kp2: str):
     """
     kp0 -> kp1とkp0 -> kp2の角度を計算する
@@ -262,7 +277,7 @@ def calc_norms(src_df, kp0: str, kp1: str, kp2: str):
     return norms_df
 
 
-def calc_cross_dot_plus_angle(src_df, kp0: str, kp1: str, kp2: str):
+def calc_cross_dot_plus_norms(src_df, kp0: str, kp1: str, kp2: str):
     """
     kp0 -> kp1とkp0 -> kp2の外積、内積、ベクトル和、ノルムの積を計算する
     別々にやるより少し速い
