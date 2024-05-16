@@ -37,11 +37,16 @@ class App(ttk.Frame):
         setting_frame.pack(pady=5)
 
         # column選択リストボックス、複数選択
-        self.column_listbox = tk.Listbox(setting_frame, height=12, selectmode=tk.EXTENDED, exportselection=False)
+        self.feature_names = []
+        self.column_listbox = tk.Listbox(setting_frame, height=16, selectmode=tk.EXTENDED, exportselection=False)
         self.column_listbox.pack(side=tk.LEFT, padx=(0, 5))
 
         combos_frame = ttk.Frame(setting_frame)
         combos_frame.pack(side=tk.LEFT, anchor=tk.NW, fill=tk.X, expand=True, padx=5)
+
+        self.name_filter_entry = StrEntry(combos_frame, label="Name filter:", default="")
+        self.name_filter_entry.pack_vertical(pady=5)
+        self.name_filter_entry.entry.bind("<Return>", self.filter_word)
 
         self.thinning_entry = IntEntry(combos_frame, label="Thinning:", default=temp.data["thinning"])
         self.thinning_entry.pack_vertical(pady=5)
@@ -122,10 +127,12 @@ class App(ttk.Frame):
 
         # update GUI
         self.member_keypoints_combos.set_df(self.feat_df)
+        self.feature_names = []
         self.column_listbox.delete(0, tk.END)
         for col in self.feat_df.columns:
             if col == "timestamp":
                 continue
+            self.feature_names.append(col)
             self.column_listbox.insert(tk.END, col)
         self.drp.clear()
         self.export_button["state"] = tk.DISABLED
@@ -206,3 +213,17 @@ class App(ttk.Frame):
         export_df.attrs = self.feat_df.attrs
         history_dict = {"proc": "dimredu", "source_cols": self.source_cols}
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
+
+    def filter_word(self, event):
+        tar_word = self.name_filter_entry.get()
+        if tar_word == "":
+            for name in self.feature_names:
+                self.column_listbox.insert(tk.END, name)
+            return
+        show_list = []
+        for name in self.feature_names:
+            if tar_word in name:
+                show_list.append(name)
+        self.column_listbox.delete(0, tk.END)
+        for name in show_list:
+            self.column_listbox.insert(tk.END, name)

@@ -104,7 +104,7 @@ class DimensionalReductionPlotter:
 
         center_ind = event.ind[0]
         timestamp_msec = self.timestamps[center_ind]
-        self.vline.set_xdata(timestamp_msec)
+        self.vline.set_xdata([timestamp_msec])
         self.canvas.draw_idle()
 
         time_format.copy_to_clipboard(timestamp_msec)

@@ -142,9 +142,17 @@ class App(ttk.Frame):
             tree_col_a = self.tree.item(tar, "values")[1]
             tree_op = self.tree.item(tar, "values")[2]
             tree_col_b = self.tree.item(tar, "values")[3]
-            if tree_feat_name == feat_name and tree_col_a == col_a and tree_op == op and tree_col_b == col_b:
+            tree_normalize = self.tree.item(tar, "values")[4]
+            # skip if exactly same row
+            if tree_feat_name == feat_name and tree_col_a == col_a and tree_op == op and tree_col_b == col_b and tree_normalize == normalize:
                 return
+            # overwrite if feat_name is already used
             elif tree_feat_name == feat_name:
+                self.tree.delete(self.tree.get_children("")[i])
+                self.tree.insert("", "end", values=(feat_name, col_a, op, col_b, normalize))
+                return
+            # rename if except feat_name exactly same row
+            elif tree_col_a == col_a and tree_op == op and tree_col_b == col_b and tree_normalize == normalize:
                 self.tree.delete(self.tree.get_children("")[i])
                 self.tree.insert("", "end", values=(feat_name, col_a, op, col_b, normalize))
                 return
