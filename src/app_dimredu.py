@@ -34,12 +34,12 @@ class App(ttk.Frame):
         self.member_keypoints_combos = MemberKeypointComboboxes(proc_frame)
 
         setting_frame = ttk.Frame(left_frame)
-        setting_frame.pack(pady=5)
+        setting_frame.pack(anchor=tk.NW, fill=tk.X, expand=True, pady=5)
 
         # column選択リストボックス、複数選択
         self.feature_names = []
-        self.column_listbox = tk.Listbox(setting_frame, height=16, selectmode=tk.EXTENDED, exportselection=False)
-        self.column_listbox.pack(side=tk.LEFT, padx=(0, 5))
+        self.column_listbox = tk.Listbox(setting_frame, height=16, width=24, selectmode=tk.EXTENDED, exportselection=False)
+        self.column_listbox.pack(side=tk.LEFT, anchor=tk.NW, padx=(0, 5))
 
         combos_frame = ttk.Frame(setting_frame)
         combos_frame.pack(side=tk.LEFT, anchor=tk.NW, fill=tk.X, expand=True, padx=5)
@@ -67,7 +67,7 @@ class App(ttk.Frame):
         self.cluster_names = [str(i) for i in range(0, 9)]
         cluster_name_frame = ttk.Frame(draw_frame)
         cluster_name_frame.pack(anchor=tk.NW, fill=tk.X, expand=True)
-        self.cluster_name_entry = StrEntry(cluster_name_frame, label="Cluster name:")
+        self.cluster_name_entry = StrEntry(cluster_name_frame, label="Cluster name:", width=20)
         self.cluster_name_entry.pack_horizontal(pady=5)
         rename_btn = ttk.Button(cluster_name_frame, text="Rename", command=self.rename_cluster)
         rename_btn.pack(side=tk.LEFT, padx=(5, 0))

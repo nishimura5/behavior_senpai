@@ -29,7 +29,7 @@ class App(ttk.Frame):
 
         tar_frame = ttk.Frame(self)
         tar_frame.pack(anchor=tk.NW, side=tk.TOP, pady=5)
-        self.name_entry = StrEntry(tar_frame, label="Name:", default="")
+        self.name_entry = StrEntry(tar_frame, label="Name:", default="", width=20)
         self.name_entry.pack_horizontal(padx=5)
         self.col_a_combo = Combobox(tar_frame, label="col A:", values=["Select column A"], width=25)
         self.col_a_combo.pack_horizontal(padx=5)
