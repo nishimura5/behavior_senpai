@@ -35,7 +35,7 @@ class DimensionalReductionPlotter:
         self.cluster_ax.cla()
         self.line_ax.cla()
 
-        if self.class_data is None:
+        if self.class_data is None or len(self.class_data) != len(timestamps):
             self.class_data = np.zeros(len(timestamps))
 
         self.timestamps = timestamps
