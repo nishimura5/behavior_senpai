@@ -51,9 +51,17 @@ class App(ttk.Frame):
         self.thinning_entry = IntEntry(combos_frame, label="Thinning:", default=temp.data["thinning"])
         self.thinning_entry.pack_vertical(pady=5)
 
-        vals = [10, 20, 30, 40, 50, 100]
+        vals = [5, 10, 20, 50, 100, 200]
         self.n_neighbors_combobox = Combobox(combos_frame, label="N_neighbors:", values=vals)
         self.n_neighbors_combobox.pack_vertical(pady=5)
+
+        vals = [0.1, 0.5, 1.0]
+        self.min_dist_combobox = Combobox(combos_frame, label="Min_dist:", values=vals)
+        self.min_dist_combobox.pack_vertical(pady=5)
+
+        vals = ["random", "fixed"]
+        self.umap_seed_combobox = Combobox(combos_frame, label="Seed:", values=vals, width=10)
+        self.umap_seed_combobox.pack_vertical(pady=5)
 
         draw_btn = ttk.Button(combos_frame, text="Draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT, expand=True, pady=5, fill=tk.X)
@@ -170,9 +178,14 @@ class App(ttk.Frame):
 
         plot_df = plot_df.loc[idx, :].dropna()
         timestamps = plot_df.loc[idx, "timestamp"].values
-
         n_neighbors = self.n_neighbors_combobox.get()
-        reduced_arr = keypoints_proc.umap(plot_df, tar_cols=cols, n_components=2, n_neighbors=int(n_neighbors))
+        min_dist = self.min_dist_combobox.get()
+        rand_mode = self.umap_seed_combobox.get()
+        if rand_mode == "random":
+            seed = None
+        else:
+            seed = 42
+        reduced_arr = keypoints_proc.umap(plot_df, tar_cols=cols, n_components=2, n_neighbors=int(n_neighbors), min_dist=float(min_dist), seed=seed)
 
         self.drp.draw(reduced_arr, timestamps)
         self.export_button["state"] = tk.NORMAL
@@ -211,7 +224,14 @@ class App(ttk.Frame):
 
         export_df = cluster_df
         export_df.attrs = self.feat_df.attrs
-        history_dict = {"proc": "dimredu", "source_cols": self.source_cols}
+        n_neighbors = self.n_neighbors_combobox.get_current_value()
+        rand_mode = self.umap_seed_combobox.get_current_value()
+        min_dist = self.min_dist_combobox.get_current_value()
+        history_dict = {
+            "proc": "dimredu",
+            "source_cols": self.source_cols,
+            "params": {"n_neighbors": n_neighbors, "min_dist": min_dist, "random": rand_mode},
+        }
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
 
     def filter_word(self, event):

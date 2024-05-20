@@ -235,6 +235,7 @@ class Combobox(ttk.Frame):
         self.combobox["values"] = values
         self.combobox.current(0)
         self.combobox.pack(side=tk.LEFT)
+        self.current_value = None
 
     def pack_horizontal(self, anchor=tk.E, padx=0, pady=0):
         self.frame.pack(side=tk.LEFT, anchor=anchor, padx=padx, pady=pady)
@@ -246,12 +247,19 @@ class Combobox(ttk.Frame):
         self.combobox.bind("<<ComboboxSelected>>", func)
 
     def get(self):
+        """Get selected value of the combo box"""
+        self.current_value = self.combobox.get()
         return self.combobox.get()
+
+    def get_current_value(self):
+        """Get the selected value when get() was called"""
+        return self.current_value
 
     def get_values(self):
         return self.combobox["values"]
 
     def set(self, value):
+        """Set value to the combo box"""
         self.combobox.set(value)
 
     def set_df(self, src_df):
