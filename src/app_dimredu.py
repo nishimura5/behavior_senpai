@@ -63,8 +63,8 @@ class App(ttk.Frame):
         self.umap_seed_combobox = Combobox(combos_frame, label="Seed:", values=vals, width=10)
         self.umap_seed_combobox.pack_vertical(pady=5)
 
-        draw_btn = ttk.Button(combos_frame, text="Draw", command=self.draw)
-        draw_btn.pack(side=tk.LEFT, expand=True, pady=5, fill=tk.X)
+        self.draw_button = ttk.Button(combos_frame, text="Draw", command=self.manual_draw, state=tk.DISABLED)
+        self.draw_button.pack(side=tk.LEFT, expand=True, pady=5, fill=tk.X)
 
         draw_frame = ttk.Frame(left_frame)
         draw_frame.pack(anchor=tk.NW, fill=tk.X, expand=True, padx=5)
@@ -89,7 +89,10 @@ class App(ttk.Frame):
         self.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
 
         self.export_button = ttk.Button(draw_frame, text="Export", command=self.export, state=tk.DISABLED)
-        self.export_button.pack(anchor=tk.NW, pady=5)
+        self.export_button.pack(anchor=tk.NW, pady=5, padx=(0, 50), side=tk.LEFT)
+
+        self.repeat_draw_button = ttk.Button(draw_frame, text="Repeat Draw", command=self.repeat_draw, state=tk.DISABLED)
+        self.repeat_draw_button.pack(anchor=tk.NE, pady=5)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(side=tk.LEFT, anchor=tk.NW)
@@ -144,8 +147,48 @@ class App(ttk.Frame):
             self.column_listbox.insert(tk.END, col)
         self.drp.clear()
         self.export_button["state"] = tk.DISABLED
+        self.draw_button["state"] = tk.NORMAL
+        self.repeat_draw_button["state"] = tk.NORMAL
 
-    def draw(self):
+    def manual_draw(self):
+        self._draw()
+
+    def repeat_draw(self):
+        init_dir = os.path.join(self.calc_dir, self.calc_case)
+        in_trk_path = file_inout.open_pkl(init_dir)
+        if in_trk_path is None:
+            return
+        in_trk_df = file_inout.load_track_file(in_trk_path, allow_calculated_track_file=True)
+        if "features" not in in_trk_df.attrs.keys():
+            print("features not found in attrs")
+            return
+        features = in_trk_df.attrs["features"]
+        proc_history = in_trk_df.attrs["proc_history"]
+        for history in proc_history:
+            if isinstance(history, dict) and history["proc"] == "dimredu":
+                source_cols = history["source_cols"]
+                params = history["params"]
+                break
+        # update listbox
+        self.column_listbox.selection_clear(0, tk.END)
+        for i, col in enumerate(self.feature_names):
+            if col in source_cols:
+                self.column_listbox.selection_set(i)
+
+        # update combobox
+        self.n_neighbors_combobox.set(params["n_neighbors"])
+        self.min_dist_combobox.set(params["min_dist"])
+        self.umap_seed_combobox.set(params["random"])
+
+        # update tree
+        self.cluster_names = features
+        self.tree.delete(*self.tree.get_children())
+        for i, cluster_name in enumerate(self.cluster_names):
+            self.tree.insert("", "end", values=(str(i), cluster_name))
+
+        self._draw()
+
+    def _draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
         self.source_cols = []
         cols = self.column_listbox.curselection()
@@ -215,15 +258,13 @@ class App(ttk.Frame):
         file_name = os.path.basename(os.path.splitext(self.feat_path)[0])
         dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_dimredu.pkl")
 
-        names = self.cluster_names
-        cluster_df = self.drp.get_cluster_df(names)
+        cluster_df = self.drp.get_cluster_df(self.cluster_names)
         cluster_df["member"] = self.member_keypoints_combos.get_selected()[0]
         cluster_df = cluster_df.set_index("member")
-        cols = self.column_listbox.curselection()
-        cluster_df.attrs["features"] = [self.column_listbox.get(i) for i in cols]
 
         export_df = cluster_df
         export_df.attrs = self.feat_df.attrs
+        export_df.attrs["features"] = self.cluster_names
         n_neighbors = self.n_neighbors_combobox.get_current_value()
         rand_mode = self.umap_seed_combobox.get_current_value()
         min_dist = self.min_dist_combobox.get_current_value()
