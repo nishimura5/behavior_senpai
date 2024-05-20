@@ -248,6 +248,9 @@ class Combobox(ttk.Frame):
     def get(self):
         return self.combobox.get()
 
+    def get_values(self):
+        return self.combobox["values"]
+
     def set(self, value):
         self.combobox.set(value)
 

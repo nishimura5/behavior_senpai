@@ -31,12 +31,14 @@ class App(ttk.Frame):
         tar_frame.pack(anchor=tk.NW, side=tk.TOP, pady=5)
         self.name_entry = StrEntry(tar_frame, label="Name:", default="", width=20)
         self.name_entry.pack_horizontal(padx=5)
-        self.col_a_combo = Combobox(tar_frame, label="col A:", values=["Select column A"], width=25)
+        self.col_a_combo = Combobox(tar_frame, label="col A:", values=["Select column"], width=25)
         self.col_a_combo.pack_horizontal(padx=5)
-        op_list = ["/", "-", "*", "+"]
+        op_list = ["/", "-", "*", "+", " "]
         self.op_combo = Combobox(tar_frame, label="", values=op_list, width=3)
+        self.op_combo.set_selected_bind(self.selected_op)
+
         self.op_combo.pack_horizontal(padx=5)
-        self.col_b_combo = Combobox(tar_frame, label="col B:", values=["Select column B"], width=25)
+        self.col_b_combo = Combobox(tar_frame, label="col B:", values=["Select column"], width=25)
         self.col_b_combo.pack_horizontal(padx=5)
         self.normalize_list = ["No normalize", "MinMax"]
         self.normalize_combo = Combobox(tar_frame, label="Normalize:", values=self.normalize_list, width=15)
@@ -104,9 +106,11 @@ class App(ttk.Frame):
         self.feat_df = file_inout.load_track_file(pkl_path, allow_calculated_track_file=True)
 
         # update GUI
-        cols = self.feat_df.columns.tolist()
-        self.col_a_combo.set_values(cols)
-        self.col_b_combo.set_values(cols)
+        col_list = self.feat_df.columns.tolist()
+        col_list.remove("timestamp")
+        col_list.append(" ")
+        self.col_a_combo.set_values(col_list)
+        self.col_b_combo.set_values(col_list)
         self.add_button["state"] = "normal"
         self.delete_btn["state"] = "normal"
         self.draw_button["state"] = "normal"
@@ -165,6 +169,13 @@ class App(ttk.Frame):
         selected = self.tree.selection()[0]
         self.tree.delete(selected)
 
+    def selected_op(self, event):
+        op = self.op_combo.get()
+        if op == " ":
+            self.col_b_combo.set_values([" "])
+        else:
+            self.col_b_combo.set_values(self.col_a_combo.get_values())
+
     def manual_draw(self):
         self.lineplot.clear()
         idx = self.feat_df.index
@@ -199,15 +210,20 @@ class App(ttk.Frame):
             col_b = row[3]
             normalize = row[4]
             data_a = self.feat_df[col_a]
-            data_b = self.feat_df[col_b]
             if op == "+":
+                data_b = self.feat_df[col_b]
                 new_sr = data_a + data_b
             elif op == "-":
+                data_b = self.feat_df[col_b]
                 new_sr = data_a - data_b
             elif op == "*":
+                data_b = self.feat_df[col_b]
                 new_sr = data_a * data_b
             elif op == "/":
+                data_b = self.feat_df[col_b]
                 new_sr = data_a / data_b
+            elif op == " ":
+                new_sr = data_a
             if normalize == "MinMax":
                 new_sr = (new_sr - new_sr.min()) / (new_sr.max() - new_sr.min())
             self.feat_df[feat_name] = new_sr
