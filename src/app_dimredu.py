@@ -217,6 +217,7 @@ class App(ttk.Frame):
     def filter_word(self, event):
         tar_word = self.name_filter_entry.get()
         if tar_word == "":
+            self.column_listbox.delete(0, tk.END)
             for name in self.feature_names:
                 self.column_listbox.insert(tk.END, name)
             return

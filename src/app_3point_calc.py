@@ -116,6 +116,11 @@ class App(ttk.Frame):
         contains_y = any(map(lambda x: x.endswith("_y"), cols))
         if contains_x and contains_y:
             cols = [item for item in cols if not item.endswith("_y")]
+        # suffix 'sin'と'cos'があるときは'sin'を削除、片方しかないときは削除しない
+        contains_sin = any(map(lambda x: x.startswith("sin"), cols))
+        contains_cos = any(map(lambda x: x.startswith("cos"), cols))
+        if contains_sin and contains_cos:
+            cols = [item for item in cols if not item.startswith("sin")]
 
         for col in cols:
             if col == "timestamp":
@@ -140,7 +145,7 @@ class App(ttk.Frame):
         # current_memberのみ抽出
         tar_df = tar_df.loc[pd.IndexSlice[:, current_member, :], :]
 
-        if calc_code == "sin_cos":
+        if calc_code == "sin_cos" or calc_code == "cos" or calc_code == "sin":
             prod_df = keypoints_proc.calc_sin_cos(tar_df, kp0, kp1, kp2)
         elif calc_code == "cross":
             prod_df = keypoints_proc.calc_cross_product(tar_df, kp0, kp1, kp2)

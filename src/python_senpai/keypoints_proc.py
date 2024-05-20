@@ -98,6 +98,7 @@ def pca(src_df, tar_cols: list):
 
 def umap(src_df, tar_cols: list, n_components: int = 1, n_neighbors: int = 15):
     model = UMAP(n_components=n_components, n_neighbors=n_neighbors)
+    src_df = src_df.dropna()
     reduced_arr = model.fit_transform(src_df[tar_cols])
     return reduced_arr
 
