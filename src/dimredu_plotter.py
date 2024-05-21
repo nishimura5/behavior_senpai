@@ -21,6 +21,7 @@ class DimensionalReductionPlotter:
         self.line_ax = self.fig.add_subplot(gs[1, 0])
 
         self.class_data = None
+        self.class_names = None
 
     def pack(self, master):
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)
@@ -33,18 +34,16 @@ class DimensionalReductionPlotter:
 
     def draw(self, plot_mat, timestamps, frames):
         self.frames = frames
-        self.cluster_ax.cla()
         self.line_ax.cla()
 
         if self.class_data is None or len(self.class_data) != len(timestamps):
+            print("init class_data")
             self.class_data = np.zeros(len(timestamps))
 
         self.timestamps = timestamps
         self.plot_mat = plot_mat
         self.picker_range = 5
-        scatter_plot = self.cluster_ax.scatter(self.plot_mat[:, 0], self.plot_mat[:, 1], c=self.class_data, picker=self.picker_range, cmap="tab10")
-        legend = self.cluster_ax.legend(*scatter_plot.legend_elements(), title="cluster")
-        self.cluster_ax.add_artist(legend)
+        self._update_scatter()
 
         # 0: unclustered
         self.cluster_number = 0
@@ -63,16 +62,21 @@ class DimensionalReductionPlotter:
 
     def clear_class_data(self):
         self.class_data = None
+        self.class_names = None
+
+    def set_class_data(self, class_data):
+        self.class_data = class_data
+
+    def set_cluster_names(self, class_names):
+        self.class_names = class_names
 
     def set_cluster_number(self, cluster_number):
         self.cluster_number = cluster_number
 
     def set_picker_range(self, picker_range):
         self.picker_range = picker_range
-        self.cluster_ax.cla()
-        scatter_plot = self.cluster_ax.scatter(self.plot_mat[:, 0], self.plot_mat[:, 1], c=self.class_data, picker=self.picker_range, cmap="tab10")
-        legend = self.cluster_ax.legend(*scatter_plot.legend_elements(), title="cluster")
-        self.cluster_ax.add_artist(legend)
+        self._update_scatter()
+        self.canvas.draw_idle()
 
     def get_cluster_df(self, names):
         classes = np.unique(self.class_data)
@@ -87,6 +91,17 @@ class DimensionalReductionPlotter:
         ret_df = pd.DataFrame(ret_dict)
         return ret_df
 
+    def _update_scatter(self, size=None):
+        self.cluster_ax.cla()
+        # extract class_names which are used in the class_data
+        classes = [self.class_names[int(c)] for c in np.unique(self.class_data)]
+
+        scatter_plot = self.cluster_ax.scatter(
+            self.plot_mat[:, 0], self.plot_mat[:, 1], c=self.class_data, picker=self.picker_range, cmap="tab10", s=size
+        )
+        legend = self.cluster_ax.legend(handles=scatter_plot.legend_elements()[0], labels=classes, loc="upper right", title="Cluster")
+        self.cluster_ax.add_artist(legend)
+
     def _format_timedelta(self, x, pos):
         return time_format.msec_to_timestr(x)
 
@@ -95,14 +110,8 @@ class DimensionalReductionPlotter:
         if event.mouseevent.button == 3:
             for ind in event.ind:
                 self.class_data[ind] = self.cluster_number
-            self.cluster_ax.cla()
-            scatter_plot = self.cluster_ax.scatter(
-                self.plot_mat[:, 0], self.plot_mat[:, 1], c=self.class_data, picker=self.picker_range, cmap="tab10"
-            )
-            legend = self.cluster_ax.legend(*scatter_plot.legend_elements(), title="cluster")
-            self.cluster_ax.add_artist(legend)
-
             self.line_plot.set_data(self.timestamps, self.class_data)
+        self._update_scatter()
 
         center_ind = event.ind[0]
         timestamp_msec = self.timestamps[center_ind]
@@ -130,16 +139,11 @@ class DimensionalReductionPlotter:
             return
 
         if event.button == 1:
-            self.cluster_ax.cla()
             timestamp_msec = float(x)
             idx = np.abs(self.timestamps - timestamp_msec).argmin()
             size = np.ones(len(self.timestamps)) * 5
             size[idx] = 40
-            scatter_plot = self.cluster_ax.scatter(
-                self.plot_mat[:, 0], self.plot_mat[:, 1], c=self.class_data, s=size, picker=self.picker_range, cmap="tab10"
-            )
-            legend = self.cluster_ax.legend(*scatter_plot.legend_elements(), title="cluster")
-            self.cluster_ax.add_artist(legend)
+            self._update_scatter(size)
         elif event.button == 3:
             timestamp_msec = self.vcap.get(cv2.CAP_PROP_POS_MSEC)
             timestamp_msec += 100

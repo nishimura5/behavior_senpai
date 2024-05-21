@@ -2,6 +2,7 @@ import os
 import tkinter as tk
 from tkinter import ttk
 
+import numpy as np
 import pandas as pd
 from dimredu_plotter import DimensionalReductionPlotter
 from gui_parts import Combobox, IntEntry, MemberKeypointComboboxes, StrEntry, TempFile
@@ -169,6 +170,17 @@ class App(ttk.Frame):
                 source_cols = history["source_cols"]
                 params = history["params"]
                 break
+
+        # load class_data to draw cluster
+        class_data = np.zeros(len(in_trk_df))
+        for colname in in_trk_df.columns:
+            if colname == "timestamp":
+                continue
+            class_arr = in_trk_df[colname].values
+            class_data[class_arr] = features.index(colname)
+        self.drp.set_cluster_names(features)
+        self.drp.set_class_data(class_data)
+
         # update listbox
         self.column_listbox.selection_clear(0, tk.END)
         for i, col in enumerate(self.feature_names):
@@ -186,7 +198,6 @@ class App(ttk.Frame):
         self.tree.delete(*self.tree.get_children())
         for i, cluster_name in enumerate(self.cluster_names):
             self.tree.insert("", "end", values=(str(i), cluster_name))
-
         self._draw()
 
     def _draw(self):
@@ -247,6 +258,7 @@ class App(ttk.Frame):
         # update cluster_names in tree
         self.cluster_names[int(num)] = new_name
         self.tree.item(selected, values=(num, new_name))
+        self.drp.set_cluster_names(self.cluster_names)
 
     def select_tree_row(self, event):
         if len(self.tree.selection()) == 0:
