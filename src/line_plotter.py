@@ -5,6 +5,7 @@ import mediapipe_drawer
 import numpy as np
 import pandas as pd
 import rtmpose_drawer
+import seaborn as sns
 import yolo_drawer
 from matplotlib import gridspec, ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -12,24 +13,31 @@ from python_senpai import time_format
 
 
 class LinePlotter:
-    def __init__(self, fig_size: tuple, dpi=72, bottom=0.05):
+    def __init__(self, fig_size: tuple, dpi=72):
         self.dpi = dpi
         self.fig_size = fig_size
         self.fig = plt.figure(figsize=self.fig_size, dpi=self.dpi)
         self.fig.canvas.mpl_connect("button_press_event", self._click_graph)
 
-        # axesのレイアウト設定
-        gs = gridspec.GridSpec(1, 1, top=0.97, bottom=bottom)
-        self.line_ax = self.fig.add_subplot(gs[0, 0])
-
         # グラフクリック時にアノテーションを描画するかのフラグ
         self.draw_anno = False
+        self.line_ax = None
 
     def pack(self, master):
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)
         toolbar = NavigationToolbar2Tk(self.canvas, master)
         toolbar.pack()
         self.canvas.get_tk_widget().pack(expand=False)
+
+    def set_single_ax(self, bottom=0.05):
+        # axesのレイアウト設定
+        gs = gridspec.GridSpec(1, 1, top=0.97, bottom=bottom)
+        self.line_ax = self.fig.add_subplot(gs[0, 0])
+
+    def add_ax(self, row, col, pos):
+        gs = gridspec.GridSpec(row, col, top=0.97, width_ratios=(4, 1))
+        self.line_ax = self.fig.add_subplot(gs[pos, 0])
+        self.violin_ax = self.fig.add_subplot(gs[pos, 1])
 
     def set_vcap(self, vcap):
         """
@@ -67,7 +75,23 @@ class LinePlotter:
 
         show_df = plot_df.reset_index().set_index(["timestamp", "member"]).loc[:, :]
         self.timestamps = show_df.index.get_level_values("timestamp").unique().to_numpy()
-        print(show_df)
+
+    def set_plot_and_violin(self, plot_df, member: str, data_col_name: str, is_last: bool = False):
+        self.member = member
+        # 重複インデックス削除
+        plot_df = plot_df[~plot_df.index.duplicated(keep="last")]
+        plot_df = plot_df.loc[pd.IndexSlice[:, member], :]
+
+        plot_df.plot(ax=self.line_ax, x="timestamp", y=data_col_name)
+        if is_last:
+            self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
+        else:
+            self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: ""))
+        self.line_ax.legend(loc="upper right")
+        sns.violinplot(plot_df[data_col_name], ax=self.violin_ax)
+
+        show_df = plot_df.reset_index().set_index(["timestamp", "member"]).loc[:, :]
+        self.timestamps = show_df.index.get_level_values("timestamp").unique().to_numpy()
 
     def set_plot_band(self, plot_df, member: str, time_min_msec: int, time_max_msec: int):
         self.member = member
@@ -130,8 +154,13 @@ class LinePlotter:
         self.canvas.draw_idle()
 
     def clear(self):
-        self.line_ax.cla()
+        if self.line_ax is not None:
+            self.line_ax.cla()
         self.canvas.draw_idle()
+
+    def clear_fig(self):
+        self.fig.clf()
+        self.fig.canvas.draw_idle()
 
     def _format_timedelta(self, x, pos):
         return time_format.msec_to_timestr(x)

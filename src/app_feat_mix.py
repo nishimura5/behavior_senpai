@@ -176,7 +176,7 @@ class App(ttk.Frame):
             self.col_b_combo.set_values(self.col_a_combo.get_values())
 
     def manual_draw(self):
-        self.lineplot.clear()
+        self.lineplot.clear_fig()
         idx = self.feat_df.index
         self.feat_df.index = self.feat_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
         mix_ops = []
@@ -204,7 +204,10 @@ class App(ttk.Frame):
     def _draw(self, mix_ops):
         data_col_names = []
         self.source_cols = []
-        for row in mix_ops:
+        current_member = self.member_combo.get()
+        self.lineplot.set_trk_df(self.src_df)
+        row_num = len(mix_ops)
+        for i, row in enumerate(mix_ops):
             feat_name = row[0]
             col_a = row[1]
             op = row[2]
@@ -227,13 +230,18 @@ class App(ttk.Frame):
                 new_sr = data_a
             if normalize == "MinMax":
                 new_sr = (new_sr - new_sr.min()) / (new_sr.max() - new_sr.min())
+            elif normalize == "Zscore":
+                new_sr = (new_sr - new_sr.mean()) / new_sr.std()
             self.feat_df[feat_name] = new_sr
             data_col_names.append(feat_name)
             self.source_cols.append((feat_name, col_a, op, col_b, normalize))
+            self.lineplot.add_ax(row_num, 2, i)
+            if i == row_num - 1:
+                self.lineplot.set_plot_and_violin(self.feat_df, member=current_member, data_col_name=feat_name, is_last=True)
+            else:
+                self.lineplot.set_plot_and_violin(self.feat_df, member=current_member, data_col_name=feat_name)
 
-        current_member = self.member_combo.get()
-        self.lineplot.set_trk_df(self.src_df)
-        self.lineplot.set_plot(self.feat_df, member=current_member, data_col_names=data_col_names)
+        #        self.lineplot.set_plot(self.feat_df, member=current_member, data_col_names=data_col_names)
         self.lineplot.draw()
         self.export_button["state"] = "normal"
 
@@ -243,7 +251,7 @@ class App(ttk.Frame):
             print("No data to export.")
             return
         file_name = os.path.basename(self.feat_path).split(".")[0]
-        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_featmix.feat.pkl")
+        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_mix.feat.pkl")
 
         data_col_names = [col[0] for col in self.source_cols] + ["timestamp"]
 
@@ -254,5 +262,5 @@ class App(ttk.Frame):
 
     def clear(self):
         """Clear the lineplot."""
-        self.lineplot.clear()
+        self.lineplot.clear_fig()
         self.source_cols = []

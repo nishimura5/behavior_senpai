@@ -20,7 +20,7 @@ class App(ttk.Frame):
         temp = TempFile()
         width, height, dpi = temp.get_scene_table_graph_size()
         self.calc_case = temp.data["calc_case"]
-        self.plot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi, bottom=0.12)
+        self.plot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         control_frame = ttk.Frame(self)
         control_frame.pack(fill=tk.X, pady=(0, 20))
@@ -29,7 +29,7 @@ class App(ttk.Frame):
 
         import_frame = ttk.Frame(setting_frame)
         import_frame.pack(pady=5)
-        import_btn = ttk.Button(import_frame, text="Import Feature file", command=self.import_bool_pkl)
+        import_btn = ttk.Button(import_frame, text="Import Behavioral coding file", command=self.import_bool_pkl)
         import_btn.pack(side=tk.LEFT, padx=(0, 5))
         self.bool_col_combo = ttk.Combobox(import_frame, state="disable", width=18)
         self.bool_col_combo["values"] = ["bool_col"]
@@ -92,6 +92,7 @@ class App(ttk.Frame):
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
         self.plot.pack(plot_frame)
+        self.plot.set_single_ax(bottom=0.12)
 
         self.dst_df = None
         self.history = "scene_table_edit"

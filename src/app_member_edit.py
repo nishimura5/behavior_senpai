@@ -75,6 +75,7 @@ class App(ttk.Frame):
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
         self.band.pack(plot_frame)
+        self.band.set_single_ax()
 
         self.dst_df = None
         self.history = "member_edit"

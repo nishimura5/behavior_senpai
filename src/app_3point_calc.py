@@ -59,6 +59,7 @@ class App(ttk.Frame):
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
         self.lineplot.pack(plot_frame)
+        self.lineplot.set_single_ax()
 
         self._load(args)
 

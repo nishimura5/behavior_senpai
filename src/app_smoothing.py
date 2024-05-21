@@ -53,6 +53,7 @@ class App(ttk.Frame):
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
         self.plot.pack(plot_frame)
+        self.plot.set_single_ax()
 
         self.dst_df = None
         self.current_df = None
