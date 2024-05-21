@@ -176,6 +176,7 @@ class App(ttk.Frame):
                 self.column_listbox.selection_set(i)
 
         # update combobox
+        self.thinning_entry.set(params["thinning"])
         self.n_neighbors_combobox.set(params["n_neighbors"])
         self.min_dist_combobox.set(params["min_dist"])
         self.umap_seed_combobox.set(params["random"])
@@ -221,6 +222,7 @@ class App(ttk.Frame):
 
         plot_df = plot_df.loc[idx, :].dropna()
         timestamps = plot_df.loc[idx, "timestamp"].values
+        frames = plot_df.index.get_level_values(0).values
         n_neighbors = self.n_neighbors_combobox.get()
         min_dist = self.min_dist_combobox.get()
         rand_mode = self.umap_seed_combobox.get()
@@ -230,7 +232,7 @@ class App(ttk.Frame):
             seed = 42
         reduced_arr = keypoints_proc.umap(plot_df, tar_cols=cols, n_components=2, n_neighbors=int(n_neighbors), min_dist=float(min_dist), seed=seed)
 
-        self.drp.draw(reduced_arr, timestamps)
+        self.drp.draw(reduced_arr, timestamps, frames)
         self.export_button["state"] = tk.NORMAL
 
     def combo_selected(self, event):
@@ -260,20 +262,19 @@ class App(ttk.Frame):
 
         cluster_df = self.drp.get_cluster_df(self.cluster_names)
         cluster_df["member"] = self.member_keypoints_combos.get_selected()[0]
-        cluster_df = cluster_df.set_index("member")
+        cluster_df = cluster_df.set_index(["frame", "member"])
 
         export_df = cluster_df
-        export_df = export_df.reset_index().rename_axis("index", axis=1)
-        export_df = export_df.set_index("member", append=True)
         export_df.attrs = self.feat_df.attrs
         export_df.attrs["features"] = self.cluster_names
         n_neighbors = self.n_neighbors_combobox.get_current_value()
         rand_mode = self.umap_seed_combobox.get_current_value()
         min_dist = self.min_dist_combobox.get_current_value()
+        thinning = self.thinning_entry.get()
         history_dict = {
             "proc": "dimredu",
             "source_cols": self.source_cols,
-            "params": {"n_neighbors": n_neighbors, "min_dist": min_dist, "random": rand_mode},
+            "params": {"n_neighbors": n_neighbors, "min_dist": min_dist, "random": rand_mode, "thinning": thinning},
         }
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
 

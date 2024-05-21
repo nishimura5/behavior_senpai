@@ -102,7 +102,6 @@ def umap(src_df, tar_cols: list, n_components: int = 1, n_neighbors: int = 15, m
     else:
         n_jobs = -1
     model = UMAP(n_components=n_components, n_neighbors=n_neighbors, min_dist=min_dist, random_state=seed, n_jobs=n_jobs)
-    src_df = src_df.dropna()
     reduced_arr = model.fit_transform(src_df[tar_cols])
     return reduced_arr
 

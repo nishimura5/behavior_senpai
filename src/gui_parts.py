@@ -206,6 +206,10 @@ class IntEntry(ttk.Frame):
     def pack_vertical(self, anchor=tk.E, padx=0, pady=0):
         self.frame.pack(side=tk.TOP, anchor=anchor, padx=padx, pady=pady)
 
+    def set(self, value):
+        self.entry.delete(0, tk.END)
+        self.entry.insert(tk.END, value)
+
     def get(self):
         return int(self.entry.get())
 

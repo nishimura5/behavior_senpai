@@ -31,7 +31,8 @@ class DimensionalReductionPlotter:
     def set_vcap(self, vcap):
         self.vcap = vcap
 
-    def draw(self, plot_mat, timestamps):
+    def draw(self, plot_mat, timestamps, frames):
+        self.frames = frames
         self.cluster_ax.cla()
         self.line_ax.cla()
 
@@ -76,6 +77,7 @@ class DimensionalReductionPlotter:
     def get_cluster_df(self, names):
         classes = np.unique(self.class_data)
         ret_dict = {
+            "frame": self.frames,
             "timestamp": self.timestamps,
         }
         for c in classes:
