@@ -132,7 +132,8 @@ class App(ttk.Frame):
         self._update()
 
     def import_bool_pkl(self):
-        bool_pkl_path = file_inout.open_pkl(os.path.join(os.path.dirname(self.pkl_dir), "calc"))
+        filetypes = [("bc-pkl files", "*.bc.pkl")]
+        bool_pkl_path = file_inout.open_pkl(os.path.join(os.path.dirname(self.pkl_dir), "calc"), filetypes=filetypes)
         if bool_pkl_path is None:
             return
         bool_df = file_inout.load_track_file(bool_pkl_path, allow_calculated_track_file=True)

@@ -6,16 +6,16 @@ import pandas as pd
 from . import keypoints_proc
 
 
-def open_pkl(init_dir, org_path=None):
+def open_pkl(init_dir, org_path=None, filetypes=[("pkl files", "*.pkl")]):
     if init_dir == "":
         init_dir = "~"
 
-    trk_path = filedialog.askopenfilename(initialdir=init_dir, title="Select Track file", filetypes=[("pkl files", "*.pkl")])
-    if trk_path == "":
+    tar_path = filedialog.askopenfilename(initialdir=init_dir, title="Select Track file", filetypes=filetypes)
+    if tar_path == "":
         print("open_pkl() canceled.")
         return org_path
-    print(f"open_pkl() done. {trk_path}")
-    return trk_path
+    print(f"open_pkl() done. {tar_path}")
+    return tar_path
 
 
 def load_track_file(tar_path, allow_calculated_track_file=False):
@@ -28,6 +28,40 @@ def load_track_file(tar_path, allow_calculated_track_file=False):
         return
     print("load_track_file() done.")
     return src_df
+
+
+class PickleLoader:
+    def __init__(self, init_dir="", pkl_type="track", org_path=None):
+        if init_dir == "":
+            self.init_dir = "~"
+        else:
+            self.init_dir = init_dir
+
+        if pkl_type == "track":
+            self.filetypes = [("trk-pkl files", "*.trk.pkl"), ("pkl files", "*.pkl")]
+        elif pkl_type == "feature":
+            self.filetypes = [("feat-pkl files", "*.feat.pkl"), ("pkl files", "*.pkl")]
+        elif pkl_type == "behavioral_coding":
+            self.filetypes = [("bc-pkl files", "*.bc.pkl")]
+
+        self.tar_path = org_path
+
+    def show_open_dialog(self):
+        """Update self.tar_path with the selected file path."""
+        tar_path = filedialog.askopenfilename(initialdir=self.init_dir, title="Select Pickle file", filetypes=self.filetypes)
+        if tar_path == "":
+            print("open_pkl() canceled.")
+        print(f"open_pkl() done. {tar_path}")
+        self.tar_path = tar_path
+
+    def load_pkl(self):
+        """Return the loaded DataFrame."""
+        if os.path.exists(self.tar_path) is False:
+            print(f"File not found: {self.tar_path}")
+            return
+        src_df = pd.read_pickle(self.tar_path)
+        print("load_track_file() done.")
+        return src_df
 
 
 def overwrite_track_file(tar_path, tar_df, not_found_ok=False):

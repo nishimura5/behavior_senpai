@@ -256,13 +256,15 @@ class App(ttk.Frame):
     def export(self):
         """Export the calculated data to a file."""
         file_name = os.path.basename(os.path.splitext(self.feat_path)[0])
-        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_dimredu.pkl")
+        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_dimredu.bc.pkl")
 
         cluster_df = self.drp.get_cluster_df(self.cluster_names)
         cluster_df["member"] = self.member_keypoints_combos.get_selected()[0]
         cluster_df = cluster_df.set_index("member")
 
         export_df = cluster_df
+        export_df = export_df.reset_index().rename_axis("index", axis=0)
+        export_df = export_df.set_index(["index", "member"])
         export_df.attrs = self.feat_df.attrs
         export_df.attrs["features"] = self.cluster_names
         n_neighbors = self.n_neighbors_combobox.get_current_value()
