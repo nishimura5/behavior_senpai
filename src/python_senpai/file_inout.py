@@ -31,8 +31,8 @@ def load_track_file(tar_path, allow_calculated_track_file=False):
 
 
 class PickleLoader:
-    def __init__(self, init_dir="", pkl_type="track", org_path=None):
-        if init_dir == "":
+    def __init__(self, init_dir=None, pkl_type="track", org_path=None):
+        if init_dir == None or init_dir == "" or os.path.exists(init_dir) is False:
             self.init_dir = "~"
         else:
             self.init_dir = init_dir
@@ -45,14 +45,26 @@ class PickleLoader:
             self.filetypes = [("bc-pkl files", "*.bc.pkl")]
 
         self.tar_path = org_path
+        self.calc_case = None
+
+    def join_calc_case(self, calc_case):
+        new_init_dir = os.path.join(self.init_dir, calc_case)
+        if os.path.exists(new_init_dir) is False:
+            print(f"calc_case not found: {new_init_dir}")
+            return
+        self.init_dir = new_init_dir
 
     def show_open_dialog(self):
-        """Update self.tar_path with the selected file path."""
+        """
+        Update self.tar_path with the selected file path.
+        Return bool value whether the file is selected or not.
+        """
         tar_path = filedialog.askopenfilename(initialdir=self.init_dir, title="Select Pickle file", filetypes=self.filetypes)
         if tar_path == "":
-            print("open_pkl() canceled.")
-        print(f"open_pkl() done. {tar_path}")
+            print("show_open_dialog() canceled.")
+            return False
         self.tar_path = tar_path
+        return True
 
     def load_pkl(self):
         """Return the loaded DataFrame."""
@@ -60,8 +72,14 @@ class PickleLoader:
             print(f"File not found: {self.tar_path}")
             return
         src_df = pd.read_pickle(self.tar_path)
-        print("load_track_file() done.")
+        print(f"load_pkl() done: {self.tar_path}")
         return src_df
+
+    def get_tar_path(self):
+        return self.tar_path
+
+    def get_tar_parent(self):
+        return os.path.basename(os.path.dirname(self.tar_path))
 
 
 def overwrite_track_file(tar_path, tar_df, not_found_ok=False):

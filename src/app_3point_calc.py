@@ -103,11 +103,13 @@ class App(ttk.Frame):
         """
         current_member, _, _, _ = self.member_combo.get_selected()
         calc_case = self.calc_case_entry.get_calc_case()
-        init_dir = os.path.join(self.calc_dir, calc_case)
-        in_trk_path = file_inout.open_pkl(init_dir)
-        if in_trk_path is None:
+        pl = file_inout.PickleLoader(self.calc_dir, pkl_type="feature")
+        pl.join_calc_case(calc_case)
+        is_file_selected = pl.show_open_dialog()
+        if is_file_selected is False:
             return
-        in_trk_df = file_inout.load_track_file(in_trk_path, allow_calculated_track_file=True)
+        in_trk_df = pl.load_pkl()
+
         pattern = r"(\w+)\((\w+)-(\w+),(\w+)-(\w+)\)"
         cols = in_trk_df.columns.tolist()
 
@@ -190,7 +192,7 @@ class App(ttk.Frame):
         export_df = pd.concat([self.calc_df, timestamp_df], axis=1)
         export_df.attrs = self.src_attrs
         calc_case = self.calc_case_entry.get_calc_case()
-        dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_3p.pkl")
+        dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_3p.feat.pkl")
         history_dict = {"proc": "3p_vector", "source_cols": []}
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
 

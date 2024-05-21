@@ -86,24 +86,23 @@ class App(ttk.Frame):
         self.lineplot.set_vcap(self.cap)
 
     def load_feat(self):
-        init_dir = os.path.join(self.calc_dir, self.calc_case)
-        if os.path.exists(init_dir) is False:
-            init_dir = self.calc_dir
-        pkl_path = file_inout.open_pkl(init_dir)
-        if pkl_path is None:
+        pl = file_inout.PickleLoader(self.calc_dir, "feature")
+        pl.join_calc_case(self.calc_case)
+        is_file_selected = pl.show_open_dialog()
+        if is_file_selected is False:
             return
         # update calc_case
-        new_calc_case = os.path.basename(os.path.dirname(pkl_path))
         temp = TempFile()
         data = temp.data
+        new_calc_case = pl.get_tar_parent()
         self.calc_case = new_calc_case
         data["calc_case"] = new_calc_case
         temp.save(data)
 
-        self.feat_path = pkl_path
-        self.feat_path_label["text"] = pkl_path.replace(os.path.dirname(self.pkl_dir), "..")
-        self.feat_name = os.path.basename(pkl_path)
-        self.feat_df = file_inout.load_track_file(pkl_path, allow_calculated_track_file=True)
+        self.feat_path = pl.get_tar_path()
+        self.feat_path_label["text"] = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
+        self.feat_name = os.path.basename(self.feat_path)
+        self.feat_df = pl.load_pkl()
 
         # update GUI
         col_list = self.feat_df.columns.tolist()
@@ -186,11 +185,13 @@ class App(ttk.Frame):
         self._draw(mix_ops)
 
     def repeat_draw(self):
-        init_dir = os.path.join(self.calc_dir, self.calc_case)
-        in_trk_path = file_inout.open_pkl(init_dir)
-        if in_trk_path is None:
+        pl = file_inout.PickleLoader(self.calc_dir, "feature")
+        pl.join_calc_case(self.calc_case)
+        is_file_selected = pl.show_open_dialog()
+        if is_file_selected is False:
             return
-        in_trk_df = file_inout.load_track_file(in_trk_path, allow_calculated_track_file=True)
+        in_trk_df = pl.load_pkl()
+
         proc_history = in_trk_df.attrs["proc_history"]
         for history in proc_history:
             if isinstance(history, dict) and history["proc"] == "mix":
@@ -241,8 +242,8 @@ class App(ttk.Frame):
         if self.feat_df is None:
             print("No data to export.")
             return
-        file_name = os.path.basename(os.path.splitext(self.feat_path)[0])
-        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_featmix.pkl")
+        file_name = os.path.basename(self.feat_path).split(".")[0]
+        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_featmix.feat.pkl")
 
         data_col_names = [col[0] for col in self.source_cols] + ["timestamp"]
 

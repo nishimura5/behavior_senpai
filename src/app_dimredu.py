@@ -117,24 +117,22 @@ class App(ttk.Frame):
             self.tree.insert("", "end", values=(cluster_name, cluster_name))
 
     def load_feat(self):
-        init_dir = os.path.join(self.calc_dir, self.calc_case)
-        if os.path.exists(init_dir) is False:
-            init_dir = self.calc_dir
-        pkl_path = file_inout.open_pkl(init_dir)
-        if pkl_path is None:
+        pl = file_inout.PickleLoader(self.calc_dir, "feature")
+        pl.join_calc_case(self.calc_case)
+        is_file_selected = pl.show_open_dialog()
+        if is_file_selected is False:
             return
         # update calc_case
-        new_calc_case = os.path.basename(os.path.dirname(pkl_path))
         temp = TempFile()
         data = temp.data
+        new_calc_case = pl.get_tar_parent()
         self.calc_case = new_calc_case
         data["calc_case"] = new_calc_case
         temp.save(data)
 
-        self.feat_path = pkl_path
-        self.feat_path_label["text"] = pkl_path.replace(os.path.dirname(self.pkl_dir), "..")
-        self.feat_name = os.path.basename(pkl_path)
-        self.feat_df = file_inout.load_track_file(pkl_path, allow_calculated_track_file=True)
+        self.feat_path = pl.get_tar_path()
+        self.feat_path_label["text"] = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
+        self.feat_df = pl.load_pkl()
 
         # update GUI
         self.member_keypoints_combos.set_df(self.feat_df)
@@ -154,11 +152,13 @@ class App(ttk.Frame):
         self._draw()
 
     def repeat_draw(self):
-        init_dir = os.path.join(self.calc_dir, self.calc_case)
-        in_trk_path = file_inout.open_pkl(init_dir)
-        if in_trk_path is None:
+        pl = file_inout.PickleLoader(self.calc_dir, "behavioral_coding")
+        pl.join_calc_case(self.calc_case)
+        is_file_selected = pl.show_open_dialog()
+        if is_file_selected is False:
             return
-        in_trk_df = file_inout.load_track_file(in_trk_path, allow_calculated_track_file=True)
+        in_trk_df = pl.load_pkl()
+
         if "features" not in in_trk_df.attrs.keys():
             print("features not found in attrs")
             return
@@ -255,7 +255,7 @@ class App(ttk.Frame):
 
     def export(self):
         """Export the calculated data to a file."""
-        file_name = os.path.basename(os.path.splitext(self.feat_path)[0])
+        file_name = os.path.basename(self.feat_path).split(".")[0]
         dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_dimredu.bc.pkl")
 
         cluster_df = self.drp.get_cluster_df(self.cluster_names)
@@ -263,8 +263,8 @@ class App(ttk.Frame):
         cluster_df = cluster_df.set_index("member")
 
         export_df = cluster_df
-        export_df = export_df.reset_index().rename_axis("index", axis=0)
-        export_df = export_df.set_index(["index", "member"])
+        export_df = export_df.reset_index().rename_axis("index", axis=1)
+        export_df = export_df.set_index("member", append=True)
         export_df.attrs = self.feat_df.attrs
         export_df.attrs["features"] = self.cluster_names
         n_neighbors = self.n_neighbors_combobox.get_current_value()

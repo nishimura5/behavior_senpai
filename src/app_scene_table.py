@@ -19,6 +19,7 @@ class App(ttk.Frame):
 
         temp = TempFile()
         width, height, dpi = temp.get_scene_table_graph_size()
+        self.calc_case = temp.data["calc_case"]
         self.plot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi, bottom=0.12)
 
         control_frame = ttk.Frame(self)
@@ -132,11 +133,15 @@ class App(ttk.Frame):
         self._update()
 
     def import_bool_pkl(self):
-        filetypes = [("bc-pkl files", "*.bc.pkl")]
-        bool_pkl_path = file_inout.open_pkl(os.path.join(os.path.dirname(self.pkl_dir), "calc"), filetypes=filetypes)
-        if bool_pkl_path is None:
+        init_dir = os.path.join(os.path.dirname(self.pkl_dir), "calc")
+        pl = file_inout.PickleLoader(init_dir, "behavioral_coding")
+        pl.join_calc_case(self.calc_case)
+        is_file_selected = pl.show_open_dialog()
+        if is_file_selected is False:
             return
-        bool_df = file_inout.load_track_file(bool_pkl_path, allow_calculated_track_file=True)
+        bool_df = pl.load_pkl()
+        bool_pkl_path = pl.get_tar_path()
+
         # bool型 or column名がtimestampじゃないカラムは削除
         self.bool_df = bool_df.loc[:, (bool_df.dtypes == "bool") | (bool_df.columns == "timestamp")]
         cols = self.bool_df.columns.tolist()
