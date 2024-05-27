@@ -184,6 +184,7 @@ class App(ttk.Frame):
         current_position = self.vw.get_current_position()
         args = {
             "src_df": self.src_df,
+            "trk_pkl_name": os.path.basename(self.pkl_path),
             "time_span_msec": self.time_span_entry.get_start_end(),
             "cap": self.cap,
             "pkl_dir": self.pkl_dir,

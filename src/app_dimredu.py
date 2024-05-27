@@ -6,13 +6,15 @@ import numpy as np
 import pandas as pd
 from dimredu_plotter import DimensionalReductionPlotter
 from gui_parts import Combobox, IntEntry, MemberKeypointComboboxes, StrEntry, TempFile
-from python_senpai import file_inout, keypoints_proc
+from python_senpai import file_inout, keypoints_proc, time_format
 
 
 class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
-        master.title("Dimensional Reduction Plot")
+        start_str = time_format.msec_to_timestr(args["time_span_msec"][0])
+        end_str = time_format.msec_to_timestr(args["time_span_msec"][1])
+        master.title(f"Dimensional Reduction Plot ({args['trk_pkl_name']} {start_str} to {end_str})")
         self.pack(padx=10, pady=10)
 
         temp = TempFile()
