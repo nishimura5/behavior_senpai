@@ -44,7 +44,7 @@ class App(ttk.Frame):
         self.thinning_entry = IntEntry(setting_frame, label="Thinning:", default=temp.data["thinning"])
         self.thinning_entry.pack_horizontal(padx=5)
 
-        draw_btn = ttk.Button(setting_frame, text="Draw", command=self.manual_draw)
+        draw_btn = ttk.Button(setting_frame, text="Add and Draw", command=self.manual_draw)
         draw_btn.pack(side=tk.LEFT)
 
         clear_btn = ttk.Button(setting_frame, text="Clear", command=self.clear)
