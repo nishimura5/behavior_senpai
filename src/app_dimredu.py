@@ -58,7 +58,7 @@ class App(ttk.Frame):
         self.n_neighbors_combobox = Combobox(combos_frame, label="N_neighbors:", values=vals)
         self.n_neighbors_combobox.pack_vertical(pady=5)
 
-        vals = [0.1, 0.5, 1.0]
+        vals = [0.05, 0.1, 0.5, 1.0]
         self.min_dist_combobox = Combobox(combos_frame, label="Min_dist:", values=vals)
         self.min_dist_combobox.pack_vertical(pady=5)
 
@@ -101,6 +101,7 @@ class App(ttk.Frame):
         plot_frame.pack(side=tk.LEFT, anchor=tk.NW)
 
         self.drp.pack(plot_frame)
+        self.drp.set_init_class_names(self.cluster_names)
 
         self._load(args)
         self.feat_df = None

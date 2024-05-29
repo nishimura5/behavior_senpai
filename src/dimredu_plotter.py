@@ -32,6 +32,10 @@ class DimensionalReductionPlotter:
     def set_vcap(self, vcap):
         self.vcap = vcap
 
+    def set_init_class_names(self, class_names):
+        self.init_class_names = class_names
+        self.class_names = class_names
+
     def draw(self, plot_mat, timestamps, frames):
         self.frames = frames
         self.line_ax.cla()
@@ -62,7 +66,7 @@ class DimensionalReductionPlotter:
 
     def clear_class_data(self):
         self.class_data = None
-        self.class_names = None
+        self.class_names = self.init_class_names
 
     def set_class_data(self, class_data):
         self.class_data = class_data
