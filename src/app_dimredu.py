@@ -66,6 +66,11 @@ class App(ttk.Frame):
         self.umap_seed_combobox = Combobox(combos_frame, label="Seed:", values=vals, width=10)
         self.umap_seed_combobox.pack_vertical(pady=5)
 
+        # time checkbox
+        self.use_time_val = tk.BooleanVar()
+        time_checbox = ttk.Checkbutton(combos_frame, text="Use timestamp for dimredu", variable=self.use_time_val)
+        time_checbox.pack(anchor=tk.NW, pady=5)
+
         self.draw_button = ttk.Button(combos_frame, text="Draw", command=self.manual_draw, state=tk.DISABLED)
         self.draw_button.pack(side=tk.LEFT, expand=True, pady=5, fill=tk.X)
 
@@ -142,11 +147,11 @@ class App(ttk.Frame):
         self.member_keypoints_combos.set_df(self.feat_df)
         self.feature_names = []
         self.column_listbox.delete(0, tk.END)
-        for col in self.feat_df.columns:
-            if col == "timestamp":
+        for colname in self.feat_df.columns:
+            if colname == "timestamp":
                 continue
-            self.feature_names.append(col)
-            self.column_listbox.insert(tk.END, col)
+            self.feature_names.append(colname)
+            self.column_listbox.insert(tk.END, colname)
         self.drp.clear()
         self.export_button["state"] = tk.DISABLED
         self.draw_button["state"] = tk.NORMAL
@@ -219,6 +224,10 @@ class App(ttk.Frame):
         if self.feat_df is not None:
             tar_df = self.feat_df
         tar_df = keypoints_proc.filter_by_timerange(tar_df, self.time_min, self.time_max)
+
+        if self.use_time_val.get():
+            tar_df["t"] = (tar_df["timestamp"] - self.time_min) / (self.time_max - self.time_min) * 0.5
+            cols.append("t")
 
         idx = tar_df.index
         if "keypoint" in idx.names:
