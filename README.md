@@ -112,7 +112,7 @@ An illustrative example of a DataFrame stored in the Track file is presented bel
 
 ### Feature file
 
-In Behavior Senpai, the data obtained by calculating the positional relationship of multiple keypoints is referred to as a feature. The data processed by [app_2point_calc.py][app_2point_calc] or [app_3point_calc.py][app_3point_calc] is stored in a pickled format. The data processed by [app_3point_calc][app_3point_calc] is saved as a "Feature file" in the "calc" folder. The file extension is ".pkl", as in the Track file. The Feature file holds time-series data in 2-level-multi-index format, with the indices designated as "frame" and "member", respectively, and the columns including a "timestamp". It should be noted that the data in the Track file is only the result of keypoint detection, while the data in the Feature file are features that are deeply related to the purpose of behavior observation.
+In Behavior Senpai, the data obtained by calculating the positional relationship of multiple keypoints is referred to as a feature. The data processed by [app_2point_calc.py][app_2point_calc] or [app_3point_calc.py][app_3point_calc] is stored in a pickled format. The data processed by [app_3point_calc][app_3point_calc] is saved as a "Feature file" in the "calc" folder. The file extension is ".feat.pkl". The Feature file holds time-series data in 2-level-multi-index format, with the indices designated as "frame" and "member", respectively, and the columns including a "timestamp". It should be noted that the data in the Track file is only the result of keypoint detection, while the data in the Feature file are features that are deeply related to the purpose of behavior observation.
 
 #### Column name definition
 
@@ -125,12 +125,16 @@ The format of columns names in the DataFrame in the feature file, except for tim
 
 \{calc_code\} contains the following strings, depending on the calculation.
 
+- x: x
+- y: y
 - component: x and y components of one vector (suffixes like '_x' and '_y')
 - norm: norm of one vector
 - plus: the sum of two vectors (suffixes '_x' and '_y')
 - cross: cross product of two vectors
 - dot: inner product of two vectors
 - norms: product of the norms of two vectors
+- sin: sin
+- cos: cos
 
 \{target keypoints\} contains the IDs of the keypoints to be calculated.
 In the case of a calculation for a single vector, such as 'component' or 'norm', a hyphenated set of keypoint IDs is written with the starting point of the vector on the left, such as '1-2'.
@@ -142,7 +146,7 @@ As a concrete example, a column name meaning the outer product of two vectors st
 cross(2-1,2-3)
 ```
 
-### Attributes of Track file
+### Attributes of Track (or Feature) file
 
 The [attrs property](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.attrs.html) of the DataFrame stored in Track file (and Feature files) records information such as the original video file name, its frame size, and the name of the AI model used for keypoint detection.
 
