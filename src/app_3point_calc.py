@@ -160,7 +160,6 @@ class App(ttk.Frame):
             prod_df = keypoints_proc.calc_norms(tar_df, kp0, kp1, kp2)
         elif calc_code == "cross_dot_plus_norms":
             prod_df = keypoints_proc.calc_cross_dot_plus_norms(tar_df, kp0, kp1, kp2)
-        print(prod_df)
 
         col_names = prod_df.columns
 
