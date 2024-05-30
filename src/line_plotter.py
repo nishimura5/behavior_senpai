@@ -133,8 +133,8 @@ class LinePlotter:
             # descriptionでフィルタリング
             tar_df = rect_df.loc[rect_df["description"] == description, :]
             rectangles = []
-            for _, row in tar_df.iterrows():
-                rectangles.append(matplotlib.patches.Rectangle((row["start"], i), row["end"] - row["start"], 0.9, alpha=0.7, label=description))
+            for start, end in zip(tar_df["start"], tar_df["end"]):
+                rectangles.append(matplotlib.patches.Rectangle((start, i), end - start, 0.9, alpha=0.7, label=description))
             for rectangle in rectangles:
                 self.line_ax.add_patch(rectangle)
             ticks.append(i + 0.45)
