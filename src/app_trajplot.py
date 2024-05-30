@@ -13,7 +13,7 @@ class App(ttk.Frame):
 
     def __init__(self, master, args):
         super().__init__(master)
-        master.title("Keypoints to Trajectory Plot")
+        master.title("Trajectory Plot")
         self.pack(padx=10, pady=10)
 
         temp = TempFile()
