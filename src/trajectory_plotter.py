@@ -44,7 +44,7 @@ class TrajectoryPlotter:
         # 重複インデックス削除
         plot_df = plot_df[~plot_df.index.duplicated(keep="last")]
         plot_df = plot_df.loc[pd.IndexSlice[:, member, keypoint], :]
-        plot_len = len(plot_df['x'])
+        plot_len = len(plot_df["x"])
         width, height = self.vcap.get_frame_size()
         self.traj_ax.cla()
 
@@ -56,46 +56,53 @@ class TrajectoryPlotter:
             self.dt_v.remove()
 
         # x座標時系列グラフ
-        self.x_time_ax.plot(plot_df['x'], plot_df['timestamp'], picker=5)
+        self.x_time_ax.plot(plot_df["x"], plot_df["timestamp"], picker=5)
         self.x_time_ax.yaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         # tickをグラフの上・右に表示
-        self.x_time_ax.set_xlabel('x(px)')
+        self.x_time_ax.set_xlabel("x(px)")
         self.x_time_ax.xaxis.tick_top()
-        self.x_time_ax.xaxis.set_label_position('top')
+        self.x_time_ax.xaxis.set_label_position("top")
         self.x_time_ax.yaxis.tick_right()
-        time_max = plot_df['timestamp'].max()
+        time_max = plot_df["timestamp"].max()
         self.x_time_ax.set_ylim(0, time_max)
         self.x_time_ax.invert_yaxis()
-        self.x_h = self.x_time_ax.axhline(0, color='gray', lw=0.5)
+        self.x_h = self.x_time_ax.axhline(0, color="gray", lw=0.5)
 
         # y座標時系列グラフ
-        self.y_time_ax.plot(plot_df['timestamp'], plot_df['y'], picker=5)
+        self.y_time_ax.plot(plot_df["timestamp"], plot_df["y"], picker=5)
         self.y_time_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
-        self.y_time_ax.set_ylabel('y(px)')
-        self.y_v = self.y_time_ax.axvline(0, color='gray', lw=0.5)
+        self.y_time_ax.set_ylabel("y(px)")
+        self.y_v = self.y_time_ax.axvline(0, color="gray", lw=0.5)
 
         # 軌跡グラフ
         if plot_len > 10:
             sns.kdeplot(
-                data=plot_df, x="x", y="y", fill=True,
-                alpha=self.kde_alpha, bw_adjust=self.kde_adjust, thresh=self.kde_thresh, levels=self.kde_levels,
-                ax=self.traj_ax)
+                data=plot_df,
+                x="x",
+                y="y",
+                fill=True,
+                alpha=self.kde_alpha,
+                bw_adjust=self.kde_adjust,
+                thresh=self.kde_thresh,
+                levels=self.kde_levels,
+                ax=self.traj_ax,
+            )
         else:
             print(plot_len)
-        self.traj_point, = self.traj_ax.plot([], [], color="#02326f", marker='.')
-        self.traj_img = self.traj_ax.imshow(np.full((height, width, 3), 255, dtype=np.uint8), aspect='auto')
+        (self.traj_point,) = self.traj_ax.plot([], [], color="#02326f", marker=".")
+        self.traj_img = self.traj_ax.imshow(np.full((height, width, 3), 255, dtype=np.uint8), aspect="auto")
         self.traj_img.autoscale()
         self.traj_ax.xaxis.set_visible(False)
         self.traj_ax.yaxis.set_visible(False)
 
         # speedグラフ
-        nan_shift = int((dt_span - thinning)/2) - 1
+        nan_shift = int((dt_span - thinning) / 2) - 1
         label = f"{member}_{keypoint} (speed={dt_span}, thinning={thinning})"
-        self.speed_ax.plot(plot_df['timestamp'], plot_df[f'spd_{dt_span}'].shift(-nan_shift), label=label, picker=5)
+        self.speed_ax.plot(plot_df["timestamp"], plot_df[f"spd_{dt_span}"].shift(-nan_shift), label=label, picker=5)
         self.speed_ax.xaxis.set_visible(False)
-        self.speed_ax.set_ylabel('speed')
-        self.speed_ax.legend(loc='upper right')
-        self.dt_v = self.speed_ax.axvline(0, color='gray', lw=0.5)
+        self.speed_ax.set_ylabel("speed")
+        self.speed_ax.legend(loc="upper right")
+        self.dt_v = self.speed_ax.axvline(0, color="gray", lw=0.5)
 
         self.plot_df = plot_df
         self.canvas.draw_idle()
@@ -113,8 +120,8 @@ class TrajectoryPlotter:
     def _gray_line(self, event):
         if event.inaxes is None or self.x_h is None or self.y_v is None or self.dt_v is None:
             return
-        x = event.xdata
-        y = event.ydata
+        x = [event.xdata]
+        y = [event.ydata]
         if event.inaxes == self.x_time_ax:
             self.x_h.set_ydata(y)
             self.y_v.set_xdata(y)
@@ -133,7 +140,7 @@ class TrajectoryPlotter:
         self.speed_ax.figure.canvas.draw_idle()
 
     def _click_graph(self, event):
-        center_ind = event.ind[int(len(event.ind)/2)]
+        center_ind = event.ind[int(len(event.ind) / 2)]
         left_ind = center_ind - 4
         right_ind = center_ind + 5
         if left_ind < 0:
@@ -142,7 +149,7 @@ class TrajectoryPlotter:
         row = self.plot_df.iloc[left_ind:right_ind, :]
         if row.empty:
             return
-        timestamp_msec = row.iloc[int(len(row)/2)].timestamp
+        timestamp_msec = row.iloc[int(len(row) / 2)].timestamp
         self.traj_point.set_data(row.x, row.y)
         time_format.copy_to_clipboard(timestamp_msec)
         if self.vcap.isOpened() is True:
