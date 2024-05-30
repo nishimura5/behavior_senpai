@@ -129,7 +129,7 @@ class TimeSpanEntry(ttk.Frame):
 
         self.side = tk.LEFT
         caption_time = ttk.Label(master, text="Time:")
-        caption_time.pack(side=tk.LEFT, padx=(0, 1))
+        caption_time.pack(side=tk.LEFT, padx=(5, 1))
         vcmd = (self.register(self._validate), "%P")
         invcmd = (self.register(self._invalid_start), "%P")
         self.time_start_entry = ttk.Entry(master, validate="focusout", validatecommand=vcmd, invalidcommand=invcmd, width=10)
@@ -333,11 +333,11 @@ class TempFile:
 
     def get_window_size(self):
         if "width" not in self.data.keys() or self.data["width"] == "":
-            width = 900
+            width = 1200
         else:
             width = int(self.data["width"])
         if "height" not in self.data.keys() or self.data["height"] == "":
-            height = 500
+            height = 800
         else:
             height = int(self.data["height"])
         if "dpi" not in self.data.keys() or self.data["dpi"] == "":

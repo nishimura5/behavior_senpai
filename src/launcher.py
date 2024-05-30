@@ -47,12 +47,14 @@ class App(ttk.Frame):
         edit_label = ttk.Label(buttons_frame, text="Edit")
         edit_label.pack(side=tk.TOP, pady=(8, 0))
         member_edit_button = ttk.Button(
-            buttons_frame, text="Member", command=lambda: self.launch_window(app_member_edit.App, edit_df=True, grab=True)
+            buttons_frame, text="Member", command=lambda: self.launch_window(app_member_edit.App, dialog_size="1000x750", edit_df=True, grab=True)
         )
         member_edit_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         area_filter_button = ttk.Button(buttons_frame, text="Area", command=lambda: self.launch_window(app_area_filter.App, edit_df=True, grab=True))
         area_filter_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        smooth_button = ttk.Button(buttons_frame, text="Smooth", command=lambda: self.launch_window(app_smoothing.App, edit_df=True, grab=True))
+        smooth_button = ttk.Button(
+            buttons_frame, text="Smooth", command=lambda: self.launch_window(app_smoothing.App, dialog_size="1000x750", edit_df=True, grab=True)
+        )
         smooth_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         scene_table_button = ttk.Button(
             buttons_frame, text="Scene table", command=lambda: self.launch_window(app_scene_table.App, edit_df=True, grab=True)
@@ -65,13 +67,19 @@ class App(ttk.Frame):
         k2f_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         vector_frame = ttk.Frame(buttons_frame)
         vector_frame.pack(side=tk.TOP, fill=tk.X, pady=4)
-        two_point_button = ttk.Button(vector_frame, text="2 point", command=lambda: self.launch_window(app_2point_calc.App), width=6)
+        two_point_button = ttk.Button(
+            vector_frame, text="2 point", command=lambda: self.launch_window(app_2point_calc.App, dialog_size="1200x750"), width=6
+        )
         two_point_button.pack(side=tk.LEFT, fill=tk.X, padx=(0, 4))
-        three_point_button = ttk.Button(vector_frame, text="3 point", command=lambda: self.launch_window(app_3point_calc.App), width=6)
+        three_point_button = ttk.Button(
+            vector_frame, text="3 point", command=lambda: self.launch_window(app_3point_calc.App, dialog_size="1200x750"), width=6
+        )
         three_point_button.pack(side=tk.TOP, fill=tk.X)
-        feat_mix_button = ttk.Button(buttons_frame, text="Mix", command=lambda: self.launch_window(app_feat_mix.App))
+        feat_mix_button = ttk.Button(buttons_frame, text="Mix", command=lambda: self.launch_window(app_feat_mix.App, dialog_size="1300x900"))
         feat_mix_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        dimredu_button = ttk.Button(buttons_frame, text="Dimension reduction", command=lambda: self.launch_window(app_dimredu.App))
+        dimredu_button = ttk.Button(
+            buttons_frame, text="Dimension reduction", command=lambda: self.launch_window(app_dimredu.App, dialog_size="1500x750")
+        )
         dimredu_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         pref_label = ttk.Label(buttons_frame, text="MISC")
@@ -169,8 +177,10 @@ class App(ttk.Frame):
                 print_str += f"{key}: {value}\n"
         self.attrs_textbox.insert(tk.END, print_str)
 
-    def launch_window(self, app, edit_df=False, grab=False):
+    def launch_window(self, app, dialog_size=None, edit_df=False, grab=False):
         dlg_modal = tk.Toplevel(self)
+        if dialog_size is not None:
+            dlg_modal.geometry(dialog_size)
         dlg_modal.focus_set()
         if grab is True:
             dlg_modal.grab_set()

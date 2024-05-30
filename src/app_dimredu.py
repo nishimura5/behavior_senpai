@@ -88,7 +88,7 @@ class App(ttk.Frame):
         rename_btn = ttk.Button(cluster_name_frame, text="Rename", command=self.rename_cluster)
         rename_btn.pack(side=tk.LEFT, padx=(5, 0))
         cols = ("num", "name")
-        self.tree = ttk.Treeview(draw_frame, columns=cols, height=len(self.cluster_names), show="headings", selectmode="browse")
+        self.tree = ttk.Treeview(draw_frame, columns=cols, height=len(self.cluster_names) - 1, show="headings", selectmode="browse")
         self.tree.heading("num", text="num")
         self.tree.heading("name", text="name")
         self.tree.column("num", width=10)
