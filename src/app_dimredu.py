@@ -14,7 +14,7 @@ class App(ttk.Frame):
         super().__init__(master)
         start_str = time_format.msec_to_timestr(args["time_span_msec"][0])
         end_str = time_format.msec_to_timestr(args["time_span_msec"][1])
-        master.title(f"Dimensional Reduction Plot ({args['trk_pkl_name']} {start_str} to {end_str})")
+        master.title(f"Dimension Reduction ({args['trk_pkl_name']} {start_str} to {end_str})")
         self.pack(padx=10, pady=10)
 
         temp = TempFile()
