@@ -8,6 +8,7 @@ import app_area_filter
 import app_detect
 import app_dimredu
 import app_feat_mix
+import app_keypoint_samples
 import app_member_edit
 import app_scene_table
 import app_smoothing
@@ -129,6 +130,9 @@ class App(ttk.Frame):
         attrs_frame.pack(side=tk.RIGHT, anchor=tk.N)
         self.attrs_textbox = tk.Text(attrs_frame, relief=tk.FLAT, width=40, padx=10, pady=10)
         self.attrs_textbox.pack(fill=tk.BOTH, expand=True, padx=(10, 0))
+
+        keypoints_btn = ttk.Button(attrs_frame, text="Keypoint samples", command=lambda: self.launch_window(app_keypoint_samples.App))
+        keypoints_btn.pack(padx=(10, 0), pady=(5, 0), expand=True, fill=tk.X)
 
         self.k2m = export_mp4.MakeMp4()
         self.cap = vcap.VideoCap()
