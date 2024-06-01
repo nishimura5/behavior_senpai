@@ -120,7 +120,7 @@ The feature files processed by [app_2point_calc.py][app_2point_calc] and [app_3p
 The format of columns names in the DataFrame in the feature file, except for timestamp, is as follows.
 
 ```
-{calc_code}({target keypoints}){suffix like _x or _y}
+{calc_code}({target keypoints})
 ```
 
 \{calc_code\} contains the following strings, depending on the calculation.
