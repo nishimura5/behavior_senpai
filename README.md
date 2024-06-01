@@ -127,14 +127,14 @@ The format of columns names in the DataFrame in the feature file, except for tim
 
 - x: x
 - y: y
-- component: x and y components of one vector (suffixes like '_x' and '_y')
+- component_x and component_y: x or y component of one vector
 - norm: norm of one vector
-- plus: the sum of two vectors (suffixes '_x' and '_y')
+- plus_x and plus_y: the sum of two vectors
 - cross: cross product of two vectors
 - dot: inner product of two vectors
 - norms: product of the norms of two vectors
-- sin: sin
-- cos: cos
+- sin: cross / norms
+- cos: dot / norms
 
 \{target keypoints\} contains the IDs of the keypoints to be calculated.
 In the case of a calculation for a single vector, such as 'component' or 'norm', a hyphenated set of keypoint IDs is written with the starting point of the vector on the left, such as '1-2'.
