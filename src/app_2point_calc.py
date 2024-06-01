@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 import tkinter as tk
 from tkinter import ttk
@@ -35,8 +34,8 @@ class App(ttk.Frame):
         self.img_label.pack(side=tk.LEFT, padx=5)
         self.member_combo = MemberKeypointComboboxesFor2Point(tar_frame)
         self.member_combo.pack(side=tk.LEFT, padx=5)
-        add_button = ttk.Button(tar_frame, text="Add", command=self.add_row)
-        add_button.pack(side=tk.LEFT, padx=5)
+        add_btn = ttk.Button(tar_frame, text="Add", command=self.add_row)
+        add_btn.pack(side=tk.LEFT, padx=5)
         delete_btn = ttk.Button(tar_frame, text="Delete Selected", command=self.delete_selected)
         delete_btn.pack(side=tk.LEFT, padx=5)
 
@@ -53,8 +52,8 @@ class App(ttk.Frame):
         draw_btn.pack(side=tk.LEFT)
         clear_btn = ttk.Button(setting_frame, text="Clear", command=self.clear)
         clear_btn.pack(side=tk.LEFT, padx=(5, 0))
-        export_btn = ttk.Button(setting_frame, text="Export", command=self.export)
-        export_btn.pack(side=tk.LEFT, padx=(5, 50))
+        self.export_btn = ttk.Button(setting_frame, text="Export", command=self.export, state="disabled")
+        self.export_btn.pack(side=tk.LEFT, padx=(5, 50))
         repeat_btn = ttk.Button(setting_frame, text="Repeat Draw", command=self.repeat_draw)
         repeat_btn.pack(side=tk.LEFT)
 
@@ -91,6 +90,7 @@ class App(ttk.Frame):
 
         # UIの更新
         self.member_combo.set_df(self.src_df)
+        self.lineplot.set_trk_df(self.src_df)
         self.lineplot.set_vcap(self.cap)
         self.clear()
 
@@ -159,13 +159,14 @@ class App(ttk.Frame):
         self._draw(src_cols)
 
     def _draw(self, rows):
-        self.lineplot.set_trk_df(self.src_df)
         self.source_cols = rows
+        self.clear()
 
-        # thinningの値だけframeを間引く
+        # thinning for plotting
         thinning = self.thinning_entry.get()
         self.thinning_entry.save_to_temp("thinning")
         thinned_df = keypoints_proc.thinning(self.tar_df, thinning)
+
         idx = thinned_df.index
         thinned_df.index = thinned_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
@@ -181,12 +182,18 @@ class App(ttk.Frame):
                 norm_df = keypoints_proc.calc_norm(member_df, point_a, point_b)
                 plot_df = pd.concat([xy_df, norm_df], axis=1)
             col_names = plot_df.columns.tolist()
-            self.feat_df = pd.concat([self.feat_df, plot_df], axis=1)
+            feat_col_names = self.feat_df.columns.tolist()
+            duplicate_cols = [col for col in col_names if col in feat_col_names]
+            if len(duplicate_cols) > 0:
+                self.feat_df = pd.concat([self.feat_df, plot_df], axis=0)
+            else:
+                self.feat_df = pd.concat([self.feat_df, plot_df], axis=1)
+
             plot_df["timestamp"] = thinned_df.loc[pd.IndexSlice[:, :, point_a], :].droplevel(2)["timestamp"]
             self.lineplot.set_plot(plot_df, member, col_names)
 
         self.lineplot.draw()
-        print("done")
+        self.export_btn["state"] = "normal"
 
     def export(self):
         """Export the calculated data to a file."""
@@ -200,6 +207,7 @@ class App(ttk.Frame):
         timestamp_df = timestamp_df[~timestamp_df.index.duplicated(keep="last")]
         self.feat_df = self.feat_df[~self.feat_df.index.duplicated(keep="last")]
         export_df = pd.concat([self.feat_df, timestamp_df], axis=1)
+        export_df = export_df.dropna(how="all")
         export_df.attrs = self.src_attrs
         calc_case = self.calc_case_entry.get_calc_case()
         dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_2p.feat.pkl")

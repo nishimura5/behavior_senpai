@@ -163,12 +163,14 @@ def remove_by_bool_col(src_df, bool_col_name: str, drop_member: bool = False):
 
 
 def calc_xy_component(src_df, kp0: str, kp1: str):
-    col_name = f"component({kp0}-{kp1})"
+    col_name_x = f"component_x({kp0}-{kp1})"
+    col_name_y = f"component_y({kp0}-{kp1})"
+
     point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
     point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
     point1_0 = point1 - point0
     xy_df = point1_0.loc[:, ["x", "y"]]
-    xy_df.columns = [f"{col_name}_x", f"{col_name}_y"]
+    xy_df.columns = [col_name_x, col_name_y]
     return xy_df
 
 
@@ -187,14 +189,15 @@ def calc_plus(src_df, kp0: str, kp1: str, kp2: str):
     """
     kp0 -> kp1とkp0 -> kp2のベクトル和を計算する
     """
-    col_name = f"plus({kp0}-{kp1},{kp0}-{kp2})"
+    col_name_x = f"plus_x({kp0}-{kp1},{kp0}-{kp2})"
+    col_name_y = f"plus_y({kp0}-{kp1},{kp0}-{kp2})"
     point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
     point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
     point2 = src_df.loc[pd.IndexSlice[:, :, kp2], :].droplevel(2)
     point1_0 = point1 - point0
     point2_0 = point2 - point0
     plus_df = point1_0.loc[:, ["x", "y"]] + point2_0.loc[:, ["x", "y"]]
-    plus_df.columns = [f"{col_name}_x", f"{col_name}_y"]
+    plus_df.columns = [col_name_x, col_name_y]
     return plus_df
 
 
