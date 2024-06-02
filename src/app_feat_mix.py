@@ -55,8 +55,6 @@ class App(ttk.Frame):
         draw_frame.pack(anchor=tk.NW, pady=5)
         self.draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw, state="disabled")
         self.draw_btn.pack(side=tk.LEFT, padx=5)
-        self.clear_btn = ttk.Button(draw_frame, text="Clear", command=self.clear, state="disabled")
-        self.clear_btn.pack(side=tk.LEFT, padx=(5, 0))
         self.export_btn = ttk.Button(draw_frame, text="Export", command=self.export, state="disabled")
         self.export_btn.pack(side=tk.LEFT, padx=(5, 50))
         import_draw_btn = ttk.Button(draw_frame, text="Import", command=self.import_feat)
@@ -127,7 +125,6 @@ class App(ttk.Frame):
         self.delete_btn["state"] = "normal"
         self.draw_btn["state"] = "normal"
         self.member_combo.set_df(self.src_df)
-        self.clear()
 
     def select_tree_row(self, event):
         """Handle the selection of a row in the tree."""
@@ -136,7 +133,7 @@ class App(ttk.Frame):
         selected = self.tree.selection()[0]
         feat_name, member, col_a, op, col_b, normalize = self.tree.item(selected, "values")
         self.name_entry.update(feat_name)
-        self.member_combo.update(member)
+        self.member_combo.set(member)
         self.col_a_combo.set(col_a)
         self.op_combo.set(op)
         self.col_b_combo.set(col_b)
@@ -193,6 +190,9 @@ class App(ttk.Frame):
         if is_file_selected is False:
             return
         in_trk_df = pl.load_pkl()
+        if in_trk_df.attrs["model"] != self.src_attrs["model"]:
+            print("Model mismatch.")
+            return
         src_cols = []
         for history in in_trk_df.attrs["proc_history"]:
             if isinstance(history, dict) and history["proc"] == "mix":
@@ -262,6 +262,3 @@ class App(ttk.Frame):
         dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_mix.feat.pkl")
         history_dict = {"proc": "mix", "source_cols": self.source_cols}
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
-
-    def clear(self):
-        print("clear")

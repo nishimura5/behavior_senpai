@@ -50,8 +50,6 @@ class App(ttk.Frame):
 
         draw_btn = ttk.Button(setting_frame, text="Draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT)
-        clear_btn = ttk.Button(setting_frame, text="Clear", command=self.clear)
-        clear_btn.pack(side=tk.LEFT, padx=(5, 0))
         self.export_btn = ttk.Button(setting_frame, text="Export", command=self.export, state="disabled")
         self.export_btn.pack(side=tk.LEFT, padx=(5, 50))
         import_btn = ttk.Button(setting_frame, text="Import", command=self.import_feat)
@@ -92,7 +90,6 @@ class App(ttk.Frame):
         self.member_combo.set_df(self.src_df)
         self.lineplot.set_trk_df(self.src_df)
         self.lineplot.set_vcap(self.cap)
-        self.clear()
 
     def _combo_to_calc_code(self, calc):
         code = ""
@@ -104,12 +101,22 @@ class App(ttk.Frame):
             code = "all"
         return code
 
+    def select_tree_row(self, event):
+        """Handle the selection of a row in the tree."""
+        if len(self.tree.selection()) == 0:
+            return
+        selected = self.tree.selection()[0]
+        calc, member, point_a, point_b = self.tree.item(selected, "values")
+        self.calc_type_combo.set(calc)
+        self.member_combo.set(member, point_a, point_b)
+
     def add_row(self):
         calc = self.calc_type_combo.get()
         member, point_a, point_b = self.member_combo.get_selected()
         tar_list = [k for k in self.tree.get_children("")]
         for i, tar in enumerate(tar_list):
             tree_calc, tree_member, tree_point_a, tree_point_b = self.tree.item(tar, "values")
+
             # skip if exactly same row
             if tree_calc == calc and tree_member == member and tree_point_a == point_a and tree_point_b == point_b:
                 return
@@ -122,17 +129,6 @@ class App(ttk.Frame):
         selected = self.tree.selection()[0]
         self.tree.delete(selected)
 
-    def select_tree_row(self, event):
-        """Handle the selection of a row in the tree."""
-        if len(self.tree.selection()) == 0:
-            return
-        selected = self.tree.selection()[0]
-        calc, member, point_a, point_b = self.tree.item(selected, "values")
-        self.calc_type_combo.update(calc)
-        self.member_combo.update(member)
-        self.point_a.update(point_a)
-        self.point_b.update(point_b)
-
     def import_feat(self):
         """Open a file dialog to select a feature file.
         Extract the column names from the selected file.
@@ -144,6 +140,9 @@ class App(ttk.Frame):
         if is_file_selected is False:
             return
         in_trk_df = pl.load_pkl()
+        if in_trk_df.attrs["model"] != self.src_attrs["model"]:
+            print("Model mismatch.")
+            return
         src_cols = []
         for history in in_trk_df.attrs["proc_history"]:
             if isinstance(history, dict) and history["proc"] == "2p_vector":
@@ -212,9 +211,6 @@ class App(ttk.Frame):
         dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_2p.feat.pkl")
         history_dict = {"proc": "2p_vector", "source_cols": self.source_cols}
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
-
-    def clear(self):
-        print("clear")
 
     def _find_data_dir(self):
         if getattr(sys, "frozen", False):
