@@ -23,8 +23,8 @@ class App(ttk.Frame):
 
         load_frame = ttk.Frame(self)
         load_frame.pack(anchor=tk.NW, pady=5)
-        self.feat_button = ttk.Button(load_frame, text="Open Feature file", command=self.load_feat)
-        self.feat_button.pack(side=tk.LEFT, padx=(20, 0))
+        feat_btn = ttk.Button(load_frame, text="Open Feature file", command=self.load_feat)
+        feat_btn.pack(side=tk.LEFT, padx=(20, 0))
         self.feat_path_label = ttk.Label(load_frame, text="No Feature file loaded.")
         self.feat_path_label.pack(side=tk.LEFT, padx=(5, 0))
 
@@ -46,19 +46,21 @@ class App(ttk.Frame):
         self.normalize_list = ["No normalize", "MinMax"]
         self.normalize_combo = Combobox(tar_frame, label="Normalize:", values=self.normalize_list, width=15)
         self.normalize_combo.pack_horizontal(padx=5)
-        self.add_button = ttk.Button(tar_frame, text="Add", command=self.add_row, state="disabled")
-        self.add_button.pack(side=tk.LEFT, padx=5)
+        self.add_btn = ttk.Button(tar_frame, text="Add", command=self.add_row, state="disabled")
+        self.add_btn.pack(side=tk.LEFT, padx=5)
         self.delete_btn = ttk.Button(tar_frame, text="Delete Selected", command=self.delete_selected, state="disabled")
         self.delete_btn.pack(side=tk.LEFT, padx=5)
 
         draw_frame = ttk.Frame(self)
         draw_frame.pack(anchor=tk.NW, pady=5)
-        self.draw_button = ttk.Button(draw_frame, text="Draw", command=self.manual_draw, state="disabled")
-        self.draw_button.pack(side=tk.LEFT, padx=5)
+        self.draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw, state="disabled")
+        self.draw_btn.pack(side=tk.LEFT, padx=5)
+        self.clear_btn = ttk.Button(draw_frame, text="Clear", command=self.clear, state="disabled")
+        self.clear_btn.pack(side=tk.LEFT, padx=(5, 0))
         self.export_btn = ttk.Button(draw_frame, text="Export", command=self.export, state="disabled")
         self.export_btn.pack(side=tk.LEFT, padx=(5, 50))
-        self.repeat_draw_button = ttk.Button(draw_frame, text="Repeat Draw", command=self.repeat_draw)
-        self.repeat_draw_button.pack(side=tk.LEFT)
+        import_draw_btn = ttk.Button(draw_frame, text="Import", command=self.import_feat)
+        import_draw_btn.pack(side=tk.LEFT)
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
@@ -121,9 +123,9 @@ class App(ttk.Frame):
         col_list.append(" ")
         self.col_a_combo.set_values(col_list)
         self.col_b_combo.set_values(col_list)
-        self.add_button["state"] = "normal"
+        self.add_btn["state"] = "normal"
         self.delete_btn["state"] = "normal"
-        self.draw_button["state"] = "normal"
+        self.draw_btn["state"] = "normal"
         self.member_combo.set_df(self.src_df)
         self.clear()
 
@@ -181,12 +183,7 @@ class App(ttk.Frame):
         else:
             self.col_b_combo.set_values(self.col_a_combo.get_values())
 
-    def manual_draw(self):
-        self.lineplot.clear_fig()
-        mix_ops = [self.tree.item(row, "values") for row in self.tree.get_children("")]
-        self._draw(mix_ops)
-
-    def repeat_draw(self):
+    def import_feat(self):
         """Open a file dialog to select a feature file.
         Extract the column names from the selected file.
         """
@@ -196,30 +193,30 @@ class App(ttk.Frame):
         if is_file_selected is False:
             return
         in_trk_df = pl.load_pkl()
-        proc_history = in_trk_df.attrs["proc_history"]
-        for history in proc_history:
+        src_cols = []
+        for history in in_trk_df.attrs["proc_history"]:
             if isinstance(history, dict) and history["proc"] == "mix":
                 src_cols = history["source_cols"]
                 break
+        if len(src_cols) == 0:
+            print("No data to import.")
+            return
         for row in src_cols:
             self.tree.insert("", "end", values=row)
-        self._draw(src_cols)
 
-    def _draw(self, rows):
+    def draw(self):
+        self.lineplot.clear_fig()
+        self.feat_df = pd.DataFrame()
+        rows = [self.tree.item(row, "values") for row in self.tree.get_children("")]
         self.source_cols = rows
-        self.clear()
 
         idx = self.tar_df.index
         self.tar_df.index = self.tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
-        print(self.tar_df)
-        print(self.feat_df)
 
         row_num = len(rows)
-
         for i, row in enumerate(rows):
             feat_name, member, col_a, op, col_b, normalize = row
             member_df = self.tar_df.loc[pd.IndexSlice[:, member], :].drop("timestamp", axis=1)
-            print(i, feat_name, member, col_a, op, col_b, normalize)
             data_a = member_df[col_a]
             if op == "+":
                 data_b = member_df[col_b]
@@ -267,6 +264,4 @@ class App(ttk.Frame):
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
 
     def clear(self):
-        """Clear the lineplot."""
-        self.lineplot.clear_fig()
-        self.feat_df = pd.DataFrame()
+        print("clear")

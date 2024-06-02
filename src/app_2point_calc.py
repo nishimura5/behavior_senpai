@@ -48,14 +48,14 @@ class App(ttk.Frame):
         self.thinning_entry = IntEntry(setting_frame, label="Thinning:", default=temp.data["thinning"])
         self.thinning_entry.pack_horizontal(padx=5)
 
-        draw_btn = ttk.Button(setting_frame, text="Draw", command=self.manual_draw)
+        draw_btn = ttk.Button(setting_frame, text="Draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT)
         clear_btn = ttk.Button(setting_frame, text="Clear", command=self.clear)
         clear_btn.pack(side=tk.LEFT, padx=(5, 0))
         self.export_btn = ttk.Button(setting_frame, text="Export", command=self.export, state="disabled")
         self.export_btn.pack(side=tk.LEFT, padx=(5, 50))
-        repeat_btn = ttk.Button(setting_frame, text="Repeat Draw", command=self.repeat_draw)
-        repeat_btn.pack(side=tk.LEFT)
+        import_btn = ttk.Button(setting_frame, text="Import", command=self.import_feat)
+        import_btn.pack(side=tk.LEFT)
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
@@ -133,12 +133,7 @@ class App(ttk.Frame):
         self.point_a.update(point_a)
         self.point_b.update(point_b)
 
-    def manual_draw(self):
-        """Call _draw based on the selected member and calculation code."""
-        calcs = [self.tree.item(row, "values") for row in self.tree.get_children("")]
-        self._draw(calcs)
-
-    def repeat_draw(self):
+    def import_feat(self):
         """Open a file dialog to select a feature file.
         Extract the column names from the selected file.
         """
@@ -149,18 +144,22 @@ class App(ttk.Frame):
         if is_file_selected is False:
             return
         in_trk_df = pl.load_pkl()
-        proc_history = in_trk_df.attrs["proc_history"]
-        for history in proc_history:
+        src_cols = []
+        for history in in_trk_df.attrs["proc_history"]:
             if isinstance(history, dict) and history["proc"] == "2p_vector":
                 src_cols = history["source_cols"]
                 break
-        for col in src_cols:
-            self.tree.insert("", "end", values=col)
-        self._draw(src_cols)
+        if len(src_cols) == 0:
+            print("No data to import.")
+            return
+        for row in src_cols:
+            self.tree.insert("", "end", values=row)
 
-    def _draw(self, rows):
+    def draw(self):
+        self.lineplot.clear()
+        self.feat_df = pd.DataFrame()
+        rows = [self.tree.item(row, "values") for row in self.tree.get_children("")]
         self.source_cols = rows
-        self.clear()
 
         # thinning for plotting
         thinning = self.thinning_entry.get()
@@ -215,9 +214,7 @@ class App(ttk.Frame):
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
 
     def clear(self):
-        """Clear the lineplot and reset the feat_df."""
-        self.lineplot.clear()
-        self.feat_df = pd.DataFrame()
+        print("clear")
 
     def _find_data_dir(self):
         if getattr(sys, "frozen", False):
