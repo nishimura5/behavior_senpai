@@ -6,7 +6,7 @@ from tkinter import ttk
 import pandas as pd
 from gui_parts import CalcCaseEntry, Combobox, IntEntry, TempFile
 from line_plotter import LinePlotter
-from python_senpai import file_inout, keypoints_proc
+from python_senpai import df_attrs, file_inout, keypoints_proc
 from vector_gui_parts import MemberKeypointComboboxesFor2Point
 
 
@@ -140,18 +140,13 @@ class App(ttk.Frame):
         if is_file_selected is False:
             return
         in_trk_df = pl.load_pkl()
-        if in_trk_df.attrs["model"] != self.src_attrs["model"]:
-            print("Model mismatch.")
+        in_trk_attrs = df_attrs.DfAttrs(in_trk_df)
+        in_trk_attrs.load_proc_history()
+        if in_trk_attrs.chk_model(self.src_attrs["model"]) is False:
             return
-        src_cols = []
-        for history in in_trk_df.attrs["proc_history"]:
-            if isinstance(history, dict) and history["proc"] == "2p_vector":
-                src_cols = history["source_cols"]
-                break
-        if len(src_cols) == 0:
-            print("No data to import.")
+        if in_trk_attrs.chk_newest_history_proc("2p_vector") is False:
             return
-        for row in src_cols:
+        for row in in_trk_attrs.get_source_cols():
             self.tree.insert("", "end", values=row)
 
     def draw(self):
