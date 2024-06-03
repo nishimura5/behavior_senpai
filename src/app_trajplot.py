@@ -4,7 +4,7 @@ from tkinter import ttk
 
 import pandas as pd
 from gui_parts import CalcCaseEntry, IntEntry, MemberKeypointComboboxes, TempFile
-from python_senpai import file_inout, keypoints_proc
+from python_senpai import df_attrs, file_inout, keypoints_proc
 from trajectory_plotter import TrajectoryPlotter
 
 
@@ -110,5 +110,5 @@ class App(ttk.Frame):
         export_df.attrs = self.src_attrs
         calc_case = self.calc_case_entry.get_calc_case()
         dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_trj.feat.pkl")
-        history_dict = {"proc": "trajectory", "source_cols": []}
+        history_dict = df_attrs.make_history_dict("trajectory", [])
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)

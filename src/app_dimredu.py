@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from dimredu_plotter import DimensionalReductionPlotter
 from gui_parts import Combobox, IntEntry, MemberKeypointComboboxes, StrEntry, TempFile
-from python_senpai import file_inout, keypoints_proc, time_format
+from python_senpai import df_attrs, file_inout, keypoints_proc, time_format
 
 
 class App(ttk.Frame):
@@ -167,18 +167,18 @@ class App(ttk.Frame):
         if is_file_selected is False:
             return
         in_trk_df = pl.load_pkl()
+        in_trk_attrs = df_attrs.DfAttrs(in_trk_df)
+        in_trk_attrs.load_proc_history()
+        if in_trk_attrs.validate_newest_history_proc("dimredu", self.src_df.attrs["model"]) is False:
+            return
 
         if "features" not in in_trk_df.attrs.keys():
             print("features not found in attrs")
             return
         features = in_trk_df.attrs["features"]
-        proc_history = in_trk_df.attrs["proc_history"]
-        for history in proc_history:
-            if isinstance(history, dict) and history["proc"] == "dimredu":
-                source_cols = history["source_cols"]
-                params = history["params"]
-                break
 
+        source_cols = in_trk_attrs.get_source_cols()
+        params = in_trk_attrs.get_params()
         # load class_data to draw cluster
         class_data = np.zeros(len(in_trk_df))
         for colname in in_trk_df.columns:
@@ -295,11 +295,8 @@ class App(ttk.Frame):
         rand_mode = self.umap_seed_combobox.get_current_value()
         min_dist = self.min_dist_combobox.get_current_value()
         thinning = self.thinning_entry.get()
-        history_dict = {
-            "proc": "dimredu",
-            "source_cols": self.source_cols,
-            "params": {"n_neighbors": n_neighbors, "min_dist": min_dist, "random": rand_mode, "thinning": thinning},
-        }
+        params = {"n_neighbors": n_neighbors, "min_dist": min_dist, "random": rand_mode, "thinning": thinning}
+        history_dict = df_attrs.make_history_dict("dimredu", self.source_cols, params)
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
 
     def filter_word(self, event):

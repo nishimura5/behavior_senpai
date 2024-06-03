@@ -131,7 +131,7 @@ class App(ttk.Frame):
 
     def import_feat(self):
         """Open a file dialog to select a feature file.
-        Extract the column names from the selected file.
+        Import the contents of the attrs.
         """
         calc_case = self.calc_case_entry.get_calc_case()
         pl = file_inout.PickleLoader(self.calc_dir, pkl_type="feature")
@@ -142,9 +142,7 @@ class App(ttk.Frame):
         in_trk_df = pl.load_pkl()
         in_trk_attrs = df_attrs.DfAttrs(in_trk_df)
         in_trk_attrs.load_proc_history()
-        if in_trk_attrs.chk_model(self.src_attrs["model"]) is False:
-            return
-        if in_trk_attrs.chk_newest_history_proc("2p_vector") is False:
+        if in_trk_attrs.validate_newest_history_proc("2p_vector", self.src_attrs["model"]) is False:
             return
         for row in in_trk_attrs.get_source_cols():
             self.tree.insert("", "end", values=row)
@@ -204,7 +202,7 @@ class App(ttk.Frame):
         export_df.attrs = self.src_attrs
         calc_case = self.calc_case_entry.get_calc_case()
         dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_2p.feat.pkl")
-        history_dict = {"proc": "2p_vector", "source_cols": self.source_cols}
+        history_dict = df_attrs.make_history_dict("2p_vector", self.source_cols)
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
 
     def _find_data_dir(self):
