@@ -110,5 +110,5 @@ class App(ttk.Frame):
         export_df.attrs = self.src_attrs
         calc_case = self.calc_case_entry.get_calc_case()
         dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_trj.feat.pkl")
-        history_dict = df_attrs.make_history_dict("trajectory", [])
+        history_dict = df_attrs.make_history_dict("trajectory", [], {})
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)

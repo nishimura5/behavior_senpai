@@ -193,7 +193,7 @@ class App(ttk.Frame):
             return
         self.feat_df = self.feat_df.sort_index()
         file_name = os.path.splitext(self.src_attrs["video_name"])[0]
-        first_keypoint_id = self.tar_df.index.get_level_values(2).values
+        first_keypoint_id = self.tar_df.index.get_level_values(2).values[0]
         timestamp_df = self.tar_df.loc[pd.IndexSlice[:, :, first_keypoint_id], :].droplevel(2)["timestamp"]
         timestamp_df = timestamp_df[~timestamp_df.index.duplicated(keep="last")]
         self.feat_df = self.feat_df[~self.feat_df.index.duplicated(keep="last")]
@@ -202,7 +202,7 @@ class App(ttk.Frame):
         export_df.attrs = self.src_attrs
         calc_case = self.calc_case_entry.get_calc_case()
         dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_2p.feat.pkl")
-        history_dict = df_attrs.make_history_dict("2p_vector", self.source_cols)
+        history_dict = df_attrs.make_history_dict("2p_vector", self.source_cols, {})
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
 
     def _find_data_dir(self):
