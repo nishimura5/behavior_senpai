@@ -232,10 +232,10 @@ class App(ttk.Frame):
         idx = tar_df.index
         if "keypoint" in idx.names:
             levels = [idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)]
-            idx = pd.IndexSlice[:, current_member, current_keypoint]
+            idx_slice = pd.IndexSlice[:, current_member, current_keypoint]
         else:
             levels = [idx.levels[0], idx.levels[1].astype(str)]
-            idx = pd.IndexSlice[:, current_member]
+            idx_slice = pd.IndexSlice[:, current_member]
 
         tar_df.index = tar_df.index.set_levels(levels)
 
@@ -243,8 +243,8 @@ class App(ttk.Frame):
         self.thinning_entry.save_to_temp("thinning")
         plot_df = keypoints_proc.thinning(tar_df, thinning)
 
-        plot_df = plot_df.loc[idx, :].dropna()
-        timestamps = plot_df.loc[idx, "timestamp"].values
+        plot_df = plot_df.loc[idx_slice, :].dropna(how="all", axis=1)
+        timestamps = plot_df["timestamp"].values
         frames = plot_df.index.get_level_values(0).values
         n_neighbors = self.n_neighbors_combobox.get()
         min_dist = self.min_dist_combobox.get()

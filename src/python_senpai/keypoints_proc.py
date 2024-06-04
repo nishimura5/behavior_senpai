@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
@@ -97,12 +99,14 @@ def pca(src_df, tar_cols: list):
 
 
 def umap(src_df, tar_cols: list, n_components: int = 1, n_neighbors: int = 15, min_dist: float = 0.1, seed: int = None):
+    start_time = time.perf_counter()
     if seed is not None:
         n_jobs = 1
     else:
         n_jobs = -1
     model = UMAP(n_components=n_components, n_neighbors=n_neighbors, min_dist=min_dist, random_state=seed, n_jobs=n_jobs)
     reduced_arr = model.fit_transform(src_df[tar_cols])
+    print(f"umap() (keypoints_proc):{time.perf_counter() - start_time:.3f}sec")
     return reduced_arr
 
 
