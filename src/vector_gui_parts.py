@@ -42,6 +42,7 @@ class MemberKeypointComboboxesFor3Point(ttk.Frame):
         self.combo_df.index = self.combo_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
         idx_slice = pd.IndexSlice[:, init_member, :]
         keypoints = self.combo_df.loc[idx_slice, :].index.get_level_values("keypoint").unique().tolist()
+        keypoints.append(" ")
         self.keypoint_combo_a["values"] = keypoints
         self.keypoint_combo_a.current(0)
         self.keypoint_combo_b["values"] = keypoints
@@ -67,6 +68,12 @@ class MemberKeypointComboboxesFor3Point(ttk.Frame):
         keypoint_b = self.keypoint_combo_b.get()
         keypoint_c = self.keypoint_combo_c.get()
         return member, keypoint_a, keypoint_b, keypoint_c
+
+    def set(self, member, point_a, point_b, point_c):
+        self.member_combo.set(member)
+        self.keypoint_combo_a.set(point_a)
+        self.keypoint_combo_b.set(point_b)
+        self.keypoint_combo_c.set(point_c)
 
 
 class MemberKeypointComboboxesFor2Point(ttk.Frame):

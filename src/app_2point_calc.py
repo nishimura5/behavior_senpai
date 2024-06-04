@@ -7,7 +7,7 @@ import pandas as pd
 from gui_parts import CalcCaseEntry, Combobox, IntEntry, TempFile
 from line_plotter import LinePlotter
 from python_senpai import df_attrs, file_inout, keypoints_proc
-from vector_gui_parts import MemberKeypointComboboxesFor2Point
+from vector_gui_parts import MemberKeypointComboboxesFor3Point
 
 
 class App(ttk.Frame):
@@ -24,15 +24,25 @@ class App(ttk.Frame):
 
         tar_frame = ttk.Frame(self)
         tar_frame.pack(pady=5)
-        vals = ["all", "xy_component (AB_x, AB_y)", "norm (|AB|)"]
-        self.calc_type_combo = Combobox(tar_frame, label="Calc:", width=22, values=vals)
+        self.name_and_code = {
+            "distance (|AB|)": "norm",
+            "sin,cos (∠BAC)": "sin_cos",
+            "xy_component (AB_x, AB_y)": "component",
+            "cross_product (AB×AC)": "cross",
+            "dot_product (AB・AC)": "dot",
+            "plus (AB+AC)": "plus",
+            "norms (|AB||AC|)": "norms",
+        }
+        self.point2_list = ["distance (|AB|)", "xy_component (AB_x, AB_y)"]
+        self.point3_list = ["sin,cos (∠BAC)", "cross_product (AB×AC)", "dot_product (AB・AC)", "plus (AB+AC)", "norms (|AB||AC|)"]
+        self.calc_type_combo = Combobox(tar_frame, label="Calc:", width=22, values=list(self.name_and_code.keys()))
         self.calc_type_combo.pack_horizontal(padx=5)
         data_dir = self._find_data_dir()
-        img_path = os.path.join(data_dir, "img", "vector_2.gif")
+        img_path = os.path.join(data_dir, "img", "vector.gif")
         self.img = tk.PhotoImage(file=img_path)
         self.img_label = ttk.Label(tar_frame, image=self.img)
         self.img_label.pack(side=tk.LEFT, padx=5)
-        self.member_combo = MemberKeypointComboboxesFor2Point(tar_frame)
+        self.member_combo = MemberKeypointComboboxesFor3Point(tar_frame)
         self.member_combo.pack(side=tk.LEFT, padx=5)
         add_btn = ttk.Button(tar_frame, text="Add", command=self.add_row)
         add_btn.pack(side=tk.LEFT, padx=5)
@@ -57,16 +67,21 @@ class App(ttk.Frame):
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
-        cols = ("calc", "member", "A", "B")
-        self.tree = ttk.Treeview(tree_frame, columns=cols, show="headings", selectmode="browse")
+        cols = ("calc", "member", "A", "B", "C")
+        self.tree = ttk.Treeview(tree_frame, columns=cols, height=6, show="headings", selectmode="browse")
         for col in cols:
             self.tree.heading(col, text=col)
         self.tree.column("calc", width=300)
         self.tree.column("member", width=200)
         self.tree.column("A", width=50)
         self.tree.column("B", width=50)
-        self.tree.pack()
+        self.tree.column("C", width=50)
+        self.tree.pack(side=tk.LEFT)
         self.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
+
+        scroll = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
+        scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        self.tree.configure(yscrollcommand=scroll.set)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
@@ -91,37 +106,30 @@ class App(ttk.Frame):
         self.lineplot.set_trk_df(self.src_df)
         self.lineplot.set_vcap(self.cap)
 
-    def _combo_to_calc_code(self, calc):
-        code = ""
-        if calc == "xy_component (AB_x, AB_y)":
-            code = "component"
-        elif calc == "norm (|AB|)":
-            code = "norm"
-        elif calc == "all":
-            code = "all"
-        return code
-
     def select_tree_row(self, event):
         """Handle the selection of a row in the tree."""
         if len(self.tree.selection()) == 0:
             return
         selected = self.tree.selection()[0]
-        calc, member, point_a, point_b = self.tree.item(selected, "values")
+        calc, member, point_a, point_b, point_c = self.tree.item(selected, "values")
         self.calc_type_combo.set(calc)
-        self.member_combo.set(member, point_a, point_b)
+        self.member_combo.set(member, point_a, point_b, point_c)
 
     def add_row(self):
         calc = self.calc_type_combo.get()
-        member, point_a, point_b = self.member_combo.get_selected()
+        member, point_a, point_b, point_c = self.member_combo.get_selected()
+        # Ignore point_c if calc uses 2-point-vector.
+        if calc in self.point2_list and point_c != " ":
+            point_c = " "
         tar_list = [k for k in self.tree.get_children("")]
         for i, tar in enumerate(tar_list):
-            tree_calc, tree_member, tree_point_a, tree_point_b = self.tree.item(tar, "values")
+            tree_calc, tree_member, tree_point_a, tree_point_b, tree_point_c = self.tree.item(tar, "values")
 
             # skip if exactly same row
-            if tree_calc == calc and tree_member == member and tree_point_a == point_a and tree_point_b == point_b:
+            if tree_calc == calc and tree_member == member and tree_point_a == point_a and tree_point_b == point_b and tree_point_c == point_c:
                 return
 
-        self.tree.insert("", "end", values=(calc, member, point_a, point_b))
+        self.tree.insert("", "end", values=(calc, member, point_a, point_b, point_c))
 
     def delete_selected(self):
         if len(self.tree.selection()) == 0:
@@ -142,7 +150,7 @@ class App(ttk.Frame):
         in_trk_df = pl.load_pkl()
         in_trk_attrs = df_attrs.DfAttrs(in_trk_df)
         in_trk_attrs.load_proc_history()
-        if in_trk_attrs.validate_newest_history_proc("2p_vector", self.src_attrs["model"]) is False:
+        if in_trk_attrs.validate_newest_history_proc("points", self.src_attrs["model"]) is False:
             return
         for row in in_trk_attrs.get_source_cols():
             self.tree.insert("", "end", values=row)
@@ -161,17 +169,24 @@ class App(ttk.Frame):
         idx = thinned_df.index
         thinned_df.index = thinned_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
-        for calc, member, point_a, point_b in rows:
-            code = self._combo_to_calc_code(calc)
+        for calc, member, point_a, point_b, point_c in rows:
+            code = self.name_and_code[calc]
             member_df = thinned_df.loc[pd.IndexSlice[:, member], :]
-            if code == "component":
-                plot_df = keypoints_proc.calc_xy_component(member_df, point_a, point_b)
-            elif code == "norm":
+            if code == "norm":
                 plot_df = keypoints_proc.calc_norm(member_df, point_a, point_b)
-            elif code == "all":
-                xy_df = keypoints_proc.calc_xy_component(member_df, point_a, point_b)
-                norm_df = keypoints_proc.calc_norm(member_df, point_a, point_b)
-                plot_df = pd.concat([xy_df, norm_df], axis=1)
+            elif code == "sin_cos":
+                plot_df = keypoints_proc.calc_sin_cos(member_df, point_a, point_b, point_c)
+            elif code == "component":
+                plot_df = keypoints_proc.calc_xy_component(member_df, point_a, point_b)
+            elif code == "cross":
+                plot_df = keypoints_proc.calc_cross_product(member_df, point_a, point_b, point_c)
+            elif code == "dot":
+                plot_df = keypoints_proc.calc_dot_product(member_df, point_a, point_b, point_c)
+            elif code == "plus":
+                plot_df = keypoints_proc.calc_plus(member_df, point_a, point_b, point_c)
+            elif code == "norms":
+                plot_df = keypoints_proc.calc_norms(member_df, point_a, point_b, point_c)
+
             col_names = plot_df.columns.tolist()
             feat_col_names = self.feat_df.columns.tolist()
             duplicate_cols = [col for col in col_names if col in feat_col_names]
@@ -201,8 +216,8 @@ class App(ttk.Frame):
         export_df = export_df.dropna(how="all")
         export_df.attrs = self.src_attrs
         calc_case = self.calc_case_entry.get_calc_case()
-        dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_2p.feat.pkl")
-        history_dict = df_attrs.make_history_dict("2p_vector", self.source_cols, {})
+        dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_pts.feat.pkl")
+        history_dict = df_attrs.make_history_dict("points", self.source_cols, {})
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
 
     def _find_data_dir(self):
