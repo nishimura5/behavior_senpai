@@ -2,14 +2,13 @@ import os
 import tkinter as tk
 from tkinter import messagebox, ttk
 
-import app_2point_calc
-import app_3point_calc
 import app_area_filter
 import app_detect
 import app_dimredu
 import app_feat_mix
 import app_keypoint_samples
 import app_member_edit
+import app_points_calc
 import app_scene_table
 import app_smoothing
 import app_track_list
@@ -66,16 +65,8 @@ class App(ttk.Frame):
         calc_label.pack(side=tk.TOP, pady=(8, 0))
         k2f_button = ttk.Button(buttons_frame, text="Trajectory", command=lambda: self.launch_window(k2t.App))
         k2f_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        vector_frame = ttk.Frame(buttons_frame)
-        vector_frame.pack(side=tk.TOP, fill=tk.X, pady=4)
-        two_point_button = ttk.Button(
-            vector_frame, text="2 point", command=lambda: self.launch_window(app_2point_calc.App, dialog_size="1200x750"), width=6
-        )
-        two_point_button.pack(side=tk.LEFT, fill=tk.X, padx=(0, 4))
-        three_point_button = ttk.Button(
-            vector_frame, text="3 point", command=lambda: self.launch_window(app_3point_calc.App, dialog_size="1200x750"), width=6
-        )
-        three_point_button.pack(side=tk.TOP, fill=tk.X)
+        two_point_button = ttk.Button(buttons_frame, text="Points", command=lambda: self.launch_window(app_points_calc.App, dialog_size="1200x750"))
+        two_point_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         feat_mix_button = ttk.Button(buttons_frame, text="Mix", command=lambda: self.launch_window(app_feat_mix.App, dialog_size="1300x900"))
         feat_mix_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         dimredu_button = ttk.Button(
