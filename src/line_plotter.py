@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import matplotlib
 import matplotlib.pyplot as plt
@@ -46,6 +48,7 @@ class LinePlotter:
         self.vcap = vcap
 
     def set_trk_df(self, trk_df):
+        start_time = time.perf_counter()
         self.draw_anno = True
         if trk_df.attrs["model"] == "YOLOv8 x-pose-p6":
             self.anno = yolo_drawer.Annotate()
@@ -57,11 +60,8 @@ class LinePlotter:
             self.anno = rtmpose_drawer.Annotate()
             cols_for_anno = ["x", "y", "score"]
         self.anno_df = trk_df.reset_index().set_index(["timestamp", "member", "keypoint"]).loc[:, cols_for_anno]
-        idx = self.anno_df.index
-        self.anno_df.index = self.anno_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
-        # sortによってkeypointの順番が変わる
-
-    #        self.anno_df = self.anno_df.sort_index(level=['timestamp', 'member'])
+        self.anno_time_member_indexes = self.anno_df.index.droplevel(2).unique()
+        print(f"set_trk_df() (line_plotter.LinePlotter): {time.perf_counter() - start_time:.3f}sec")
 
     def set_plot(self, plot_df, member: str, data_col_names: list):
         self.member = member
@@ -186,7 +186,7 @@ class LinePlotter:
             return
 
         if self.draw_anno is True:
-            if (timestamp_msec, self.member) not in self.anno_df.index:
+            if (timestamp_msec, self.member) not in self.anno_time_member_indexes:
                 return
             tar_df = self.anno_df.loc[pd.IndexSlice[timestamp_msec, self.member, :], :]
             kps = tar_df.to_numpy()
