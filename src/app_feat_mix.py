@@ -34,6 +34,7 @@ class App(ttk.Frame):
         self.name_entry.pack_horizontal(padx=5)
         self.member_combo = Combobox(tar_frame, label="Member:", values=[""], width=5)
         self.member_combo.pack_horizontal(padx=5)
+        self.member_combo.set_selected_bind(self.selected_member)
         self.col_a_combo = Combobox(tar_frame, label="col A:", values=["Select column"], width=25)
         self.col_a_combo.pack_horizontal(padx=5)
         op_list = ["/", "-", "*", "+", " "]
@@ -120,15 +121,11 @@ class App(ttk.Frame):
         self.tar_df = self.tar_df[~self.tar_df.index.duplicated(keep="last")]
 
         # update GUI
-        col_list = self.tar_df.columns.tolist()
-        col_list.remove("timestamp")
-        col_list.append(" ")
-        self.col_a_combo.set_values(col_list)
-        self.col_b_combo.set_values(col_list)
+        self.member_combo.set_df(self.tar_df)
+        self._set_col_combos(self.member_combo.get())
         self.add_btn["state"] = "normal"
         self.delete_btn["state"] = "normal"
         self.draw_btn["state"] = "normal"
-        self.member_combo.set_df(self.src_df)
 
     def select_tree_row(self, event):
         """Handle the selection of a row in the tree."""
@@ -183,6 +180,16 @@ class App(ttk.Frame):
             self.col_b_combo.set_values([" "])
         else:
             self.col_b_combo.set_values(self.col_a_combo.get_values())
+
+    def selected_member(self, event):
+        self._set_col_combos(self.member_combo.get())
+
+    def _set_col_combos(self, member):
+        col_list = self.tar_df.loc[pd.IndexSlice[:, member], :].dropna(how="all", axis=1).columns.tolist()
+        col_list.remove("timestamp")
+        col_list.append(" ")
+        self.col_a_combo.set_values(col_list)
+        self.col_b_combo.set_values(col_list)
 
     def import_feat(self):
         """Open a file dialog to select a feature file.
