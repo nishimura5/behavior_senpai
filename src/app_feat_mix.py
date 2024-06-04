@@ -63,7 +63,7 @@ class App(ttk.Frame):
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
         cols = ("feature name", "member", "col A", "op", "col B", "normalize")
-        self.tree = ttk.Treeview(tree_frame, columns=cols, show="headings", selectmode="browse")
+        self.tree = ttk.Treeview(tree_frame, columns=cols, height=6, show="headings", selectmode="browse")
         for col in cols:
             self.tree.heading(col, text=col)
         self.tree.column("feature name", width=200)
@@ -72,8 +72,12 @@ class App(ttk.Frame):
         self.tree.column("op", width=50)
         self.tree.column("col B", width=300)
         self.tree.column("normalize", width=200)
-        self.tree.pack()
+        self.tree.pack(side=tk.LEFT)
         self.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
+
+        scroll = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
+        scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        self.tree.configure(yscrollcommand=scroll.set)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)

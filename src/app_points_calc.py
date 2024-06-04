@@ -11,11 +11,11 @@ from vector_gui_parts import MemberKeypointComboboxesFor3Point
 
 
 class App(ttk.Frame):
-    """Application for calculating 2-point vectors."""
+    """Application for calculating vectors."""
 
     def __init__(self, master, args):
         super().__init__(master)
-        master.title("2 Point Calculation")
+        master.title("Points Calculation")
         self.pack(padx=10, pady=10)
 
         temp = TempFile()
