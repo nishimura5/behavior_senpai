@@ -28,7 +28,7 @@ class App(ttk.Frame):
         super().__init__(master)
         master.title("Behavior Senpai")
         self.pack(padx=14, pady=14)
-        self.bind("<Expose>", self.load)
+        self.bind("<Map>", self.load)
 
         temp = TempFile()
         w_width, w_height = temp.get_top_window_size()
