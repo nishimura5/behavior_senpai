@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
 
-import pandas as pd
-
 
 class MemberKeypointComboboxesFor3Point(ttk.Frame):
     def __init__(self, master):

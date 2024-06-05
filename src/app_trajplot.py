@@ -15,6 +15,7 @@ class App(ttk.Frame):
         super().__init__(master)
         master.title("Trajectory Plot")
         self.pack(padx=10, pady=10)
+        self.bind("<Map>", lambda event: self._load(event, args))
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
@@ -50,9 +51,7 @@ class App(ttk.Frame):
 
         self.traj.pack(plot_frame)
 
-        self._load(args)
-
-    def _load(self, args):
+    def _load(self, event, args):
         self.src_df = args["src_df"]
         self.cap = args["cap"]
         self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")

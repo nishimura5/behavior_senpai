@@ -32,7 +32,7 @@ def load_track_file(tar_path, allow_calculated_track_file=False):
 
 class PickleLoader:
     def __init__(self, init_dir=None, pkl_type="track", org_path=None):
-        if init_dir == None or init_dir == "" or os.path.exists(init_dir) is False:
+        if init_dir is None or init_dir == "" or os.path.exists(init_dir) is False:
             self.init_dir = "~"
         else:
             self.init_dir = init_dir

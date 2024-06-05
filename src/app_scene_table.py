@@ -16,6 +16,7 @@ class App(ttk.Frame):
         super().__init__(master)
         master.title("Scene Table")
         self.pack(padx=10, pady=10)
+        self.bind("<Map>", lambda event: self._load(event, args))
 
         temp = TempFile()
         width, height, dpi = temp.get_scene_table_graph_size()
@@ -96,9 +97,8 @@ class App(ttk.Frame):
 
         self.dst_df = None
         self.history = "scene_table_edit"
-        self._load(args)
 
-    def _load(self, args):
+    def _load(self, event, args):
         self.src_df = args["src_df"]
         self.cap = args["cap"]
         src_attrs = self.src_df.attrs

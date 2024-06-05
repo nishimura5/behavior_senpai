@@ -17,6 +17,7 @@ class App(ttk.Frame):
         super().__init__(master)
         master.title("Points Calculation")
         self.pack(padx=10, pady=10)
+        self.bind("<Map>", lambda event: self._load(event, args))
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
@@ -88,9 +89,7 @@ class App(ttk.Frame):
         self.lineplot.pack(plot_frame)
         self.lineplot.set_single_ax()
 
-        self._load(args)
-
-    def _load(self, args):
+    def _load(self, event, args):
         self.src_df = args["src_df"]
         self.cap = args["cap"]
         self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")

@@ -16,9 +16,7 @@ class App(ttk.Frame):
         end_str = time_format.msec_to_timestr(args["time_span_msec"][1])
         master.title(f"Dimension Reduction ({args['trk_pkl_name']} {start_str} to {end_str})")
         self.pack(padx=10, pady=10)
-
-        # print window size for debug
-        print("window size:", master.winfo_width(), master.winfo_height())
+        self.bind("<Map>", lambda event: self._load(event, args))
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
@@ -111,10 +109,9 @@ class App(ttk.Frame):
         self.drp.pack(plot_frame)
         self.drp.set_init_class_names(self.cluster_names)
 
-        self._load(args)
         self.feat_df = None
 
-    def _load(self, args):
+    def _load(self, event, args):
         self.src_df = args["src_df"]
         self.cap = args["cap"]
         self.time_min, self.time_max = args["time_span_msec"]

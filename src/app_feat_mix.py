@@ -15,6 +15,7 @@ class App(ttk.Frame):
         end_str = time_format.msec_to_timestr(args["time_span_msec"][1])
         master.title(f"Feature Mixer ({args['trk_pkl_name']} {start_str} to {end_str})")
         self.pack(padx=10, pady=10)
+        self.bind("<Map>", lambda event: self._load(event, args))
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
@@ -84,9 +85,7 @@ class App(ttk.Frame):
         plot_frame.pack(pady=5)
         self.lineplot.pack(plot_frame)
 
-        self._load(args)
-
-    def _load(self, args):
+    def _load(self, event, args):
         self.src_df = args["src_df"]
         self.cap = args["cap"]
         self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")

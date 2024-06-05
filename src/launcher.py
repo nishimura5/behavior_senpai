@@ -28,6 +28,7 @@ class App(ttk.Frame):
         super().__init__(master)
         master.title("Behavior Senpai")
         self.pack(padx=14, pady=14)
+        self.bind("<Expose>", self.load)
 
         temp = TempFile()
         w_width, w_height = temp.get_top_window_size()
@@ -43,7 +44,6 @@ class App(ttk.Frame):
         v2k_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         tl_button = ttk.Button(buttons_frame, text="Track list", command=lambda: self.launch_window(app_track_list.App, grab=True))
         tl_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-
         edit_label = ttk.Label(buttons_frame, text="Edit")
         edit_label.pack(side=tk.TOP, pady=(8, 0))
         member_edit_button = ttk.Button(
@@ -63,7 +63,7 @@ class App(ttk.Frame):
 
         calc_label = ttk.Label(buttons_frame, text="Feature")
         calc_label.pack(side=tk.TOP, pady=(8, 0))
-        k2f_button = ttk.Button(buttons_frame, text="Trajectory", command=lambda: self.launch_window(k2t.App))
+        k2f_button = ttk.Button(buttons_frame, text="Trajectory", command=lambda: self.launch_window(k2t.App, dialog_size="1200x800"))
         k2f_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         two_point_button = ttk.Button(buttons_frame, text="Points", command=lambda: self.launch_window(app_points_calc.App, dialog_size="1200x800"))
         two_point_button.pack(side=tk.TOP, fill=tk.X, pady=4)
@@ -78,7 +78,6 @@ class App(ttk.Frame):
         pref_label.pack(side=tk.TOP, pady=(8, 0))
         pref_list_button = ttk.Button(buttons_frame, text="Preference", command=lambda: self.launch_window(pref_list.App))
         pref_list_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-
         pkl_to_csv_button = ttk.Button(buttons_frame, text="PKL to CSV tool", command=self.pkl_to_csv)
         pkl_to_csv_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
@@ -130,9 +129,8 @@ class App(ttk.Frame):
         self.pkl_path = ""
         self.pkl_dir = None
         self.src_df = None
-        self.load()
 
-    def load(self):
+    def load(self, event):
         pkl_path = self.pkl_selector.get_trk_path()
         load_df = file_inout.load_track_file(pkl_path)
         if load_df is None:
@@ -172,10 +170,10 @@ class App(ttk.Frame):
                 print_str += f"{key}: {value}\n"
         self.attrs_textbox.insert(tk.END, print_str)
 
-    def launch_window(self, app, dialog_size=None, edit_df=False, grab=False):
+    def launch_window(self, app, dialog_size="", edit_df=False, grab=False):
+        window_pos = self.master.geometry().split("+")[1:]
         dlg_modal = tk.Toplevel(self)
-        if dialog_size is not None:
-            dlg_modal.geometry(dialog_size)
+        dlg_modal.geometry(dialog_size + f"+{window_pos[0]}+{window_pos[1]}")
         dlg_modal.focus_set()
         if grab is True:
             dlg_modal.grab_set()
@@ -243,8 +241,10 @@ def quit(root):
 
 
 def main():
+    print("Behavior Senpai")
     bg_color = "#e8e8e8"
     root = ttkthemes.ThemedTk(theme="breeze")
+    root.geometry("+100+100")
     root.configure(background=bg_color)
     root.option_add("*background", bg_color)
     root.option_add("*Canvas.background", bg_color)
