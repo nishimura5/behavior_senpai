@@ -17,6 +17,9 @@ class App(ttk.Frame):
         master.title(f"Dimension Reduction ({args['trk_pkl_name']} {start_str} to {end_str})")
         self.pack(padx=10, pady=10)
 
+        # print window size for debug
+        print("window size:", master.winfo_width(), master.winfo_height())
+
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
         self.calc_case = temp.data["calc_case"]
@@ -244,6 +247,8 @@ class App(ttk.Frame):
         plot_df = keypoints_proc.thinning(tar_df, thinning)
 
         plot_df = plot_df.loc[idx_slice, :].dropna(how="all", axis=1)
+        # how="all" or how="any"
+        plot_df = plot_df.dropna(subset=cols, how="all")
         timestamps = plot_df["timestamp"].values
         frames = plot_df.index.get_level_values(0).values
         n_neighbors = self.n_neighbors_combobox.get()
