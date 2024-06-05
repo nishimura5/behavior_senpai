@@ -99,6 +99,8 @@ class DimensionalReductionPlotter:
         self.cluster_ax.cla()
         # extract class_names which are used in the class_data
         classes = [self.class_names[int(c)] for c in np.unique(self.class_data)]
+        if size is None:
+            size = np.ones(len(self.timestamps)) * 5
 
         scatter_plot = self.cluster_ax.scatter(
             self.plot_mat[:, 0], self.plot_mat[:, 1], c=self.class_data, picker=self.picker_range, cmap="tab10", s=size
@@ -142,15 +144,14 @@ class DimensionalReductionPlotter:
         if x is None or y is None or tar_ax == self.cluster_ax:
             return
 
-        if event.button == 1:
-            timestamp_msec = float(x)
-            idx = np.abs(self.timestamps - timestamp_msec).argmin()
-            size = np.ones(len(self.timestamps)) * 5
-            size[idx] = 40
-            self._update_scatter(size)
-        elif event.button == 3:
-            timestamp_msec = self.vcap.get(cv2.CAP_PROP_POS_MSEC)
-            timestamp_msec += 100
+        timestamp_msec = float(x)
+        idx = np.abs(self.timestamps - timestamp_msec).argmin()
+        if event.button == 3:
+            self.class_data[idx] = self.cluster_number
+            self.line_plot.set_data(self.timestamps, self.class_data)
+        size = np.ones(len(self.timestamps)) * 5
+        size[idx] = 40
+        self._update_scatter(size)
 
         self.vline.set_xdata([timestamp_msec])
         self.canvas.draw_idle()

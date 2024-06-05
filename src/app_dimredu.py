@@ -77,7 +77,7 @@ class App(ttk.Frame):
 
         draw_frame = ttk.Frame(left_frame)
         draw_frame.pack(anchor=tk.NW, fill=tk.X, expand=True, padx=5)
-        vals = [1] + [str(i) for i in range(10, 51, 10)]
+        vals = [0.1, 1, 10, 30, 50]
         self.picker_range_combobox = Combobox(draw_frame, label="Picker range:", values=vals)
         self.picker_range_combobox.set_selected_bind(self.combo_selected)
         self.picker_range_combobox.pack_vertical(pady=5)
@@ -261,7 +261,7 @@ class App(ttk.Frame):
         self.export_button["state"] = tk.NORMAL
 
     def combo_selected(self, event):
-        self.drp.set_picker_range(int(self.picker_range_combobox.get()))
+        self.drp.set_picker_range(float(self.picker_range_combobox.get()))
 
     def rename_cluster(self):
         new_name = self.cluster_name_entry.get()
