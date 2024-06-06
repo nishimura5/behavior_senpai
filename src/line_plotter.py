@@ -175,12 +175,14 @@ class LinePlotter:
             timestamp_msec += 100
 
         # DataFrameにあるself.timestampsからクリックで得たtimestamp_msecに最も近い値を抽出
-        timestamp_msec = self.timestamps[np.fabs(self.timestamps - timestamp_msec).argsort()[:1]][0]
+        timestamp_msec = self.timestamps[np.fabs(self.timestamps - timestamp_msec).argmin()]
 
         self.vline.set_xdata([timestamp_msec])
         self.line_ax.figure.canvas.draw_idle()
 
         time_format.copy_to_clipboard(timestamp_msec)
+        if self.vcap.isOpened() is False:
+            return
         ret, frame = self.vcap.read_at(timestamp_msec)
         if ret is False:
             return
@@ -196,7 +198,7 @@ class LinePlotter:
             frame = self.anno.draw()
 
         if frame.shape[0] >= 1080:
-            resize_height = 720
+            resize_height = 800
             resize_width = int(frame.shape[1] * resize_height / frame.shape[0])
             frame = cv2.resize(frame, (resize_width, resize_height))
         if ret is True:

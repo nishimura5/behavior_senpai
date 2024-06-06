@@ -55,7 +55,7 @@ class App(ttk.Frame):
         self.thinning_entry = IntEntry(combos_frame, label="Thinning:", default=temp.data["thinning"])
         self.thinning_entry.pack_vertical(pady=5)
 
-        vals = [5, 10, 20, 50, 100, 200]
+        vals = [5, 10, 20, 30, 50, 100, 200]
         self.n_neighbors_combobox = Combobox(combos_frame, label="N_neighbors:", values=vals)
         self.n_neighbors_combobox.pack_vertical(pady=5)
 
@@ -117,6 +117,7 @@ class App(ttk.Frame):
         self.time_min, self.time_max = args["time_span_msec"]
         self.pkl_dir = args["pkl_dir"]
         self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")
+        self.drp.set_trk_df(self.src_df)
         self.drp.set_vcap(self.cap)
 
         # UIの更新
@@ -257,6 +258,7 @@ class App(ttk.Frame):
             seed = 42
         reduced_arr = keypoints_proc.umap(plot_df, tar_cols=cols, n_components=2, n_neighbors=int(n_neighbors), min_dist=float(min_dist), seed=seed)
 
+        self.drp.set_member(current_member)
         self.drp.draw(reduced_arr, timestamps, frames)
         self.export_button["state"] = tk.NORMAL
 

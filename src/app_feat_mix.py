@@ -59,8 +59,8 @@ class App(ttk.Frame):
         self.draw_btn.pack(side=tk.LEFT, padx=5)
         self.export_btn = ttk.Button(draw_frame, text="Export", command=self.export, state="disabled")
         self.export_btn.pack(side=tk.LEFT, padx=(5, 50))
-        import_draw_btn = ttk.Button(draw_frame, text="Import", command=self.import_feat)
-        import_draw_btn.pack(side=tk.LEFT)
+        self.import_btn = ttk.Button(draw_frame, text="Import", command=self.import_feat, state="disabled")
+        self.import_btn.pack(side=tk.LEFT)
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
@@ -125,6 +125,7 @@ class App(ttk.Frame):
         self.add_btn["state"] = "normal"
         self.delete_btn["state"] = "normal"
         self.draw_btn["state"] = "normal"
+        self.import_btn["state"] = "normal"
 
     def select_tree_row(self, event):
         """Handle the selection of a row in the tree."""
@@ -205,6 +206,12 @@ class App(ttk.Frame):
         if in_trk_attrs.validate_newest_history_proc("mix", self.src_attrs["model"]) is False:
             return
         for row in in_trk_attrs.get_source_cols():
+            if row[2] not in self.tar_df.columns and row[2] != " ":
+                print(f"Column not found: {row[2]}")
+                continue
+            if row[4] not in self.tar_df.columns and row[4] != " ":
+                print(f"Column not found: {row[4]}")
+                continue
             self.tree.insert("", "end", values=row)
 
     def draw(self):
