@@ -38,7 +38,7 @@ class PickleLoader:
             self.init_dir = init_dir
 
         if pkl_type == "track":
-            self.filetypes = [("trk-pkl files", "*.trk.pkl"), ("pkl files", "*.pkl")]
+            self.filetypes = [("pkl files", "*.pkl"), ("trk-pkl files", "*.trk.pkl")]
         elif pkl_type == "feature":
             self.filetypes = [("feat-pkl files", "*.feat.pkl"), ("pkl files", "*.pkl")]
         elif pkl_type == "behavioral_coding":

@@ -130,7 +130,7 @@ class App(ttk.Frame):
         self.pkl_dir = None
         self.src_df = None
 
-    def load(self, event):
+    def load(self, event=None):
         pkl_path = self.pkl_selector.get_trk_path()
         load_df = file_inout.load_track_file(pkl_path)
         if load_df is None:

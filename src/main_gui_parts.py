@@ -18,7 +18,7 @@ class PklSelector(ttk.Frame):
         # 一時ファイルからtrkのパスを取得
         tmp = TempFile()
         data = tmp.load()
-        self.trk_path = data['trk_path']
+        self.trk_path = data["trk_path"]
 
         self.side = tk.LEFT
         self.prev_pkl_btn = ttk.Button(master, text="<", width=1, state=tk.DISABLED)
@@ -31,23 +31,33 @@ class PklSelector(ttk.Frame):
         self.pkl_path_label = ttk.Label(master, text="No Track file loaded")
         self.pkl_path_label.pack(side=tk.LEFT, padx=(5, 0))
 
-        if self.trk_path != '':
+        if self.trk_path != "":
             self.pkl_path_label["text"] = self.trk_path
 
     def _select_trk(self):
         init_dir = os.path.dirname(self.trk_path)
-        self.trk_path = file_inout.open_pkl(init_dir, self.trk_path)
-        self._load_pkl()
+        pl = file_inout.PickleLoader(init_dir=init_dir, org_path=self.trk_path)
+        is_file_selected = pl.show_open_dialog()
+        if is_file_selected:
+            self.trk_path = pl.tar_path
+            self.pkl_path_label["text"] = self.trk_path
+            temp = TempFile()
+            data = temp.load()
+            data["trk_path"] = pl.tar_path
+            temp.save(data)
+        else:
+            self.trk_path = ""
+            self.pkl_path_label["text"] = "No Track file loaded"
 
     def _load_pkl(self):
         if self.trk_path:
             self.pkl_path_label["text"] = self.trk_path
             tmp = TempFile()
             data = tmp.load()
-            data['trk_path'] = self.trk_path
+            data["trk_path"] = self.trk_path
             tmp.save(data)
         else:
-            self.trk_path = ''
+            self.trk_path = ""
             self.pkl_path_label["text"] = "No Track file loaded"
 
     def rename_pkl_path_label(self, new_name):
@@ -55,17 +65,17 @@ class PklSelector(ttk.Frame):
 
     def set_prev_next(self, attr_dict):
         dir_path = os.path.dirname(self.trk_path)
-        if 'prev' in attr_dict and attr_dict['prev'] != '' and attr_dict['prev'] is not None:
+        if "prev" in attr_dict and attr_dict["prev"] != "" and attr_dict["prev"] is not None:
             self.prev_pkl_btn["state"] = tk.NORMAL
-            self.prev_path = os.path.join(dir_path, attr_dict['prev'])
+            self.prev_path = os.path.join(dir_path, attr_dict["prev"])
         else:
-            self.prev_path = ''
+            self.prev_path = ""
             self.prev_pkl_btn["state"] = tk.DISABLED
-        if 'next' in attr_dict and attr_dict['next'] != '' and attr_dict['next'] is not None:
-            self.next_path = os.path.join(dir_path, attr_dict['next'])
+        if "next" in attr_dict and attr_dict["next"] != "" and attr_dict["next"] is not None:
+            self.next_path = os.path.join(dir_path, attr_dict["next"])
             self.next_pkl_btn["state"] = tk.NORMAL
         else:
-            self.next_path = ''
+            self.next_path = ""
             self.next_pkl_btn["state"] = tk.DISABLED
 
     def _load_prev_pkl(self):
@@ -78,7 +88,7 @@ class PklSelector(ttk.Frame):
 
     def get_trk_path(self):
         if os.path.exists(self.trk_path) is False:
-            print(f"\"{self.trk_path}\" is not found.")
+            print(f'"{self.trk_path}" is not found.')
         return self.trk_path
 
     def set_command(self, cmd):
@@ -98,12 +108,7 @@ class VideoViewer(ttk.Frame):
         self.time_min = 0
         self.time_max = 100
 
-        self.slider = ttk.Scale(
-            self,
-            from_=self.time_min,
-            to=self.time_max,
-            orient=tk.HORIZONTAL,
-            command=self.on_slider_changed)
+        self.slider = ttk.Scale(self, from_=self.time_min, to=self.time_max, orient=tk.HORIZONTAL, command=self.on_slider_changed)
         self.slider.pack(fill=tk.X, padx=5)
         self.time_max = None
 
@@ -149,23 +154,23 @@ class CapCanvas(tk.Canvas):
         self.config(width=canvas_width, height=self.height)
 
     def set_trk(self, src_df):
-        if src_df.attrs['model'] == "YOLOv8 x-pose-p6":
+        if src_df.attrs["model"] == "YOLOv8 x-pose-p6":
             self.anno = yolo_drawer.Annotate()
-            cols_for_anno = ['x', 'y', 'conf']
-        elif src_df.attrs['model'] == "MediaPipe Holistic":
+            cols_for_anno = ["x", "y", "conf"]
+        elif src_df.attrs["model"] == "MediaPipe Holistic":
             self.anno = mediapipe_drawer.Annotate()
-            cols_for_anno = ['x', 'y', 'z']
-        elif src_df.attrs['model'] == "MMPose RTMPose-x":
+            cols_for_anno = ["x", "y", "z"]
+        elif src_df.attrs["model"] == "MMPose RTMPose-x":
             self.anno = rtmpose_drawer.Annotate()
-            cols_for_anno = ['x', 'y', 'score']
-        self.anno_df = src_df.reset_index().set_index(['timestamp', 'member', 'keypoint']).loc[:, cols_for_anno]
-        self.timestamps = self.anno_df.index.get_level_values('timestamp').unique().to_numpy()
+            cols_for_anno = ["x", "y", "score"]
+        self.anno_df = src_df.reset_index().set_index(["timestamp", "member", "keypoint"]).loc[:, cols_for_anno]
+        self.timestamps = self.anno_df.index.get_level_values("timestamp").unique().to_numpy()
 
     def scale_trk(self):
-        self.anno_df.loc[:, ['x', 'y']] *= self.scale
+        self.anno_df.loc[:, ["x", "y"]] *= self.scale
 
     def update(self, msec):
-        msec = self.timestamps[np.fabs(self.timestamps-msec).argsort()[:1]][0]
+        msec = self.timestamps[np.fabs(self.timestamps - msec).argsort()[:1]][0]
         ok, image_rgb = self.cap.read_at(msec, scale=self.scale, rgb=True)
         if ok is False:
             return

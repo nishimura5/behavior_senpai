@@ -1,18 +1,21 @@
-import sys
 import os
+import sys
 
 import pandas as pd
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from python_senpai import keypoints_proc
-from python_senpai import file_inout
-
+from python_senpai import file_inout, keypoints_proc
 
 # macは/Users/username
 video_dir = "%USERPROFILE%/Videos"
-trk_path = file_inout.open_pkl(video_dir)
+pl = file_inout.PickleLoader(init_dir=video_dir)
+is_file_selected = pl.show_open_dialog()
+if is_file_selected is False:
+    print("No file selected.")
+    sys.exit()
+trk_path = pl.tar_path
+trk_df = pl.load_pkl()
 
-trk_df = pd.read_pickle(trk_path)
 print("[Head]")
 if keypoints_proc.has_keypoint(trk_df) is True:
     print(trk_df.head())
