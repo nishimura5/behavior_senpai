@@ -106,7 +106,7 @@ def umap(src_df, tar_cols: list, n_components: int = 1, n_neighbors: int = 15, m
         n_jobs = -1
     model = UMAP(n_components=n_components, n_neighbors=n_neighbors, min_dist=min_dist, random_state=seed, n_jobs=n_jobs)
     reduced_arr = model.fit_transform(src_df[tar_cols])
-    print(f"umap() (keypoints_proc):{time.perf_counter() - start_time:.3f}sec")
+    print(f"umap() (keypoints_proc):{time.perf_counter() - start_time:.3f}sec / {src_df.shape[0]:,}plots")
     return reduced_arr
 
 

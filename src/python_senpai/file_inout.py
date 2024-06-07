@@ -1,3 +1,4 @@
+import inspect
 import os
 from tkinter import filedialog
 
@@ -26,7 +27,6 @@ def load_track_file(tar_path, allow_calculated_track_file=False):
     if keypoints_proc.has_keypoint(src_df) is False and allow_calculated_track_file is False:
         print(f"No keypoint index in {tar_path}")
         return
-    print("load_track_file() done.")
     return src_df
 
 
@@ -72,7 +72,12 @@ class PickleLoader:
             print(f"File not found: {self.tar_path}")
             return
         src_df = pd.read_pickle(self.tar_path)
-        print(f"load_pkl() done: {self.tar_path}")
+        frame_num = src_df.index.get_level_values(0).nunique()
+        member_num = src_df.index.get_level_values(1).nunique()
+        called_in = os.path.basename(inspect.stack()[1].filename)
+        print(
+            f"{called_in} < {os.path.basename(self.tar_path)}: shape={src_df.shape[0]:,}x{src_df.shape[1]}, frames={frame_num:,}, members={member_num}"
+        )
         return src_df
 
     def get_tar_path(self):
