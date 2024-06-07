@@ -56,11 +56,11 @@ class App(ttk.Frame):
         self.thinning_entry.pack_vertical(pady=5)
 
         vals = [5, 10, 20, 30, 50, 100, 200]
-        self.n_neighbors_combobox = Combobox(combos_frame, label="N_neighbors:", values=vals)
+        self.n_neighbors_combobox = Combobox(combos_frame, label="N_neighbors:", values=vals, current=3)
         self.n_neighbors_combobox.pack_vertical(pady=5)
 
         vals = [0.05, 0.1, 0.5, 1.0]
-        self.min_dist_combobox = Combobox(combos_frame, label="Min_dist:", values=vals)
+        self.min_dist_combobox = Combobox(combos_frame, label="Min_dist:", values=vals, current=1)
         self.min_dist_combobox.pack_vertical(pady=5)
 
         vals = ["random", "fixed"]
@@ -81,7 +81,7 @@ class App(ttk.Frame):
         self.picker_range_combobox = Combobox(draw_frame, label="Picker range:", values=vals)
         self.picker_range_combobox.set_selected_bind(self.combo_selected)
         self.picker_range_combobox.pack_vertical(pady=5)
-        self.cluster_names = [str(i) for i in range(0, 9)]
+        self.cluster_names = [str(i) for i in range(0, 8)]
         cluster_name_frame = ttk.Frame(draw_frame)
         cluster_name_frame.pack(anchor=tk.NW, fill=tk.X, expand=True)
         self.cluster_name_entry = StrEntry(cluster_name_frame, label="Cluster name:", width=20)
@@ -246,7 +246,7 @@ class App(ttk.Frame):
 
         plot_df = plot_df.loc[idx_slice, :].dropna(how="all", axis=1)
         # how="all" or how="any"
-        plot_df = plot_df.dropna(subset=cols, how="all")
+        plot_df = plot_df.dropna(subset=cols, how="any")
         timestamps = plot_df["timestamp"].values
         frames = plot_df.index.get_level_values(0).values
         n_neighbors = self.n_neighbors_combobox.get()

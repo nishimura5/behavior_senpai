@@ -28,6 +28,7 @@ class DimensionalReductionPlotter:
         self.draw_anno = False
         self.class_data = None
         self.class_names = None
+        self.picker_range = None
 
     def pack(self, master):
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)
@@ -66,11 +67,12 @@ class DimensionalReductionPlotter:
         self.line_ax.cla()
 
         if self.class_data is None or len(self.class_data) != len(timestamps):
-            self.class_data = np.zeros(len(timestamps))
+            self.class_data = np.ones(len(timestamps))
 
         self.timestamps = timestamps
         self.plot_mat = plot_mat
-        self.picker_range = 5
+        if self.picker_range is None:
+            self.picker_range = 0.1
         self._update_scatter()
 
         # 0: unclustered
@@ -165,7 +167,7 @@ class DimensionalReductionPlotter:
             self.class_data[idx] = self.cluster_number
             self.line_plot.set_data(self.timestamps, self.class_data)
         size = np.ones(len(self.timestamps)) * 5
-        size[idx] = 40
+        size[idx] = 60
         self._update_scatter(size)
 
         self.vline.set_xdata([timestamp_msec])

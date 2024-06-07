@@ -230,14 +230,14 @@ class IntEntry(ttk.Frame):
 
 
 class Combobox(ttk.Frame):
-    def __init__(self, master, label: str, values: list, width=5):
+    def __init__(self, master, label: str, values: list, width=5, current=0):
         super().__init__(master)
         self.frame = ttk.Frame(master)
         caption = ttk.Label(self.frame, text=label)
         caption.pack(side=tk.LEFT, padx=(0, 1))
         self.combobox = ttk.Combobox(self.frame, state="readonly", width=width)
         self.combobox["values"] = values
-        self.combobox.current(0)
+        self.combobox.current(current)
         self.combobox.pack(side=tk.LEFT)
         self.current_value = None
 
