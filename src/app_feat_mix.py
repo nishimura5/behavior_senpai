@@ -257,6 +257,7 @@ class App(ttk.Frame):
             else:
                 self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name)
 
+        self.feat_df["timestamp"] = self.tar_df["timestamp"]
         self.lineplot.draw()
         self.export_btn["state"] = "normal"
 
