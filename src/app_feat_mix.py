@@ -45,7 +45,7 @@ class App(ttk.Frame):
         self.op_combo.pack_horizontal(padx=5)
         self.col_b_combo = Combobox(tar_frame, label="col B:", values=["Select column"], width=25)
         self.col_b_combo.pack_horizontal(padx=5)
-        self.normalize_list = ["No normalize", "MinMax"]
+        self.normalize_list = ["No normalize", "MinMax", "Threshold50%"]
         self.normalize_combo = Combobox(tar_frame, label="Normalize:", values=self.normalize_list, width=15)
         self.normalize_combo.pack_horizontal(padx=5)
         self.add_btn = ttk.Button(tar_frame, text="Add", command=self.add_row, state="disabled")
@@ -244,11 +244,13 @@ class App(ttk.Frame):
                 new_sr = data_a
             if normalize == "MinMax":
                 new_sr = (new_sr - new_sr.min()) / (new_sr.max() - new_sr.min())
-            elif normalize == "Zscore":
-                new_sr = (new_sr - new_sr.mean()) / new_sr.std()
+            elif normalize == "Threshold50%":
+                new_sr = new_sr > new_sr.median()
             self.feat_df = pd.concat([self.feat_df, new_sr.to_frame(feat_name)], axis=1)
-            plot_df = self.feat_df
+            plot_df = new_sr.to_frame(feat_name)
             plot_df["timestamp"] = self.tar_df["timestamp"]
+            if plot_df.dtypes[feat_name] == "bool":
+                plot_df[feat_name] = plot_df[feat_name].astype(int)
             self.lineplot.add_ax(row_num, 2, i)
             if i == row_num - 1:
                 self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name, is_last=True)
