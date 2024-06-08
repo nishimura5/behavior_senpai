@@ -45,7 +45,14 @@ class App(ttk.Frame):
         self.op_combo.pack_horizontal(padx=5)
         self.col_b_combo = Combobox(tar_frame, label="col B:", values=["Select column"], width=25)
         self.col_b_combo.pack_horizontal(padx=5)
-        self.normalize_list = ["No normalize", "MinMax", "Threshold50%"]
+        self.name_and_code = {
+            "No normalize": "non",
+            "MinMax": "minmax",
+            "Threshold75%": "thresh75",
+            "Threshold50%": "thresh50",
+            "Threshold25%": "thresh25",
+        }
+        self.normalize_list = ["No normalize", "MinMax", "Threshold75%", "Threshold50%", "Threshold25%"]
         self.normalize_combo = Combobox(tar_frame, label="Normalize:", values=self.normalize_list, width=15)
         self.normalize_combo.pack_horizontal(padx=5)
         self.add_btn = ttk.Button(tar_frame, text="Add", command=self.add_row, state="disabled")
@@ -148,7 +155,7 @@ class App(ttk.Frame):
         col_a = self.col_a_combo.get()
         op = self.op_combo.get()
         col_b = self.col_b_combo.get()
-        normalize = self.normalize_combo.get()
+        normalize = self.name_and_code[self.normalize_combo.get()]
         tar_list = [k for k in self.tree.get_children("")]
         for i, tar in enumerate(tar_list):
             tree_feat_name, tree_member, tree_col_a, tree_op, tree_col_b, tree_normalize = self.tree.item(tar, "values")
@@ -242,15 +249,20 @@ class App(ttk.Frame):
                 new_sr = data_a / data_b
             elif op == " ":
                 new_sr = data_a
-            if normalize == "MinMax":
+            if normalize == "minmax":
                 new_sr = (new_sr - new_sr.min()) / (new_sr.max() - new_sr.min())
-            elif normalize == "Threshold50%":
+            elif normalize == "thresh75":
+                new_sr = new_sr > new_sr.quantile(0.75)
+                new_sr = new_sr.astype(int)
+            elif normalize == "thresh50":
                 new_sr = new_sr > new_sr.median()
+                new_sr = new_sr.astype(int)
+            elif normalize == "thresh25":
+                new_sr = new_sr > new_sr.quantile(0.25)
+                new_sr = new_sr.astype(int)
             self.feat_df = pd.concat([self.feat_df, new_sr.to_frame(feat_name)], axis=1)
             plot_df = new_sr.to_frame(feat_name)
             plot_df["timestamp"] = self.tar_df["timestamp"]
-            if plot_df.dtypes[feat_name] == "bool":
-                plot_df[feat_name] = plot_df[feat_name].astype(int)
             self.lineplot.add_ax(row_num, 2, i)
             if i == row_num - 1:
                 self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name, is_last=True)
