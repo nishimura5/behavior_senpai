@@ -94,11 +94,7 @@ class App(ttk.Frame):
         self.cap = args["cap"]
         self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")
         self.src_attrs = self.src_df.attrs
-        self.time_min, self.time_max = args["time_span_msec"]
-
-        # timestampの範囲を抽出
-        self.tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
-        self.tar_df = self.tar_df[~self.tar_df.index.duplicated(keep="last")]
+        self.tar_df = self.src_df[~self.src_df.index.duplicated(keep="last")]
 
         # UIの更新
         self.member_combo.set_df(self.tar_df)
@@ -166,25 +162,26 @@ class App(ttk.Frame):
         thinned_df = keypoints_proc.thinning(self.tar_df, thinning)
 
         idx = thinned_df.index
-        thinned_df.index = thinned_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
+        thinned_df.index = thinned_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
 
         for calc, member, point_a, point_b, point_c in rows:
             code = self.name_and_code[calc]
             member_df = thinned_df.loc[pd.IndexSlice[:, member], :]
+            point_a, point_b = int(point_a), int(point_b)
             if code == "norm":
                 plot_df = keypoints_proc.calc_norm(member_df, point_a, point_b)
             elif code == "sin_cos":
-                plot_df = keypoints_proc.calc_sin_cos(member_df, point_a, point_b, point_c)
+                plot_df = keypoints_proc.calc_sin_cos(member_df, point_a, point_b, int(point_c))
             elif code == "component":
                 plot_df = keypoints_proc.calc_xy_component(member_df, point_a, point_b)
             elif code == "cross":
-                plot_df = keypoints_proc.calc_cross_product(member_df, point_a, point_b, point_c)
+                plot_df = keypoints_proc.calc_cross_product(member_df, point_a, point_b, int(point_c))
             elif code == "dot":
-                plot_df = keypoints_proc.calc_dot_product(member_df, point_a, point_b, point_c)
+                plot_df = keypoints_proc.calc_dot_product(member_df, point_a, point_b, int(point_c))
             elif code == "plus":
-                plot_df = keypoints_proc.calc_plus(member_df, point_a, point_b, point_c)
+                plot_df = keypoints_proc.calc_plus(member_df, point_a, point_b, int(point_c))
             elif code == "norms":
-                plot_df = keypoints_proc.calc_norms(member_df, point_a, point_b, point_c)
+                plot_df = keypoints_proc.calc_norms(member_df, point_a, point_b, int(point_c))
 
             col_names = plot_df.columns.tolist()
             feat_col_names = self.feat_df.columns.tolist()

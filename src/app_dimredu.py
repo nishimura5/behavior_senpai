@@ -12,9 +12,7 @@ from python_senpai import df_attrs, file_inout, keypoints_proc, time_format
 class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
-        start_str = time_format.msec_to_timestr(args["time_span_msec"][0])
-        end_str = time_format.msec_to_timestr(args["time_span_msec"][1])
-        master.title(f"Dimension Reduction ({args['trk_pkl_name']} {start_str} to {end_str})")
+        master.title(f"Dimension Reduction ({args['trk_pkl_name']})")
         self.pack(padx=10, pady=10)
         self.bind("<Map>", lambda event: self._load(event, args))
 
@@ -224,7 +222,6 @@ class App(ttk.Frame):
         # timestampの範囲を抽出
         if self.feat_df is not None:
             tar_df = self.feat_df
-        tar_df = keypoints_proc.filter_by_timerange(tar_df, self.time_min, self.time_max)
 
         if self.use_time_val.get():
             tar_df["t"] = (tar_df["timestamp"] - self.time_min) / (self.time_max - self.time_min) * 0.5
@@ -232,8 +229,8 @@ class App(ttk.Frame):
 
         idx = tar_df.index
         if "keypoint" in idx.names:
-            levels = [idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)]
-            idx_slice = pd.IndexSlice[:, current_member, current_keypoint]
+            print("keypoint in index.")
+            return
         else:
             levels = [idx.levels[0], idx.levels[1].astype(str)]
             idx_slice = pd.IndexSlice[:, current_member]
