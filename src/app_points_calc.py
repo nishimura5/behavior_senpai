@@ -96,7 +96,7 @@ class App(ttk.Frame):
         self.src_attrs = self.src_df.attrs
         self.tar_df = self.src_df[~self.src_df.index.duplicated(keep="last")]
 
-        # UIの更新
+        # update GUI
         self.member_combo.set_df(self.tar_df)
         self.lineplot.set_trk_df(self.src_df)
         self.lineplot.set_vcap(self.cap)

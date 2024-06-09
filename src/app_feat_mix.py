@@ -11,9 +11,7 @@ from python_senpai import df_attrs, file_inout, keypoints_proc, time_format
 class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
-        start_str = time_format.msec_to_timestr(args["time_span_msec"][0])
-        end_str = time_format.msec_to_timestr(args["time_span_msec"][1])
-        master.title(f"Feature Mixer ({args['trk_pkl_name']} {start_str} to {end_str})")
+        master.title(f"Feature Mixer ({args['trk_pkl_name']})")
         self.pack(padx=10, pady=10)
         self.bind("<Map>", lambda event: self._load(event, args))
 
@@ -122,8 +120,6 @@ class App(ttk.Frame):
         self.feat_name = os.path.basename(self.feat_path)
         self.tar_df = pl.load_pkl()
 
-        # timestampの範囲を抽出
-        self.tar_df = keypoints_proc.filter_by_timerange(self.tar_df, self.time_min, self.time_max)
         self.tar_df = self.tar_df[~self.tar_df.index.duplicated(keep="last")]
 
         # update GUI
@@ -155,7 +151,7 @@ class App(ttk.Frame):
         col_a = self.col_a_combo.get()
         op = self.op_combo.get()
         col_b = self.col_b_combo.get()
-        normalize = self.name_and_code[self.normalize_combo.get()]
+        normalize = self.normalize_combo.get()
         tar_list = [k for k in self.tree.get_children("")]
         for i, tar in enumerate(tar_list):
             tree_feat_name, tree_member, tree_col_a, tree_op, tree_col_b, tree_normalize = self.tree.item(tar, "values")
@@ -233,6 +229,7 @@ class App(ttk.Frame):
         row_num = len(rows)
         for i, row in enumerate(rows):
             feat_name, member, col_a, op, col_b, normalize = row
+            normalize = self.name_and_code[normalize]
             member_df = self.tar_df.loc[pd.IndexSlice[:, member], :].drop("timestamp", axis=1)
             data_a = member_df[col_a]
             if op == "+":

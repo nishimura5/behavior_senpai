@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from dimredu_plotter import DimensionalReductionPlotter
 from gui_parts import Combobox, IntEntry, MemberKeypointComboboxes, StrEntry, TempFile
-from python_senpai import df_attrs, file_inout, keypoints_proc, time_format
+from python_senpai import df_attrs, file_inout, keypoints_proc
 
 
 class App(ttk.Frame):
