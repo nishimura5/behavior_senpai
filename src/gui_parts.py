@@ -27,29 +27,21 @@ class MemberKeypointComboboxes(ttk.Frame):
     def set_df(self, src_df):
         self.src_df = src_df
         combo_df = self.src_df
-
         if keypoints_proc.has_keypoint(self.src_df) is True:
-            # memberとkeypointのインデックス値を文字列に変換
-            idx = combo_df.index
-            combo_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
             self.keypoint_combo["state"] = "readonly"
         else:
             self.keypoint_combo["state"] = "disabled"
 
-        self.member_combo["values"] = combo_df.index.get_level_values("member").unique().tolist()
+        self.member_combo["values"] = combo_df.index.get_level_values("member").unique().astype(str).tolist()
         self.member_combo.current(0)
-        if keypoints_proc.has_keypoint(self.src_df) is True:
-            init_member = self.member_combo.get()
-            self.keypoint_combo["values"] = combo_df.loc[pd.IndexSlice[:, init_member, :], :].index.get_level_values("keypoint").unique().tolist()
-            self.keypoint_combo.current(0)
+        self._on_selected()
 
-    def _on_selected(self, event):
+    def _on_selected(self, event=None):
         if keypoints_proc.has_keypoint(self.src_df) is False:
             return
         current_member = self.member_combo.get()
-        # keypointの一覧を取得してコンボボックスにセット
         idx = pd.IndexSlice[:, current_member, :]
-        keypoints = self.src_df.loc[idx, :].index.get_level_values("keypoint").unique().tolist()
+        keypoints = self.src_df.loc[idx, :].index.get_level_values("keypoint").unique().astype(str).tolist()
         self.keypoint_combo["values"] = keypoints
         self.keypoint_combo.current(0)
 

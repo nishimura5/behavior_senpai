@@ -166,7 +166,7 @@ def remove_by_bool_col(src_df, bool_col_name: str, drop_member: bool = False):
     return src_df
 
 
-def calc_xy_component(src_df, kp0: str, kp1: str):
+def calc_xy_component(src_df, kp0: int, kp1: int):
     col_name_x = f"component_x({kp0}-{kp1})"
     col_name_y = f"component_y({kp0}-{kp1})"
 
@@ -178,7 +178,7 @@ def calc_xy_component(src_df, kp0: str, kp1: str):
     return xy_df
 
 
-def calc_norm(src_df, kp0: str, kp1: str):
+def calc_norm(src_df, kp0: int, kp1: int):
     col_name = f"norm({kp0}-{kp1})"
     point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
     point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
@@ -189,7 +189,7 @@ def calc_norm(src_df, kp0: str, kp1: str):
     return norms_df
 
 
-def calc_plus(src_df, kp0: str, kp1: str, kp2: str):
+def calc_plus(src_df, kp0: int, kp1: int, kp2: int):
     """
     kp0 -> kp1とkp0 -> kp2のベクトル和を計算する
     """
@@ -205,7 +205,7 @@ def calc_plus(src_df, kp0: str, kp1: str, kp2: str):
     return plus_df
 
 
-def calc_cross_product(src_df, kp0: str, kp1: str, kp2: str):
+def calc_cross_product(src_df, kp0: int, kp1: int, kp2: int):
     """
     kp0 -> kp1とkp0 -> kp2の外積を計算する
     """
@@ -221,7 +221,7 @@ def calc_cross_product(src_df, kp0: str, kp1: str, kp2: str):
     return cross_df
 
 
-def calc_dot_product(src_df, kp0: str, kp1: str, kp2: str):
+def calc_dot_product(src_df, kp0: int, kp1: int, kp2: int):
     """
     kp0 -> kp1とkp0 -> kp2の内積を計算する
     """
@@ -237,7 +237,7 @@ def calc_dot_product(src_df, kp0: str, kp1: str, kp2: str):
     return dot_df
 
 
-def calc_sin_cos(src_df, kp0: str, kp1: str, kp2: str):
+def calc_sin_cos(src_df, kp0: int, kp1: int, kp2: int):
     point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
     point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
     point2 = src_df.loc[pd.IndexSlice[:, :, kp2], :].droplevel(2)
@@ -252,7 +252,7 @@ def calc_sin_cos(src_df, kp0: str, kp1: str, kp2: str):
     return sin_cos_df
 
 
-def calc_angle(src_df, kp0: str, kp1: str, kp2: str):
+def calc_angle(src_df, kp0: int, kp1: int, kp2: int):
     """
     kp0 -> kp1とkp0 -> kp2の角度を計算する
     """
@@ -272,7 +272,7 @@ def calc_angle(src_df, kp0: str, kp1: str, kp2: str):
     return angle_df
 
 
-def calc_norms(src_df, kp0: str, kp1: str, kp2: str):
+def calc_norms(src_df, kp0: int, kp1: int, kp2: int):
     """
     kp0 -> kp1とkp0 -> kp2のベクトルのノルムの積を計算する
     """
@@ -288,7 +288,7 @@ def calc_norms(src_df, kp0: str, kp1: str, kp2: str):
     return norms_df
 
 
-def calc_cross_dot_plus_norms(src_df, kp0: str, kp1: str, kp2: str):
+def calc_cross_dot_plus_norms(src_df, kp0: int, kp1: int, kp2: int):
     """
     kp0 -> kp1とkp0 -> kp2の外積、内積、ベクトル和、ノルムの積を計算する
     別々にやるより少し速い
