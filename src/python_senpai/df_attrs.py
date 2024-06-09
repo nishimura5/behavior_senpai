@@ -1,3 +1,6 @@
+from python_senpai import time_format
+
+
 class DfAttrs:
     def __init__(self, src_df):
         self.attrs = src_df.attrs
@@ -19,6 +22,29 @@ class DfAttrs:
             else:
                 print("invalid proc_history.")
         self.newest_proc_history = proc_history_list[-1]
+
+    def load_scene_table(self):
+        if "scene_table" not in self.attrs.keys():
+            print("scene_table not found.")
+            return
+        self.scene_table = self.attrs["scene_table"]
+        print(self.scene_table)
+
+    def get_scene_descriptions(self, add_blank=False):
+        descriptions = list(set(self.scene_table["description"]))
+        if add_blank:
+            return [""] + descriptions
+        return descriptions
+
+    def get_scenes(self, description):
+        if description == "":
+            return None
+        idx_list = [idx for idx, d in enumerate(self.scene_table["description"]) if d == description]
+        start_and_end_list = [
+            (time_format.timestr_to_msec(self.scene_table["start"][idx]), time_format.timestr_to_msec(self.scene_table["end"][idx]))
+            for idx in idx_list
+        ]
+        return start_and_end_list
 
     def validate_model(self, model_name):
         if self.attrs["model"] != model_name:

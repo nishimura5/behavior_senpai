@@ -97,14 +97,14 @@ class App(ttk.Frame):
         self.src_df = args["src_df"]
         self.cap = args["cap"]
         self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")
-        self.src_attrs = self.src_df.attrs
 
         self.pkl_dir = args["pkl_dir"]
         self.lineplot.set_trk_df(self.src_df)
         self.lineplot.set_vcap(self.cap)
-        scenes = self.src_attrs["scene_table"]
-        self.scene_df = pd.DataFrame(scenes)
-        menu = [""] + self.scene_df["description"].unique().tolist()
+
+        self.src_attrs = df_attrs.DfAttrs(self.src_df)
+        self.src_attrs.load_scene_table()
+        menu = self.src_attrs.get_scene_descriptions(add_blank=True)
         self.scene_combo.set_values(menu)
 
     def load_feat(self):
@@ -212,7 +212,7 @@ class App(ttk.Frame):
         in_trk_df = pl.load_pkl()
         in_trk_attrs = df_attrs.DfAttrs(in_trk_df)
         in_trk_attrs.load_proc_history()
-        if in_trk_attrs.validate_newest_history_proc("mix", self.src_attrs["model"]) is False:
+        if in_trk_attrs.validate_newest_history_proc("mix", self.src_attrs.attrs["model"]) is False:
             return
         for row in in_trk_attrs.get_source_cols():
             if row[2] not in self.tar_df.columns and row[2] != " ":
@@ -230,16 +230,13 @@ class App(ttk.Frame):
         self.source_cols = rows
 
         tar_scene = self.scene_combo.get()
-        if tar_scene == "":
+        scenes = self.src_attrs.get_scenes(tar_scene)
+        if scenes is None:
             scene_filtered_df = self.tar_df
         else:
             scene_filtered_df = pd.DataFrame()
-            tar_scene_df = self.scene_df[self.scene_df["description"] == tar_scene]
-            tar_scene_dict = tar_scene_df.to_dict(orient="records")
-            for scene in tar_scene_dict:
-                start = time_format.timestr_to_msec(scene["start"])
-                end = time_format.timestr_to_msec(scene["end"])
-                df = self.tar_df[self.tar_df["timestamp"].between(start - 1, end + 1)]
+            for scene in scenes:
+                df = self.tar_df[self.tar_df["timestamp"].between(scene[0] - 1, scene[1] + 1)]
                 scene_filtered_df = pd.concat([scene_filtered_df, df])
         row_num = len(rows)
         for i, row in enumerate(rows):
@@ -295,7 +292,7 @@ class App(ttk.Frame):
         data_col_names = [col[0] for col in self.source_cols] + ["timestamp"]
 
         export_df = self.feat_df.loc[:, data_col_names]
-        export_df.attrs = self.src_attrs
+        export_df.attrs = self.src_attrs.attrs
         dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_mix.feat.pkl")
         history_dict = df_attrs.make_history_dict("mix", self.source_cols, {})
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
