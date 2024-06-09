@@ -63,7 +63,6 @@ class App(ttk.Frame):
     def load(self, args):
         self.src_df = args["src_df"]
         self.cap = args["cap"]
-        self.time_min, self.time_max = args["time_span_msec"]
 
         # UIの更新
         self.member_keypoints_combos.set_df(self.src_df)
@@ -81,8 +80,7 @@ class App(ttk.Frame):
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
 
-        # timestampの範囲を抽出
-        tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
+        tar_df = self.src_df.copy()
         # keypointのインデックス値を文字列に変換
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
@@ -97,8 +95,7 @@ class App(ttk.Frame):
         smoothing_type = self.smoothing_type_combo.get()
         window_size = self.window_size_entry.get()
 
-        # timestampの範囲を抽出
-        tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
+        tar_df = self.src_df.copy()
         # keypointのインデックス値を文字列に変換
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(int)])

@@ -98,7 +98,6 @@ class App(ttk.Frame):
         self.cap = args["cap"]
         self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")
         self.src_attrs = self.src_df.attrs
-        self.time_min, self.time_max = args["time_span_msec"]
 
         self.pkl_dir = args["pkl_dir"]
         self.lineplot.set_trk_df(self.src_df)

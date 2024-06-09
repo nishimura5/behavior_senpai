@@ -178,8 +178,7 @@ class App(ttk.Frame):
     def draw(self):
         current_member = self.member_combo.get()
 
-        # timestampの範囲を抽出
-        tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
+        tar_df = self.src_df.copy()
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
         plot_df = tar_df

@@ -69,7 +69,6 @@ class App(ttk.Frame):
         self.cap = args["cap"]
         current_position = args["current_position"]
         src_attrs = self.src_df.attrs
-        self.time_min, self.time_max = args["time_span_msec"]
 
         # 動画のフレームを描画
         ratio = src_attrs["frame_size"][0] / src_attrs["frame_size"][1]
@@ -108,12 +107,9 @@ class App(ttk.Frame):
             point["id"] = self.canvas.create_rectangle(x - 2, y - 2, x + 2, y + 2, fill="white")
 
     def calc_in_out(self):
-        # timestampの範囲を抽出
-        tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
-
         poly_points = [p["point"] for p in self.anchor_points]
 
-        isin_df = keypoints_proc.is_in_poly(tar_df, poly_points, "is_remove", self.scale)
+        isin_df = keypoints_proc.is_in_poly(self.src_df, poly_points, "is_remove", self.scale)
         # area内を削除したいときはboolを反転する
         if self.in_out_combo.get() == "within area":
             isin_df = isin_df.map(operator.not_)
