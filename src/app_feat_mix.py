@@ -21,11 +21,14 @@ class App(ttk.Frame):
         self.lineplot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         load_frame = ttk.Frame(self)
-        load_frame.pack(anchor=tk.NW, pady=5)
+        load_frame.pack(anchor=tk.NW, expand=True, fill=tk.X, pady=5)
         feat_btn = ttk.Button(load_frame, text="Open Feature file", command=self.load_feat)
-        feat_btn.pack(side=tk.LEFT, padx=(20, 0))
+        feat_btn.pack(side=tk.LEFT, padx=5)
         self.feat_path_label = ttk.Label(load_frame, text="No Feature file loaded.")
-        self.feat_path_label.pack(side=tk.LEFT, padx=(5, 0))
+        self.feat_path_label.pack(side=tk.LEFT, padx=(5, 0), expand=True, fill=tk.X)
+
+        self.scene_combo = Combobox(load_frame, label="Scene:", values=[""], width=10)
+        self.scene_combo.pack_horizontal(anchor=tk.E, padx=5)
 
         tar_frame = ttk.Frame(self)
         tar_frame.pack(anchor=tk.NW, side=tk.TOP, pady=5)
@@ -100,6 +103,10 @@ class App(ttk.Frame):
         self.pkl_dir = args["pkl_dir"]
         self.lineplot.set_trk_df(self.src_df)
         self.lineplot.set_vcap(self.cap)
+        scenes = self.src_attrs["scene_table"]
+        self.scene_df = pd.DataFrame(scenes)
+        menu = [""] + self.scene_df["description"].unique().tolist()
+        self.scene_combo.set_values(menu)
 
     def load_feat(self):
         pl = file_inout.PickleLoader(self.calc_dir, "feature")
@@ -223,14 +230,23 @@ class App(ttk.Frame):
         rows = [self.tree.item(row, "values") for row in self.tree.get_children("")]
         self.source_cols = rows
 
-        idx = self.tar_df.index
-        self.tar_df.index = self.tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
-
+        tar_scene = self.scene_combo.get()
+        if tar_scene == "":
+            scene_filtered_df = self.tar_df
+        else:
+            scene_filtered_df = pd.DataFrame()
+            tar_scene_df = self.scene_df[self.scene_df["description"] == tar_scene]
+            tar_scene_dict = tar_scene_df.to_dict(orient="records")
+            for scene in tar_scene_dict:
+                start = time_format.timestr_to_msec(scene["start"])
+                end = time_format.timestr_to_msec(scene["end"])
+                df = self.tar_df[self.tar_df["timestamp"].between(start - 1, end + 1)]
+                scene_filtered_df = pd.concat([scene_filtered_df, df])
         row_num = len(rows)
         for i, row in enumerate(rows):
             feat_name, member, col_a, op, col_b, normalize = row
             normalize = self.name_and_code[normalize]
-            member_df = self.tar_df.loc[pd.IndexSlice[:, member], :].drop("timestamp", axis=1)
+            member_df = scene_filtered_df.loc[pd.IndexSlice[:, member], :].drop("timestamp", axis=1)
             data_a = member_df[col_a]
             if op == "+":
                 data_b = member_df[col_b]
@@ -259,7 +275,7 @@ class App(ttk.Frame):
                 new_sr = new_sr.astype(int)
             self.feat_df = pd.concat([self.feat_df, new_sr.to_frame(feat_name)], axis=1)
             plot_df = new_sr.to_frame(feat_name)
-            plot_df["timestamp"] = self.tar_df["timestamp"]
+            plot_df["timestamp"] = scene_filtered_df["timestamp"]
             self.lineplot.add_ax(row_num, 2, i)
             if i == row_num - 1:
                 self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name, is_last=True)
