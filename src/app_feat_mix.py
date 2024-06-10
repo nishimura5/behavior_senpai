@@ -5,7 +5,7 @@ from tkinter import ttk
 import pandas as pd
 from gui_parts import Combobox, StrEntry, TempFile
 from line_plotter import LinePlotter
-from python_senpai import df_attrs, file_inout, keypoints_proc, time_format
+from python_senpai import df_attrs, file_inout
 
 
 class App(ttk.Frame):
@@ -231,13 +231,14 @@ class App(ttk.Frame):
 
         tar_scene = self.scene_combo.get()
         scenes = self.src_attrs.get_scenes(tar_scene)
-        if scenes is None:
-            scene_filtered_df = self.tar_df
-        else:
-            scene_filtered_df = pd.DataFrame()
+
+        scene_filtered_df = self.tar_df.copy()
+        if scenes is not None:
+            condition_sr = pd.Series(False, index=self.tar_df.index)
             for scene in scenes:
-                df = self.tar_df[self.tar_df["timestamp"].between(scene[0] - 1, scene[1] + 1)]
-                scene_filtered_df = pd.concat([scene_filtered_df, df])
+                condition_sr |= self.tar_df["timestamp"].between(scene[0] - 1, scene[1] + 1)
+            scene_filtered_df.loc[~condition_sr, :] = pd.NA
+        print(scene_filtered_df)
         row_num = len(rows)
         for i, row in enumerate(rows):
             feat_name, member, col_a, op, col_b, normalize = row
@@ -271,7 +272,7 @@ class App(ttk.Frame):
                 new_sr = new_sr.astype(int)
             self.feat_df = pd.concat([self.feat_df, new_sr.to_frame(feat_name)], axis=1)
             plot_df = new_sr.to_frame(feat_name)
-            plot_df["timestamp"] = scene_filtered_df["timestamp"]
+            plot_df["timestamp"] = self.tar_df["timestamp"]
             self.lineplot.add_ax(row_num, 2, i)
             if i == row_num - 1:
                 self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name, is_last=True)

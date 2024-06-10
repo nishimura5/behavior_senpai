@@ -6,7 +6,7 @@ from tkinter import ttk
 import pandas as pd
 from gui_parts import StrEntry, TempFile, TimeSpanEntry
 from line_plotter import LinePlotter
-from python_senpai import file_inout, keypoints_proc, time_format
+from python_senpai import file_inout, time_format
 
 
 class App(ttk.Frame):

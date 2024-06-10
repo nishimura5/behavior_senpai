@@ -83,6 +83,7 @@ class LinePlotter:
         plot_df = plot_df.loc[pd.IndexSlice[:, member], :]
 
         plot_df.plot(ax=self.line_ax, x="timestamp", y=data_col_name)
+        self.line_ax.set_xlim(plot_df["timestamp"].min(), plot_df["timestamp"].max())
         if is_last:
             self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         else:

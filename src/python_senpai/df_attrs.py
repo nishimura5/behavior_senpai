@@ -20,7 +20,7 @@ class DfAttrs:
             if isinstance(history, dict) and "type" in history.keys() and "source_cols" in history.keys():
                 proc_history_list.append(history)
             else:
-                print("invalid proc_history.")
+                print(f"invalid proc_history:{history}")
         self.newest_proc_history = proc_history_list[-1]
 
     def load_scene_table(self):
@@ -28,7 +28,6 @@ class DfAttrs:
             print("scene_table not found.")
             return
         self.scene_table = self.attrs["scene_table"]
-        print(self.scene_table)
 
     def get_scene_descriptions(self, add_blank=False):
         descriptions = list(set(self.scene_table["description"]))

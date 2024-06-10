@@ -70,7 +70,7 @@ class App(ttk.Frame):
         time_checbox = ttk.Checkbutton(combos_frame, text="Use timestamp for dimredu", variable=self.use_time_val)
         time_checbox.pack(anchor=tk.NW, pady=5)
 
-        self.draw_button = ttk.Button(combos_frame, text="Draw", command=self.manual_draw, state=tk.DISABLED)
+        self.draw_button = ttk.Button(combos_frame, text="Draw", command=self._draw, state=tk.DISABLED)
         self.draw_button.pack(side=tk.LEFT, expand=True, pady=5, fill=tk.X)
 
         draw_frame = ttk.Frame(left_frame)
@@ -156,9 +156,6 @@ class App(ttk.Frame):
         self.draw_button["state"] = tk.NORMAL
         self.repeat_draw_button["state"] = tk.NORMAL
 
-    def manual_draw(self):
-        self._draw()
-
     def repeat_draw(self):
         pl = file_inout.PickleLoader(self.calc_dir, "behavioral_coding")
         pl.join_calc_case(self.calc_case)
@@ -219,7 +216,6 @@ class App(ttk.Frame):
         # unselect on tree
         self.tree.selection_remove(self.tree.selection())
 
-        # timestampの範囲を抽出
         if self.feat_df is not None:
             tar_df = self.feat_df
 
@@ -239,9 +235,9 @@ class App(ttk.Frame):
 
         thinning = self.thinning_entry.get()
         self.thinning_entry.save_to_temp("thinning")
-        plot_df = keypoints_proc.thinning(tar_df, thinning)
+        thinning_df = keypoints_proc.thinning(tar_df, thinning)
 
-        plot_df = plot_df.loc[idx_slice, :].dropna(how="all", axis=1)
+        plot_df = thinning_df.loc[idx_slice, :].dropna(how="all", axis=1)
         # how="all" or how="any"
         plot_df = plot_df.dropna(subset=cols, how="any")
         timestamps = plot_df["timestamp"].values
@@ -256,7 +252,11 @@ class App(ttk.Frame):
         reduced_arr = keypoints_proc.umap(plot_df, tar_cols=cols, n_components=2, n_neighbors=int(n_neighbors), min_dist=float(min_dist), seed=seed)
 
         self.drp.set_member(current_member)
-        self.drp.draw(reduced_arr, timestamps, frames)
+        self.drp.draw(
+            reduced_arr,
+            timestamps,
+            frames,
+        )
         self.export_button["state"] = tk.NORMAL
 
     def combo_selected(self, event):
