@@ -26,7 +26,6 @@ class DimensionalReductionPlotter:
         self.line_ax = self.fig.add_subplot(gs[1, 0])
 
         self.draw_anno = False
-        self.class_data = None
         self.class_names = None
         self.picker_range = None
 
@@ -62,22 +61,28 @@ class DimensionalReductionPlotter:
     def set_member(self, member):
         self.member = member
 
-    def draw(self, plot_mat, timestamps, frames):
+    def set_timestamps(self, base_timestamps, nonan_timestamps):
+        base_df = pd.DataFrame(base_timestamps, columns=["timestamp"])
+        nonan_df = pd.DataFrame(nonan_timestamps, columns=["timestamp"])
+        nonan_df["class"] = 1
+        self.timestamp_df = pd.merge(base_df, nonan_df, on="timestamp", how="left")
+        print(self.timestamp_df)
+
+    def draw(self, plot_df, timestamps, frames):
+        self.plot_df = plot_df
+        self.plot_df["class"] = 1
+        self.plot_df.loc[self.plot_df["umap_t"].isna(), "class"] = 0
+        self.timestamps = self.plot_df["timestamp"].to_numpy()
+
         self.frames = frames
         self.line_ax.cla()
 
-        if self.class_data is None or len(self.class_data) != len(timestamps):
-            self.class_data = np.ones(len(timestamps))
-
-        self.timestamps = timestamps
-        self.plot_mat = plot_mat
         if self.picker_range is None:
             self.picker_range = 0.1
-        self._update_scatter()
 
-        # 0: unclustered
         self.cluster_number = 0
-        (self.line_plot,) = self.line_ax.plot(timestamps, self.class_data)
+        (self.line_plot,) = self.line_ax.plot(self.timestamps, self.plot_df["class"])
+        self._update_scatter()
         self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         self.line_ax.set_ylim(0, 10)
         self.vline = self.line_ax.axvline(x=0, color="gray", linewidth=0.5)
@@ -91,7 +96,6 @@ class DimensionalReductionPlotter:
         self.canvas.draw_idle()
 
     def clear_class_data(self):
-        self.class_data = None
         self.class_names = self.init_class_names
 
     def set_class_data(self, class_data):
@@ -109,7 +113,7 @@ class DimensionalReductionPlotter:
         self.canvas.draw_idle()
 
     def get_cluster_df(self, names):
-        classes = np.unique(self.class_data)
+        classes = self.plot_df["class"].unique()
         ret_dict = {
             "frame": self.frames,
             "timestamp": self.timestamps,
@@ -124,12 +128,12 @@ class DimensionalReductionPlotter:
     def _update_scatter(self, size=None):
         self.cluster_ax.cla()
         # extract class_names which are used in the class_data
-        classes = [self.class_names[int(c)] for c in np.unique(self.class_data)]
+        classes = [self.class_names[int(c)] for c in self.plot_df["class"].unique()]
         if size is None:
             size = np.ones(len(self.timestamps)) * 5
 
         scatter_plot = self.cluster_ax.scatter(
-            self.plot_mat[:, 0], self.plot_mat[:, 1], c=self.class_data, picker=self.picker_range, cmap="tab10", s=size
+            self.plot_df["umap_0"], self.plot_df["umap_1"], c=self.plot_df["class"], picker=self.picker_range, cmap="tab10", s=size
         )
         legend = self.cluster_ax.legend(handles=scatter_plot.legend_elements()[0], labels=classes, loc="upper right", title="Cluster")
         self.cluster_ax.add_artist(legend)
@@ -140,9 +144,8 @@ class DimensionalReductionPlotter:
     def _click_plot(self, event):
         # right click
         if event.mouseevent.button == 3:
-            for ind in event.ind:
-                self.class_data[ind] = self.cluster_number
-            self.line_plot.set_data(self.timestamps, self.class_data)
+            self.plot_df.loc[event.ind, "class"] = self.cluster_number
+            self.line_plot.set_data(self.timestamps, self.plot_df["class"])
         self._update_scatter()
 
         center_ind = event.ind[0]
@@ -164,8 +167,8 @@ class DimensionalReductionPlotter:
         idx = np.fabs(self.timestamps - timestamp_msec).argmin()
         timestamp_msec = self.timestamps[idx]
         if event.button == 3:
-            self.class_data[idx] = self.cluster_number
-            self.line_plot.set_data(self.timestamps, self.class_data)
+            self.plot_df.loc[idx, "class"] = self.cluster_number
+            self.line_plot.set_data(self.timestamps, self.plot_df["class"])
         size = np.ones(len(self.timestamps)) * 5
         size[idx] = 60
         self._update_scatter(size)

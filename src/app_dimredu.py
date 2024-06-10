@@ -8,6 +8,9 @@ from dimredu_plotter import DimensionalReductionPlotter
 from gui_parts import Combobox, IntEntry, MemberKeypointComboboxes, StrEntry, TempFile
 from python_senpai import df_attrs, file_inout, keypoints_proc
 
+pd.set_option("display.max_rows", 200)
+pd.set_option("display.min_rows", 200)
+
 
 class App(ttk.Frame):
     def __init__(self, master, args):
@@ -237,9 +240,8 @@ class App(ttk.Frame):
         self.thinning_entry.save_to_temp("thinning")
         thinning_df = keypoints_proc.thinning(tar_df, thinning)
 
-        plot_df = thinning_df.loc[idx_slice, :].dropna(how="all", axis=1)
-        # how="all" or how="any"
-        plot_df = plot_df.dropna(subset=cols, how="any")
+        plot_df = thinning_df.loc[idx_slice, :]
+        #        self.drp.set_timestamps(thinning_df["timestamp"].values, plot_df["timestamp"].values)
         timestamps = plot_df["timestamp"].values
         frames = plot_df.index.get_level_values(0).values
         n_neighbors = self.n_neighbors_combobox.get()
@@ -249,11 +251,11 @@ class App(ttk.Frame):
             seed = None
         else:
             seed = 42
-        reduced_arr = keypoints_proc.umap(plot_df, tar_cols=cols, n_components=2, n_neighbors=int(n_neighbors), min_dist=float(min_dist), seed=seed)
+        reduced_df = keypoints_proc.umap(plot_df, tar_cols=cols, n_components=2, n_neighbors=int(n_neighbors), min_dist=float(min_dist), seed=seed)
 
         self.drp.set_member(current_member)
         self.drp.draw(
-            reduced_arr,
+            reduced_df,
             timestamps,
             frames,
         )

@@ -104,10 +104,17 @@ def umap(src_df, tar_cols: list, n_components: int = 1, n_neighbors: int = 15, m
         n_jobs = 1
     else:
         n_jobs = -1
+    dst_df = pd.DataFrame()
+    dst_df["timestamp"] = src_df["timestamp"]
+    plot_df = src_df.dropna(how="all", axis=1)
+    plot_df = plot_df.dropna(subset=tar_cols, how="any")
     model = UMAP(n_components=n_components, n_neighbors=n_neighbors, min_dist=min_dist, random_state=seed, n_jobs=n_jobs)
-    reduced_arr = model.fit_transform(src_df[tar_cols])
+    reduced_arr = model.fit_transform(plot_df[tar_cols])
+    reduced_df = pd.DataFrame(reduced_arr, columns=[f"umap_{i}" for i in range(n_components)], index=plot_df.index)
+    reduced_df["umap_t"] = plot_df["timestamp"]
+    dst_df = pd.concat([dst_df, reduced_df], axis=1)
     print(f"umap() (keypoints_proc):{time.perf_counter() - start_time:.3f}sec / {src_df.shape[0]:,}plots")
-    return reduced_arr
+    return dst_df
 
 
 def calc_recurrence(src_arr, threshold: float):
