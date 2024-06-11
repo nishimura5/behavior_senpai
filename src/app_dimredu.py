@@ -8,9 +8,6 @@ from dimredu_plotter import DimensionalReductionPlotter
 from gui_parts import Combobox, IntEntry, MemberKeypointComboboxes, StrEntry, TempFile
 from python_senpai import df_attrs, file_inout, keypoints_proc
 
-pd.set_option("display.max_rows", 200)
-pd.set_option("display.min_rows", 200)
-
 
 class App(ttk.Frame):
     def __init__(self, master, args):
@@ -165,28 +162,20 @@ class App(ttk.Frame):
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
             return
-        in_trk_df = pl.load_pkl()
-        in_trk_attrs = df_attrs.DfAttrs(in_trk_df)
+        cluster_df = pl.load_pkl()
+        in_trk_attrs = df_attrs.DfAttrs(cluster_df)
         in_trk_attrs.load_proc_history()
         if in_trk_attrs.validate_newest_history_proc("dimredu", self.src_df.attrs["model"]) is False:
             return
 
-        if "features" not in in_trk_df.attrs.keys():
+        if "features" not in cluster_df.attrs.keys():
             print("features not found in attrs")
             return
-        features = in_trk_df.attrs["features"]
+        features = cluster_df.attrs["features"]
 
         source_cols = in_trk_attrs.get_source_cols()
         params = in_trk_attrs.get_params()
-        # load class_data to draw cluster
-        class_data = np.zeros(len(in_trk_df))
-        for colname in in_trk_df.columns:
-            if colname == "timestamp":
-                continue
-            class_arr = in_trk_df[colname].values
-            class_data[class_arr] = features.index(colname)
         self.drp.set_cluster_names(features)
-        self.drp.set_class_data(class_data)
 
         # update listbox
         self.column_listbox.selection_clear(0, tk.END)
@@ -205,9 +194,9 @@ class App(ttk.Frame):
         self.tree.delete(*self.tree.get_children())
         for i, cluster_name in enumerate(self.cluster_names):
             self.tree.insert("", "end", values=(str(i), cluster_name))
-        self._draw()
+        self._draw(cluster_df["class"])
 
-    def _draw(self):
+    def _draw(self, class_sr=None):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
         self.source_cols = []
         cols = self.column_listbox.curselection()
@@ -238,12 +227,9 @@ class App(ttk.Frame):
 
         thinning = self.thinning_entry.get()
         self.thinning_entry.save_to_temp("thinning")
-        thinning_df = keypoints_proc.thinning(tar_df, thinning)
+        plot_df = keypoints_proc.thinning(tar_df, thinning)
 
-        plot_df = thinning_df.loc[idx_slice, :]
-        #        self.drp.set_timestamps(thinning_df["timestamp"].values, plot_df["timestamp"].values)
-        timestamps = plot_df["timestamp"].values
-        frames = plot_df.index.get_level_values(0).values
+        plot_df = plot_df.loc[idx_slice, :]
         n_neighbors = self.n_neighbors_combobox.get()
         min_dist = self.min_dist_combobox.get()
         rand_mode = self.umap_seed_combobox.get()
@@ -254,11 +240,7 @@ class App(ttk.Frame):
         reduced_df = keypoints_proc.umap(plot_df, tar_cols=cols, n_components=2, n_neighbors=int(n_neighbors), min_dist=float(min_dist), seed=seed)
 
         self.drp.set_member(current_member)
-        self.drp.draw(
-            reduced_df,
-            timestamps,
-            frames,
-        )
+        self.drp.draw(reduced_df, class_sr)
         self.export_button["state"] = tk.NORMAL
 
     def combo_selected(self, event):
@@ -287,10 +269,14 @@ class App(ttk.Frame):
         file_name = os.path.basename(self.feat_path).split(".")[0]
         dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_dimredu.bc.pkl")
 
-        cluster_df = self.drp.get_cluster_df(self.cluster_names)
-        cluster_df["member"] = self.member_keypoints_combos.get_selected()[0]
-        cluster_df = cluster_df.set_index(["frame", "member"])
-
+        cluster_df = self.drp.get_cluster_df()
+        # class column: for repeat_draw
+        # each cluster column: for scene_table
+        for i, cluster_name in enumerate(self.cluster_names):
+            if i not in cluster_df["class"].unique():
+                continue
+            cluster_df[cluster_name] = False
+            cluster_df.loc[cluster_df["class"] == i, cluster_name] = True
         export_df = cluster_df
         export_df.attrs = self.feat_df.attrs
         export_df.attrs["features"] = self.cluster_names

@@ -143,8 +143,12 @@ class App(ttk.Frame):
         bool_df = pl.load_pkl()
         bool_pkl_path = pl.get_tar_path()
 
+        print("A")
+        print(bool_df)
         # bool型 or column名がtimestampじゃないカラムは削除
         self.bool_df = bool_df.loc[:, (bool_df.dtypes == "bool") | (bool_df.columns == "timestamp")]
+        print("B")
+        print(self.bool_df)
         cols = self.bool_df.columns.tolist()
         cols.remove("timestamp")
         self.bool_col_combo["values"] = cols
