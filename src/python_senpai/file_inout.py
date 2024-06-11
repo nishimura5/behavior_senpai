@@ -76,7 +76,7 @@ class PickleLoader:
         member_num = src_df.index.get_level_values(1).nunique()
         called_in = os.path.basename(inspect.stack()[1].filename)
         print(
-            f"{called_in} < {os.path.basename(self.tar_path)}: shape={src_df.shape[0]:,}x{src_df.shape[1]}, frames={frame_num:,}, members={member_num}"
+            f"{called_in} < {os.path.basename(self.tar_path)}: shape={src_df.shape[0]:,}x{src_df.shape[1]} frames={frame_num:,} members={member_num}"
         )
         return src_df
 
@@ -133,7 +133,8 @@ def save_pkl(org_pkl_path, dst_df, proc_history=None):
         print("export() canceled.")
         return
     dst_df.to_pickle(file_name)
-    print("export() done.")
+    called_in = os.path.basename(inspect.stack()[1].filename)
+    print(f"{called_in} > {os.path.basename(os.path.basename(file_name))}")
 
 
 def pkl_to_csv(init_dir="~"):

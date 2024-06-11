@@ -63,7 +63,6 @@ class DimensionalReductionPlotter:
 
     def draw(self, plot_df, class_sr):
         self.plot_df = plot_df
-        print(self.plot_df)
         if class_sr is not None:
             self.plot_df["class"] = class_sr
         else:
