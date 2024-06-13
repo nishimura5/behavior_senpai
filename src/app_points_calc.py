@@ -90,15 +90,19 @@ class App(ttk.Frame):
         self.lineplot.set_single_ax()
 
     def _load(self, event, args):
+        print("_load()")
         self.src_df = args["src_df"]
         self.cap = args["cap"]
         self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")
         self.src_attrs = self.src_df.attrs
         self.tar_df = self.src_df[~self.src_df.index.duplicated(keep="last")]
+        idx = self.tar_df.index
+        self.tar_df.index = self.tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(int)])
+        print(self.tar_df.index)
 
         # update GUI
         self.member_combo.set_df(self.tar_df)
-        self.lineplot.set_trk_df(self.src_df)
+        self.lineplot.set_trk_df(self.tar_df)
         self.lineplot.set_vcap(self.cap)
 
     def select_tree_row(self, event):
@@ -159,14 +163,10 @@ class App(ttk.Frame):
         # thinning for plotting
         thinning = self.thinning_entry.get()
         self.thinning_entry.save_to_temp("thinning")
-        thinned_df = keypoints_proc.thinning(self.tar_df, thinning)
-
-        idx = thinned_df.index
-        thinned_df.index = thinned_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
 
         for calc, member, point_a, point_b, point_c in rows:
             code = self.name_and_code[calc]
-            member_df = thinned_df.loc[pd.IndexSlice[:, member], :]
+            member_df = self.tar_df.loc[pd.IndexSlice[:, member], :]
             point_a, point_b = int(point_a), int(point_b)
             if code == "norm":
                 plot_df = keypoints_proc.calc_norm(member_df, point_a, point_b)
@@ -191,8 +191,9 @@ class App(ttk.Frame):
             else:
                 self.feat_df = pd.concat([self.feat_df, plot_df], axis=1)
 
-            plot_df["timestamp"] = thinned_df.loc[pd.IndexSlice[:, :, point_a], :].droplevel(2)["timestamp"]
-            self.lineplot.set_plot(plot_df, member, col_names)
+            plot_df["timestamp"] = self.tar_df.loc[pd.IndexSlice[:, :, point_a], :].droplevel(2)["timestamp"]
+            thinned_df = keypoints_proc.thinning(plot_df, thinning)
+            self.lineplot.set_plot(thinned_df, member, col_names)
 
         self.lineplot.draw()
         self.export_btn["state"] = "normal"

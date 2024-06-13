@@ -2,7 +2,6 @@ import os
 import tkinter as tk
 from tkinter import ttk
 
-import numpy as np
 import pandas as pd
 from dimredu_plotter import DimensionalReductionPlotter
 from gui_parts import Combobox, IntEntry, MemberKeypointComboboxes, StrEntry, TempFile
@@ -110,16 +109,22 @@ class App(ttk.Frame):
         self.feat_df = None
 
     def _load(self, event, args):
+        print("_load()")
         self.src_df = args["src_df"]
         self.cap = args["cap"]
         self.time_min, self.time_max = args["time_span_msec"]
         self.pkl_dir = args["pkl_dir"]
         self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")
-        self.drp.set_trk_df(self.src_df)
+
+        tar_df = self.src_df
+        idx = tar_df.index
+        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
+
+        self.drp.set_trk_df(tar_df)
         self.drp.set_vcap(self.cap)
 
         # UIの更新
-        self.member_keypoints_combos.set_df(self.src_df)
+        self.member_keypoints_combos.set_df(tar_df)
         self.current_dt_span = None
         for cluster_name in self.cluster_names:
             self.tree.insert("", "end", values=(cluster_name, cluster_name))

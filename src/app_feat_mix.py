@@ -94,12 +94,18 @@ class App(ttk.Frame):
         self.lineplot.pack(plot_frame)
 
     def _load(self, event, args):
+        print("_load()")
         self.src_df = args["src_df"]
         self.cap = args["cap"]
         self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")
 
         self.pkl_dir = args["pkl_dir"]
-        self.lineplot.set_trk_df(self.src_df)
+
+        tar_df = self.src_df
+        idx = tar_df.index
+        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
+
+        self.lineplot.set_trk_df(tar_df)
         self.lineplot.set_vcap(self.cap)
 
         self.src_attrs = df_attrs.DfAttrs(self.src_df)
