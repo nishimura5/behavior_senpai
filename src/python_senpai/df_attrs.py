@@ -19,8 +19,9 @@ class DfAttrs:
         for history in self.attrs["proc_history"]:
             if isinstance(history, dict) and "type" in history.keys() and "source_cols" in history.keys():
                 proc_history_list.append(history)
-            else:
-                print(f"invalid proc_history:{history}")
+        if len(proc_history_list) == 0:
+            print("proc_history not found.")
+            return
         self.newest_proc_history = proc_history_list[-1]
 
     def load_scene_table(self):
@@ -30,6 +31,9 @@ class DfAttrs:
         self.scene_table = self.attrs["scene_table"]
 
     def get_scene_descriptions(self, add_blank=False):
+        if "scene_table" not in self.attrs.keys():
+            print("scene_table not found.")
+            return [""]
         descriptions = list(set(self.scene_table["description"]))
         if add_blank:
             return [""] + descriptions
@@ -45,17 +49,17 @@ class DfAttrs:
         ]
         return start_and_end_list
 
-    def validate_model(self, model_name):
+    def validate_model(self, model_name, video_name=""):
+        if self.attrs["video_name"] != video_name and video_name != "":
+            print(f'warning: video_name "{video_name}" unmatch.')
         if self.attrs["model"] != model_name:
-            print(f"model_name({model_name}) unmatch.")
+            print(f'model_name "{model_name}" unmatch.')
             return False
         return True
 
-    def validate_newest_history_proc(self, proc_name, model_name):
-        if self.validate_model(model_name) is False:
-            return False
+    def validate_newest_history_proc(self, proc_name):
         if self.newest_proc_history["type"] != proc_name:
-            print(f"proc_name({proc_name}) unmatch.")
+            print(f'proc_name "{proc_name}" unmatch.')
             return False
         if len(self.newest_proc_history["source_cols"]) == 0:
             print("source_cols is empty.")

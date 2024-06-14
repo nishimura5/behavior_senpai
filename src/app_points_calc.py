@@ -98,7 +98,6 @@ class App(ttk.Frame):
         self.tar_df = self.src_df[~self.src_df.index.duplicated(keep="last")]
         idx = self.tar_df.index
         self.tar_df.index = self.tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(int)])
-        print(self.tar_df.index)
 
         # update GUI
         self.member_combo.set_df(self.tar_df)
@@ -149,7 +148,9 @@ class App(ttk.Frame):
         in_trk_df = pl.load_pkl()
         in_trk_attrs = df_attrs.DfAttrs(in_trk_df)
         in_trk_attrs.load_proc_history()
-        if in_trk_attrs.validate_newest_history_proc("points", self.src_attrs["model"]) is False:
+        if in_trk_attrs.validate_model(self.src_attrs["model"], self.src_attrs["video_name"]) is False:
+            return
+        if in_trk_attrs.validate_newest_history_proc("points") is False:
             return
         for row in in_trk_attrs.get_source_cols():
             self.tree.insert("", "end", values=row)

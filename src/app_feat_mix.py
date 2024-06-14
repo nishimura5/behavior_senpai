@@ -218,7 +218,9 @@ class App(ttk.Frame):
         in_trk_df = pl.load_pkl()
         in_trk_attrs = df_attrs.DfAttrs(in_trk_df)
         in_trk_attrs.load_proc_history()
-        if in_trk_attrs.validate_newest_history_proc("mix", self.src_attrs.attrs["model"]) is False:
+        if in_trk_attrs.validate_model(self.src_attrs.attrs["model"], self.src_attrs.attrs["video_name"]) is False:
+            return
+        if in_trk_attrs.validate_newest_history_proc("mix") is False:
             return
         for row in in_trk_attrs.get_source_cols():
             if row[2] not in self.tar_df.columns and row[2] != " ":
@@ -244,7 +246,6 @@ class App(ttk.Frame):
             for scene in scenes:
                 condition_sr |= self.tar_df["timestamp"].between(scene[0] - 1, scene[1] + 1)
             scene_filtered_df.loc[~condition_sr, :] = pd.NA
-        print(scene_filtered_df)
         row_num = len(rows)
         for i, row in enumerate(rows):
             feat_name, member, col_a, op, col_b, normalize = row
