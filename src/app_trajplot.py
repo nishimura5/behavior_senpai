@@ -52,18 +52,21 @@ class App(ttk.Frame):
         self.traj.pack(plot_frame)
 
     def _load(self, event, args):
-        self.src_df = args["src_df"]
-        self.cap = args["cap"]
+        src_df = args["src_df"].copy()
         self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")
-        self.src_attrs = self.src_df.attrs
-        self.tar_df = self.src_df[~self.src_df.index.duplicated(keep="last")]
+        self.tar_df = src_df[~src_df.index.duplicated(keep="last")]
 
-        # UIの更新
-        self.member_keypoints_combos.set_df(self.src_df)
-        self.traj.set_vcap(self.cap)
-        self.clear()
+        idx = self.tar_df.index
+        self.tar_df.index = self.tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(int)])
+
+        self.traj.set_vcap(args["cap"])
+        self.src_attrs = src_df.attrs
+
+        # Update GUI
+        self.member_keypoints_combos.set_df(self.tar_df)
 
     def draw(self):
+        self.feat_df = pd.DataFrame()
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
         self.timestamp_df = self.tar_df.loc[:, "timestamp"].droplevel(2).to_frame()
 

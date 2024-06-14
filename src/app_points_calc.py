@@ -90,19 +90,19 @@ class App(ttk.Frame):
         self.lineplot.set_single_ax()
 
     def _load(self, event, args):
-        print("_load()")
-        self.src_df = args["src_df"]
-        self.cap = args["cap"]
+        src_df = args["src_df"].copy()
         self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")
-        self.src_attrs = self.src_df.attrs
-        self.tar_df = self.src_df[~self.src_df.index.duplicated(keep="last")]
+        self.tar_df = src_df[~src_df.index.duplicated(keep="last")]
+
         idx = self.tar_df.index
         self.tar_df.index = self.tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(int)])
 
-        # update GUI
-        self.member_combo.set_df(self.tar_df)
         self.lineplot.set_trk_df(self.tar_df)
-        self.lineplot.set_vcap(self.cap)
+        self.lineplot.set_vcap(args["cap"])
+        self.src_attrs = src_df.attrs
+
+        # Update GUI
+        self.member_combo.set_df(self.tar_df)
 
     def select_tree_row(self, event):
         """Handle the selection of a row in the tree."""

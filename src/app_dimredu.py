@@ -109,22 +109,21 @@ class App(ttk.Frame):
         self.feat_df = None
 
     def _load(self, event, args):
-        print("_load()")
-        self.src_df = args["src_df"]
-        self.cap = args["cap"]
-        self.time_min, self.time_max = args["time_span_msec"]
-        self.pkl_dir = args["pkl_dir"]
+        src_df = args["src_df"].copy()
         self.calc_dir = os.path.join(os.path.dirname(args["pkl_dir"]), "calc")
+        self.pkl_dir = args["pkl_dir"]
 
-        tar_df = self.src_df
-        idx = tar_df.index
-        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
+        idx = src_df.index
+        src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
 
-        self.drp.set_trk_df(tar_df)
-        self.drp.set_vcap(self.cap)
+        self.drp.set_trk_df(src_df)
+        self.drp.set_vcap(args["cap"])
+        self.src_attrs = df_attrs.DfAttrs(src_df)
 
-        # UIの更新
-        self.member_keypoints_combos.set_df(tar_df)
+        self.time_min, self.time_max = args["time_span_msec"]
+
+        # Update GUI
+        self.member_keypoints_combos.set_df(src_df)
         self.current_dt_span = None
         for cluster_name in self.cluster_names:
             self.tree.insert("", "end", values=(cluster_name, cluster_name))
@@ -170,7 +169,7 @@ class App(ttk.Frame):
         cluster_df = pl.load_pkl()
         in_trk_attrs = df_attrs.DfAttrs(cluster_df)
         in_trk_attrs.load_proc_history()
-        if in_trk_attrs.validate_model(self.src_attrs["model"], self.src_attrs["video_name"]) is False:
+        if in_trk_attrs.validate_model(self.src_attrs.attrs["model"], self.src_attrs.attrs["video_name"]) is False:
             return
         if in_trk_attrs.validate_newest_history_proc("dimredu") is False:
             return
