@@ -6,7 +6,6 @@ import pandas as pd
 import rtmpose_drawer
 import yolo_drawer
 from gui_parts import TempFile
-from python_senpai import keypoints_proc
 
 
 class MakeMp4:
