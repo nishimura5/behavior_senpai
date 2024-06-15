@@ -100,7 +100,6 @@ class App(ttk.Frame):
 
     def _load(self, event, args):
         self.src_df = args["src_df"]
-        self.cap = args["cap"]
         src_attrs = self.src_df.attrs
         self.time_min, self.time_max = args["time_span_msec"]
         self.pkl_dir = args["pkl_dir"]
@@ -112,7 +111,7 @@ class App(ttk.Frame):
 
         self.tree.delete(*self.tree.get_children())
         self.clear()
-        self.plot.set_vcap(self.cap)
+        self.plot.set_vcap(args["cap"])
 
         if "scene_table" in src_attrs.keys():
             self.scene_table = src_attrs["scene_table"]
