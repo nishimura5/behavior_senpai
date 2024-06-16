@@ -18,7 +18,7 @@ import export_mp4
 import license_view
 import pref_list
 import ttkthemes
-from gui_parts import TempFile, TimeSpanEntry
+from gui_parts import TempFile
 from main_gui_parts import PklSelector, VideoViewer
 from python_senpai import file_inout, keypoints_proc, vcap, windows_and_mac
 
@@ -96,8 +96,6 @@ class App(ttk.Frame):
         self.pkl_selector = PklSelector(load_frame)
         self.pkl_selector.pack(side=tk.LEFT)
         self.pkl_selector.set_command(cmd=self.load)
-        self.time_span_entry = TimeSpanEntry(load_frame)
-        self.time_span_entry.pack(side=tk.LEFT)
 
         save_frame = ttk.Frame(head_frame)
         save_frame.pack(anchor=tk.E)
@@ -146,12 +144,12 @@ class App(ttk.Frame):
         self.cap.open_file(os.path.join(self.pkl_dir, os.pardir, src_attrs["video_name"]))
 
         # UIの更新
-        self.time_span_entry.update_entry(self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
+        self.time_span = (self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
         self.pkl_selector.set_prev_next(src_attrs)
 
         self.vw.set_cap(self.cap, src_attrs["frame_size"], anno_trk=self.src_df)
         self.update_attrs()
-        args = {"src_df": self.src_df, "time_span_msec": self.time_span_entry.get_start_end(), "cap": self.cap, "pkl_dir": self.pkl_dir}
+        args = {"src_df": self.src_df, "time_span_msec": self.time_span, "cap": self.cap, "pkl_dir": self.pkl_dir}
         self.k2m.load(args)
 
     def update_attrs(self):
@@ -182,7 +180,7 @@ class App(ttk.Frame):
         args = {
             "src_df": self.src_df,
             "trk_pkl_name": os.path.basename(self.pkl_path),
-            "time_span_msec": self.time_span_entry.get_start_end(),
+            "time_span_msec": self.time_span,
             "cap": self.cap,
             "pkl_dir": self.pkl_dir,
             "current_position": current_position,
