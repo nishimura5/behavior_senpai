@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-from gui_parts import StrEntry, TempFile
+from gui_parts import StrEntry, TempFile, TimeSpanEntry
 from line_plotter import LinePlotter
 from python_senpai import keypoints_proc, time_format
 
@@ -43,6 +43,10 @@ class App(ttk.Frame):
         self.new_member_name_entry.pack_horizontal(padx=(0, 5))
         rename_btn = ttk.Button(rename_frame, text="Rename", command=self.rename_member)
         rename_btn.pack(side=tk.LEFT, padx=5)
+
+        self.time_span_entry = TimeSpanEntry(rename_frame)
+        self.time_span_entry.pack(side=tk.LEFT, padx=20)
+
         remove_btn = ttk.Button(rename_frame, text="Remove", command=self.remove_member)
         remove_btn.pack(padx=(70, 0))
 
@@ -82,17 +86,17 @@ class App(ttk.Frame):
         self._load(args)
 
     def _load(self, args):
-        self.src_df = args["src_df"]
-        self.cap = args["cap"]
+        self.src_df = args["src_df"].copy()
         self.time_min, self.time_max = args["time_span_msec"]
 
-        # UIの更新
+        # Update GUI
         self.update_tree()
         self.clear()
+        self.time_span_entry.update_entry(self.time_min, self.time_max)
 
         idx = self.src_df.index
         self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
-        self.band.set_vcap(self.cap)
+        self.band.set_vcap(args["cap"])
 
         # memberの数をカウント
         members = self.src_df.dropna().index.get_level_values(1).unique()
@@ -144,7 +148,8 @@ class App(ttk.Frame):
             print("new member name is empty")
             return
         # self.time_min self.time_maxの間でかつ変更したいmemberを抽出
-        between_sr = self.src_df["timestamp"].between(self.time_min - 1, self.time_max + 1)
+        start_time, end_time = self.time_span_entry.get_start_end()
+        between_sr = self.src_df["timestamp"].between(start_time - 1, end_time + 1)
         tar_member_sr = self.src_df.index.get_level_values(1) == old_member
         rename_sr = between_sr & tar_member_sr
         # new_memberを追加してmemberと入れ替える
@@ -163,8 +168,8 @@ class App(ttk.Frame):
         if current_member == "":
             print("current member is empty")
             return
-        # self.time_min self.time_maxの間でかつdropしたいmemberがmatchする行を削除
-        between_sr = self.src_df["timestamp"].between(self.time_min - 1, self.time_max + 1)
+        start_time, end_time = self.time_span_entry.get_start_end()
+        between_sr = self.src_df["timestamp"].between(start_time - 1, end_time + 1)
         tar_member_sr = self.src_df.index.get_level_values(1) == current_member
         remove_sr = between_sr & tar_member_sr
         self.src_df = self.src_df[~remove_sr]
@@ -202,11 +207,17 @@ class App(ttk.Frame):
         self.band.clear()
 
     def _select_tree_row(self, event):
-        # 選択した行のmemberを取得
+        """Handle the selection of a row in the tree."""
         if len(self.tree.selection()) == 0:
             return
-        current_member = str(self.tree.item(self.tree.selection()[0])["values"][0])
+        selected = self.tree.selection()[0]
+        current_member = str(self.tree.item(selected)["values"][0])
         self.tar_member_label_var.set(current_member)
+        start = self.tree.item(selected)["values"][1]
+        end = self.tree.item(selected)["values"][2]
+        start_msec = time_format.timestr_to_msec(start)
+        end_msec = time_format.timestr_to_msec(end)
+        self.time_span_entry.update_entry(start_msec, end_msec)
 
     def _validate(self, text):
         return text.replace(".", "").isdigit() or text == ""
