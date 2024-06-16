@@ -200,11 +200,12 @@ class App(ttk.Frame):
         if self.src_df.equals(self.a.dst_df) is True and self.src_df.attrs == self.a.dst_df.attrs:
             return
 
-        print("DataFrame Update")
+        print("DataFrame Updated")
         self.src_df = self.a.dst_df
         if "proc_history" not in self.src_df.attrs.keys():
             self.src_df.attrs["proc_history"] = []
-        self.src_df.attrs["proc_history"].append(self.a.history)
+        if self.a.history is not None:
+            self.src_df.attrs["proc_history"].append(self.a.history)
 
         self.update_attrs()
         self.vw.set_trk(self.src_df)

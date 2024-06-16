@@ -96,7 +96,8 @@ class App(ttk.Frame):
         self.plot.set_single_ax(bottom=0.12)
 
         self.dst_df = None
-        self.history = "scene_table_edit"
+        # app_scene_table is not appended to proc_history
+        self.history = None
 
     def _load(self, event, args):
         self.src_df = args["src_df"]
