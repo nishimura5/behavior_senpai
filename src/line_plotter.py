@@ -71,6 +71,15 @@ class LinePlotter:
 
         plot_df.plot(ax=self.line_ax, x="timestamp", y=data_col_names)
         self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
+        time_diff_sec = (plot_df["timestamp"].max() - plot_df["timestamp"].min()) / 1000
+        locator_interval = 5 * 60 * 1000
+        if time_diff_sec < 5 * 60:
+            locator_interval = 30 * 1000
+        elif time_diff_sec < 10 * 60:
+            locator_interval = 60 * 1000
+        elif time_diff_sec < 30 * 60:
+            locator_interval = 2 * 60 * 1000
+        self.line_ax.xaxis.set_major_locator(ticker.MultipleLocator(locator_interval))
         self.line_ax.legend(loc="upper right")
 
         show_df = plot_df.reset_index().set_index(["timestamp", "member"]).loc[:, :]

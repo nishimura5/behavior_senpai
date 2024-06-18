@@ -14,6 +14,7 @@ class App(ttk.Frame):
         super().__init__(master)
         master.title("Smoothing")
         self.pack(padx=10, pady=10)
+        self.bind("<Map>", lambda event: self._load(event, args))
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
@@ -58,34 +59,26 @@ class App(ttk.Frame):
         self.dst_df = None
         self.current_df = None
         self.history = "smoothing"
-        self.load(args)
 
-    def load(self, args):
-        self.src_df = args["src_df"]
-        self.cap = args["cap"]
+    def _load(self, event, args):
+        self.src_df = args["src_df"].copy()
 
-        # UIの更新
+        idx = self.src_df.index
+        self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
+
+        # Update GUI
         self.member_keypoints_combos.set_df(self.src_df)
         self.current_dt_span = None
         self.clear()
 
-        idx = self.src_df.index
-        self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
-        self.plot.set_vcap(self.cap)
-
-        # memberの数をカウント
-        members = self.src_df.dropna().index.get_level_values(1).unique()
-        print(f"members: {len(members)}")
+        self.plot.set_vcap(args["cap"])
 
     def draw(self):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
 
         tar_df = self.src_df.copy()
-        # keypointのインデックス値を文字列に変換
-        idx = tar_df.index
-        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
 
-        plot_df = tar_df.loc[pd.IndexSlice[:, :, current_keypoint], :]
+        plot_df = tar_df.loc[pd.IndexSlice[:, :, int(current_keypoint)], :]
         self.plot.set_trk_df(tar_df)
         self.plot.set_plot(plot_df, current_member, ["x", "y"])
         self.plot.draw()
@@ -96,9 +89,6 @@ class App(ttk.Frame):
         window_size = self.window_size_entry.get()
 
         tar_df = self.src_df.copy()
-        # keypointのインデックス値を文字列に変換
-        idx = tar_df.index
-        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(int)])
 
         if smoothing_type == "moving average":
             tar_df = keypoints_proc.calc_moving_average(tar_df, window_size)
