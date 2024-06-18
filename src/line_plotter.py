@@ -137,7 +137,10 @@ class LinePlotter:
                 rectangle = matplotlib.patches.Rectangle((start, i), end - start, 0.9, alpha=0.7, label=description)
                 self.line_ax.add_patch(rectangle)
             ticks.append(i + 0.45)
-        self.line_ax.set_ylim(0, len(descriptions))
+        ylim = len(descriptions)
+        if ylim == 0:
+            ylim = 1
+        self.line_ax.set_ylim(0, ylim)
         self.line_ax.set_yticks(ticks)
         self.line_ax.set_yticklabels(descriptions)
         self.line_ax.set_xlim(time_min_msec, time_max_msec)

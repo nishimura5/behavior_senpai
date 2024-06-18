@@ -51,15 +51,15 @@ class DfAttrs:
 
     def validate_model(self, model_name, video_name=""):
         if self.attrs["video_name"] != video_name and video_name != "":
-            print(f'warning: video_name "{video_name}" unmatch.')
+            print(f'warning: video_name "{video_name}", expected "{self.attrs["video_name"]}".')
         if self.attrs["model"] != model_name:
-            print(f'model_name "{model_name}" unmatch.')
+            print(f'model_name "{model_name}", expected "{self.attrs["model"]}".')
             return False
         return True
 
     def validate_newest_history_proc(self, proc_name):
         if self.newest_proc_history["type"] != proc_name:
-            print(f'proc_name "{proc_name}" unmatch.')
+            print(f'proc_name "{proc_name}", expected "{self.newest_proc_history["type"]}".')
             return False
         if len(self.newest_proc_history["source_cols"]) == 0:
             print("source_cols is empty.")
