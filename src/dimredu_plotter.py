@@ -136,8 +136,11 @@ class DimensionalReductionPlotter:
             self.line_plot.set_data(self.timestamps, self.plot_df["class"])
         self._update_scatter()
 
-        center_ind = event.ind[0]
-        timestamp_msec = self.timestamps[center_ind]
+        # search the nearest point
+        near_df = self.plot_df.loc[self.plot_df.index[event.ind], :]
+        distances = np.sqrt((near_df["umap_0"] - event.mouseevent.xdata) ** 2 + (near_df["umap_1"] - event.mouseevent.ydata) ** 2)
+        timestamp_msec = near_df.iloc[np.argmin(distances)]["timestamp"]
+
         self.vline.set_xdata([timestamp_msec])
         self.canvas.draw_idle()
 
