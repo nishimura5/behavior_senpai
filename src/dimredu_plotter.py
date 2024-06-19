@@ -28,6 +28,7 @@ class DimensionalReductionPlotter:
         self.draw_anno = False
         self.class_names = None
         self.picker_range = None
+        self.plot_df = None
 
     def pack(self, master):
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)

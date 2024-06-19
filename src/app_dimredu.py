@@ -75,7 +75,7 @@ class App(ttk.Frame):
         draw_frame = ttk.Frame(left_frame)
         draw_frame.pack(anchor=tk.NW, fill=tk.X, expand=True, padx=5)
         vals = [0.1, 1, 10, 30, 50]
-        self.picker_range_combobox = Combobox(draw_frame, label="Picker range:", values=vals)
+        self.picker_range_combobox = Combobox(draw_frame, label="Picker range:", values=vals, current=1)
         self.picker_range_combobox.set_selected_bind(self.combo_selected)
         self.picker_range_combobox.pack_vertical(pady=5)
         self.cluster_names = [str(i) for i in range(0, 8)]
@@ -244,6 +244,9 @@ class App(ttk.Frame):
         else:
             seed = 42
         reduced_df = keypoints_proc.umap(plot_df, tar_cols=cols, n_components=2, n_neighbors=int(n_neighbors), min_dist=float(min_dist), seed=seed)
+
+        if self.drp.plot_df is not None:
+            class_sr = self.drp.plot_df["class"]
 
         self.drp.set_member(current_member)
         self.drp.draw(reduced_df, class_sr)

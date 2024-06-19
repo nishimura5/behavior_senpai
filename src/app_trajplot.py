@@ -64,9 +64,9 @@ class App(ttk.Frame):
 
         # Update GUI
         self.member_keypoints_combos.set_df(self.tar_df)
+        self.feat_df = pd.DataFrame()
 
     def draw(self):
-        self.feat_df = pd.DataFrame()
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
         self.timestamp_df = self.tar_df.loc[:, "timestamp"].droplevel(2).to_frame()
 

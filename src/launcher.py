@@ -127,6 +127,7 @@ class App(ttk.Frame):
         self.pkl_path = ""
         self.pkl_dir = None
         self.src_df = None
+        self.time_span = None
 
     def load(self, event=None):
         pkl_path = self.pkl_selector.get_trk_path()
