@@ -80,7 +80,7 @@ class DimensionalReductionPlotter:
         (self.line_plot,) = self.line_ax.plot(self.timestamps, self.plot_df["class"])
         self._update_scatter()
         self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
-        self.line_ax.set_ylim(0, 8)
+        self.line_ax.set_ylim(0, 10)
         self.vline = self.line_ax.axvline(x=0, color="gray", linewidth=0.5)
 
         self.canvas.draw_idle()
@@ -118,7 +118,7 @@ class DimensionalReductionPlotter:
         classes = [self.class_names[int(c)] for c in class_codes]
 
         scatter_plot = self.cluster_ax.scatter(
-            self.plot_df["umap_0"], self.plot_df["umap_1"], c=self.plot_df["class"], picker=self.picker_range, cmap="tab10", s=size, vmin=0, vmax=8
+            self.plot_df["umap_0"], self.plot_df["umap_1"], c=self.plot_df["class"], picker=self.picker_range, cmap="tab10", s=size, vmin=0, vmax=10
         )
         handles = [
             plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=scatter_plot.cmap(scatter_plot.norm(c)), markersize=10) for c in class_codes
