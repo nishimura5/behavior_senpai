@@ -41,7 +41,7 @@ class App(ttk.Frame):
 
         top_btn_frame = ttk.Frame(self)
         top_btn_frame.pack(pady=14)
-        self.select_video_btn = ttk.Button(top_btn_frame, text="Select Video file", command=self.select_video)
+        self.select_video_btn = ttk.Button(top_btn_frame, text="Select Video file", command=self.select_video, width=20)
         self.select_video_btn.pack(side=tk.LEFT)
         self.video_path_label = ttk.Label(top_btn_frame, text="No video selected")
         self.video_path_label.pack(side=tk.LEFT, padx=(5, 0))
@@ -119,10 +119,10 @@ class App(ttk.Frame):
 
     def _on_bat_mode_changed(self, *args):
         if self.bat_chk_val.get() is True:
+            self.select_video_btn["text"] = "Select Folder"
             self.video_path_label["text"] = "No folder selected"
             self.roi_chk_val.set(False)
             self.roi_chk["state"] = tk.DISABLED
-            self.select_video_btn["text"] = "Select Folder"
         else:
             self.select_video_btn["text"] = "Select Video file"
             self.video_path_label["text"] = "No video selected"
