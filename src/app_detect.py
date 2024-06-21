@@ -24,7 +24,7 @@ class App(ttk.Frame):
         self.bat_chk_val.set(False)
         bat_mode_frame = ttk.Frame(self)
         bat_mode_frame.pack(anchor=tk.W, side=tk.TOP)
-        bat_chk = ttk.Checkbutton(bat_mode_frame, text="Bat mode", variable=self.bat_chk_val)
+        bat_chk = ttk.Checkbutton(bat_mode_frame, text="Appy to all files", variable=self.bat_chk_val)
         bat_chk.pack(side=tk.LEFT)
         self.bat_chk_val.trace("w", self._on_bat_mode_changed)
         self.roi_chk_val = tk.BooleanVar()
@@ -41,8 +41,8 @@ class App(ttk.Frame):
 
         top_btn_frame = ttk.Frame(self)
         top_btn_frame.pack(pady=14)
-        select_video_btn = ttk.Button(top_btn_frame, text="Select Video file", command=self.select_video)
-        select_video_btn.pack(side=tk.LEFT)
+        self.select_video_btn = ttk.Button(top_btn_frame, text="Select Video file", command=self.select_video)
+        self.select_video_btn.pack(side=tk.LEFT)
         self.video_path_label = ttk.Label(top_btn_frame, text="No video selected")
         self.video_path_label.pack(side=tk.LEFT, padx=(5, 0))
         self.open_btn = ttk.Button(
@@ -122,7 +122,9 @@ class App(ttk.Frame):
             self.video_path_label["text"] = "No folder selected"
             self.roi_chk_val.set(False)
             self.roi_chk["state"] = tk.DISABLED
+            self.select_video_btn["text"] = "Select Folder"
         else:
+            self.select_video_btn["text"] = "Select Video file"
             self.video_path_label["text"] = "No video selected"
             self.roi_chk["state"] = tk.NORMAL
         self.tar_path = ""
