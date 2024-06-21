@@ -22,7 +22,7 @@ class App(ttk.Frame):
 
         load_frame = ttk.Frame(self)
         load_frame.pack(anchor=tk.NW, expand=True, fill=tk.X, pady=5)
-        feat_btn = ttk.Button(load_frame, text="Open Feature file", command=self.load_feat)
+        feat_btn = ttk.Button(load_frame, text="Select Feature file", command=self.load_feat)
         feat_btn.pack(side=tk.LEFT, padx=5)
         self.feat_path_label = ttk.Label(load_frame, text="No Feature file loaded.")
         self.feat_path_label.pack(side=tk.LEFT, padx=(5, 0), expand=True, fill=tk.X)

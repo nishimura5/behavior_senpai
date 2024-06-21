@@ -7,6 +7,7 @@ from tkinter import filedialog, ttk
 import detector_proc
 import ttkthemes
 from python_senpai import vcap, windows_and_mac
+from gui_parts import Combobox
 
 
 class App(ttk.Frame):
@@ -35,13 +36,12 @@ class App(ttk.Frame):
             combo_list = ["YOLOv8 x-pose-p6", "MediaPipe Holistic", "MMPose RTMPose-x"]
         else:
             combo_list = ["MediaPipe Holistic"]
-        self.model_cbox = ttk.Combobox(bat_mode_frame, values=combo_list, state="readonly")
-        self.model_cbox.pack(side=tk.LEFT)
-        self.model_cbox.current(0)
+        self.engine_combo = Combobox(bat_mode_frame, "Engine:", values=combo_list, width=24)
+        self.engine_combo.pack_horizontal(padx=(10, 0))
 
         top_btn_frame = ttk.Frame(self)
         top_btn_frame.pack(pady=14)
-        select_video_btn = ttk.Button(top_btn_frame, text="Select", command=self.select_video)
+        select_video_btn = ttk.Button(top_btn_frame, text="Select Video file", command=self.select_video)
         select_video_btn.pack(side=tk.LEFT)
         self.video_path_label = ttk.Label(top_btn_frame, text="No video selected")
         self.video_path_label.pack(side=tk.LEFT, padx=(5, 0))
@@ -113,7 +113,7 @@ class App(ttk.Frame):
         print(f"{datetime.datetime.now()} {video_path}")
         if video_path == "":
             return
-        model_name = self.model_cbox.get()
+        model_name = self.engine_combo.get()
         use_roi = self.roi_chk_val.get()
         detector_proc.exec(self.rcap, model_name, video_path, use_roi)
 

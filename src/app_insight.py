@@ -35,7 +35,7 @@ class App(ttk.Frame):
         self.pkl_selector.pack(side=tk.LEFT)
         self.pkl_selector.set_command(cmd=self.load_trk)
 
-        self.feat_button = ttk.Button(load_frame, text="Open Feature file", command=self.load_feat)
+        self.feat_button = ttk.Button(load_frame, text="Select Feature file", command=self.load_feat)
         self.feat_button.pack(side=tk.LEFT, padx=(20, 0))
         self.feat_path_label = ttk.Label(load_frame, text="No Feature file loaded.")
         self.feat_path_label.pack(side=tk.LEFT, padx=(5, 0))
