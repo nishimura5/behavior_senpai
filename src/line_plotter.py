@@ -38,7 +38,7 @@ class LinePlotter:
 
     def add_ax(self, row, col, pos):
         gs = gridspec.GridSpec(row, col, top=0.97, width_ratios=(4, 1))
-        self.line_ax = self.fig.add_subplot(gs[pos, 0])
+        self.line_ax = self.fig.add_subplot(gs[pos, 0], sharex=self.line_ax)
         self.violin_ax = self.fig.add_subplot(gs[pos, 1])
 
     def set_vcap(self, vcap):
@@ -154,7 +154,15 @@ class LinePlotter:
         self.line_ax.set_yticklabels(descriptions)
         self.line_ax.set_xlim(time_min_msec, time_max_msec)
         self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
-        self.line_ax.xaxis.set_major_locator(ticker.MultipleLocator(5 * 60 * 1000))
+        time_diff_sec = (plot_df["timestamp"].max() - plot_df["timestamp"].min()) / 1000
+        locator_interval = 5 * 60 * 1000
+        if time_diff_sec < 5 * 60:
+            locator_interval = 30 * 1000
+        elif time_diff_sec < 10 * 60:
+            locator_interval = 60 * 1000
+        elif time_diff_sec < 30 * 60:
+            locator_interval = 2 * 60 * 1000
+        self.line_ax.xaxis.set_major_locator(ticker.MultipleLocator(locator_interval))
         self.line_ax.grid(which="major", axis="x", linewidth=0.3)
 
         show_df = plot_df.reset_index().set_index(["timestamp", "member"]).loc[:, :]

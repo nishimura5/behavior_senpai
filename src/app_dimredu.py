@@ -252,6 +252,8 @@ class App(ttk.Frame):
         self.drp.draw(reduced_df, class_sr)
         self.export_button["state"] = tk.NORMAL
 
+        self.tree.selection_set(self.tree.get_children()[0])
+
     def combo_selected(self, event):
         self.drp.set_picker_range(float(self.picker_range_combobox.get()))
 

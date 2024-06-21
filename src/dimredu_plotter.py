@@ -81,6 +81,7 @@ class DimensionalReductionPlotter:
         self._update_scatter()
         self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         self.line_ax.set_ylim(0, 10)
+        self.line_ax.yaxis.grid(True)
         self.vline = self.line_ax.axvline(x=0, color="gray", linewidth=0.5)
 
         self.canvas.draw_idle()
