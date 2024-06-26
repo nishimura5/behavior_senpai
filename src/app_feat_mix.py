@@ -18,6 +18,7 @@ class App(ttk.Frame):
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
         self.calc_case = temp.data["calc_case"]
+        self.tar_df = None
         self.lineplot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         load_frame = ttk.Frame(self)
@@ -125,11 +126,20 @@ class App(ttk.Frame):
         temp.save(data)
 
         self.feat_path = pl.get_tar_path()
-        self.feat_path_label["text"] = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
-        self.feat_name = os.path.basename(self.feat_path)
-        self.tar_df = pl.load_pkl()
+        feat_path = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
+        tar_df = pl.load_pkl()
+        tar_df = tar_df[~tar_df.index.duplicated(keep="last")]
 
-        self.tar_df = self.tar_df[~self.tar_df.index.duplicated(keep="last")]
+        if self.tar_df is None:
+            self.tar_df = tar_df
+            self.feat_path_label["text"] = feat_path
+        else:
+            if len(self.tar_df) != len(tar_df):
+                print("The length of the dataframes are not the same.")
+                return
+            tar_df = tar_df.drop("timestamp", axis=1)
+            self.tar_df = pd.concat([self.tar_df, tar_df], axis=1)
+            self.feat_path_label["text"] = f"{self.feat_path_label['text']}, {feat_path}"
 
         # update GUI
         self.member_combo.set_df(self.tar_df)
