@@ -74,7 +74,7 @@ class DimensionalReductionPlotter:
         self.line_ax.cla()
 
         if self.picker_range is None:
-            self.picker_range = 0.1
+            self.picker_range = 10
 
         self.cluster_number = 0
         (self.line_plot,) = self.line_ax.plot(self.timestamps, self.plot_df["class"])
