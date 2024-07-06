@@ -216,6 +216,7 @@ class App(ttk.Frame):
         self.time_span_entry.update_entry(start_msec, end_msec)
         description = self.tree.item(selected)["values"][3]
         self.description_entry.update(description)
+        self.plot.jump_to(start_msec)
 
     def clear(self):
         """Clear the plot."""

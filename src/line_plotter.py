@@ -184,6 +184,10 @@ class LinePlotter:
     def _format_timedelta(self, x, pos):
         return time_format.msec_to_timestr(x)
 
+    def jump_to(self, timestamp_msec):
+        event = type("event", (object,), {"button": 1, "xdata": timestamp_msec})
+        self._click_graph(event)
+
     def _click_graph(self, event):
         if event.button == 1:
             x = event.xdata
