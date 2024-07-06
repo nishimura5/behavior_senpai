@@ -128,9 +128,7 @@ class LinePlotter:
         show_df = plot_df.reset_index().set_index(["timestamp", "member"]).loc[:, :]
         self.timestamps = show_df.index.get_level_values("timestamp").unique().to_numpy()
 
-    def set_plot_rect(self, plot_df, member: str, rects: list, time_min_msec: int, time_max_msec: int):
-        self.member = member
-
+    def set_plot_rect(self, plot_df, rects: list, time_min_msec: int, time_max_msec: int):
         # カラムごとにdtypeを指定してDataFrameを作成
         rect_df = pd.DataFrame(rects, columns=["start", "end", "description"], dtype="str")
         rect_df = rect_df.sort_values("description")
@@ -167,6 +165,9 @@ class LinePlotter:
 
         show_df = plot_df.reset_index().set_index(["timestamp", "member"]).loc[:, :]
         self.timestamps = show_df.index.get_level_values("timestamp").unique().to_numpy()
+
+    def set_member(self, member):
+        self.member = member
 
     def draw(self):
         self.vline = self.line_ax.axvline(x=0, color="gray", linewidth=0.5)

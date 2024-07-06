@@ -48,6 +48,11 @@ class App(ttk.Frame):
         member_label.pack(side=tk.LEFT)
         self.member_combo = ttk.Combobox(draw_frame, state="readonly", width=18)
         self.member_combo.pack(side=tk.LEFT)
+        self.member_combo.bind("<<ComboboxSelected>>", self.select_member)
+
+        # Connect nearby scenes button
+        self.connect_btn = ttk.Button(draw_frame, text="Connect nearby scenes", command=self._connect_nearby_scenes)
+        self.connect_btn.pack(side=tk.LEFT, padx=(10, 0))
 
         entry_frame = ttk.Frame(setting_frame)
         entry_frame.pack(pady=5)
@@ -176,8 +181,6 @@ class App(ttk.Frame):
         self._update()
 
     def draw(self):
-        current_member = self.member_combo.get()
-
         tar_df = self.src_df.copy()
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
@@ -186,8 +189,39 @@ class App(ttk.Frame):
         rects = self.scene_table
 
         self.plot.set_trk_df(plot_df)
-        self.plot.set_plot_rect(plot_df, current_member, rects, self.time_min, self.time_max)
+        self.plot.set_plot_rect(plot_df, rects, self.time_min, self.time_max)
+        self.plot.set_member(self.member_combo.get())
         self.plot.draw()
+
+    def _connect_nearby_scenes(self):
+        """self.scene_tableのstartとendを比較して近いものを結合する
+        update tree and scene_table and draw
+        """
+        nearby_time_ms = 1000
+        scene_df = pd.DataFrame(self.scene_table)
+        scene_df["start"] = pd.to_timedelta(scene_df["start"]).dt.total_seconds() * 1000
+        scene_df["end"] = pd.to_timedelta(scene_df["end"]).dt.total_seconds() * 1000
+        scene_df = scene_df.sort_values("start")
+        scene_df = scene_df.reset_index(drop=True)
+        scene_df["diff"] = scene_df.groupby("description")["end"].shift(1) - scene_df["start"]
+        scene_df["diff"] = scene_df["diff"].fillna(0)
+        scene_df["label"] = scene_df["diff"] < -nearby_time_ms
+        scene_df["label"] = scene_df.groupby("description")["label"].cumsum()
+        merged_df = scene_df.groupby(["description", "label"]).agg({"start": "first", "end": "last"}).reset_index()
+
+        # treeをクリアしてscene_tableを更新
+        self.tree.delete(*self.tree.get_children())
+        self.scene_table = {"start": [], "end": [], "description": []}
+        for i, row in merged_df.iterrows():
+            start = time_format.msec_to_timestr_with_fff(row["start"])
+            end = time_format.msec_to_timestr_with_fff(row["end"])
+            duration = row["end"] - row["start"]
+            duration_str = time_format.msec_to_timestr_with_fff(duration)
+            self.tree.insert("", "end", values=(start, end, duration_str, row["description"]))
+            self.scene_table["start"].append(start)
+            self.scene_table["end"].append(end)
+            self.scene_table["description"].append(row["description"])
+        self._update()
 
     def on_ok(self):
         """Perform the action when the 'OK' button is clicked."""
@@ -217,6 +251,9 @@ class App(ttk.Frame):
         description = self.tree.item(selected)["values"][3]
         self.description_entry.update(description)
         self.plot.jump_to(start_msec)
+
+    def select_member(self, event):
+        self.plot.set_member(self.member_combo.get())
 
     def clear(self):
         """Clear the plot."""
