@@ -51,9 +51,11 @@ class App(ttk.Frame):
         self.member_combo.bind("<<ComboboxSelected>>", self.select_member)
 
         self.connect_msec_entry = IntEntry(draw_frame, "Threshold (msec)", 1000, 6)
-        self.connect_msec_entry.pack_horizontal(padx=(10, 5))
+        self.connect_msec_entry.pack_horizontal(padx=(10, 0))
         connect_btn = ttk.Button(draw_frame, text="Connect", command=self._connect_nearby_scenes)
-        connect_btn.pack(side=tk.LEFT)
+        connect_btn.pack(side=tk.LEFT, padx=5)
+        remove_btn = ttk.Button(draw_frame, text="Remove", command=self._remove_short_scenes)
+        remove_btn.pack(side=tk.LEFT)
 
         entry_frame = ttk.Frame(setting_frame)
         entry_frame.pack(pady=5)
@@ -203,25 +205,19 @@ class App(ttk.Frame):
         scene_df = scene_df.reset_index(drop=True)
         scene_df["diff"] = scene_df.groupby("description")["end"].shift(1) - scene_df["start"]
         scene_df["diff"] = scene_df["diff"].fillna(0)
-        #        scene_df = scene_df[scene_df["diff"] <= 0]
         scene_df["label"] = scene_df["diff"] < -nearby_time_ms
         scene_df["label"] = scene_df.groupby("description")["label"].cumsum()
-        print(scene_df)
         merged_df = scene_df.groupby(["description", "label"]).agg({"start": "min", "end": "max"}).reset_index()
+        self._update_new_scene_df(merged_df)
 
-        # treeをクリアしてscene_tableを更新
-        self.tree.delete(*self.tree.get_children())
-        self.scene_table = {"start": [], "end": [], "description": []}
-        for i, row in merged_df.iterrows():
-            start = time_format.msec_to_timestr_with_fff(row["start"])
-            end = time_format.msec_to_timestr_with_fff(row["end"])
-            duration = row["end"] - row["start"]
-            duration_str = time_format.msec_to_timestr_with_fff(duration)
-            self.tree.insert("", "end", values=(start, end, duration_str, row["description"]))
-            self.scene_table["start"].append(start)
-            self.scene_table["end"].append(end)
-            self.scene_table["description"].append(row["description"])
-        self._update()
+    def _remove_short_scenes(self):
+        short_time_ms = self.connect_msec_entry.get()
+        scene_df = pd.DataFrame(self.scene_table)
+        scene_df["start"] = pd.to_timedelta(scene_df["start"]).dt.total_seconds() * 1000
+        scene_df["end"] = pd.to_timedelta(scene_df["end"]).dt.total_seconds() * 1000
+        scene_df["diff"] = scene_df["end"] - scene_df["start"]
+        scene_df = scene_df[scene_df["diff"] > short_time_ms]
+        self._update_new_scene_df(scene_df)
 
     def on_ok(self):
         """Perform the action when the 'OK' button is clicked."""
@@ -239,7 +235,6 @@ class App(ttk.Frame):
 
     def select_tree_row(self, event):
         """Handle the selection of a row in the tree."""
-        # 選択した行のmemberを取得
         if len(self.tree.selection()) == 0:
             return
         selected = self.tree.selection()[0]
@@ -307,4 +302,19 @@ class App(ttk.Frame):
             scene_table["end"].append(self.tree.item(item)["values"][1])
             scene_table["description"].append(self.tree.item(item)["values"][3])
         self.scene_table = scene_table
+        self.draw()
+
+    def _update_new_scene_df(self, new_scene_df):
+        self.clear()
+        self.tree.delete(*self.tree.get_children())
+        self.scene_table = {"start": [], "end": [], "description": []}
+        for i, row in new_scene_df.iterrows():
+            start = time_format.msec_to_timestr_with_fff(row["start"])
+            end = time_format.msec_to_timestr_with_fff(row["end"])
+            duration = row["end"] - row["start"]
+            duration_str = time_format.msec_to_timestr_with_fff(duration)
+            self.tree.insert("", "end", values=(start, end, duration_str, row["description"]))
+            self.scene_table["start"].append(start)
+            self.scene_table["end"].append(end)
+            self.scene_table["description"].append(row["description"])
         self.draw()
