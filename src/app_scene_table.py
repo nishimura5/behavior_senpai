@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-from gui_parts import StrEntry, TempFile, TimeSpanEntry
+from gui_parts import IntEntry, StrEntry, TempFile, TimeSpanEntry
 from line_plotter import LinePlotter
 from python_senpai import file_inout, time_format
 
@@ -50,9 +50,10 @@ class App(ttk.Frame):
         self.member_combo.pack(side=tk.LEFT)
         self.member_combo.bind("<<ComboboxSelected>>", self.select_member)
 
-        # Connect nearby scenes button
-        self.connect_btn = ttk.Button(draw_frame, text="Connect nearby scenes", command=self._connect_nearby_scenes)
-        self.connect_btn.pack(side=tk.LEFT, padx=(10, 0))
+        self.connect_msec_entry = IntEntry(draw_frame, "Threshold (msec)", 1000, 6)
+        self.connect_msec_entry.pack_horizontal(padx=(10, 5))
+        connect_btn = ttk.Button(draw_frame, text="Connect", command=self._connect_nearby_scenes)
+        connect_btn.pack(side=tk.LEFT)
 
         entry_frame = ttk.Frame(setting_frame)
         entry_frame.pack(pady=5)
@@ -194,10 +195,7 @@ class App(ttk.Frame):
         self.plot.draw()
 
     def _connect_nearby_scenes(self):
-        """self.scene_tableのstartとendを比較して近いものを結合する
-        update tree and scene_table and draw
-        """
-        nearby_time_ms = 1000
+        nearby_time_ms = self.connect_msec_entry.get()
         scene_df = pd.DataFrame(self.scene_table)
         scene_df["start"] = pd.to_timedelta(scene_df["start"]).dt.total_seconds() * 1000
         scene_df["end"] = pd.to_timedelta(scene_df["end"]).dt.total_seconds() * 1000
@@ -205,9 +203,11 @@ class App(ttk.Frame):
         scene_df = scene_df.reset_index(drop=True)
         scene_df["diff"] = scene_df.groupby("description")["end"].shift(1) - scene_df["start"]
         scene_df["diff"] = scene_df["diff"].fillna(0)
+        #        scene_df = scene_df[scene_df["diff"] <= 0]
         scene_df["label"] = scene_df["diff"] < -nearby_time_ms
         scene_df["label"] = scene_df.groupby("description")["label"].cumsum()
-        merged_df = scene_df.groupby(["description", "label"]).agg({"start": "first", "end": "last"}).reset_index()
+        print(scene_df)
+        merged_df = scene_df.groupby(["description", "label"]).agg({"start": "min", "end": "max"}).reset_index()
 
         # treeをクリアしてscene_tableを更新
         self.tree.delete(*self.tree.get_children())
