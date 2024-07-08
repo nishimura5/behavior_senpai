@@ -30,6 +30,8 @@ class App(ttk.Frame):
 
         control_frame = ttk.Frame(self)
         control_frame.pack(fill=tk.X, pady=(0, 20))
+        self.filter_low_button = ttk.Button(control_frame, text="Filter Low", command=self.filter_low)
+        self.filter_low_button.pack(side=tk.LEFT)
         setting_frame = ttk.Frame(control_frame)
         setting_frame.pack(side=tk.LEFT)
 
@@ -75,6 +77,7 @@ class App(ttk.Frame):
         width = int(self.height * ratio)
         self.scale = width / src_attrs["frame_size"][0]
         self.canvas.config(width=width, height=self.height)
+        self.model_name = src_attrs["model"]
         ok, image_rgb = self.cap.read_at(current_position, scale=self.scale, rgb=True)
         if ok is False:
             return
@@ -95,6 +98,7 @@ class App(ttk.Frame):
             self.hull_id = self.canvas.create_polygon(*flat_list, fill="", outline="aqua", width=2)
         else:
             self.canvas.coords(self.hull_id, *flat_list)
+        print(f"left={self.src_df['x'].min()}, right={self.src_df['x'].max()}")
 
     def reset_anchor_points(self):
         self.anchor_points = self.init_anchor_points.copy()
@@ -119,6 +123,20 @@ class App(ttk.Frame):
         dst_df = keypoints_proc.remove_by_bool_col(dst_df, "is_remove", k_m_bool)
         self.src_df = dst_df.drop(columns=["is_remove"])
 
+        self.draw_convex_hull()
+
+    def filter_low(self):
+        """Filter out the keypoints with low confidence or score."""
+        low_thresh = 0.5
+        if self.model_name == "MMPose RTMPose-x":
+            col = "score"
+        elif self.model_name == "YOLOv8 x-pose-p6":
+            col = "conf"
+        else:
+            print(f"Unsupported model: {self.model_name}")
+            return
+        self.src_df.loc[self.src_df[col] < low_thresh, ["x", "y"]] = np.nan
+        print(self.src_df.dropna())
         self.draw_convex_hull()
 
     def on_ok(self):
