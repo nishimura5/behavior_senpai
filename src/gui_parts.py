@@ -59,7 +59,12 @@ class StrEntry(ttk.Frame):
         self.frame = ttk.Frame(master)
         caption = ttk.Label(self.frame, text=label)
         caption.pack(side=tk.LEFT, padx=(0, 1))
-        self.entry = ttk.Entry(self.frame, width=width, validate="key", validatecommand=(self.register(self._validate), "%P"))
+        self.entry = ttk.Entry(
+            self.frame,
+            width=width,
+            validate="key",
+            validatecommand=(self.register(self._validate), "%P"),
+        )
         self.entry.bind("<FocusOut>", self._set_default)
         self.entry.insert(tk.END, self.default)
         self.entry.pack(side=tk.LEFT)
@@ -99,7 +104,12 @@ class CalcCaseEntry(ttk.Frame):
         self.invalid_characters = ["<", ">", ":", '"', "/", "\\", "|", "?", "*"]
         caption = ttk.Label(master, text="Calc case:")
         caption.pack(side=tk.LEFT)
-        self.calc_case_entry = ttk.Entry(master, width=20, validate="key", validatecommand=(self.register(self._validate), "%P"))
+        self.calc_case_entry = ttk.Entry(
+            master,
+            width=20,
+            validate="key",
+            validatecommand=(self.register(self._validate), "%P"),
+        )
         self.calc_case_entry.insert(tk.END, default)
         self.calc_case_entry.pack(side=tk.LEFT, padx=(0, 5))
 
@@ -124,13 +134,25 @@ class TimeSpanEntry(ttk.Frame):
         caption_time.pack(side=tk.LEFT, padx=(5, 1))
         vcmd = (self.register(self._validate), "%P")
         invcmd = (self.register(self._invalid_start), "%P")
-        self.time_start_entry = ttk.Entry(master, validate="focusout", validatecommand=vcmd, invalidcommand=invcmd, width=10)
+        self.time_start_entry = ttk.Entry(
+            master,
+            validate="focusout",
+            validatecommand=vcmd,
+            invalidcommand=invcmd,
+            width=10,
+        )
         self.time_start_entry.pack(side=tk.LEFT)
         self.time_start_entry.bind("<FocusIn>", self._select_all)
         nyoro_time = ttk.Label(master, text="～")
         nyoro_time.pack(side=tk.LEFT, padx=1)
         invcmd = (self.register(self._invalid_end), "%P")
-        self.time_end_entry = ttk.Entry(master, validate="focusout", validatecommand=vcmd, invalidcommand=invcmd, width=10)
+        self.time_end_entry = ttk.Entry(
+            master,
+            validate="focusout",
+            validatecommand=vcmd,
+            invalidcommand=invcmd,
+            width=10,
+        )
         self.time_end_entry.pack(side=tk.LEFT)
         self.time_end_entry.bind("<FocusIn>", self._select_all)
         self.reset_btn = ttk.Button(master, text="Reset", state="disable", command=self.reset, width=6)
@@ -187,7 +209,12 @@ class IntEntry(ttk.Frame):
         self.frame = ttk.Frame(master)
         caption = ttk.Label(self.frame, text=label)
         caption.pack(side=tk.LEFT, padx=(0, 1))
-        self.entry = ttk.Entry(self.frame, width=width, validate="key", validatecommand=(self.register(self._validate), "%P"))
+        self.entry = ttk.Entry(
+            self.frame,
+            width=width,
+            validate="key",
+            validatecommand=(self.register(self._validate), "%P"),
+        )
         self.entry.bind("<FocusOut>", self._set_default)
         self.entry.insert(tk.END, self.default)
         self.entry.pack(side=tk.LEFT)
@@ -273,6 +300,54 @@ class Combobox(ttk.Frame):
         data[key] = thinning
         tmp.save(data)
         return thinning
+
+
+class Tree(ttk.Frame):
+    def __init__(self, master, columns: list, height: int, right_click=False):
+        super().__init__(master)
+        cols = [col["name"] for col in columns]
+        self.tree = ttk.Treeview(self, columns=cols, height=height, show="headings", selectmode="extended")
+        for column in columns:
+            self.tree.heading(column["name"], text=column["name"])
+            self.tree.column(column["name"], width=column["width"])
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scroll = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
+        scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        self.tree.configure(yscrollcommand=scroll.set)
+        if right_click is True:
+            self.tree.bind("<Button-3>", self._right_click_tree)
+
+        self.menu = tk.Menu(self, tearoff=0)
+        self.menu.add_command(label="Remove", command=self._delete_selected)
+
+    def insert(self, values: list):
+        self.tree.insert("", tk.END, values=values)
+
+    def clear(self):
+        self.tree.delete(*self.tree.get_children())
+
+    def selection(self):
+        return self.tree.selection()
+
+    def get_selected_one(self):
+        selected = self.tree.selection()
+        if len(selected) == 0:
+            return None
+        return self.tree.item(selected)["values"]
+
+    def _right_click_tree(self, event):
+        selected = self.tree.selection()
+        print(selected, event)
+        if len(selected) == 0:
+            return
+        self.menu.post(event.x_root, event.y_root)
+
+    def _delete_selected(self):
+        selected = self.tree.selection()
+        if len(selected) == 0:
+            return
+        for item in selected:
+            self.tree.delete(item)
 
 
 class TempFile:

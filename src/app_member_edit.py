@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-from gui_parts import StrEntry, TempFile, TimeSpanEntry
+from gui_parts import StrEntry, TempFile, TimeSpanEntry, Tree
 from line_plotter import LinePlotter
 from python_senpai import keypoints_proc, time_format
 
@@ -52,22 +52,16 @@ class App(ttk.Frame):
 
         tree_frame = ttk.Frame(setting_frame)
         tree_frame.pack(pady=5)
-        cols = ("member", "start", "end", "duration", "keypoints/frame")
-        self.tree = ttk.Treeview(tree_frame, columns=cols, height=6, show="headings", selectmode="extended")
-        self.tree.heading("member", text="member")
-        self.tree.heading("start", text="start")
-        self.tree.heading("end", text="end")
-        self.tree.heading("duration", text="duration")
-        self.tree.heading("keypoints/frame", text="keypoints/frame")
-        self.tree.column("start", width=100)
-        self.tree.column("end", width=100)
-        self.tree.column("duration", width=100)
-        self.tree.pack(side=tk.LEFT)
-        scroll = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
-        scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        self.tree.configure(yscrollcommand=scroll.set)
-        # rowを選択したときのイベントを設定
-        self.tree.bind("<<TreeviewSelect>>", self._select_tree_row)
+        cols = [
+            {"name": "member", "width": 100},
+            {"name": "start", "width": 100},
+            {"name": "end", "width": 100},
+            {"name": "duration", "width": 100},
+            {"name": "keypoints/frame", "width": 100},
+        ]
+        self.tree = Tree(tree_frame, cols, height=6)
+        self.tree.pack()
+        self.tree.tree.bind("<<TreeviewSelect>>", self._select_tree_row)
 
         ok_frame = ttk.Frame(control_frame)
         ok_frame.pack(anchor=tk.NE, padx=(20, 0))
@@ -104,15 +98,11 @@ class App(ttk.Frame):
 
     def draw(self):
         """Draw the selected member's keypoints within the specified timestamp range."""
-        # treeから選択した行のmemberを取得
-        current_member = str(self.tree.item(self.tree.selection()[0])["values"][0])
+        current_member = str(self.tree.get_selected_one()[0])
 
-        # timestampの範囲を抽出
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
-        # 重複インデックス削除
         tar_df = tar_df[~tar_df.index.duplicated(keep="last")]
 
-        # keypointのインデックス値を文字列に変換
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
 
@@ -123,7 +113,7 @@ class App(ttk.Frame):
 
     def update_tree(self):
         """Update the treeview widget with the data from the src_df."""
-        self.tree.delete(*self.tree.get_children())
+        self.tree.clear()
         members = self.src_df.index.get_level_values(1).unique()
         tree_df = self.src_df
 
@@ -138,7 +128,14 @@ class App(ttk.Frame):
             tail_timestamp = time_format.msec_to_timestr_with_fff(sliced_df.tail(1)["timestamp"].values[0])
             duration = sliced_df.tail(1)["timestamp"].values[0] - sliced_df.head(1)["timestamp"].values[0]
             duration_str = time_format.msec_to_timestr_with_fff(duration)
-            self.tree.insert("", "end", values=(member, head_timestamp, tail_timestamp, duration_str, f"{kpf:.2f}"))
+            values = [
+                member,
+                head_timestamp,
+                tail_timestamp,
+                duration_str,
+                f"{kpf:.2f}",
+            ]
+            self.tree.insert(values)
 
     def rename_member(self):
         """Rename a member in the DataFrame."""
@@ -179,9 +176,9 @@ class App(ttk.Frame):
     def export_tree(self):
         """Export the tree data to a CSV file."""
         base_dict = {"member": [], "start": [], "end": [], "duration": []}
-        data = self.tree.get_children()
+        data = self.tree.tree.get_children()
         for d in data:
-            row = self.tree.item(d)["values"]
+            row = self.tree.tree.item(d)["values"]
             base_dict["member"].append(row[0])
             base_dict["start"].append(row[1])
             base_dict["end"].append(row[2])
@@ -208,15 +205,13 @@ class App(ttk.Frame):
 
     def _select_tree_row(self, event):
         """Handle the selection of a row in the tree."""
-        if len(self.tree.selection()) == 0:
+        cols = self.tree.get_selected_one()
+        if cols is None:
             return
-        selected = self.tree.selection()[0]
-        current_member = str(self.tree.item(selected)["values"][0])
+        current_member = str(cols[0])
         self.tar_member_label_var.set(current_member)
-        start = self.tree.item(selected)["values"][1]
-        end = self.tree.item(selected)["values"][2]
-        start_msec = time_format.timestr_to_msec(start)
-        end_msec = time_format.timestr_to_msec(end)
+        start_msec = time_format.timestr_to_msec(cols[1])
+        end_msec = time_format.timestr_to_msec(cols[2])
         self.time_span_entry.update_entry(start_msec, end_msec)
 
     def _validate(self, text):
