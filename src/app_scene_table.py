@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-from gui_parts import IntEntry, StrEntry, TempFile, TimeSpanEntry
+from gui_parts import IntEntry, StrEntry, TempFile, TimeSpanEntry, Tree
 from line_plotter import LinePlotter
 from python_senpai import file_inout, time_format
 
@@ -77,25 +77,15 @@ class App(ttk.Frame):
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
-        cols = ("start", "end", "duration", "description")
-        self.tree = ttk.Treeview(tree_frame, columns=cols, height=6, show="headings", selectmode="extended")
-        self.tree.heading("start", text="start")
-        self.tree.heading("end", text="end")
-        self.tree.heading("duration", text="duration")
-        self.tree.heading("description", text="description")
-        self.tree.column("start", width=100)
-        self.tree.column("end", width=100)
-        self.tree.column("duration", width=100)
-        self.tree.column("description", width=350)
+        cols = [
+            {"name": "start", "width": 100},
+            {"name": "end", "width": 100},
+            {"name": "duration", "width": 100},
+            {"name": "description", "width": 350},
+        ]
+        self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT)
-        scroll = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
-        scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        self.tree.configure(yscrollcommand=scroll.set)
-        self.tree.bind("<Button-1>", self.left_click_tree)
-        self.tree.bind("<Button-3>", self.right_click_tree)
-
-        self.menu = tk.Menu(self, tearoff=0)
-        self.menu.add_command(label="Remove", command=self._delete_selected)
+        self.tree.tree.bind("<Button-1>", self.left_click_tree)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
@@ -117,7 +107,7 @@ class App(ttk.Frame):
         self.member_combo.current(0)
         self.time_span_entry.update_entry(self.time_min, self.time_max)
 
-        self.tree.delete(*self.tree.get_children())
+        self.tree.clear()
         self.clear()
         self.plot.set_vcap(args["cap"])
 
@@ -126,10 +116,6 @@ class App(ttk.Frame):
         else:
             self.scene_table = {"start": [], "end": [], "description": []}
 
-        # self.treeをクリアしてattrs['scene_table']の値を入れる
-        for item in self.tree.get_children(""):
-            self.tree.delete(item)
-
         # attrsにdescriptionがなかったら空のリストを入れる
         if "description" not in self.scene_table.keys():
             self.scene_table["description"] = [""] * len(self.scene_table["start"])
@@ -137,7 +123,8 @@ class App(ttk.Frame):
         for start, end, description in zip(self.scene_table["start"], self.scene_table["end"], self.scene_table["description"], strict=False):
             duration = pd.to_timedelta(end) - pd.to_timedelta(start)
             duration_str = time_format.timedelta_to_str(duration)
-            self.tree.insert("", "end", values=(start, end, duration_str, description))
+            vals = (start, end, duration_str, description)
+            self.tree.insert(values=vals)
         self._update()
 
     def import_bool_pkl(self):
@@ -179,7 +166,8 @@ class App(ttk.Frame):
             end_str = time_format.msec_to_timestr_with_fff(end)
             duration = end - start
             duration_str = time_format.msec_to_timestr_with_fff(duration)
-            self.tree.insert("", "end", values=(start_str, end_str, duration_str, tar_col_name))
+            values = (start_str, end_str, duration_str, tar_col_name)
+            self.tree.insert(values)
         self._update()
 
     def draw(self):
@@ -234,29 +222,23 @@ class App(ttk.Frame):
 
     def left_click_tree(self, event):
         """Handle the selection of a row in the tree."""
-        row = self.tree.identify_row(event.y)
-        col = self.tree.identify_column(event.x)
+        row = self.tree.tree.identify_row(event.y)
+        col = self.tree.tree.identify_column(event.x)
         if row == "" or col == "":
             return
 
-        start = self.tree.item(row)["values"][0]
-        end = self.tree.item(row)["values"][1]
+        start = self.tree.get_selected_one(row)[0]
+        end = self.tree.get_selected_one(row)[1]
         start_msec = time_format.timestr_to_msec(start)
         end_msec = time_format.timestr_to_msec(end)
         self.time_span_entry.update_entry(start_msec, end_msec)
-        description = self.tree.item(row)["values"][3]
+        description = self.tree.get_selected_one(row)[3]
         self.description_entry.update(description)
 
         if col == "#2":
             self.plot.jump_to(end_msec)
         else:
             self.plot.jump_to(start_msec)
-
-    def right_click_tree(self, event):
-        selected = self.tree.selection()
-        if len(selected) == 0:
-            return
-        self.menu.post(event.x_root, event.y_root)
 
     def select_member(self, event):
         self.plot.set_member(self.member_combo.get())
@@ -279,14 +261,16 @@ class App(ttk.Frame):
         end_str = time_format.timedelta_to_str(end_td)
 
         # 重複していたらaddしない
-        tar_list = [k for k in self.tree.get_children("")]
+        tar_list = [k for k in self.tree.tree.get_children("")]
         for tar in tar_list:
-            if start_str == self.tree.item(tar)["values"][0] and end_str == self.tree.item(tar)["values"][1]:
+            row = self.tree.get_selected_one(tar)
+            if start_str == row[0] and end_str == row[1]:
                 return
-        self.tree.insert("", "end", values=(start_str, end_str, duration_str, self.description_entry.get()))
+        values = (start_str, end_str, duration_str, self.description_entry.get())
+        self.tree.insert(values)
 
         # tree_viewをstartカラムでソート
-        self._treeview_sort_column(self.tree, "start")
+        self._treeview_sort_column(self.tree.tree, "start")
         self._update()
 
     def _treeview_sort_column(self, tv, col):
@@ -295,33 +279,27 @@ class App(ttk.Frame):
         for index, (_val, k) in enumerate(tar_list):
             tv.move(k, "", index)
 
-    def _delete_selected(self):
-        selected = self.tree.selection()
-        if len(selected) == 0:
-            return
-        for item in selected:
-            self.tree.delete(item)
-
     def _update(self):
         self.clear()
         scene_table = {"start": [], "end": [], "description": []}
-        for item in self.tree.get_children(""):
-            scene_table["start"].append(self.tree.item(item)["values"][0])
-            scene_table["end"].append(self.tree.item(item)["values"][1])
-            scene_table["description"].append(self.tree.item(item)["values"][3])
+        for item in self.tree.tree.get_children(""):
+            scene_table["start"].append(self.tree.get_selected_one(item)[0])
+            scene_table["end"].append(self.tree.get_selected_one(item)[1])
+            scene_table["description"].append(self.tree.get_selected_one(item)[3])
         self.scene_table = scene_table
         self.draw()
 
     def _update_new_scene_df(self, new_scene_df):
         self.clear()
-        self.tree.delete(*self.tree.get_children())
+        self.tree.clear()
         self.scene_table = {"start": [], "end": [], "description": []}
         for i, row in new_scene_df.iterrows():
             start = time_format.msec_to_timestr_with_fff(row["start"])
             end = time_format.msec_to_timestr_with_fff(row["end"])
             duration = row["end"] - row["start"]
             duration_str = time_format.msec_to_timestr_with_fff(duration)
-            self.tree.insert("", "end", values=(start, end, duration_str, row["description"]))
+            values = (start, end, duration_str, row["description"])
+            self.tree.insert(values)
             self.scene_table["start"].append(start)
             self.scene_table["end"].append(end)
             self.scene_table["description"].append(row["description"])

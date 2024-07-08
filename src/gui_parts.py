@@ -329,10 +329,12 @@ class Tree(ttk.Frame):
     def selection(self):
         return self.tree.selection()
 
-    def get_selected_one(self):
-        selected = self.tree.selection()
-        if len(selected) == 0:
-            return None
+    def get_selected_one(self, selected=None):
+        if selected is None:
+            selected = self.tree.selection()
+            if len(selected) == 0:
+                return None
+            selected = selected[0]
         return self.tree.item(selected)["values"]
 
     def _right_click_tree(self, event):
