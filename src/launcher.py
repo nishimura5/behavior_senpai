@@ -65,13 +65,13 @@ class App(ttk.Frame):
         calc_label.pack(side=tk.TOP, pady=(8, 0))
         k2f_button = ttk.Button(buttons_frame, text="Trajectory", command=lambda: self.launch_window(k2t.App, dialog_size="1200x800"))
         k2f_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        two_point_button = ttk.Button(buttons_frame, text="Multiple points", command=lambda: self.launch_window(app_points_calc.App, dialog_size="1200x800"))
-        two_point_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        feat_mix_button = ttk.Button(buttons_frame, text="Mix/Norm", command=lambda: self.launch_window(app_feat_mix.App, dialog_size="1500x800"))
-        feat_mix_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        dimredu_button = ttk.Button(
-            buttons_frame, text="Dim-reduction", command=lambda: self.launch_window(app_dimredu.App, dialog_size="1500x800")
+        two_point_button = ttk.Button(
+            buttons_frame, text="Multiple points", command=lambda: self.launch_window(app_points_calc.App, dialog_size="1200x800")
         )
+        two_point_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        feat_mix_button = ttk.Button(buttons_frame, text="Mix/Norm", command=lambda: self.launch_window(app_feat_mix.App, dialog_size="1200x800"))
+        feat_mix_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        dimredu_button = ttk.Button(buttons_frame, text="Dim-reduction", command=lambda: self.launch_window(app_dimredu.App, dialog_size="1500x800"))
         dimredu_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         pref_label = ttk.Label(buttons_frame, text="MISC")
