@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-from gui_parts import Combobox, StrEntry, TempFile
+from gui_parts import Combobox, StrEntry, TempFile, Tree
 from line_plotter import LinePlotter
 from python_senpai import df_attrs, file_inout
 
@@ -71,25 +71,17 @@ class App(ttk.Frame):
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
-        cols = ("feature name", "member", "col A", "op", "col B", "normalize")
-        self.tree = ttk.Treeview(tree_frame, columns=cols, height=6, show="headings", selectmode="extended")
-        for col in cols:
-            self.tree.heading(col, text=col)
-        self.tree.column("feature name", width=200)
-        self.tree.column("member", width=100)
-        self.tree.column("col A", width=300)
-        self.tree.column("op", width=50)
-        self.tree.column("col B", width=300)
-        self.tree.column("normalize", width=200)
+        cols = [
+            {"name": "feature name", "width": 200},
+            {"name": "member", "width": 100},
+            {"name": "col A", "width": 300},
+            {"name": "op", "width": 50},
+            {"name": "col B", "width": 300},
+            {"name": "normalize", "width": 200},
+        ]
+        self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT)
-        scroll = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
-        scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        self.tree.configure(yscrollcommand=scroll.set)
-        self.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
-        self.tree.bind("<Button-3>", self.right_click_tree)
-
-        self.menu = tk.Menu(self, tearoff=0)
-        self.menu.add_command(label="Remove", command=self._delete_selected)
+        self.tree.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
@@ -151,22 +143,13 @@ class App(ttk.Frame):
 
     def select_tree_row(self, event):
         """Handle the selection of a row in the tree."""
-        if len(self.tree.selection()) == 0:
-            return
-        selected = self.tree.selection()[0]
-        feat_name, member, col_a, op, col_b, normalize = self.tree.item(selected, "values")
+        feat_name, member, col_a, op, col_b, normalize = self.tree.get_selected_one()
         self.name_entry.update(feat_name)
         self.member_combo.set(member)
         self.col_a_combo.set(col_a)
         self.op_combo.set(op)
         self.col_b_combo.set(col_b)
         self.normalize_combo.set(normalize)
-
-    def right_click_tree(self, event):
-        selected = self.tree.selection()
-        if len(selected) == 0:
-            return
-        self.menu.post(event.x_root, event.y_root)
 
     def add_row(self):
         feat_name = self.name_entry.get()
@@ -177,31 +160,23 @@ class App(ttk.Frame):
         op = self.op_combo.get()
         col_b = self.col_b_combo.get()
         normalize = self.normalize_combo.get()
-        tar_list = [k for k in self.tree.get_children("")]
+        tar_list = self.tree.get_all()
         for i, tar in enumerate(tar_list):
-            tree_feat_name, tree_member, tree_col_a, tree_op, tree_col_b, tree_normalize = self.tree.item(tar, "values")
+            tree_feat_name, tree_member, tree_col_a, tree_op, tree_col_b, tree_normalize = tar
             # skip if exactly same row
             if tree_feat_name == feat_name and tree_col_a == col_a and tree_op == op and tree_col_b == col_b and tree_normalize == normalize:
                 return
             # overwrite if feat_name is already used
             elif tree_feat_name == feat_name:
-                self.tree.delete(self.tree.get_children("")[i])
-                self.tree.insert("", "end", values=(feat_name, member, col_a, op, col_b, normalize))
-                return
+                self.tree.tree.delete(self.tree.tree.get_children("")[i])
+                break
             # rename if except feat_name exactly same row
             elif tree_col_a == col_a and tree_member == member and tree_op == op and tree_col_b == col_b and tree_normalize == normalize:
-                self.tree.delete(self.tree.get_children("")[i])
-                self.tree.insert("", "end", values=(feat_name, member, col_a, op, col_b, normalize))
-                return
+                self.tree.tree.delete(self.tree.tree.get_children("")[i])
+                break
 
-        self.tree.insert("", "end", values=(feat_name, member, col_a, op, col_b, normalize))
-
-    def _delete_selected(self):
-        selected = self.tree.selection()
-        if len(selected) == 0:
-            return
-        for item in selected:
-            self.tree.delete(item)
+        values = (feat_name, member, col_a, op, col_b, normalize)
+        self.tree.insert(values)
 
     def selected_op(self, event):
         op = self.op_combo.get()
@@ -243,13 +218,12 @@ class App(ttk.Frame):
             if row[4] not in self.tar_df.columns and row[4] != " ":
                 print(f"Column not found: {row[4]}")
                 continue
-            self.tree.insert("", "end", values=row)
+            self.tree.insert(row)
 
     def draw(self):
         self.lineplot.clear_fig()
         self.feat_df = pd.DataFrame()
-        rows = [self.tree.item(row, "values") for row in self.tree.get_children("")]
-        self.source_cols = rows
+        self.source_cols = self.tree.get_all()
 
         tar_scene = self.scene_combo.get()
         scenes = self.src_attrs.get_scenes(tar_scene)
@@ -260,8 +234,8 @@ class App(ttk.Frame):
             for scene in scenes:
                 condition_sr |= self.tar_df["timestamp"].between(scene[0] - 1, scene[1] + 1)
             scene_filtered_df.loc[~condition_sr, :] = pd.NA
-        row_num = len(rows)
-        for i, row in enumerate(rows):
+        row_num = len(self.source_cols)
+        for i, row in enumerate(self.source_cols):
             feat_name, member, col_a, op, col_b, normalize = row
             normalize = self.name_and_code[normalize]
             member_df = scene_filtered_df.loc[pd.IndexSlice[:, member], :].drop("timestamp", axis=1)

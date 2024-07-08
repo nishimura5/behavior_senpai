@@ -337,6 +337,9 @@ class Tree(ttk.Frame):
             selected = selected[0]
         return self.tree.item(selected)["values"]
 
+    def get_all(self):
+        return [self.tree.item(item)["values"] for item in self.tree.get_children("")]
+
     def _right_click_tree(self, event):
         selected = self.tree.selection()
         print(selected, event)

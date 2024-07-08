@@ -261,10 +261,9 @@ class App(ttk.Frame):
         end_str = time_format.timedelta_to_str(end_td)
 
         # 重複していたらaddしない
-        tar_list = [k for k in self.tree.tree.get_children("")]
+        tar_list = self.tree.get_all()
         for tar in tar_list:
-            row = self.tree.get_selected_one(tar)
-            if start_str == row[0] and end_str == row[1]:
+            if start_str == tar[0] and end_str == tar[1]:
                 return
         values = (start_str, end_str, duration_str, self.description_entry.get())
         self.tree.insert(values)

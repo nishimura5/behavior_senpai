@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-from gui_parts import CalcCaseEntry, Combobox, IntEntry, TempFile
+from gui_parts import CalcCaseEntry, Combobox, IntEntry, TempFile, Tree
 from line_plotter import LinePlotter
 from python_senpai import df_attrs, file_inout, keypoints_proc
 from vector_gui_parts import MemberKeypointComboboxesFor3Point
@@ -66,25 +66,16 @@ class App(ttk.Frame):
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
-        cols = ("calc", "member", "A", "B", "C")
-        self.tree = ttk.Treeview(tree_frame, columns=cols, height=6, show="headings", selectmode="extended")
-        for col in cols:
-            self.tree.heading(col, text=col)
-        self.tree.column("calc", width=300)
-        self.tree.column("member", width=200)
-        self.tree.column("A", width=50)
-        self.tree.column("B", width=50)
-        self.tree.column("C", width=50)
+        cols = [
+            {"name": "calc", "width": 300},
+            {"name": "member", "width": 200},
+            {"name": "A", "width": 50},
+            {"name": "B", "width": 50},
+            {"name": "C", "width": 50},
+        ]
+        self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT)
-        self.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
-        self.tree.bind("<Button-3>", self.right_click_tree)
-
-        self.menu = tk.Menu(self, tearoff=0)
-        self.menu.add_command(label="Remove", command=self._delete_selected)
-
-        scroll = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
-        scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        self.tree.configure(yscrollcommand=scroll.set)
+        self.tree.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
@@ -108,10 +99,7 @@ class App(ttk.Frame):
 
     def select_tree_row(self, event):
         """Handle the selection of a row in the tree."""
-        if len(self.tree.selection()) == 0:
-            return
-        selected = self.tree.selection()[0]
-        calc, member, point_a, point_b, point_c = self.tree.item(selected, "values")
+        calc, member, point_a, point_b, point_c = self.tree.get_selected_one()
         self.calc_type_combo.set(calc)
         self.member_combo.set(member, point_a, point_b, point_c)
 
@@ -121,28 +109,12 @@ class App(ttk.Frame):
         # Ignore point_c if calc uses 2-point-vector.
         if calc in self.point2_list and point_c != " ":
             point_c = " "
-        tar_list = [k for k in self.tree.get_children("")]
-        for i, tar in enumerate(tar_list):
-            tree_calc, tree_member, tree_point_a, tree_point_b, tree_point_c = self.tree.item(tar, "values")
-
-            # skip if exactly same row
-            if tree_calc == calc and tree_member == member and tree_point_a == point_a and tree_point_b == point_b and tree_point_c == point_c:
+        tar_list = self.tree.get_all()
+        for tar in tar_list:
+            if calc == tar[0] and member == tar[1] and point_a == str(tar[2]) and point_b == str(tar[3]) and point_c == str(tar[4]):
                 return
-
-        self.tree.insert("", "end", values=(calc, member, point_a, point_b, point_c))
-
-    def right_click_tree(self, event):
-        selected = self.tree.selection()
-        if len(selected) == 0:
-            return
-        self.menu.post(event.x_root, event.y_root)
-
-    def _delete_selected(self):
-        selected = self.tree.selection()
-        if len(selected) == 0:
-            return
-        for item in selected:
-            self.tree.delete(item)
+        values = (calc, member, point_a, point_b, point_c)
+        self.tree.insert(values)
 
     def import_feat(self):
         """Open a file dialog to select a feature file.
@@ -162,19 +134,18 @@ class App(ttk.Frame):
         if in_trk_attrs.validate_newest_history_proc("points") is False:
             return
         for row in in_trk_attrs.get_source_cols():
-            self.tree.insert("", "end", values=row)
+            self.tree.insert(row)
 
     def draw(self):
         self.lineplot.clear()
         self.feat_df = pd.DataFrame()
-        rows = [self.tree.item(row, "values") for row in self.tree.get_children("")]
-        self.source_cols = rows
+        self.source_cols = self.tree.get_all()
 
         # thinning for plotting
         thinning = self.thinning_entry.get()
         self.thinning_entry.save_to_temp("thinning")
 
-        for calc, member, point_a, point_b, point_c in rows:
+        for calc, member, point_a, point_b, point_c in self.source_cols:
             code = self.name_and_code[calc]
             member_df = self.tar_df.loc[pd.IndexSlice[:, member], :]
             point_a, point_b = int(point_a), int(point_b)
