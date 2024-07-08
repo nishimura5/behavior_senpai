@@ -47,8 +47,6 @@ class App(ttk.Frame):
         self.member_combo.pack(side=tk.LEFT, padx=5)
         add_btn = ttk.Button(tar_frame, text="Add", command=self.add_row)
         add_btn.pack(side=tk.LEFT, padx=5)
-        delete_btn = ttk.Button(tar_frame, text="Delete Selected", command=self.delete_selected)
-        delete_btn.pack(side=tk.LEFT, padx=5)
 
         setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
@@ -69,7 +67,7 @@ class App(ttk.Frame):
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
         cols = ("calc", "member", "A", "B", "C")
-        self.tree = ttk.Treeview(tree_frame, columns=cols, height=6, show="headings", selectmode="browse")
+        self.tree = ttk.Treeview(tree_frame, columns=cols, height=6, show="headings", selectmode="extended")
         for col in cols:
             self.tree.heading(col, text=col)
         self.tree.column("calc", width=300)
@@ -79,6 +77,10 @@ class App(ttk.Frame):
         self.tree.column("C", width=50)
         self.tree.pack(side=tk.LEFT)
         self.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
+        self.tree.bind("<Button-3>", self.right_click_tree)
+
+        self.menu = tk.Menu(self, tearoff=0)
+        self.menu.add_command(label="Remove", command=self._delete_selected)
 
         scroll = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
         scroll.pack(side=tk.RIGHT, fill=tk.Y)
@@ -129,11 +131,18 @@ class App(ttk.Frame):
 
         self.tree.insert("", "end", values=(calc, member, point_a, point_b, point_c))
 
-    def delete_selected(self):
-        if len(self.tree.selection()) == 0:
+    def right_click_tree(self, event):
+        selected = self.tree.selection()
+        if len(selected) == 0:
             return
-        selected = self.tree.selection()[0]
-        self.tree.delete(selected)
+        self.menu.post(event.x_root, event.y_root)
+
+    def _delete_selected(self):
+        selected = self.tree.selection()
+        if len(selected) == 0:
+            return
+        for item in selected:
+            self.tree.delete(item)
 
     def import_feat(self):
         """Open a file dialog to select a feature file.

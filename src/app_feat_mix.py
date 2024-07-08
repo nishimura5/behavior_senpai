@@ -59,8 +59,6 @@ class App(ttk.Frame):
         self.normalize_combo.pack_horizontal(padx=5)
         self.add_btn = ttk.Button(tar_frame, text="Add", command=self.add_row, state="disabled")
         self.add_btn.pack(side=tk.LEFT, padx=5)
-        self.delete_btn = ttk.Button(tar_frame, text="Delete Selected", command=self.delete_selected, state="disabled")
-        self.delete_btn.pack(side=tk.LEFT, padx=5)
 
         draw_frame = ttk.Frame(self)
         draw_frame.pack(anchor=tk.NW, pady=5)
@@ -74,7 +72,7 @@ class App(ttk.Frame):
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
         cols = ("feature name", "member", "col A", "op", "col B", "normalize")
-        self.tree = ttk.Treeview(tree_frame, columns=cols, height=6, show="headings", selectmode="browse")
+        self.tree = ttk.Treeview(tree_frame, columns=cols, height=6, show="headings", selectmode="extended")
         for col in cols:
             self.tree.heading(col, text=col)
         self.tree.column("feature name", width=200)
@@ -84,11 +82,14 @@ class App(ttk.Frame):
         self.tree.column("col B", width=300)
         self.tree.column("normalize", width=200)
         self.tree.pack(side=tk.LEFT)
-        self.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
-
         scroll = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
         scroll.pack(side=tk.RIGHT, fill=tk.Y)
         self.tree.configure(yscrollcommand=scroll.set)
+        self.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
+        self.tree.bind("<Button-3>", self.right_click_tree)
+
+        self.menu = tk.Menu(self, tearoff=0)
+        self.menu.add_command(label="Remove", command=self._delete_selected)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
@@ -145,7 +146,6 @@ class App(ttk.Frame):
         self.member_combo.set_df(self.tar_df)
         self._set_col_combos(self.member_combo.get())
         self.add_btn["state"] = "normal"
-        self.delete_btn["state"] = "normal"
         self.draw_btn["state"] = "normal"
         self.import_btn["state"] = "normal"
 
@@ -161,6 +161,12 @@ class App(ttk.Frame):
         self.op_combo.set(op)
         self.col_b_combo.set(col_b)
         self.normalize_combo.set(normalize)
+
+    def right_click_tree(self, event):
+        selected = self.tree.selection()
+        if len(selected) == 0:
+            return
+        self.menu.post(event.x_root, event.y_root)
 
     def add_row(self):
         feat_name = self.name_entry.get()
@@ -190,11 +196,12 @@ class App(ttk.Frame):
 
         self.tree.insert("", "end", values=(feat_name, member, col_a, op, col_b, normalize))
 
-    def delete_selected(self):
-        if len(self.tree.selection()) == 0:
+    def _delete_selected(self):
+        selected = self.tree.selection()
+        if len(selected) == 0:
             return
-        selected = self.tree.selection()[0]
-        self.tree.delete(selected)
+        for item in selected:
+            self.tree.delete(item)
 
     def selected_op(self, event):
         op = self.op_combo.get()

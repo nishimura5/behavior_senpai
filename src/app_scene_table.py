@@ -67,10 +67,6 @@ class App(ttk.Frame):
 
         add_btn = ttk.Button(entry_frame, text="Add", command=self._add_row)
         add_btn.pack(side=tk.LEFT, padx=5)
-        delete_btn = ttk.Button(entry_frame, text="Delete Selected", command=self._delete_selected)
-        delete_btn.pack(side=tk.LEFT, padx=5)
-        delete_all_btn = ttk.Button(entry_frame, text="Delete All", command=self._delete_all)
-        delete_all_btn.pack(side=tk.LEFT, padx=5)
 
         ok_frame = ttk.Frame(control_frame)
         ok_frame.pack(anchor=tk.NE, padx=(20, 0))
@@ -95,8 +91,11 @@ class App(ttk.Frame):
         scroll = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
         scroll.pack(side=tk.RIGHT, fill=tk.Y)
         self.tree.configure(yscrollcommand=scroll.set)
-        # rowを選択したときのイベントを設定
-        self.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
+        self.tree.bind("<Button-1>", self.left_click_tree)
+        self.tree.bind("<Button-3>", self.right_click_tree)
+
+        self.menu = tk.Menu(self, tearoff=0)
+        self.menu.add_command(label="Remove", command=self._delete_selected)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
@@ -233,19 +232,31 @@ class App(ttk.Frame):
         self.dst_df = None
         self.master.destroy()
 
-    def select_tree_row(self, event):
+    def left_click_tree(self, event):
         """Handle the selection of a row in the tree."""
-        if len(self.tree.selection()) == 0:
+        row = self.tree.identify_row(event.y)
+        col = self.tree.identify_column(event.x)
+        if row == "" or col == "":
             return
-        selected = self.tree.selection()[0]
-        start = self.tree.item(selected)["values"][0]
-        end = self.tree.item(selected)["values"][1]
+
+        start = self.tree.item(row)["values"][0]
+        end = self.tree.item(row)["values"][1]
         start_msec = time_format.timestr_to_msec(start)
         end_msec = time_format.timestr_to_msec(end)
         self.time_span_entry.update_entry(start_msec, end_msec)
-        description = self.tree.item(selected)["values"][3]
+        description = self.tree.item(row)["values"][3]
         self.description_entry.update(description)
-        self.plot.jump_to(start_msec)
+
+        if col == "#2":
+            self.plot.jump_to(end_msec)
+        else:
+            self.plot.jump_to(start_msec)
+
+    def right_click_tree(self, event):
+        selected = self.tree.selection()
+        if len(selected) == 0:
+            return
+        self.menu.post(event.x_root, event.y_root)
 
     def select_member(self, event):
         self.plot.set_member(self.member_combo.get())
@@ -286,13 +297,10 @@ class App(ttk.Frame):
 
     def _delete_selected(self):
         selected = self.tree.selection()
+        if len(selected) == 0:
+            return
         for item in selected:
             self.tree.delete(item)
-        self._update()
-
-    def _delete_all(self):
-        self.tree.delete(*self.tree.get_children())
-        self._update()
 
     def _update(self):
         self.clear()
