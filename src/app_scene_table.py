@@ -24,7 +24,7 @@ class App(ttk.Frame):
         self.plot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         control_frame = ttk.Frame(self)
-        control_frame.pack(fill=tk.X, pady=(0, 20))
+        control_frame.pack(fill=tk.X)
         setting_frame = ttk.Frame(control_frame)
         setting_frame.pack(fill=tk.X, expand=True, side=tk.LEFT)
 
