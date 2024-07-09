@@ -147,6 +147,7 @@ class App(ttk.Frame):
 
         for calc, member, point_a, point_b, point_c in self.source_cols:
             code = self.name_and_code[calc]
+            member = str(member)
             member_df = self.tar_df.loc[pd.IndexSlice[:, member], :]
             point_a, point_b = int(point_a), int(point_b)
             if code == "norm":

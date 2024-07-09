@@ -237,6 +237,7 @@ class App(ttk.Frame):
         row_num = len(self.source_cols)
         for i, row in enumerate(self.source_cols):
             feat_name, member, col_a, op, col_b, normalize = row
+            member = str(member)
             normalize = self.name_and_code[normalize]
             member_df = scene_filtered_df.loc[pd.IndexSlice[:, member], :].drop("timestamp", axis=1)
             data_a = member_df[col_a]

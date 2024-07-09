@@ -136,7 +136,6 @@ class App(ttk.Frame):
             print(f"Unsupported model: {self.model_name}")
             return
         self.src_df.loc[self.src_df[col] < low_thresh, ["x", "y"]] = np.nan
-        print(self.src_df.dropna())
         self.draw_convex_hull()
 
     def on_ok(self):
