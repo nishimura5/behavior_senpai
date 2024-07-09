@@ -329,13 +329,23 @@ class Tree(ttk.Frame):
     def selection(self):
         return self.tree.selection()
 
-    def get_selected_one(self, selected=None):
+    def set_select(self, col, value):
+        items = self.tree.get_children("")
+        for item in items:
+            if str(self.tree.item(item)["values"][col]) == value:
+                self.tree.selection_set(item)
+
+    def get_selected_one(self, selected=None, force_str=False):
         if selected is None:
             selected = self.tree.selection()
             if len(selected) == 0:
                 return None
             selected = selected[0]
-        return self.tree.item(selected)["values"]
+        if force_str is True:
+            ret = [str(self.tree.item(selected)["values"][i]) for i in range(len(self.tree.item(selected)["values"]))]
+        else:
+            ret = self.tree.item(selected)["values"]
+        return ret
 
     def get_all(self):
         return [self.tree.item(item)["values"] for item in self.tree.get_children("")]

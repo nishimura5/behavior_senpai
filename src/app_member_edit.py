@@ -28,8 +28,6 @@ class App(ttk.Frame):
         draw_frame.pack(pady=5)
         draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT)
-        clear_btn = ttk.Button(draw_frame, text="Clear", command=self.clear)
-        clear_btn.pack(side=tk.LEFT, padx=(10, 0))
 
         rename_frame = ttk.Frame(setting_frame)
         rename_frame.pack(pady=5)
@@ -82,23 +80,25 @@ class App(ttk.Frame):
     def _load(self, args):
         self.src_df = args["src_df"].copy()
         self.time_min, self.time_max = args["time_span_msec"]
+        idx = self.src_df.index
+        self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
 
         # Update GUI
         self.update_tree()
-        self.clear()
+        self.band.clear()
         self.time_span_entry.update_entry(self.time_min, self.time_max)
 
-        idx = self.src_df.index
-        self.src_df.index = self.src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
+        self.band.clear()
         self.band.set_vcap(args["cap"])
 
-        # memberの数をカウント
         members = self.src_df.dropna().index.get_level_values(1).unique()
         print(f"members: {len(members)}")
 
     def draw(self):
         """Draw the selected member's keypoints within the specified timestamp range."""
-        current_member = str(self.tree.get_selected_one()[0])
+        row = self.tree.get_selected_one(force_str=True)
+        if row is None:
+            return
 
         tar_df = keypoints_proc.filter_by_timerange(self.src_df, self.time_min, self.time_max)
         tar_df = tar_df[~tar_df.index.duplicated(keep="last")]
@@ -107,8 +107,9 @@ class App(ttk.Frame):
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1], idx.levels[2].astype(str)])
 
         plot_df = tar_df
+        self.band.clear()
         self.band.set_trk_df(plot_df)
-        self.band.set_plot_band(plot_df, current_member, self.time_min, self.time_max)
+        self.band.set_plot_band(plot_df, row[0], self.time_min, self.time_max)
         self.band.draw()
 
     def update_tree(self):
@@ -136,6 +137,11 @@ class App(ttk.Frame):
                 f"{kpf:.2f}",
             ]
             self.tree.insert(values)
+        # select current_member
+        current_member = self.tar_member_label_var.get()
+        if current_member != "None":
+            self.tree.set_select(0, current_member)
+        self.draw()
 
     def rename_member(self):
         """Rename a member in the DataFrame."""
@@ -199,17 +205,12 @@ class App(ttk.Frame):
         self.dst_df = None
         self.master.destroy()
 
-    def clear(self):
-        """Clear the data in the band."""
-        self.band.clear()
-
     def _select_tree_row(self, event):
         """Handle the selection of a row in the tree."""
-        cols = self.tree.get_selected_one()
+        cols = self.tree.get_selected_one(force_str=True)
         if cols is None:
             return
-        current_member = str(cols[0])
-        self.tar_member_label_var.set(current_member)
+        self.tar_member_label_var.set(cols[0])
         start_msec = time_format.timestr_to_msec(cols[1])
         end_msec = time_format.timestr_to_msec(cols[2])
         self.time_span_entry.update_entry(start_msec, end_msec)
