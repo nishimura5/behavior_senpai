@@ -67,7 +67,7 @@ class App(ttk.Frame):
         self.reset_anchor_points()
 
     def _load(self, args):
-        self.src_df = args["src_df"]
+        self.src_df = args["src_df"].copy()
         self.cap = args["cap"]
         current_position = args["current_position"]
         src_attrs = self.src_df.attrs
