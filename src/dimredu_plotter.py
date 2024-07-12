@@ -103,14 +103,22 @@ class DimensionalReductionPlotter:
 
     def set_picker_range(self, picker_range):
         self.picker_range = picker_range
-        self._update_scatter()
+        self._update_scatter(hold_lim=True)
+
         self.canvas.draw_idle()
 
     def get_cluster_df(self):
         return self.plot_df.loc[:, ["class", "timestamp"]]
 
-    def _update_scatter(self, size=None):
-        self.cluster_ax.cla()
+    def _update_scatter(self, size=None, hold_lim=False):
+        if hold_lim is True:
+            xlim = self.cluster_ax.get_xlim()
+            ylim = self.cluster_ax.get_ylim()
+            self.cluster_ax.cla()
+            self.cluster_ax.set_xlim(xlim)
+            self.cluster_ax.set_ylim(ylim)
+        else:
+            self.cluster_ax.cla()
         if size is None:
             size = np.ones(len(self.timestamps)) * 5
 
@@ -135,7 +143,7 @@ class DimensionalReductionPlotter:
         if event.mouseevent.button == 3:
             self.plot_df.loc[self.plot_df.index[event.ind], "class"] = self.cluster_number
             self.line_plot.set_data(self.timestamps, self.plot_df["class"])
-        self._update_scatter()
+        self._update_scatter(hold_lim=True)
 
         # search the nearest point
         near_df = self.plot_df.loc[self.plot_df.index[event.ind], :]
