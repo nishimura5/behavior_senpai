@@ -109,7 +109,11 @@ class App(ttk.Frame):
         plot_df = tar_df
         self.band.clear()
         self.band.set_trk_df(plot_df)
-        self.band.set_plot_band(plot_df, row[0], self.time_min, self.time_max)
+        time_range_df = plot_df.loc[pd.IndexSlice[:, row[0], :], :].dropna()
+        time_min = time_range_df.min()["timestamp"]
+        time_max = time_range_df.max()["timestamp"]
+        min_max_range = time_max - time_min
+        self.band.set_plot_band(plot_df, row[0], time_min - min_max_range * 0.03, time_max + min_max_range * 0.03)
         self.band.draw()
 
     def update_tree(self):
