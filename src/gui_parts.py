@@ -316,9 +316,18 @@ class Tree(ttk.Frame):
         self.tree.configure(yscrollcommand=scroll.set)
         if right_click is True:
             self.tree.bind("<Button-3>", self._right_click_tree)
+            self.menu = tk.Menu(self, tearoff=0)
+            self.menu.add_command(label="Remove", command=self._delete_selected)
 
-        self.menu = tk.Menu(self, tearoff=0)
-        self.menu.add_command(label="Remove", command=self._delete_selected)
+    def add_member_rename_to_menu(self, column):
+        self.member_column = column
+        self.add_menu("Rename member", self._rename_member)
+
+    def set_members(self, members):
+        self.member_list = members
+
+    def add_menu(self, label, command):
+        self.menu.add_command(label=label, command=command)
 
     def insert(self, values: list):
         self.tree.insert("", tk.END, values=values)
@@ -352,7 +361,6 @@ class Tree(ttk.Frame):
 
     def _right_click_tree(self, event):
         selected = self.tree.selection()
-        print(selected, event)
         if len(selected) == 0:
             return
         self.menu.post(event.x_root, event.y_root)
@@ -363,6 +371,58 @@ class Tree(ttk.Frame):
             return
         for item in selected:
             self.tree.delete(item)
+
+    def _rename_member(self):
+        selected = self.tree.selection()
+        if len(selected) == 0:
+            return
+        dialog = MemberComboDialog(self, self.member_list)
+        self.wait_window(dialog.dialog)
+        selected_member = dialog.selected_member
+        if selected_member is None:
+            return
+        for item in selected:
+            values = self.tree.item(item)["values"]
+            values[self.member_column] = selected_member
+            self.tree.item(item, values=values)
+
+
+class MemberComboDialog(ttk.Frame):
+    def __init__(self, master, member_list):
+        super().__init__(master)
+        dialog = tk.Toplevel(master)
+        dialog.focus_set()
+        dialog.title("Select member")
+        dialog.geometry("300x100")
+        dialog.resizable(0, 0)
+
+        combo_frame = ttk.Frame(dialog)
+        combo_frame.pack(side=tk.TOP, pady=(5, 10))
+        label = ttk.Label(combo_frame, text="Member:")
+        label.pack(side=tk.LEFT, padx=5)
+        self.member_combo = ttk.Combobox(combo_frame, state="readonly", width=12)
+        self.member_combo.pack(side=tk.LEFT, padx=5)
+        self.member_combo["values"] = member_list
+        self.member_combo.current(0)
+
+        button_frame = ttk.Frame(dialog)
+        button_frame.pack(side=tk.TOP, pady=(10, 5))
+        ok_btn = ttk.Button(button_frame, text="OK", command=self.on_ok)
+        ok_btn.pack(side=tk.LEFT, padx=5)
+        cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.cancel)
+        cancel_btn.pack(side=tk.LEFT)
+
+        dialog.grab_set()
+        self.dialog = dialog
+        self.selected_member = None
+
+    def on_ok(self):
+        self.selected_member = self.member_combo.get()
+        self.dialog.destroy()
+
+    def cancel(self):
+        self.selected_member = None
+        self.dialog.destroy()
 
 
 class TempFile:

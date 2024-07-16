@@ -76,6 +76,7 @@ class App(ttk.Frame):
         self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT)
         self.tree.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
+        self.tree.add_member_rename_to_menu(column=1)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
@@ -96,6 +97,7 @@ class App(ttk.Frame):
 
         # Update GUI
         self.member_combo.set_df(self.tar_df)
+        self.tree.set_members(self.tar_df.index.levels[1].unique().tolist())
 
     def select_tree_row(self, event):
         """Handle the selection of a row in the tree."""
