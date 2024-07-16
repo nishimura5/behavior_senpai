@@ -20,7 +20,7 @@ import pref_list
 import ttkthemes
 from gui_parts import TempFile
 from main_gui_parts import PklSelector, VideoViewer
-from python_senpai import file_inout, keypoints_proc, vcap, windows_and_mac
+from python_senpai import df_attrs, file_inout, keypoints_proc, vcap, windows_and_mac
 
 
 class App(ttk.Frame):
@@ -123,7 +123,7 @@ class App(ttk.Frame):
         keypoints_btn.pack(padx=(10, 0), pady=(5, 0), expand=True, fill=tk.X)
 
         self.k2m = export_mp4.MakeMp4()
-        self.cap = vcap.VideoCap()
+        self.vcap = vcap.VideoCap()
         self.pkl_path = ""
         self.pkl_dir = None
         self.src_df = None
@@ -139,16 +139,24 @@ class App(ttk.Frame):
         self.src_df = load_df
         self.src_df = keypoints_proc.zero_point_to_nan(self.src_df)
         self.src_df = self.src_df[~self.src_df.index.duplicated(keep="first")]
-        src_attrs = self.src_df.attrs
+        src_attrs = df_attrs.DfAttrs(self.src_df)
         self.pkl_dir = os.path.dirname(self.pkl_path)
-        self.cap.set_frame_size(src_attrs["frame_size"])
-        self.cap.open_file(os.path.join(self.pkl_dir, os.pardir, src_attrs["video_name"]))
+        self.vcap.set_frame_size(src_attrs.attrs["frame_size"])
+        # if the first video is loaded, use MultiVcap
+        if src_attrs.get_prev() is False:
+            _, video_list = df_attrs.make_take_list(pkl_path)
+            video_list = [os.path.join(self.pkl_dir, os.pardir, video) for video in video_list]
+            self.cap = vcap.MultiVcap(self.vcap)
+            self.cap.open_files(video_list)
+        else:
+            self.vcap.open_file(os.path.join(self.pkl_dir, os.pardir, src_attrs.get_video_name()))
+            self.cap = self.vcap
 
         # UIの更新
         self.time_span = (self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
-        self.pkl_selector.set_prev_next(src_attrs)
+        self.pkl_selector.set_prev_next(src_attrs.attrs)
 
-        self.vw.set_cap(self.cap, src_attrs["frame_size"], anno_trk=self.src_df)
+        self.vw.set_cap(self.cap, src_attrs.attrs["frame_size"], anno_trk=self.src_df)
         self.update_attrs()
         args = {"src_df": self.src_df, "time_span_msec": self.time_span, "cap": self.cap, "pkl_dir": self.pkl_dir}
         self.k2m.load(args)

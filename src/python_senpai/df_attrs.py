@@ -1,3 +1,7 @@
+import os
+
+import pandas as pd
+
 from python_senpai import time_format
 
 
@@ -49,6 +53,12 @@ class DfAttrs:
         ]
         return start_and_end_list
 
+    def get_video_name(self):
+        if "video_name" not in self.attrs.keys():
+            print("video_name not found.")
+            return ""
+        return self.attrs["video_name"]
+
     def validate_model(self, model_name, video_name=""):
         if self.attrs["video_name"] != video_name and video_name != "":
             print(f'warning: video_name "{video_name}", expected "{self.attrs["video_name"]}".')
@@ -72,7 +82,39 @@ class DfAttrs:
     def get_params(self):
         return self.newest_proc_history["params"]
 
+    def get_prev(self):
+        if "take" not in self.attrs.keys():
+            return None
+        if "prev" in self.attrs.keys() and self.attrs["prev"] is not None:
+            return self.attrs["prev"]
+        return False
+
+    def get_next(self):
+        if "take" not in self.attrs.keys():
+            print("take not found.")
+            return None
+        if "next" in self.attrs.keys() and self.attrs["next"] is not None:
+            return self.attrs["next"]
+        return False
+
 
 def make_history_dict(feat_type, source_cols, params):
     history_dict = {"type": feat_type, "source_cols": source_cols, "params": params}
     return history_dict
+
+
+def make_take_list(first_path):
+    trk_list = [first_path]
+    video_list = []
+    tar_trk = first_path
+    for i in range(10):
+        tar_df = pd.read_pickle(tar_trk)
+        tar_attrs = DfAttrs(tar_df)
+        video_list.append(tar_attrs.get_video_name())
+        next_take = tar_attrs.get_next()
+        if next_take is False:
+            break
+        next_take = os.path.join(os.path.dirname(first_path), next_take)
+        trk_list.append(next_take)
+        tar_trk = next_take
+    return trk_list, video_list

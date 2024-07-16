@@ -18,6 +18,10 @@ class VideoCap(cv2.VideoCapture):
         ok = self.open(file_path, apiPreference=cv2.CAP_ANY, params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
         if ok is False:
             print(f"Failed to open {file_path}")
+        frame_count = int(self.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.set(cv2.CAP_PROP_POS_FRAMES, frame_count - 1)
+        _ = self.read()
+        self.max_msec = self.get(cv2.CAP_PROP_POS_MSEC)
 
     def read_at(self, msec, scale=None, rgb=False, read_anyway=True):
         """
@@ -57,9 +61,6 @@ class VideoCap(cv2.VideoCapture):
         self.frame_size = frame_size
         self.dummy_frame = np.zeros((self.frame_size[1], self.frame_size[0], 3), dtype=np.uint8)
 
-    def set_max_msec(self, max_msec):
-        self.max_msec = max_msec
-
     def get_max_msec(self):
         return self.max_msec
 
@@ -69,37 +70,51 @@ class MultiVcap:
     分割されたmp4に対して、通しのmsecでread_atするためのクラス
     """
 
-    def __init__(self):
-        self.vcaps = []
+    def __init__(self, vcap):
+        self.vcap = vcap
+        self.file_path_list = []
+        self.current_file_idx = 0
 
-    def open_files(self, file_path_list, total_msec_list):
-        # file_path_listとtotal_msec_listは先頭が最初の動画になっていること
-        self.total_msec_list = total_msec_list
+    def open_files(self, file_path_list):
+        total_msec_list = []
+        total_msec = 0
         for file_path in file_path_list:
-            vc = VideoCap()
-            vc.open_file(file_path)
-            self.vcaps.append(vc)
+            self.vcap.open_file(file_path)
+            total_msec += self.vcap.get_max_msec()
+            total_msec_list.append(total_msec)
 
-    def read_at(self, msec):
+        # file_path_listとtotal_msec_listは先頭が最初の動画になっていること
+        self.total_msec_list = np.array(total_msec_list)
+        self.file_path_list = file_path_list
+        self.vcap.open_file(self.file_path_list[0])
+        self.current_file_idx = 0
+        self.isOpened = self.vcap.isOpened
+
+    def read_at(self, msec, scale=None, rgb=False, read_anyway=True):
         """
         ミリ秒を指定してreadする
         """
-        tar_idx = 0
-        for tar_msec in self.total_msec_list:
-            if msec <= tar_msec:
-                break
-            tar_idx += 1
+        tar_idx = np.searchsorted(self.total_msec_list, msec, side="left")
+        if tar_idx >= len(self.total_msec_list):
+            return False, None
+        if tar_idx != self.current_file_idx:
+            tar_path = self.file_path_list[tar_idx]
+            self.vcap.open_file(tar_path)
+            self.current_file_idx = tar_idx
 
-        tar_vcap = self.vcaps[tar_idx]
         if tar_idx == 0:
-            ok, frame = tar_vcap.read_at(msec)
+            ok, frame = self.vcap.read_at(msec, scale=scale, rgb=rgb, read_anyway=read_anyway)
         else:
             tar_msec = msec - self.total_msec_list[tar_idx - 1]
-            ok, frame = tar_vcap.read_at(tar_msec)
+            ok, frame = self.vcap.read_at(tar_msec, scale=scale, rgb=rgb, read_anyway=read_anyway)
         return ok, frame
 
+    def set_frame_size(self, frame_size):
+        self.vcap.set_frame_size(frame_size)
+
     def clear(self):
-        self.vcaps = []
+        self.file_path_list = []
+        self.current_file_idx = 0
 
 
 class RoiCap(cv2.VideoCapture):
