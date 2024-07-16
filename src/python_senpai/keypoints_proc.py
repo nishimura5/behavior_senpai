@@ -250,10 +250,9 @@ def calc_sin_cos(src_df, kp0: int, kp1: int, kp2: int):
     point2 = src_df.loc[pd.IndexSlice[:, :, kp2], :].droplevel(2)
     point1_0 = point1 - point0
     point2_0 = point2 - point0
-    cos_sr = (point1_0["x"] * point2_0["x"] + point1_0["y"] * point2_0["y"]) / (
-        np.sqrt(point1_0["x"] ** 2 + point1_0["y"] ** 2) * np.sqrt(point2_0["x"] ** 2 + point2_0["y"] ** 2)
-    )
-    sin_sr = np.sqrt(1 - cos_sr**2)
+    norm = np.sqrt(point1_0["x"] ** 2 + point1_0["y"] ** 2) * np.sqrt(point2_0["x"] ** 2 + point2_0["y"] ** 2)
+    sin_sr = (point1_0["x"] * point2_0["y"] - point1_0["y"] * point2_0["x"]) / norm
+    cos_sr = (point1_0["x"] * point2_0["x"] + point1_0["y"] * point2_0["y"]) / norm
     sin_cos_df = pd.concat([sin_sr, cos_sr], axis=1)
     sin_cos_df.columns = [f"sin({kp0}-{kp1},{kp0}-{kp2})", f"cos({kp0}-{kp1},{kp0}-{kp2})"]
     return sin_cos_df
