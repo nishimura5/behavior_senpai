@@ -214,14 +214,13 @@ class LinePlotter:
             return
 
         if self.draw_anno is True:
-            if (timestamp_msec, self.member) not in self.anno_time_member_indexes:
-                return
-            tar_df = self.anno_df.loc[pd.IndexSlice[timestamp_msec, self.member, :], :]
-            kps = tar_df.to_numpy()
-            self.anno.set_img(frame)
-            self.anno.set_pose(kps)
-            self.anno.set_track(self.member)
-            frame = self.anno.draw()
+            if (timestamp_msec, self.member) in self.anno_time_member_indexes:
+                tar_df = self.anno_df.loc[pd.IndexSlice[timestamp_msec, self.member, :], :]
+                kps = tar_df.to_numpy()
+                self.anno.set_img(frame)
+                self.anno.set_pose(kps)
+                self.anno.set_track(self.member)
+                frame = self.anno.draw()
 
         if frame.shape[0] >= 1080:
             resize_height = 800
