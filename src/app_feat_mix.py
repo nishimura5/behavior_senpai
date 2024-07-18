@@ -138,7 +138,7 @@ class App(ttk.Frame):
             tar_df = tar_df.drop("timestamp", axis=1)
             self.tar_df = pd.concat([self.tar_df, tar_df], axis=1)
             self.feat_path_label["text"] = f"{self.feat_path_label['text']}, {feat_path}"
-            self.load_combo.set_values(["Initial", "Add right"])
+            self.load_combo.set_values(["Add right", "Initial"])
             print(f"New width: {len(self.tar_df.columns)}")
         elif load_option == "Add bottom":
             if len(self.tar_df.columns) != len(tar_df.columns):
@@ -152,7 +152,7 @@ class App(ttk.Frame):
             next_df["timestamp"] = next_df["timestamp"] + prev_max_timestamp + step
             self.tar_df = pd.concat([self.tar_df, next_df], axis=0)
             self.feat_path_label["text"] = f"{self.feat_path_label['text']}, {feat_path}"
-            self.load_combo.set_values(["Initial", "Add bottom"])
+            self.load_combo.set_values(["Add bottom", "Initial"])
             print(f"New length: {len(self.tar_df)}")
 
         # update GUI
@@ -165,7 +165,10 @@ class App(ttk.Frame):
 
     def select_tree_row(self, event):
         """Handle the selection of a row in the tree."""
-        feat_name, member, col_a, op, col_b, normalize = self.tree.get_selected_one()
+        selected = self.tree.get_selected_one()
+        if selected is None:
+            return
+        feat_name, member, col_a, op, col_b, normalize = selected
         self.name_entry.update(feat_name)
         self.member_combo.set(member)
         self.col_a_combo.set(col_a)
@@ -257,6 +260,9 @@ class App(ttk.Frame):
                 condition_sr |= self.tar_df["timestamp"].between(scene[0] - 1, scene[1] + 1)
             scene_filtered_df.loc[~condition_sr, :] = pd.NA
         row_num = len(self.source_cols)
+        if row_num == 0:
+            print("No data to draw.")
+            return
         for i, row in enumerate(self.source_cols):
             feat_name, member, col_a, op, col_b, normalize = row
             member = str(member)
