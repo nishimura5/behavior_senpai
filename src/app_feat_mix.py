@@ -23,6 +23,9 @@ class App(ttk.Frame):
 
         load_frame = ttk.Frame(self)
         load_frame.pack(anchor=tk.NW, expand=True, fill=tk.X, pady=5)
+        self.load_combo = Combobox(load_frame, label="Load:", values=["Initial", "Add right", "Add bottom"], width=15)
+        self.load_combo.pack_horizontal(padx=5)
+        self.load_combo.set_state("disabled")
         feat_btn = ttk.Button(load_frame, text="Select Feature file", command=self.load_feat)
         feat_btn.pack(side=tk.LEFT, padx=5)
         self.feat_path_label = ttk.Label(load_frame, text="No Feature file loaded.")
@@ -123,16 +126,34 @@ class App(ttk.Frame):
         tar_df = pl.load_pkl()
         tar_df = tar_df[~tar_df.index.duplicated(keep="last")]
 
-        if self.tar_df is None:
+        load_option = self.load_combo.get()
+        if load_option == "Initial":
             self.tar_df = tar_df
             self.feat_path_label["text"] = feat_path
-        else:
+            self.load_combo.set_values(["Initial", "Add right", "Add bottom"])
+        elif load_option == "Add right":
             if len(self.tar_df) != len(tar_df):
                 print("The length of the dataframes are not the same.")
                 return
             tar_df = tar_df.drop("timestamp", axis=1)
             self.tar_df = pd.concat([self.tar_df, tar_df], axis=1)
             self.feat_path_label["text"] = f"{self.feat_path_label['text']}, {feat_path}"
+            self.load_combo.set_values(["Initial", "Add right"])
+            print(f"New width: {len(self.tar_df.columns)}")
+        elif load_option == "Add bottom":
+            if len(self.tar_df.columns) != len(tar_df.columns):
+                print("The number of columns are not the same.")
+                return
+            next_df = tar_df
+            prev_max_frame = self.tar_df.index.get_level_values("frame").max()
+            prev_max_timestamp = self.tar_df["timestamp"].max()
+            step = self.tar_df.loc[pd.IndexSlice[:, :], "timestamp"].diff().max()
+            next_df.index = next_df.index.set_levels(next_df.index.levels[0] + prev_max_frame + 1, level=0)
+            next_df["timestamp"] = next_df["timestamp"] + prev_max_timestamp + step
+            self.tar_df = pd.concat([self.tar_df, next_df], axis=0)
+            self.feat_path_label["text"] = f"{self.feat_path_label['text']}, {feat_path}"
+            self.load_combo.set_values(["Initial", "Add bottom"])
+            print(f"New length: {len(self.tar_df)}")
 
         # update GUI
         self.member_combo.set_df(self.tar_df)
@@ -140,6 +161,7 @@ class App(ttk.Frame):
         self.add_btn["state"] = "normal"
         self.draw_btn["state"] = "normal"
         self.import_btn["state"] = "normal"
+        self.load_combo.set_state("readonly")
 
     def select_tree_row(self, event):
         """Handle the selection of a row in the tree."""

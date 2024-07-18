@@ -293,6 +293,9 @@ class Combobox(ttk.Frame):
         self.combobox["values"] = values
         self.combobox.current(0)
 
+    def set_state(self, state):
+        self.combobox["state"] = state
+
     def save_to_temp(self, key):
         tmp = TempFile()
         data = tmp.load()
