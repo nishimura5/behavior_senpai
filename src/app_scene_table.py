@@ -30,7 +30,7 @@ class App(ttk.Frame):
 
         import_frame = ttk.Frame(setting_frame)
         import_frame.pack(pady=5)
-        import_btn = ttk.Button(import_frame, text="Import Behavioral coding file", command=self.import_bool_pkl)
+        import_btn = ttk.Button(import_frame, text="Import behavior coding file", command=self.import_bool_pkl)
         import_btn.pack(side=tk.LEFT, padx=(0, 5))
         self.bool_col_combo = ttk.Combobox(import_frame, state="disable", width=18)
         self.bool_col_combo["values"] = ["bool_col"]

@@ -25,9 +25,9 @@ class App(ttk.Frame):
 
         load_frame = ttk.Frame(left_frame)
         load_frame.pack(anchor=tk.NW, pady=5)
-        self.feat_button = ttk.Button(load_frame, text="Select Feature file", command=self.load_feat)
+        self.feat_button = ttk.Button(load_frame, text="Select feature file", command=self.load_feat)
         self.feat_button.pack(side=tk.LEFT, padx=(20, 0))
-        self.feat_path_label = ttk.Label(load_frame, text="No Feature file loaded.")
+        self.feat_path_label = ttk.Label(load_frame, text="No feature file loaded.")
         self.feat_path_label.pack(side=tk.LEFT, padx=(5, 0))
 
         proc_frame = ttk.Frame(left_frame)
@@ -97,7 +97,7 @@ class App(ttk.Frame):
         self.export_button = ttk.Button(draw_frame, text="Export", command=self.export, state=tk.DISABLED)
         self.export_button.pack(anchor=tk.NW, pady=5, padx=(0, 50), side=tk.LEFT)
 
-        self.repeat_draw_button = ttk.Button(draw_frame, text="Repeat Draw", command=self.repeat_draw, state=tk.DISABLED)
+        self.repeat_draw_button = ttk.Button(draw_frame, text="Repeat draw", command=self.repeat_draw, state=tk.DISABLED)
         self.repeat_draw_button.pack(anchor=tk.NE, pady=5)
 
         plot_frame = ttk.Frame(self)

@@ -6,8 +6,8 @@ from tkinter import filedialog, ttk
 
 import detector_proc
 import ttkthemes
-from python_senpai import vcap, windows_and_mac
 from gui_parts import Combobox
+from python_senpai import vcap, windows_and_mac
 
 
 class App(ttk.Frame):
@@ -119,12 +119,12 @@ class App(ttk.Frame):
 
     def _on_bat_mode_changed(self, *args):
         if self.bat_chk_val.get() is True:
-            self.select_video_btn["text"] = "Select Folder"
+            self.select_video_btn["text"] = "Select folder"
             self.video_path_label["text"] = "No folder selected"
             self.roi_chk_val.set(False)
             self.roi_chk["state"] = tk.DISABLED
         else:
-            self.select_video_btn["text"] = "Select Video file"
+            self.select_video_btn["text"] = "Select video file"
             self.video_path_label["text"] = "No video selected"
             self.roi_chk["state"] = tk.NORMAL
         self.tar_path = ""

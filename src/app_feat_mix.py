@@ -26,9 +26,9 @@ class App(ttk.Frame):
         self.load_combo = Combobox(load_frame, label="Load:", values=["Initial", "Add right", "Add bottom"], width=15)
         self.load_combo.pack_horizontal(padx=5)
         self.load_combo.set_state("disabled")
-        feat_btn = ttk.Button(load_frame, text="Select Feature file", command=self.load_feat)
+        feat_btn = ttk.Button(load_frame, text="Select feature file", command=self.load_feat)
         feat_btn.pack(side=tk.LEFT, padx=5)
-        self.feat_path_label = ttk.Label(load_frame, text="No Feature file loaded.")
+        self.feat_path_label = ttk.Label(load_frame, text="No feature file loaded.")
         self.feat_path_label.pack(side=tk.LEFT, padx=(5, 0), expand=True, fill=tk.X)
 
         self.scene_combo = Combobox(load_frame, label="Scene:", values=[""], width=10)

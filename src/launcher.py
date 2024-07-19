@@ -74,7 +74,7 @@ class App(ttk.Frame):
         dimredu_button = ttk.Button(buttons_frame, text="Dim-reduction", command=lambda: self.launch_window(app_dimredu.App, dialog_size="1500x800"))
         dimredu_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
-        pref_label = ttk.Label(buttons_frame, text="MISC")
+        pref_label = ttk.Label(buttons_frame, text="Misc")
         pref_label.pack(side=tk.TOP, pady=(8, 0))
         pref_list_button = ttk.Button(buttons_frame, text="Preference", command=lambda: self.launch_window(pref_list.App))
         pref_list_button.pack(side=tk.TOP, fill=tk.X, pady=4)

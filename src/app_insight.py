@@ -1,20 +1,18 @@
+import datetime
 import os
 import tkinter as tk
 from tkinter import ttk
-import datetime
 
-import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from matplotlib import ticker
-import seaborn as sns
+import numpy as np
 import pandas as pd
+import seaborn as sns
 import ttkthemes
-
 from gui_parts import TempFile
 from main_gui_parts import PklSelector
-from python_senpai import keypoints_proc, windows_and_mac, file_inout, vcap
-from python_senpai import time_format
+from matplotlib import ticker
+from python_senpai import file_inout, keypoints_proc, time_format, vcap, windows_and_mac
 
 
 class App(ttk.Frame):
@@ -46,19 +44,19 @@ class App(ttk.Frame):
         fig_size_label = ttk.Label(graph_setting_frame, text="Figure size:")
         fig_size_label.pack(side=tk.LEFT)
         self.fig_width_entry = ttk.Entry(graph_setting_frame, width=5)
-        self.fig_width_entry.insert(tk.END, '24')
+        self.fig_width_entry.insert(tk.END, "24")
         self.fig_width_entry.pack(side=tk.LEFT)
         fig_height_label = ttk.Label(graph_setting_frame, text="x")
         fig_height_label.pack(side=tk.LEFT)
         self.fig_height_entry = ttk.Entry(graph_setting_frame, width=5)
-        self.fig_height_entry.insert(tk.END, '8')
+        self.fig_height_entry.insert(tk.END, "8")
         self.fig_height_entry.pack(side=tk.LEFT)
 
         # hline entry
         hline_label = ttk.Label(graph_setting_frame, text="Horizontal line at:")
         hline_label.pack(side=tk.LEFT, padx=(15, 0))
         self.hline_entry = ttk.Entry(graph_setting_frame, width=5)
-        self.hline_entry.insert(tk.END, '0')
+        self.hline_entry.insert(tk.END, "0")
         self.hline_entry.pack(side=tk.LEFT)
 
         setting_frame = ttk.Frame(self)
@@ -109,16 +107,20 @@ class App(ttk.Frame):
 
         # UIの更新
         self.pkl_selector.set_prev_next(src_attrs)
-        raw_dict = self.trk_df.attrs['scene_table']
+        if "scene_table" not in self.trk_df.attrs:
+            self.scene_listbox.delete(0, tk.END)
+            self.scene_listbox.insert(tk.END, "No scene information.")
+            return
+        raw_dict = self.trk_df.attrs["scene_table"]
         self.scene_listbox.delete(0, tk.END)
-        self.scene_dict = {'description': [], 'start': [], 'end': []}
+        self.scene_dict = {"description": [], "start": [], "end": []}
         filter_value = self.filter_dict[self.filter_combo.get()]
-        for scene, start, end in zip(raw_dict['description'], raw_dict['start'], raw_dict['end']):
+        for scene, start, end in zip(raw_dict["description"], raw_dict["start"], raw_dict["end"]):
             duration = time_format.timestr_to_msec(end) - time_format.timestr_to_msec(start)
             if duration > filter_value:
-                self.scene_dict['description'].append(scene)
-                self.scene_dict['start'].append(start)
-                self.scene_dict['end'].append(end)
+                self.scene_dict["description"].append(scene)
+                self.scene_dict["start"].append(start)
+                self.scene_dict["end"].append(end)
                 self.scene_listbox.insert(tk.END, f"{scene} ({duration/1000:.1f}sec)")
 
     def load_feat(self):
@@ -130,12 +132,12 @@ class App(ttk.Frame):
         self.feat_df = file_inout.load_track_file(pkl_path, allow_calculated_track_file=True)
 
         # UIの更新
-        self.member_combo['state'] = 'readonly'
+        self.member_combo["state"] = "readonly"
         self.member_combo["values"] = self.feat_df.index.get_level_values("member").unique().tolist()
         self.member_combo.current(0)
         self.column_listbox.delete(0, tk.END)
         for col in self.feat_df.columns:
-            if col == 'timestamp':
+            if col == "timestamp":
                 continue
             self.column_listbox.insert(tk.END, col)
 
@@ -144,15 +146,16 @@ class App(ttk.Frame):
         scene_selected = self.scene_listbox.curselection()
         # self.scene_dict['description']のvalueに重複があったらnumber suffixを付与
         # ['a', 'a', 'b'] -> ['a', 'a_1', 'b']
-        scene_desc = self.scene_dict['description']
+        scene_desc = self.scene_dict["description"]
         scene_desc = pd.Series(scene_desc)
         scene_suffix = scene_desc.groupby(scene_desc).cumcount().astype(str)
-        scene_desc = scene_desc.str.cat(scene_suffix, sep='_').tolist()
-        self.scene_dict['description'] = scene_desc
+        scene_desc = scene_desc.str.cat(scene_suffix, sep="_").tolist()
+        self.scene_dict["description"] = scene_desc
 
-        scenes = [{"description": self.scene_dict['description'][idx],
-                   "start": self.scene_dict['start'][idx],
-                   "end": self.scene_dict['end'][idx]} for idx in scene_selected]
+        scenes = [
+            {"description": self.scene_dict["description"][idx], "start": self.scene_dict["start"][idx], "end": self.scene_dict["end"][idx]}
+            for idx in scene_selected
+        ]
         scene_num = len(scenes)
         if scene_num == 0:
             return
@@ -163,22 +166,22 @@ class App(ttk.Frame):
         margin = 0.1
         hspace = 0.05
         width_ratios = [3, 1]
-        gridspec_kw = {'hspace': hspace, 'wspace': 0.1, 'top': 1-margin, 'bottom': margin, 'right': 0.95, 'width_ratios': width_ratios}
+        gridspec_kw = {"hspace": hspace, "wspace": 0.1, "top": 1 - margin, "bottom": margin, "right": 0.95, "width_ratios": width_ratios}
         fig_width = int(self.fig_width_entry.get())
         fig_height = int(self.fig_height_entry.get())
         hline_value = float(self.hline_entry.get())
-        self.fig, axes = plt.subplots(scene_num, 2, sharex='col', sharey='all', num=self.feat_name, gridspec_kw=gridspec_kw)
+        self.fig, axes = plt.subplots(scene_num, 2, sharex="col", sharey="all", num=self.feat_name, gridspec_kw=gridspec_kw)
         self.fig.set_size_inches(fig_width, fig_height)
         self.fig.canvas.mpl_connect("button_press_event", self._click_graph)
 
         # durationによってx軸のメモリ間隔を変更
-        interval = 5*60*1000
-        if total_duration < 60*1000:
-            interval = 10*1000
-        elif total_duration < 5*60*1000:
-            interval = 30*1000
-        elif total_duration < 10*60*1000:
-            interval = 60*1000
+        interval = 5 * 60 * 1000
+        if total_duration < 60 * 1000:
+            interval = 10 * 1000
+        elif total_duration < 5 * 60 * 1000:
+            interval = 30 * 1000
+        elif total_duration < 10 * 60 * 1000:
+            interval = 60 * 1000
         axes[0][0].xaxis.set_major_locator(ticker.MultipleLocator(interval))
 
         self.vlines = []
@@ -190,42 +193,42 @@ class App(ttk.Frame):
             duration = end_ms - start_ms
             duration_sum += duration
             scene_df = keypoints_proc.filter_by_timerange(self.feat_df, start_ms, end_ms)
-            scene_df = scene_df.loc[idx[:, tar_member], columns+['timestamp']]
+            scene_df = scene_df.loc[idx[:, tar_member], columns + ["timestamp"]]
             # level=1のindexを削除
             scene_df = scene_df.reset_index(level=1, drop=True)
-            scene_dfm = scene_df.melt(id_vars='timestamp', var_name='column', value_name='value')
+            scene_dfm = scene_df.melt(id_vars="timestamp", var_name="column", value_name="value")
 
-            vline = axes[i][0].axvline(0, color='gray', linewidth=0.5)
+            vline = axes[i][0].axvline(0, color="gray", linewidth=0.5)
             self.vlines.append(vline)
-            axes[i][0].axhline(hline_value, color='gray', linewidth=0.5)
+            axes[i][0].axhline(hline_value, color="gray", linewidth=0.5)
 
             # グラフの外側(左側)に複数行のtextを表示
             text_content = f"{scene['description']}\n{scene['start']}-{scene['end']}\n{duration/1000:.1f}sec"
             axp = axes[i][0].get_position()
             text_pos = axp.y1 - (axp.y1 - axp.y0) * 0.1
-            axes[i][0].text(0.03, text_pos, text_content, ha='left', va='top', transform=self.fig.transFigure, fontsize=8, linespacing=1.5)
-            plot = sns.lineplot(data=scene_dfm, x='timestamp', y='value', hue='column', ax=axes[i][0], linewidth=0.8)
+            axes[i][0].text(0.03, text_pos, text_content, ha="left", va="top", transform=self.fig.transFigure, fontsize=8, linespacing=1.5)
+            plot = sns.lineplot(data=scene_dfm, x="timestamp", y="value", hue="column", ax=axes[i][0], linewidth=0.8)
             plot.set_ylabel(None)
             plot.set_xlabel(None)
-            scene_df = scene_df.drop(columns='timestamp')
+            scene_df = scene_df.drop(columns="timestamp")
             violin = sns.violinplot(data=scene_df, ax=axes[i][1], linewidth=0.1)
 
             # 縦線
-            axes[i][0].grid(which='major', axis='x', linewidth=0.3)
+            axes[i][0].grid(which="major", axis="x", linewidth=0.3)
 
             # i=0だけlegendを表示
             if i > 0:
                 axes[i][0].get_legend().remove()
             else:
-                axes[0][0].legend(loc='upper right', fontsize=8, title='feature')
+                axes[0][0].legend(loc="upper right", fontsize=8, title="feature")
 
         # ヘッダテキスト
         today = datetime.date.today()
         head_text = f"{self.feat_name} (duration_sum:{duration_sum/1000:.1f}sec, draw_date:{today}, video_name:{self.video_name})"
-        axes[0][0].text(0.5, 0.95, head_text, ha='center', va='top', transform=self.fig.transFigure, fontsize=10)
+        axes[0][0].text(0.5, 0.95, head_text, ha="center", va="top", transform=self.fig.transFigure, fontsize=10)
         axes[0][0].xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
 
-        self.timestamps = self.feat_df['timestamp'].unique()
+        self.timestamps = self.feat_df["timestamp"].unique()
         plt.show()
 
     def _format_timedelta(self, x, pos):
@@ -242,7 +245,7 @@ class App(ttk.Frame):
             timestamp_msec = self.vcap.get(cv2.CAP_PROP_POS_MSEC)
             timestamp_msec += 100
 
-        timestamp_msec = self.timestamps[np.fabs(self.timestamps-timestamp_msec).argsort()[:1]][0]
+        timestamp_msec = self.timestamps[np.fabs(self.timestamps - timestamp_msec).argsort()[:1]][0]
 
         for vline in self.vlines:
             vline.set_xdata([timestamp_msec])

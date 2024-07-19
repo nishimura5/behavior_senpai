@@ -26,9 +26,9 @@ class PklSelector(ttk.Frame):
         self.next_pkl_btn = ttk.Button(master, text=">", width=1, state=tk.DISABLED)
         self.next_pkl_btn.pack(side=tk.LEFT, padx=(0, 10))
 
-        self.load_pkl_btn = ttk.Button(master, text="Select Track file")
+        self.load_pkl_btn = ttk.Button(master, text="Select track file")
         self.load_pkl_btn.pack(side=tk.LEFT)
-        self.pkl_path_label = ttk.Label(master, text="No Track file loaded")
+        self.pkl_path_label = ttk.Label(master, text="No track file loaded")
         self.pkl_path_label.pack(side=tk.LEFT, padx=(5, 0))
 
         if self.trk_path != "":
@@ -47,7 +47,7 @@ class PklSelector(ttk.Frame):
             temp.save(data)
         else:
             self.trk_path = ""
-            self.pkl_path_label["text"] = "No Track file loaded"
+            self.pkl_path_label["text"] = "No track file loaded"
 
     def _load_pkl(self):
         if self.trk_path:
@@ -58,7 +58,7 @@ class PklSelector(ttk.Frame):
             tmp.save(data)
         else:
             self.trk_path = ""
-            self.pkl_path_label["text"] = "No Track file loaded"
+            self.pkl_path_label["text"] = "No track file loaded"
 
     def rename_pkl_path_label(self, new_name):
         self.pkl_path_label["text"] = new_name
