@@ -11,7 +11,7 @@ def open_pkl(init_dir, org_path=None, filetypes=[("pkl files", "*.pkl")]):
     if init_dir == "":
         init_dir = "~"
 
-    tar_path = filedialog.askopenfilename(initialdir=init_dir, title="Select Track file", filetypes=filetypes)
+    tar_path = filedialog.askopenfilename(initialdir=init_dir, title="Select track file", filetypes=filetypes)
     if tar_path == "":
         print("open_pkl() canceled.")
         return org_path
