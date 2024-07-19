@@ -127,8 +127,10 @@ class App(ttk.Frame):
         tar_df = tar_df[~tar_df.index.duplicated(keep="last")]
         tar_attrs = df_attrs.DfAttrs(tar_df)
         tar_attrs.load_proc_history()
-        track_name = tar_attrs.newest_proc_history["track_name"]
-        print(track_name)
+        if "track_name" in tar_attrs.newest_proc_history:
+            track_name = tar_attrs.newest_proc_history["track_name"]
+        else:
+            track_name = None
 
         load_option = self.load_combo.get()
         if load_option == "Initial":
@@ -148,6 +150,7 @@ class App(ttk.Frame):
             if len(self.tar_df.columns) != len(tar_df.columns):
                 print("The number of columns are not the same.")
                 return
+            print(f"track_name: {track_name}")
             next_df = tar_df
             prev_max_frame = self.tar_df.index.get_level_values("frame").max()
             prev_max_timestamp = self.tar_df["timestamp"].max()
