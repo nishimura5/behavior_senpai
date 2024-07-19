@@ -93,6 +93,7 @@ class App(ttk.Frame):
 
         self.lineplot.set_trk_df(self.tar_df)
         self.lineplot.set_vcap(args["cap"])
+        self.track_name = args["trk_pkl_name"]
         self.src_attrs = src_df.attrs
 
         # Update GUI
@@ -188,9 +189,10 @@ class App(ttk.Frame):
             print("No data to export.")
             return
         self.feat_df = self.feat_df.sort_index()
+        members = self.feat_df.index.get_level_values(1).unique()
         file_name = os.path.splitext(self.src_attrs["video_name"])[0]
         first_keypoint_id = self.tar_df.index.get_level_values(2).values[0]
-        timestamp_df = self.tar_df.loc[pd.IndexSlice[:, :, first_keypoint_id], :].droplevel(2)["timestamp"]
+        timestamp_df = self.tar_df.loc[pd.IndexSlice[:, members, first_keypoint_id], :].droplevel(2)["timestamp"]
         timestamp_df = timestamp_df[~timestamp_df.index.duplicated(keep="last")]
         self.feat_df = self.feat_df[~self.feat_df.index.duplicated(keep="last")]
         export_df = pd.concat([self.feat_df, timestamp_df], axis=1)
@@ -198,7 +200,7 @@ class App(ttk.Frame):
         export_df.attrs = self.src_attrs
         calc_case = self.calc_case_entry.get_calc_case()
         dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_pts.feat.pkl")
-        history_dict = df_attrs.make_history_dict("points", self.source_cols, {})
+        history_dict = df_attrs.make_history_dict("points", self.source_cols, {}, self.track_name)
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
 
     def _find_data_dir(self):

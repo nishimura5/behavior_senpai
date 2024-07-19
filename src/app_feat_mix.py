@@ -125,6 +125,10 @@ class App(ttk.Frame):
         feat_path = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
         tar_df = pl.load_pkl()
         tar_df = tar_df[~tar_df.index.duplicated(keep="last")]
+        tar_attrs = df_attrs.DfAttrs(tar_df)
+        tar_attrs.load_proc_history()
+        track_name = tar_attrs.newest_proc_history["track_name"]
+        print(track_name)
 
         load_option = self.load_combo.get()
         if load_option == "Initial":
@@ -147,7 +151,7 @@ class App(ttk.Frame):
             next_df = tar_df
             prev_max_frame = self.tar_df.index.get_level_values("frame").max()
             prev_max_timestamp = self.tar_df["timestamp"].max()
-            step = self.tar_df.loc[pd.IndexSlice[:, :], "timestamp"].diff().max()
+            step = self.tar_df.groupby(level=1)["timestamp"].diff().max()
             next_df.index = next_df.index.set_levels(next_df.index.levels[0] + prev_max_frame + 1, level=0)
             next_df["timestamp"] = next_df["timestamp"] + prev_max_timestamp + step
             self.tar_df = pd.concat([self.tar_df, next_df], axis=0)

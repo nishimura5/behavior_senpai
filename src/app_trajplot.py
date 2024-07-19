@@ -60,6 +60,7 @@ class App(ttk.Frame):
         self.tar_df.index = self.tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(int)])
 
         self.traj.set_vcap(args["cap"])
+        self.track_name = args["trk_pkl_name"]
         self.src_attrs = src_df.attrs
 
         # Update GUI
@@ -110,5 +111,5 @@ class App(ttk.Frame):
         export_df.attrs = self.src_attrs
         calc_case = self.calc_case_entry.get_calc_case()
         dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_trj.feat.pkl")
-        history_dict = df_attrs.make_history_dict("trajectory", [], {})
+        history_dict = df_attrs.make_history_dict("trajectory", [], {}, self.track_name)
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)

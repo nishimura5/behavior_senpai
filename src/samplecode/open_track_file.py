@@ -29,6 +29,14 @@ for key, value in trk_df.attrs.items():
         print(f"{key}:")
         for key2, value2 in value.items():
             print(f"  {key2}: {value2}")
+    elif key == "proc_history" and isinstance(value, list):
+        for i, value2 in enumerate(value):
+            print(f"{key}[{i}]:")
+            if isinstance(value2, dict):
+                for key3, value3 in value2.items():
+                    print(f"  {key3}: {value3}")
+            else:
+                print(f"  {value2}")
     else:
         print(f"{key}: {value}")
 
