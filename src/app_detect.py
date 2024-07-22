@@ -41,7 +41,7 @@ class App(ttk.Frame):
 
         top_btn_frame = ttk.Frame(self)
         top_btn_frame.pack(pady=14)
-        self.select_video_btn = ttk.Button(top_btn_frame, text="Select Video file", command=self.select_video, width=20)
+        self.select_video_btn = ttk.Button(top_btn_frame, text="Select video file", command=self.select_video, width=20)
         self.select_video_btn.pack(side=tk.LEFT)
         self.video_path_label = ttk.Label(top_btn_frame, text="No video selected")
         self.video_path_label.pack(side=tk.LEFT, padx=(5, 0))

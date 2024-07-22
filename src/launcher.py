@@ -124,6 +124,7 @@ class App(ttk.Frame):
 
         self.k2m = export_mp4.MakeMp4()
         self.vcap = vcap.VideoCap()
+        self.cap = self.vcap
         self.pkl_path = ""
         self.pkl_dir = None
         self.src_df = None
