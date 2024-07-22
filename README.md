@@ -36,7 +36,7 @@ In order to use Behavior Senpai, you need a PC that meets the following performa
  - Disk space: 12GB or more
  - RAM: 16GB or more
  - Screen resolution: 1920x1080 or higher
- - GPU: RTX2060~ (CUDA: 12.1)
+ - GPU: RTX3060~ (and its drivers)
 
 ### Without CUDA
 
