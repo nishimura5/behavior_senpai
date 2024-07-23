@@ -326,6 +326,10 @@ class Tree(ttk.Frame):
         self.member_column = column
         self.add_menu("Rename member", self._rename_member)
 
+    def add_row_copy(self, column):
+        self.member_column = column
+        self.add_menu("Copy", self._copy_row)
+
     def set_members(self, members):
         self.member_list = members
 
@@ -388,6 +392,20 @@ class Tree(ttk.Frame):
             values = self.tree.item(item)["values"]
             values[self.member_column] = selected_member
             self.tree.item(item, values=values)
+
+    def _copy_row(self):
+        selected = self.tree.selection()
+        if len(selected) == 0:
+            return
+        dialog = MemberComboDialog(self, self.member_list)
+        self.wait_window(dialog.dialog)
+        selected_member = dialog.selected_member
+        if selected_member is None:
+            return
+        for item in selected:
+            values = self.tree.item(item)["values"]
+            values[self.member_column] = selected_member
+            self.tree.insert("", tk.END, values=values)
 
 
 class MemberComboDialog(ttk.Frame):

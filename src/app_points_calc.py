@@ -77,6 +77,7 @@ class App(ttk.Frame):
         self.tree.pack(side=tk.LEFT)
         self.tree.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
         self.tree.add_member_rename_to_menu(column=1)
+        self.tree.add_row_copy(column=1)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)

@@ -86,6 +86,7 @@ class App(ttk.Frame):
         self.tree.pack(side=tk.LEFT)
         self.tree.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
         self.tree.add_member_rename_to_menu(column=1)
+        self.tree.add_row_copy(column=1)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
@@ -272,11 +273,16 @@ class App(ttk.Frame):
         if row_num == 0:
             print("No data to draw.")
             return
+        members = list(set([str(x[1]) for x in self.source_cols]))
+        member_dfs = {}
+        for member in members:
+            member_dfs[member] = scene_filtered_df.loc[pd.IndexSlice[:, member], :].drop("timestamp", axis=1)
+
         for i, row in enumerate(self.source_cols):
             feat_name, member, col_a, op, col_b, normalize = row
             member = str(member)
             normalize = self.name_and_code[normalize]
-            member_df = scene_filtered_df.loc[pd.IndexSlice[:, member], :].drop("timestamp", axis=1)
+            member_df = member_dfs[member]
             data_a = member_df[col_a]
             if op == "+":
                 data_b = member_df[col_b]
