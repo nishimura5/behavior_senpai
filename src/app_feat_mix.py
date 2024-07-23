@@ -85,6 +85,7 @@ class App(ttk.Frame):
         self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT)
         self.tree.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
+        self.tree.add_member_rename_to_menu(column=1)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
@@ -106,6 +107,7 @@ class App(ttk.Frame):
         self.src_attrs.load_scene_table()
         menu = self.src_attrs.get_scene_descriptions(add_blank=True)
         self.scene_combo.set_values(menu)
+        self.tree.set_members(src_df.index.levels[1].unique().tolist())
 
     def load_feat(self):
         pl = file_inout.PickleLoader(self.calc_dir, "feature")
