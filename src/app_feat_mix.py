@@ -224,6 +224,7 @@ class App(ttk.Frame):
         self._set_col_combos(self.member_combo.get())
 
     def _set_col_combos(self, member):
+        # print(self.tar_df.loc[pd.IndexSlice[:, member], :])
         col_list = self.tar_df.loc[pd.IndexSlice[:, member], :].dropna(how="all", axis=1).columns.tolist()
         col_list.remove("timestamp")
         col_list.append(" ")
@@ -274,53 +275,56 @@ class App(ttk.Frame):
             print("No data to draw.")
             return
         members = list(set([str(x[1]) for x in self.source_cols]))
-        member_dfs = {}
         for member in members:
-            member_dfs[member] = scene_filtered_df.loc[pd.IndexSlice[:, member], :].drop("timestamp", axis=1)
+            member_df = scene_filtered_df.loc[pd.IndexSlice[:, member], :].drop("timestamp", axis=1)
+            member_feat_df = pd.DataFrame()
 
-        for i, row in enumerate(self.source_cols):
-            feat_name, member, col_a, op, col_b, normalize = row
-            member = str(member)
-            normalize = self.name_and_code[normalize]
-            member_df = member_dfs[member]
-            data_a = member_df[col_a]
-            if op == "+":
-                data_b = member_df[col_b]
-                new_sr = data_a + data_b
-            elif op == "-":
-                data_b = member_df[col_b]
-                new_sr = data_a - data_b
-            elif op == "*":
-                data_b = member_df[col_b]
-                new_sr = data_a * data_b
-            elif op == "/":
-                data_b = member_df[col_b]
-                new_sr = data_a / data_b
-            elif op == " ":
-                new_sr = data_a
-            if normalize == "minmax":
-                new_sr = (new_sr - new_sr.min()) / (new_sr.max() - new_sr.min())
-            elif normalize == "thresh75":
-                new_sr = new_sr > new_sr.quantile(0.75)
-                new_sr = new_sr.astype(int)
-            elif normalize == "thresh50":
-                new_sr = new_sr > new_sr.median()
-                new_sr = new_sr.astype(int)
-            elif normalize == "thresh25":
-                new_sr = new_sr > new_sr.quantile(0.25)
-                new_sr = new_sr.astype(int)
-            self.feat_df = pd.concat([self.feat_df, new_sr.to_frame(feat_name)], axis=1)
-            plot_df = new_sr.to_frame(feat_name)
-            plot_df["timestamp"] = self.tar_df["timestamp"]
-            self.lineplot.add_ax(row_num, 2, i)
-            if i == row_num - 1:
-                self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name, is_last=True)
-            else:
-                self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name)
+            for i, row in enumerate(self.source_cols):
+                feat_name, m, col_a, op, col_b, normalize = row
+                if member != str(m):
+                    continue
+                normalize = self.name_and_code[normalize]
+                data_a = member_df[col_a]
+                if op == "+":
+                    data_b = member_df[col_b]
+                    new_sr = data_a + data_b
+                elif op == "-":
+                    data_b = member_df[col_b]
+                    new_sr = data_a - data_b
+                elif op == "*":
+                    data_b = member_df[col_b]
+                    new_sr = data_a * data_b
+                elif op == "/":
+                    data_b = member_df[col_b]
+                    new_sr = data_a / data_b
+                elif op == " ":
+                    new_sr = data_a
+                if normalize == "minmax":
+                    new_sr = (new_sr - new_sr.min()) / (new_sr.max() - new_sr.min())
+                elif normalize == "thresh75":
+                    new_sr = new_sr > new_sr.quantile(0.75)
+                    new_sr = new_sr.astype(int)
+                elif normalize == "thresh50":
+                    new_sr = new_sr > new_sr.median()
+                    new_sr = new_sr.astype(int)
+                elif normalize == "thresh25":
+                    new_sr = new_sr > new_sr.quantile(0.25)
+                    new_sr = new_sr.astype(int)
+                member_feat_df = pd.concat([member_feat_df, new_sr.to_frame(feat_name)], axis=1)
+                plot_df = new_sr.to_frame(feat_name)
+                plot_df["timestamp"] = self.tar_df["timestamp"]
+                self.lineplot.add_ax(row_num, 2, i)
+                if i == row_num - 1:
+                    self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name, is_last=True)
+                else:
+                    self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name)
+            self.feat_df = pd.concat([self.feat_df, member_feat_df], axis=0)
 
         self.feat_df["timestamp"] = self.tar_df["timestamp"]
+        self.feat_df = self.feat_df.sort_index()
         self.lineplot.draw()
         self.export_btn["state"] = "normal"
+        print(self.feat_df)
 
     def export(self):
         """Export the calculated data to a file."""

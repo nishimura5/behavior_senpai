@@ -9,6 +9,11 @@ from line_plotter import LinePlotter
 from python_senpai import df_attrs, file_inout, keypoints_proc
 from vector_gui_parts import MemberKeypointComboboxesFor3Point
 
+pd.set_option("display.min_rows", 50)
+pd.set_option("display.max_rows", 50)
+pd.set_option("display.max_columns", 20)
+pd.set_option("display.width", 1000)
+
 
 class App(ttk.Frame):
     """Application for calculating vectors."""
@@ -148,39 +153,48 @@ class App(ttk.Frame):
         # thinning for plotting
         thinning = self.thinning_entry.get()
         self.thinning_entry.save_to_temp("thinning")
+        members = list(set([str(x[1]) for x in self.source_cols]))
+        for member in members:
+            member_df = self.tar_df.loc[pd.IndexSlice[:, member], :].drop("timestamp", axis=1)
+            member_feat_df = pd.DataFrame()
 
-        for calc, member, point_a, point_b, point_c in self.source_cols:
-            code = self.name_and_code[calc]
-            member = str(member)
-            member_df = self.tar_df.loc[pd.IndexSlice[:, member], :]
-            point_a, point_b = int(point_a), int(point_b)
-            if code == "norm":
-                plot_df = keypoints_proc.calc_norm(member_df, point_a, point_b)
-            elif code == "sin_cos":
-                plot_df = keypoints_proc.calc_sin_cos(member_df, point_a, point_b, int(point_c))
-            elif code == "component":
-                plot_df = keypoints_proc.calc_xy_component(member_df, point_a, point_b)
-            elif code == "cross":
-                plot_df = keypoints_proc.calc_cross_product(member_df, point_a, point_b, int(point_c))
-            elif code == "dot":
-                plot_df = keypoints_proc.calc_dot_product(member_df, point_a, point_b, int(point_c))
-            elif code == "plus":
-                plot_df = keypoints_proc.calc_plus(member_df, point_a, point_b, int(point_c))
-            elif code == "norms":
-                plot_df = keypoints_proc.calc_norms(member_df, point_a, point_b, int(point_c))
+            for calc, m, point_a, point_b, point_c in self.source_cols:
+                if member != str(m):
+                    continue
 
-            col_names = plot_df.columns.tolist()
-            feat_col_names = self.feat_df.columns.tolist()
-            duplicate_cols = [col for col in col_names if col in feat_col_names]
-            if len(duplicate_cols) > 0:
-                self.feat_df = pd.concat([self.feat_df, plot_df], axis=0)
-            else:
-                self.feat_df = pd.concat([self.feat_df, plot_df], axis=1)
+                code = self.name_and_code[calc]
+                point_a, point_b = int(point_a), int(point_b)
+                if code == "norm":
+                    plot_df = keypoints_proc.calc_norm(member_df, point_a, point_b)
+                elif code == "sin_cos":
+                    plot_df = keypoints_proc.calc_sin_cos(member_df, point_a, point_b, int(point_c))
+                elif code == "component":
+                    plot_df = keypoints_proc.calc_xy_component(member_df, point_a, point_b)
+                elif code == "cross":
+                    plot_df = keypoints_proc.calc_cross_product(member_df, point_a, point_b, int(point_c))
+                elif code == "dot":
+                    plot_df = keypoints_proc.calc_dot_product(member_df, point_a, point_b, int(point_c))
+                elif code == "plus":
+                    plot_df = keypoints_proc.calc_plus(member_df, point_a, point_b, int(point_c))
+                elif code == "norms":
+                    plot_df = keypoints_proc.calc_norms(member_df, point_a, point_b, int(point_c))
 
-            plot_df["timestamp"] = self.tar_df.loc[pd.IndexSlice[:, :, point_a], :].droplevel(2)["timestamp"]
-            thinned_df = keypoints_proc.thinning(plot_df, thinning)
-            self.lineplot.set_plot(thinned_df, member, col_names)
+                col_names = plot_df.columns.tolist()
+                feat_col_names = member_feat_df.columns.tolist()
+                duplicate_cols = [col for col in col_names if col in feat_col_names]
+                if len(duplicate_cols) > 0:
+                    # concat bottom if duplicate columns exist
+                    member_feat_df = pd.concat([member_feat_df, plot_df], axis=0)
+                else:
+                    # concat right if new columns
+                    member_feat_df = pd.concat([member_feat_df, plot_df], axis=1)
 
+                plot_df["timestamp"] = self.tar_df.loc[pd.IndexSlice[:, :, point_a], :].droplevel(2)["timestamp"]
+                thinned_df = keypoints_proc.thinning(plot_df, thinning)
+                self.lineplot.set_plot(thinned_df, member, col_names)
+            self.feat_df = pd.concat([self.feat_df, member_feat_df], axis=0)
+
+        self.feat_df = self.feat_df.sort_index()
         self.lineplot.draw()
         self.export_btn["state"] = "normal"
 
