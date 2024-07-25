@@ -161,7 +161,6 @@ class App(ttk.Frame):
             for calc, m, point_a, point_b, point_c in self.source_cols:
                 if member != str(m):
                     continue
-
                 code = self.name_and_code[calc]
                 point_a, point_b = int(point_a), int(point_b)
                 if code == "norm":
@@ -180,18 +179,13 @@ class App(ttk.Frame):
                     plot_df = keypoints_proc.calc_norms(member_df, point_a, point_b, int(point_c))
 
                 col_names = plot_df.columns.tolist()
-                feat_col_names = member_feat_df.columns.tolist()
-                duplicate_cols = [col for col in col_names if col in feat_col_names]
-                if len(duplicate_cols) > 0:
-                    # concat bottom if duplicate columns exist
-                    member_feat_df = pd.concat([member_feat_df, plot_df], axis=0)
-                else:
-                    # concat right if new columns
-                    member_feat_df = pd.concat([member_feat_df, plot_df], axis=1)
+                # concat right
+                member_feat_df = pd.concat([member_feat_df, plot_df], axis=1)
 
                 plot_df["timestamp"] = self.tar_df.loc[pd.IndexSlice[:, :, point_a], :].droplevel(2)["timestamp"]
                 thinned_df = keypoints_proc.thinning(plot_df, thinning)
                 self.lineplot.set_plot(thinned_df, member, col_names)
+            # concat bottom
             self.feat_df = pd.concat([self.feat_df, member_feat_df], axis=0)
 
         self.feat_df = self.feat_df.sort_index()

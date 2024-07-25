@@ -310,21 +310,24 @@ class App(ttk.Frame):
                 elif normalize == "thresh25":
                     new_sr = new_sr > new_sr.quantile(0.25)
                     new_sr = new_sr.astype(int)
+
+                # concat right
                 member_feat_df = pd.concat([member_feat_df, new_sr.to_frame(feat_name)], axis=1)
                 plot_df = new_sr.to_frame(feat_name)
+
                 plot_df["timestamp"] = self.tar_df["timestamp"]
                 self.lineplot.add_ax(row_num, 2, i)
                 if i == row_num - 1:
                     self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name, is_last=True)
                 else:
                     self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name)
+            # concat bottom
             self.feat_df = pd.concat([self.feat_df, member_feat_df], axis=0)
 
         self.feat_df["timestamp"] = self.tar_df["timestamp"]
         self.feat_df = self.feat_df.sort_index()
         self.lineplot.draw()
         self.export_btn["state"] = "normal"
-        print(self.feat_df)
 
     def export(self):
         """Export the calculated data to a file."""
