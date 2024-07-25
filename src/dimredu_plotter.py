@@ -204,3 +204,6 @@ class DimensionalReductionPlotter:
         if ret is True:
             cv2.imshow("frame", frame)
             cv2.waitKey(1)
+
+    def close(self):
+        plt.close(self.fig)

@@ -303,3 +303,6 @@ class App(ttk.Frame):
             self.scene_table["end"].append(end)
             self.scene_table["description"].append(row["description"])
         self.draw()
+
+    def close(self):
+        self.plot.close()

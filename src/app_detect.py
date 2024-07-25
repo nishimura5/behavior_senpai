@@ -132,6 +132,9 @@ class App(ttk.Frame):
         self.go_to_folder_btn["state"] = tk.DISABLED
         self.exec_detector_btn["state"] = tk.DISABLED
 
+    def close(self):
+        pass
+
 
 def quit(root):
     """Quit the application and destroy the root window."""

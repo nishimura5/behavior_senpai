@@ -313,3 +313,6 @@ class App(ttk.Frame):
         self.column_listbox.delete(0, tk.END)
         for name in show_list:
             self.column_listbox.insert(tk.END, name)
+
+    def close(self):
+        self.drp.close()

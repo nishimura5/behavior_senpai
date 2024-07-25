@@ -343,3 +343,6 @@ class App(ttk.Frame):
         dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_mix.feat.pkl")
         history_dict = df_attrs.make_history_dict("mix", self.source_cols, {})
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
+
+    def close(self):
+        self.lineplot.close()

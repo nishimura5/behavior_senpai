@@ -156,3 +156,6 @@ class TrajectoryPlotter:
             ok, frame = self.vcap.read_at(timestamp_msec, rgb=True)
             self.traj_img.set_data(frame)
         self.traj_ax.figure.canvas.draw_idle()
+
+    def close(self):
+        plt.close(self.fig)

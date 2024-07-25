@@ -221,3 +221,6 @@ class App(ttk.Frame):
 
     def _validate(self, text):
         return text.replace(".", "").isdigit() or text == ""
+
+    def close(self):
+        self.band.close()

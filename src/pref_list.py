@@ -72,3 +72,6 @@ class App(ttk.Frame):
 
     def _validate_float(self, text):
         return text.replace(".", "").isdigit() or text == ""
+
+    def close(self):
+        pass

@@ -196,7 +196,7 @@ class App(ttk.Frame):
             "current_position": current_position,
         }
         self.a = app(dlg_modal, args)
-        dlg_modal.protocol("WM_DELETE_WINDOW", lambda: [dlg_modal.destroy(), cv2.destroyAllWindows()])
+        dlg_modal.protocol("WM_DELETE_WINDOW", lambda: [dlg_modal.destroy(), cv2.destroyAllWindows(), self.a.close()])
         self.wait_window(dlg_modal)
 
         # ダイアログを閉じた後の処理

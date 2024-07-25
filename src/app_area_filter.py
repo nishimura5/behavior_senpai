@@ -173,3 +173,6 @@ class App(ttk.Frame):
         poly_points = sum([list(p["point"]) for p in self.anchor_points], [])
         self.canvas.coords(self.selected_id, event.x - 2, event.y - 2, event.x + 2, event.y + 2)
         self.canvas.coords(self.poly_id, *poly_points)
+
+    def close(self):
+        pass

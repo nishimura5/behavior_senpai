@@ -147,6 +147,9 @@ class App(ttk.Frame):
         print("overwrite done")
         self._load_folder()
 
+    def close(self):
+        pass
+
 
 class TrackList:
     def __init__(self):

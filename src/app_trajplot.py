@@ -113,3 +113,6 @@ class App(ttk.Frame):
         dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_trj.feat.pkl")
         history_dict = df_attrs.make_history_dict("trajectory", [], {}, self.track_name)
         file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
+
+    def close(self):
+        self.traj.close()

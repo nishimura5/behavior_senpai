@@ -124,3 +124,6 @@ class App(ttk.Frame):
     def clear(self):
         """Clear the plot."""
         self.plot.clear()
+
+    def close(self):
+        self.plot.close()

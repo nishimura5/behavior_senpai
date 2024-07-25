@@ -221,3 +221,6 @@ class App(ttk.Frame):
             # Change this bit to match where you store your data files:
             datadir = os.path.dirname(__file__)
         return datadir
+
+    def close(self):
+        self.lineplot.close()
