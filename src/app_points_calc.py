@@ -188,7 +188,6 @@ class App(ttk.Frame):
             # concat bottom
             self.feat_df = pd.concat([self.feat_df, member_feat_df], axis=0)
 
-        self.feat_df = self.feat_df.sort_index()
         self.lineplot.draw()
         self.export_btn["state"] = "normal"
 

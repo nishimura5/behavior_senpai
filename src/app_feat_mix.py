@@ -336,9 +336,7 @@ class App(ttk.Frame):
             return
         file_name = os.path.basename(self.feat_path).split(".")[0]
 
-        data_col_names = [col[0] for col in self.source_cols] + ["timestamp"]
-
-        export_df = self.feat_df.loc[:, data_col_names]
+        export_df = self.feat_df
         export_df.attrs = self.src_attrs.attrs
         dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_mix.feat.pkl")
         history_dict = df_attrs.make_history_dict("mix", self.source_cols, {})
