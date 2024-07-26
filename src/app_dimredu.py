@@ -204,6 +204,8 @@ class App(ttk.Frame):
 
     def _draw(self, class_sr=None):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
+        if class_sr is not None and class_sr.index.levels[1][0] != current_member:
+            return
         self.source_cols = []
         cols = self.column_listbox.curselection()
         if len(cols) == 0:
@@ -233,9 +235,9 @@ class App(ttk.Frame):
 
         thinning = self.thinning_entry.get()
         self.thinning_entry.save_to_temp("thinning")
+        tar_df = tar_df.loc[idx_slice, :]
         plot_df = keypoints_proc.thinning(tar_df, thinning)
 
-        plot_df = plot_df.loc[idx_slice, :]
         n_neighbors = self.n_neighbors_combobox.get()
         min_dist = self.min_dist_combobox.get()
         rand_mode = self.umap_seed_combobox.get()
@@ -245,8 +247,10 @@ class App(ttk.Frame):
             seed = 42
         reduced_df = keypoints_proc.umap(plot_df, tar_cols=cols, n_components=2, n_neighbors=int(n_neighbors), min_dist=float(min_dist), seed=seed)
 
-        if self.drp.plot_df is not None:
+        if self.drp.plot_df is not None and self.drp.plot_df.index.levels[1][0] == current_member:
             class_sr = self.drp.plot_df["class"]
+        else:
+            print(class_sr)
 
         self.drp.set_member(current_member)
         self.drp.draw(reduced_df, class_sr)
