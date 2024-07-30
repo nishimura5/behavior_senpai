@@ -204,7 +204,7 @@ class App(ttk.Frame):
 
     def _draw(self, class_sr=None):
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
-        if class_sr is not None and class_sr.index.levels[1][0] != current_member:
+        if class_sr is not None and current_member not in class_sr.index.levels[1]:
             return
         self.source_cols = []
         cols = self.column_listbox.curselection()
