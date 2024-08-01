@@ -14,7 +14,6 @@ import app_smoothing
 import app_track_list
 import app_trajplot as k2t
 import cv2
-import export_mp4
 import license_view
 import pref_list
 import ttkthemes
@@ -103,9 +102,6 @@ class App(ttk.Frame):
         self.save_button.pack()
         self.save_button["state"] = tk.DISABLED
 
-        self.mp4_button = ttk.Button(save_frame, text="Export MP4", command=self.export_mp4)
-        self.mp4_button.pack(pady=(5, 0))
-
         view_frame = ttk.Frame(main_frame)
         view_frame.pack(pady=(10, 0), anchor=tk.W)
 
@@ -122,7 +118,6 @@ class App(ttk.Frame):
         keypoints_btn = ttk.Button(attrs_frame, text="Keypoint samples", command=lambda: self.launch_window(app_keypoint_samples.App))
         keypoints_btn.pack(padx=(10, 0), pady=(5, 0), expand=True, fill=tk.X)
 
-        self.k2m = export_mp4.MakeMp4()
         self.vcap = vcap.VideoCap()
         self.cap = self.vcap
         self.pkl_path = ""
@@ -159,8 +154,6 @@ class App(ttk.Frame):
 
         self.vw.set_cap(self.cap, src_attrs.attrs["frame_size"], anno_trk=self.src_df)
         self.update_attrs()
-        args = {"src_df": self.src_df, "time_span_msec": self.time_span, "cap": self.cap, "pkl_dir": self.pkl_dir}
-        self.k2m.load(args)
 
     def update_attrs(self):
         src_attrs = self.src_df.attrs
@@ -222,7 +215,6 @@ class App(ttk.Frame):
 
         self.save_button["state"] = "normal"
         args["src_df"] = self.src_df
-        self.k2m.load(args)
 
         member_count = self.src_df.index.get_level_values(1).unique().size
         print(f"member_num = {member_count}")
@@ -238,10 +230,6 @@ class App(ttk.Frame):
         pkl_name = file_inout.overwrite_track_file(self.pkl_path, self.src_df)
         messagebox.showinfo("Overwrite", f"Overwritten.\nfile name: {pkl_name}")
         self.save_button["state"] = tk.DISABLED
-
-    def export_mp4(self):
-        mp4_name = self.k2m.export()
-        messagebox.showinfo("Export MP4", f"Export finished.\nfile name: {mp4_name}")
 
 
 def quit(root):

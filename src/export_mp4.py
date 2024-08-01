@@ -1,4 +1,5 @@
 import os
+from tkinter import messagebox
 
 import cv2
 import mediapipe_drawer
@@ -16,12 +17,16 @@ class MakeMp4:
         self.src_df = args["src_df"]
         self.cap = args["cap"]
         self.src_attrs = self.src_df.attrs
-        self.time_min, self.time_max = args["time_span_msec"]
+        self.time_min = None
+        self.time_max = None
         self.pkl_dir = args["pkl_dir"]
+
+    def set_time_range(self, time_min, time_max):
+        self.time_min = time_min
+        self.time_max = time_max
 
     def export(self):
         tar_df = self.src_df
-        # memberとkeypointのインデックス値を文字列に変換
         idx = tar_df.index
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
 
@@ -34,7 +39,6 @@ class MakeMp4:
         tmp = TempFile()
         scale = tmp.get_mp4_setting()
 
-        # VideoWriter
         file_name = os.path.splitext(self.src_attrs["video_name"])[0]
         if self.src_attrs["model"] == "YOLOv8 x-pose-p6":
             anno = yolo_drawer.Annotate()
@@ -55,8 +59,13 @@ class MakeMp4:
         self.out.open(out_file_path, fourcc, fps, size, params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
 
         out_df = tar_df
-        max_frame_num = out_df.index.unique(level="frame").max() + 1
-        min_frame_num = out_df.index.unique(level="frame").min()
+        if self.time_min is None or self.time_max is None:
+            min_frame_num = out_df.index.unique(level="frame").min()
+            max_frame_num = out_df.index.unique(level="frame").max() + 1
+        else:
+            min_frame_num = out_df[out_df["timestamp"] >= self.time_min].index.unique(level="frame").min()
+            max_frame_num = out_df[out_df["timestamp"] <= self.time_max].index.unique(level="frame").max() + 1
+
         out_indexes = out_df.sort_index().index
         frames = out_indexes.get_level_values("frame").unique()
         for i in range(min_frame_num, max_frame_num):
@@ -78,6 +87,48 @@ class MakeMp4:
         cv2.destroyAllWindows()
         self.out.release()
         mp4_name = os.path.basename(out_file_path)
+        messagebox.showinfo("Export MP4", f"Export finished.\nfile name: {mp4_name}")
+        return mp4_name
+
+    def extract(self):
+        tar_df = self.src_df
+        idx = tar_df.index
+        tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
+
+        if self.cap.isOpened() is True:
+            fps = self.cap.get(cv2.CAP_PROP_FPS)
+            self.cap.set(cv2.CAP_PROP_POS_MSEC, self.time_min)
+        else:
+            fps = 30
+
+        file_name = os.path.splitext(self.src_attrs["video_name"])[0]
+        dst_dir = os.path.join(self.pkl_dir, os.pardir, "mp4")
+        os.makedirs(dst_dir, exist_ok=True)
+        out_file_path = os.path.join(dst_dir, f"{file_name}_extracted.mp4")
+        fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
+        size = self.src_attrs["frame_size"]
+        self.out.open(out_file_path, fourcc, fps, size, params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
+
+        out_df = tar_df
+        if self.time_min is None or self.time_max is None:
+            min_frame_num = out_df.index.unique(level="frame").min()
+            max_frame_num = out_df.index.unique(level="frame").max() + 1
+        else:
+            # between time_min and time_max ["timestamp"]column
+            min_frame_num = out_df[out_df["timestamp"] >= self.time_min].index.unique(level="frame").min()
+            max_frame_num = out_df[out_df["timestamp"] <= self.time_max].index.unique(level="frame").max() + 1
+
+        for i in range(min_frame_num, max_frame_num):
+            frame = self.cap.read_anyway()
+            cv2.imshow("dst", frame)
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord("x"):
+                break
+            self.out.write(frame)
+        cv2.destroyAllWindows()
+        self.out.release()
+        mp4_name = os.path.basename(out_file_path)
+        messagebox.showinfo("Export MP4", f"Export finished.\nfile name: {mp4_name}")
         return mp4_name
 
     def _draw(self, out_df, frame_num, member, all_indexes, anno, scale):

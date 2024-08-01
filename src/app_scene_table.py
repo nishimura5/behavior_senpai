@@ -3,6 +3,7 @@ import os
 import tkinter as tk
 from tkinter import ttk
 
+import export_mp4
 import pandas as pd
 from gui_parts import IntEntry, StrEntry, TempFile, TimeSpanEntry, Tree
 from line_plotter import LinePlotter
@@ -17,6 +18,8 @@ class App(ttk.Frame):
         master.title("Scene Table")
         self.pack(padx=10, pady=10)
         self.bind("<Map>", lambda event: self._load(event, args))
+        self.export = export_mp4.MakeMp4()
+        self.export.load(args)
 
         temp = TempFile()
         width, height, dpi = temp.get_scene_table_graph_size()
@@ -79,6 +82,8 @@ class App(ttk.Frame):
         ]
         self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT)
+        self.tree.add_menu("Extract MP4", self.extract_mp4)
+        self.tree.add_menu("Export MP4", self.export_mp4)
         self.tree.tree.bind("<Button-1>", self.left_click_tree)
 
         plot_frame = ttk.Frame(self)
@@ -233,6 +238,24 @@ class App(ttk.Frame):
             self.plot.jump_to(end_msec)
         else:
             self.plot.jump_to(start_msec)
+
+    def export_mp4(self):
+        row = self.tree.tree.selection()[0]
+        start = self.tree.get_selected_one(row)[0]
+        end = self.tree.get_selected_one(row)[1]
+        start_msec = time_format.timestr_to_msec(start)
+        end_msec = time_format.timestr_to_msec(end)
+        self.export.set_time_range(start_msec, end_msec)
+        self.export.export()
+
+    def extract_mp4(self):
+        row = self.tree.tree.selection()[0]
+        start = self.tree.get_selected_one(row)[0]
+        end = self.tree.get_selected_one(row)[1]
+        start_msec = time_format.timestr_to_msec(start)
+        end_msec = time_format.timestr_to_msec(end)
+        self.export.set_time_range(start_msec, end_msec)
+        self.export.extract()
 
     def clear(self):
         """Clear the plot."""

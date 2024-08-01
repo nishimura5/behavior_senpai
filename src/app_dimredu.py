@@ -281,7 +281,8 @@ class App(ttk.Frame):
 
     def export(self):
         """Export the calculated data to a file."""
-        file_name = os.path.basename(self.feat_path).split(".")[0]
+        current_member = self.member_keypoints_combos.get_selected()[0]
+        file_name = os.path.basename(self.feat_path).split(".")[0] + "_" + current_member
         dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_dimredu.bc.pkl")
 
         cluster_df = self.drp.get_cluster_df()
