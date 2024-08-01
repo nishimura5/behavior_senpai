@@ -21,6 +21,8 @@ class LinePlotter:
         self.fig = plt.figure(figsize=self.fig_size, dpi=self.dpi)
         self.fig.canvas.mpl_connect("button_press_event", self._click_graph)
 
+        self.members = []
+        self.legends = []
         # グラフクリック時にアノテーションを描画するかのフラグ
         self.draw_anno = False
         self.line_ax = None
@@ -61,6 +63,7 @@ class LinePlotter:
             cols_for_anno = ["x", "y", "score"]
         self.anno_df = trk_df.reset_index().set_index(["timestamp", "member", "keypoint"]).loc[:, cols_for_anno]
         self.anno_time_member_indexes = self.anno_df.index.droplevel(2).unique()
+        self.timestamps = self.anno_time_member_indexes.get_level_values("timestamp").unique().to_numpy()
         print(f"set_trk_df() (line_plotter.LinePlotter): {time.perf_counter() - start_time:.3f}sec")
 
     def set_plot(self, plot_df, member: str, data_col_names: list):
@@ -80,10 +83,11 @@ class LinePlotter:
         elif time_diff_sec < 30 * 60:
             locator_interval = 2 * 60 * 1000
         self.line_ax.xaxis.set_major_locator(ticker.MultipleLocator(locator_interval))
-        self.line_ax.legend(loc="upper right")
+        for data_col_name in data_col_names:
+            self.legends.append(f"{member}_{data_col_name}")
 
-        show_df = plot_df.reset_index().set_index(["timestamp", "member"]).loc[:, :]
-        self.timestamps = show_df.index.get_level_values("timestamp").unique().to_numpy()
+    def set_legend_of_plot(self):
+        self.line_ax.legend(self.legends, loc="upper right")
 
     def set_plot_and_violin(self, plot_df, member: str, data_col_name: str, is_last: bool = False):
         self.member = member
@@ -99,9 +103,6 @@ class LinePlotter:
             self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: ""))
         self.line_ax.legend(loc="upper right")
         sns.violinplot(plot_df[data_col_name], ax=self.violin_ax)
-
-        show_df = plot_df.reset_index().set_index(["timestamp", "member"]).loc[:, :]
-        self.timestamps = show_df.index.get_level_values("timestamp").unique().to_numpy()
 
     def set_plot_band(self, plot_df, member: str, time_min_msec: int, time_max_msec: int):
         self.member = member
@@ -163,17 +164,15 @@ class LinePlotter:
         self.line_ax.xaxis.set_major_locator(ticker.MultipleLocator(locator_interval))
         self.line_ax.grid(which="major", axis="x", linewidth=0.3)
 
-        show_df = plot_df.reset_index().set_index(["timestamp", "member"]).loc[:, :]
-        self.timestamps = show_df.index.get_level_values("timestamp").unique().to_numpy()
-
-    def set_member(self, member):
-        self.member = member
+    def set_members_to_draw(self, members):
+        self.members = members
 
     def draw(self):
         self.vline = self.line_ax.axvline(x=0, color="gray", linewidth=0.5)
         self.canvas.draw_idle()
 
     def clear(self):
+        self.legends = []
         if self.line_ax is not None:
             self.line_ax.cla()
         self.canvas.draw_idle()
@@ -211,16 +210,20 @@ class LinePlotter:
             return
         ret, frame = self.vcap.read_at(timestamp_msec)
         if ret is False:
+            print("frame is None")
             return
 
         if self.draw_anno is True:
-            if (timestamp_msec, self.member) in self.anno_time_member_indexes:
-                tar_df = self.anno_df.loc[pd.IndexSlice[timestamp_msec, self.member, :], :]
-                kps = tar_df.to_numpy()
-                self.anno.set_img(frame)
-                self.anno.set_pose(kps)
-                self.anno.set_track(self.member)
-                frame = self.anno.draw()
+            if len(self.members) == 0:
+                self.members = [self.member]
+            for member in self.members:
+                if (timestamp_msec, member) in self.anno_time_member_indexes:
+                    tar_df = self.anno_df.loc[pd.IndexSlice[timestamp_msec, member, :], :]
+                    kps = tar_df.to_numpy()
+                    self.anno.set_img(frame)
+                    self.anno.set_pose(kps)
+                    self.anno.set_track(member)
+                    frame = self.anno.draw()
 
         if frame.shape[0] >= 1080:
             resize_height = 800

@@ -188,7 +188,9 @@ class App(ttk.Frame):
             # concat bottom
             self.feat_df = pd.concat([self.feat_df, member_feat_df], axis=0)
 
+        self.lineplot.set_legend_of_plot()
         self.lineplot.draw()
+        self.lineplot.set_members_to_draw(members)
         self.export_btn["state"] = "normal"
 
     def export(self):

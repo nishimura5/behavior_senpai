@@ -44,12 +44,6 @@ class App(ttk.Frame):
 
         draw_frame = ttk.Frame(setting_frame)
         draw_frame.pack(pady=5)
-        member_label = ttk.Label(draw_frame, text="Member:")
-        member_label.pack(side=tk.LEFT)
-        self.member_combo = ttk.Combobox(draw_frame, state="readonly", width=18)
-        self.member_combo.pack(side=tk.LEFT)
-        self.member_combo.bind("<<ComboboxSelected>>", self.select_member)
-
         self.connect_msec_entry = IntEntry(draw_frame, "Threshold (msec)", 1000, 6)
         self.connect_msec_entry.pack_horizontal(padx=(10, 0))
         connect_btn = ttk.Button(draw_frame, text="Connect", command=self._connect_nearby_scenes)
@@ -101,10 +95,11 @@ class App(ttk.Frame):
         src_attrs = self.src_df.attrs
         self.time_min, self.time_max = args["time_span_msec"]
         self.pkl_dir = args["pkl_dir"]
+        # string型に変換してmemberを取得
+        members = self.src_df.index.get_level_values(1).unique().astype(str).tolist()
+        self.plot.set_members_to_draw(members)
 
         # UIの更新
-        self.member_combo["values"] = self.src_df.index.get_level_values(1).unique().tolist()
-        self.member_combo.current(0)
         self.time_span_entry.update_entry(self.time_min, self.time_max)
 
         self.tree.clear()
@@ -180,7 +175,6 @@ class App(ttk.Frame):
 
         self.plot.set_trk_df(plot_df)
         self.plot.set_plot_rect(plot_df, rects, self.time_min, self.time_max)
-        self.plot.set_member(self.member_combo.get())
         self.plot.draw()
 
     def _connect_nearby_scenes(self):
@@ -239,9 +233,6 @@ class App(ttk.Frame):
             self.plot.jump_to(end_msec)
         else:
             self.plot.jump_to(start_msec)
-
-    def select_member(self, event):
-        self.plot.set_member(self.member_combo.get())
 
     def clear(self):
         """Clear the plot."""

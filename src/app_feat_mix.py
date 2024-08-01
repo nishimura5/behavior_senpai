@@ -327,6 +327,7 @@ class App(ttk.Frame):
         self.feat_df["timestamp"] = self.tar_df["timestamp"]
         self.feat_df = self.feat_df.sort_index()
         self.lineplot.draw()
+        self.lineplot.set_members_to_draw(members)
         self.export_btn["state"] = "normal"
 
     def export(self):
