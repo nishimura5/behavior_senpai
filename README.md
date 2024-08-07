@@ -53,6 +53,12 @@ Running BehaviorSenpai.exe will start the application; if you want to use CUDA, 
 BehaviorSenpai.exe is an application to automate the construction of the Python environment by [Rye](https://rye.astral.sh) and the startup of Behavior Senpai itself.
 The initial setup by BehaviorSenpai.exe takes some time. Please wait until the terminal (black screen) closes automatically.
 
+<p align="center">
+ <a href="https://youtu.be/0k8GA1DscKQ">
+   <img width="30%" alt="How to install Behavior Senpai" src="https://img.youtube.com/vi/0k8GA1DscKQ/0.jpg">
+ </a>
+</p>
+
 To uninstall Behavior Senpai or replace it with the latest version, delete the entire folder containing BehaviorSenpai.exe. In addition, to uninstall Rye, run the following from a terminal
 
 ```
