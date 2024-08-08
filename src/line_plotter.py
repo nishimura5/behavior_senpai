@@ -129,13 +129,16 @@ class LinePlotter:
         show_df = plot_df.reset_index().set_index(["timestamp", "member"]).loc[:, :]
         self.timestamps = show_df.index.get_level_values("timestamp").unique().to_numpy()
 
-    def set_plot_rect(self, plot_df, rects: list, time_min_msec: int, time_max_msec: int):
+    def set_plot_rect(self, rects: list):
         # カラムごとにdtypeを指定してDataFrameを作成
         rect_df = pd.DataFrame(rects, columns=["start", "end", "description"], dtype="str")
         rect_df = rect_df.sort_values("description")
 
         rect_df["start"] = pd.to_timedelta(rect_df["start"]).dt.total_seconds() * 1000
         rect_df["end"] = pd.to_timedelta(rect_df["end"]).dt.total_seconds() * 1000
+        time_min_msec = rect_df["start"].min()
+        time_max_msec = rect_df["end"].max()
+
         descriptions = rect_df["description"].unique()
         ticks = []
         for i, description in enumerate(descriptions):
@@ -153,7 +156,7 @@ class LinePlotter:
         self.line_ax.set_yticklabels(descriptions)
         self.line_ax.set_xlim(time_min_msec, time_max_msec)
         self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
-        time_diff_sec = (plot_df["timestamp"].max() - plot_df["timestamp"].min()) / 1000
+        time_diff_sec = (time_max_msec - time_min_msec) / 1000
         locator_interval = 5 * 60 * 1000
         if time_diff_sec < 5 * 60:
             locator_interval = 30 * 1000
@@ -199,8 +202,6 @@ class LinePlotter:
             timestamp_msec = self.vcap.get(cv2.CAP_PROP_POS_MSEC)
             timestamp_msec += 100
 
-        # DataFrameにあるself.timestampsからクリックで得たtimestamp_msecに最も近い値を抽出
-        timestamp_msec = self.timestamps[np.fabs(self.timestamps - timestamp_msec).argmin()]
 
         self.vline.set_xdata([timestamp_msec])
         self.line_ax.figure.canvas.draw_idle()
@@ -212,6 +213,9 @@ class LinePlotter:
         if ret is False:
             print("frame is None")
             return
+
+        idx = np.fabs(self.timestamps - timestamp_msec).argmin()
+        timestamp_msec = self.timestamps[idx]
 
         if self.draw_anno is True:
             if len(self.members) == 0:

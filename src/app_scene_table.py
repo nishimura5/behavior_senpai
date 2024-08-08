@@ -179,7 +179,7 @@ class App(ttk.Frame):
         rects = self.scene_table
 
         self.plot.set_trk_df(plot_df)
-        self.plot.set_plot_rect(plot_df, rects, self.time_min, self.time_max)
+        self.plot.set_plot_rect(rects)
         self.plot.draw()
 
     def _connect_nearby_scenes(self):
