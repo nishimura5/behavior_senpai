@@ -48,3 +48,14 @@ def set_app_icon(root):
     elif sys.platform.startswith("darwin"):
         img = tk.Image("photo", file="./src/img/icon.png")
         root.tk.call("wm", "iconphoto", root._w, img)
+
+
+def file_types(types):
+    """
+    return types if platform is not darwin
+    On Mac, filedialog.askopenfilename() and filedialog.asksaveasfilename() do not support filetypes
+    """
+    if sys.platform.startswith("darwin"):
+        return []
+    else:
+        return types

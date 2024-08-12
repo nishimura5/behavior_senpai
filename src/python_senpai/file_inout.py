@@ -5,7 +5,7 @@ from tkinter import filedialog
 import pandas as pd
 
 from . import keypoints_proc
-
+from . import windows_and_mac
 
 def open_pkl(init_dir, org_path=None, filetypes=[("pkl files", "*.pkl")]):
     if init_dir == "":
@@ -43,6 +43,7 @@ class PickleLoader:
             self.filetypes = [("feat-pkl files", "*.feat.pkl"), ("pkl files", "*.pkl")]
         elif pkl_type == "behavioral_coding":
             self.filetypes = [("bc-pkl files", "*.bc.pkl")]
+        self.filetypes = windows_and_mac.file_types(self.filetypes)
 
         self.tar_path = org_path
         self.calc_case = None
