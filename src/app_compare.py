@@ -8,12 +8,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import ttkthemes
-from gui_parts import TempFile, Tree
+from gui_parts import Combobox, TempFile, Tree
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from python_senpai import time_format, windows_and_mac
 
 # 日本語フォント
-plt.rcParams["font.family"] = "sans-serif"
+# plt.rcParams["font.family"] = "sans-serif"
 # plt.rcParams["font.sans-serif"] = ["Yu Gothic", "Meiryo", "Takao", "IPAexGothic", "IPAPGothic", "VL PGothic", "Noto Sans CJK JP"]
 
 
@@ -21,7 +21,7 @@ class App(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         master.title("Compare")
-        self.pack(padx=10, pady=10)
+        self.pack(padx=14, pady=14)
 
         temp = TempFile()
         width, height, dpi = temp.get_scene_table_graph_size()
@@ -31,29 +31,34 @@ class App(ttk.Frame):
             trk_path = temp.data["trk_path"]
             if temp.data["calc_case"] != "":
                 calc_case = temp.data["calc_case"]
-                self.tar_dir = os.path.abspath(
-                    os.path.join(trk_path, "..", "..", "calc", calc_case)
-                )
+                self.tar_dir = os.path.abspath(os.path.join(trk_path, "..", "..", "calc", calc_case))
             else:
                 self.tar_dir = os.path.dirname(trk_path)
 
         self.fig = plt.figure(
-            figsize=(width / dpi, height / dpi), dpi=dpi, tight_layout=True
+            figsize=(width / dpi, height / dpi),
+            dpi=dpi,
+            tight_layout=True,
         )
         self.box_ax = self.fig.add_subplot(111)
 
-        control_frame = ttk.Frame(self)
-        control_frame.pack(fill=tk.X)
-        select_folder_btn = ttk.Button(
-            control_frame, text="Select Folder", command=self.select_folder
-        )
+        head_frame = ttk.Frame(self)
+        head_frame.pack(pady=5, fill=tk.X)
+        select_folder_btn = ttk.Button(head_frame, text="Select Folder", command=self.select_folder)
         select_folder_btn.pack(side=tk.LEFT)
 
-        draw_btn = ttk.Button(control_frame, text="Draw", command=self.calc)
+        draw_btn = ttk.Button(head_frame, text="Draw", command=self.calc)
         draw_btn.pack(side=tk.LEFT)
 
+        control_frame = ttk.Frame(self)
+        control_frame.pack(pady=5, fill=tk.X)
+
+        cols = [1, 2, 3, 4]
+        self.legend_col_combo = Combobox(control_frame, label="Legend column:", width=5, values=cols)
+        self.legend_col_combo.pack_horizontal(padx=5)
+
         tree_frame = ttk.Frame(self)
-        tree_frame.pack(fill=tk.X)
+        tree_frame.pack(pady=5, fill=tk.X)
         cols = [
             {"name": "code", "width": 100},
             {"name": "label", "width": 100},
@@ -62,7 +67,7 @@ class App(ttk.Frame):
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         plot_frame = ttk.Frame(self)
-        plot_frame.pack(fill=tk.BOTH, expand=True)
+        plot_frame.pack(pady=5, fill=tk.BOTH, expand=True)
         self.canvas = FigureCanvasTkAgg(self.fig, master=plot_frame)
         toolbar = NavigationToolbar2Tk(self.canvas, plot_frame)
         toolbar.pack()
@@ -97,6 +102,11 @@ class App(ttk.Frame):
         total_df = pd.DataFrame()
         for file_path in self.tar_pkl_list:
             src_df = pd.read_pickle(file_path)
+            src_columns = src_df.columns
+            columns_white_list = [str(c) for c, _ in tree_list] + ["class", "timestamp"]
+            # and src_columns and columns_white_list
+            code_list = [c for c in columns_white_list if c in src_columns]
+            src_df = src_df[code_list]
             member_name = src_df.index.get_level_values("member").unique().tolist()[0]
             scene_table = bool_to_dict(src_df)
             scene_df = pd.DataFrame(scene_table)
@@ -114,7 +124,6 @@ class App(ttk.Frame):
             for class_name, _ in tree_list:
                 class_name = str(class_name)
                 if (member_name, class_name) not in sum_df.index:
-                    print(class_name, sum_df.index)
                     sum_df.loc[(member_name, class_name), :] = 0
 
             sum_df = sum_df.loc[:, ["duration"]]
@@ -132,18 +141,10 @@ class App(ttk.Frame):
         self.draw(total_df)
 
     def draw(self, total_df):
+        self.box_ax.clear()
+        legend_col = int(self.legend_col_combo.get())
         palette = sns.color_palette("coolwarm", 19)
-        sns.swarmplot(
-            x="code",
-            y="time",
-            data=total_df.reset_index(),
-            hue="member",
-            edgecolor="gray",
-            linewidth=1,
-            size=8,
-            palette=palette,
-            ax=self.box_ax,
-        )
+        sns.swarmplot(x="code", y="time", data=total_df.reset_index(), hue="member", size=4, linewidth=1, palette=palette, ax=self.box_ax)
         sns.boxplot(
             x="code",
             y="time",
@@ -155,13 +156,9 @@ class App(ttk.Frame):
         )
         self.box_ax.yaxis.set_minor_locator(plt.MultipleLocator(0.1))
 
-        self.box_ax.legend(
-            bbox_to_anchor=(1.05, 1), loc="upper left", borderaxespad=0, frameon=False
-        )
+        self.box_ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left", borderaxespad=0, ncol=legend_col, fontsize=8, frameon=False)
         self.box_ax.grid(axis="y", color="gray", linestyle="--", linewidth=0.5)
-        self.box_ax.grid(
-            axis="y", color="gray", linestyle="--", linewidth=0.5, which="minor"
-        )
+        self.box_ax.grid(axis="y", color="gray", linestyle="--", linewidth=0.5, which="minor")
         self.canvas.draw()
 
 
@@ -173,12 +170,8 @@ def bool_to_dict(src_df, time_min=0, time_max=60 * 3600 * 1000 * 2):
         diff_prev_sr = src_df.groupby("member")[col_name].diff().astype(bool)
         diff_follow_sr = src_df.groupby("member")[col_name].diff(-1).astype(bool)
         # ラベリング、-1とNaNはastypeでTrueになる
-        starts = src_df.loc[
-            (src_df[col_name] & diff_prev_sr), "timestamp"
-        ].values.tolist()
-        ends = src_df.loc[
-            (src_df[col_name] & diff_follow_sr), "timestamp"
-        ].values.tolist()
+        starts = src_df.loc[(src_df[col_name] & diff_prev_sr), "timestamp"].values.tolist()
+        ends = src_df.loc[(src_df[col_name] & diff_follow_sr), "timestamp"].values.tolist()
         # 要素の先頭を比較してstartsの先頭にtime_minを追加
         if starts[0] > ends[0]:
             starts.insert(0, time_min)
@@ -199,6 +192,7 @@ def quit(root):
 def main():
     bg_color = "#e8e8e8"
     root = ttkthemes.ThemedTk(theme="breeze")
+    root.geometry("+150+150")
     root.configure(background=bg_color)
     root.option_add("*background", bg_color)
     root.option_add("*Canvas.background", bg_color)
