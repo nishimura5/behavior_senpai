@@ -12,7 +12,6 @@ from gui_parts import Combobox, TempFile, Tree
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from python_senpai import time_format, windows_and_mac
 
-# 日本語フォント
 # plt.rcParams["font.family"] = "sans-serif"
 # plt.rcParams["font.sans-serif"] = ["Yu Gothic", "Meiryo", "Takao", "IPAexGothic", "IPAPGothic", "VL PGothic", "Noto Sans CJK JP"]
 
@@ -45,7 +44,7 @@ class App(ttk.Frame):
         head_frame = ttk.Frame(self)
         head_frame.pack(pady=5, fill=tk.X)
         select_folder_btn = ttk.Button(head_frame, text="Select Folder", command=self.select_folder)
-        select_folder_btn.pack(side=tk.LEFT)
+        select_folder_btn.pack(padx=(0, 5), side=tk.LEFT)
 
         draw_btn = ttk.Button(head_frame, text="Draw", command=self.calc)
         draw_btn.pack(side=tk.LEFT)
@@ -65,6 +64,7 @@ class App(ttk.Frame):
         ]
         self.tree = Tree(tree_frame, cols, height=10, right_click=True)
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.tree.add_rename(column=1)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5, fill=tk.BOTH, expand=True)

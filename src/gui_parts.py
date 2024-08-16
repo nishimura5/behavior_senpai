@@ -330,6 +330,10 @@ class Tree(ttk.Frame):
         self.member_column = column
         self.add_menu("Copy", self._copy_row)
 
+    def add_rename(self, column):
+        self.member_column = column
+        self.add_menu("Rename", self._rename_item)
+
     def set_members(self, members):
         self.member_list = members
 
@@ -393,6 +397,21 @@ class Tree(ttk.Frame):
             values[self.member_column] = selected_member
             self.tree.item(item, values=values)
 
+    def _rename_item(self):
+        selected = self.tree.selection()
+        if len(selected) == 0:
+            return
+        default = self.tree.item(selected[0])["values"][self.member_column]
+        dialog = MemberEntryDialog(self, default)
+        self.wait_window(dialog.dialog)
+        new_name = dialog.new_name
+        if new_name is None:
+            return
+        for item in selected:
+            values = self.tree.item(item)["values"]
+            values[self.member_column] = new_name
+            self.tree.item(item, values=values)
+
     def _copy_row(self):
         selected = self.tree.selection()
         if len(selected) == 0:
@@ -443,6 +462,40 @@ class MemberComboDialog(ttk.Frame):
 
     def cancel(self):
         self.selected_member = None
+        self.dialog.destroy()
+
+
+class MemberEntryDialog(ttk.Frame):
+    def __init__(self, master, default=""):
+        super().__init__(master)
+        dialog = tk.Toplevel(master)
+        dialog.focus_set()
+        dialog.title("Input member")
+        dialog.geometry("300x100")
+        dialog.resizable(0, 0)
+
+        entry_frame = ttk.Frame(dialog)
+        entry_frame.pack(side=tk.TOP, pady=(5, 10))
+        self.member_entry = StrEntry(entry_frame, "New name:", default=default, width=12)
+        self.member_entry.pack_horizontal(padx=5)
+
+        button_frame = ttk.Frame(dialog)
+        button_frame.pack(side=tk.TOP, pady=(10, 5))
+        ok_btn = ttk.Button(button_frame, text="OK", command=self.on_ok)
+        ok_btn.pack(side=tk.LEFT, padx=5)
+        cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.cancel)
+        cancel_btn.pack(side=tk.LEFT)
+
+        dialog.grab_set()
+        self.dialog = dialog
+        self.new_name = None
+
+    def on_ok(self):
+        self.new_name = self.member_entry.get()
+        self.dialog.destroy()
+
+    def cancel(self):
+        self.new_name = None
         self.dialog.destroy()
 
 
