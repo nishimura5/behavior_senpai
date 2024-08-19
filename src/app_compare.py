@@ -8,8 +8,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import ttkthemes
-from gui_parts import Combobox, TempFile, Tree
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+
+from gui_parts import Combobox, TempFile, Tree
 from python_senpai import time_format, windows_and_mac
 
 # plt.rcParams["font.family"] = "sans-serif"
@@ -62,7 +63,7 @@ class App(ttk.Frame):
             {"name": "code", "width": 100},
             {"name": "label", "width": 100},
         ]
-        self.tree = Tree(tree_frame, cols, height=10, right_click=True)
+        self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.tree.add_rename(column=1)
 
