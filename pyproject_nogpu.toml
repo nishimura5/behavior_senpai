@@ -28,7 +28,7 @@ dev-dependencies = [
 
 [tool.rye.scripts]
 launcher = "python src/launcher.py"
-insight = "python src/app_insight.py"
+compare = "python src/app_compare.py"
 detector = "python src/app_detect.py"
 license = "pip-licenses --order=license -u -l --no-license-path --format=json --output-file src/license.json"
 
