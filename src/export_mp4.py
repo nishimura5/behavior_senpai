@@ -2,8 +2,9 @@ import os
 from tkinter import messagebox
 
 import cv2
-import mediapipe_drawer
 import pandas as pd
+
+import mediapipe_drawer
 import rtmpose_drawer
 import yolo_drawer
 from gui_parts import TempFile
@@ -32,9 +33,9 @@ class MakeMp4:
 
         if self.cap.isOpened() is True:
             fps = self.cap.get(cv2.CAP_PROP_FPS)
-            self.cap.set(cv2.CAP_PROP_POS_MSEC, self.time_min)
+            self.cap.set_frame_pos(self.time_min)
         else:
-            fps = 30
+            fps = 29.97
 
         tmp = TempFile()
         scale = tmp.get_mp4_setting()
@@ -97,9 +98,9 @@ class MakeMp4:
 
         if self.cap.isOpened() is True:
             fps = self.cap.get(cv2.CAP_PROP_FPS)
-            self.cap.set(cv2.CAP_PROP_POS_MSEC, self.time_min)
+            self.cap.set_frame_pos(self.time_min)
         else:
-            fps = 30
+            fps = 29.97
 
         file_name = os.path.splitext(self.src_attrs["video_name"])[0]
         dst_dir = os.path.join(self.pkl_dir, os.pardir, "mp4")

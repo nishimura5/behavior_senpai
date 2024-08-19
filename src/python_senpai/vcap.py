@@ -27,7 +27,7 @@ class VideoCap(cv2.VideoCapture):
         """
         ミリ秒を指定してreadする
         """
-        self.set(cv2.CAP_PROP_POS_MSEC, msec)
+        self.set_frame_pos(msec)
         ok, frame = self.read()
         msec = self.get(cv2.CAP_PROP_POS_MSEC)
         if ok is False:
@@ -50,6 +50,9 @@ class VideoCap(cv2.VideoCapture):
         if ok is False:
             frame = self.dummy_frame
         return frame
+
+    def set_frame_pos(self, msec):
+        self.set(cv2.CAP_PROP_POS_MSEC, msec)
 
     def get_frame_size(self):
         return self.frame_size
@@ -90,17 +93,17 @@ class MultiVcap:
         self.current_file_idx = 0
         self.isOpened = self.vcap.isOpened
 
+    def set_frame_pos(self, msec):
+        tar_idx, msec = self._search_file_idx_and_msec(msec)
+
+        if tar_idx == 0:
+            self.vcap.set_frame_pos(msec)
+        else:
+            tar_msec = msec - self.total_msec_list[tar_idx - 1]
+            self.vcap.set_frame_pos(tar_msec)
+
     def read_at(self, msec, scale=None, rgb=False, read_anyway=True):
-        """
-        ミリ秒を指定してreadする
-        """
-        tar_idx = np.searchsorted(self.total_msec_list, msec, side="left")
-        if tar_idx >= len(self.total_msec_list):
-            return False, None
-        if tar_idx != self.current_file_idx:
-            tar_path = self.file_path_list[tar_idx]
-            self.vcap.open_file(tar_path)
-            self.current_file_idx = tar_idx
+        tar_idx, msec = self._search_file_idx_and_msec(msec)
 
         if tar_idx == 0:
             ok, frame = self.vcap.read_at(msec, scale=scale, rgb=rgb, read_anyway=read_anyway)
@@ -109,12 +112,29 @@ class MultiVcap:
             ok, frame = self.vcap.read_at(tar_msec, scale=scale, rgb=rgb, read_anyway=read_anyway)
         return ok, frame
 
+    def get(self, prop_id):
+        return self.vcap.get(prop_id)
+
     def set_frame_size(self, frame_size):
         self.vcap.set_frame_size(frame_size)
 
     def clear(self):
         self.file_path_list = []
         self.current_file_idx = 0
+
+    def _search_file_idx_and_msec(self, msec):
+        tar_idx = np.searchsorted(self.total_msec_list, msec, side="left")
+        if tar_idx >= len(self.total_msec_list):
+            return None
+        if tar_idx != self.current_file_idx:
+            tar_path = self.file_path_list[tar_idx]
+            self.vcap.open_file(tar_path)
+            self.current_file_idx = tar_idx
+        if tar_idx == 0:
+            ret_msec = msec
+        else:
+            ret_msec = msec - self.total_msec_list[tar_idx - 1]
+        return tar_idx, ret_msec
 
 
 class RoiCap(cv2.VideoCapture):
@@ -197,7 +217,7 @@ class RoiCap(cv2.VideoCapture):
                 self.right_bottom_point = (int(self.right_bottom_point[0] * scale), int(self.right_bottom_point[1] * scale))
                 break
         cv2.destroyAllWindows()
-        self.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        self.set_frame_pos(0)
         self.set_roi(self.left_top_point, self.right_bottom_point)
 
     def mouse_callback(self, event, x, y, flags, param):

@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
+
 from python_senpai import keypoints_proc, time_format
 
 
@@ -332,7 +333,7 @@ class Tree(ttk.Frame):
 
     def add_rename(self, column):
         self.member_column = column
-        self.add_menu("Rename", self._rename_item)
+        self.add_menu("Rename", self.rename_item)
 
     def set_members(self, members):
         self.member_list = members
@@ -397,12 +398,12 @@ class Tree(ttk.Frame):
             values[self.member_column] = selected_member
             self.tree.item(item, values=values)
 
-    def _rename_item(self):
+    def rename_item(self):
         selected = self.tree.selection()
         if len(selected) == 0:
             return
         default = self.tree.item(selected[0])["values"][self.member_column]
-        dialog = MemberEntryDialog(self, default)
+        dialog = MemberEntryDialog(self, default=default)
         self.wait_window(dialog.dialog)
         new_name = dialog.new_name
         if new_name is None:
@@ -466,17 +467,17 @@ class MemberComboDialog(ttk.Frame):
 
 
 class MemberEntryDialog(ttk.Frame):
-    def __init__(self, master, default=""):
+    def __init__(self, master, title="Rename", label="New Value", default=""):
         super().__init__(master)
         dialog = tk.Toplevel(master)
         dialog.focus_set()
-        dialog.title("Input member")
+        dialog.title(title)
         dialog.geometry("300x100")
         dialog.resizable(0, 0)
 
         entry_frame = ttk.Frame(dialog)
         entry_frame.pack(side=tk.TOP, pady=(5, 10))
-        self.member_entry = StrEntry(entry_frame, "New name:", default=default, width=12)
+        self.member_entry = StrEntry(entry_frame, label, default=default, width=14)
         self.member_entry.pack_horizontal(padx=5)
 
         button_frame = ttk.Frame(dialog)
@@ -489,6 +490,7 @@ class MemberEntryDialog(ttk.Frame):
         dialog.grab_set()
         self.dialog = dialog
         self.new_name = None
+        self.member_entry.entry.focus_set()
 
     def on_ok(self):
         self.new_name = self.member_entry.get()

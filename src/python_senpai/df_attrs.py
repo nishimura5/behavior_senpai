@@ -38,6 +38,9 @@ class DfAttrs:
         if "scene_table" not in self.attrs.keys():
             print("scene_table not found.")
             return [""]
+        if "description" not in self.scene_table.keys():
+            print("description not found.")
+            return [""]
         descriptions = list(set(self.scene_table["description"]))
         if add_blank:
             return [""] + descriptions
