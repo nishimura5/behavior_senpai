@@ -95,21 +95,11 @@ class MultiVcap:
 
     def set_frame_pos(self, msec):
         tar_idx, msec = self._search_file_idx_and_msec(msec)
-
-        if tar_idx == 0:
-            self.vcap.set_frame_pos(msec)
-        else:
-            tar_msec = msec - self.total_msec_list[tar_idx - 1]
-            self.vcap.set_frame_pos(tar_msec)
+        self.vcap.set_frame_pos(msec)
 
     def read_at(self, msec, scale=None, rgb=False, read_anyway=True):
         tar_idx, msec = self._search_file_idx_and_msec(msec)
-
-        if tar_idx == 0:
-            ok, frame = self.vcap.read_at(msec, scale=scale, rgb=rgb, read_anyway=read_anyway)
-        else:
-            tar_msec = msec - self.total_msec_list[tar_idx - 1]
-            ok, frame = self.vcap.read_at(tar_msec, scale=scale, rgb=rgb, read_anyway=read_anyway)
+        ok, frame = self.vcap.read_at(msec, scale=scale, rgb=rgb, read_anyway=read_anyway)
         return ok, frame
 
     def get(self, prop_id):
