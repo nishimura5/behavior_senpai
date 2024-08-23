@@ -3,14 +3,15 @@ import time
 import cv2
 import matplotlib
 import matplotlib.pyplot as plt
-import mediapipe_drawer
 import numpy as np
 import pandas as pd
-import rtmpose_drawer
 import seaborn as sns
-import yolo_drawer
 from matplotlib import gridspec, ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+
+import mediapipe_drawer
+import rtmpose_drawer
+import yolo_drawer
 from python_senpai import time_format
 
 
@@ -201,7 +202,6 @@ class LinePlotter:
         elif event.button == 3:
             timestamp_msec = self.vcap.get(cv2.CAP_PROP_POS_MSEC)
             timestamp_msec += 100
-
 
         self.vline.set_xdata([timestamp_msec])
         self.line_ax.figure.canvas.draw_idle()

@@ -79,6 +79,7 @@ class App(ttk.Frame):
             {"name": "start", "width": 100},
             {"name": "end", "width": 100},
             {"name": "duration", "width": 100},
+            {"name": "member", "width": 100},
             {"name": "description", "width": 350},
         ]
         self.tree = Tree(tree_frame, cols, height=6, right_click=True)
@@ -116,16 +117,20 @@ class App(ttk.Frame):
         if "scene_table" in src_attrs.keys():
             self.scene_table = src_attrs["scene_table"]
         else:
-            self.scene_table = {"start": [], "end": [], "description": []}
+            self.scene_table = {"start": [], "end": [], "member": [], "description": []}
 
         # attrsにdescriptionがなかったら空のリストを入れる
         if "description" not in self.scene_table.keys():
             self.scene_table["description"] = [""] * len(self.scene_table["start"])
+        if "member" not in self.scene_table.keys():
+            self.scene_table["member"] = [""] * len(self.scene_table["start"])
 
-        for start, end, description in zip(self.scene_table["start"], self.scene_table["end"], self.scene_table["description"], strict=False):
+        for start, end, member, description in zip(
+            self.scene_table["start"], self.scene_table["end"], self.scene_table["member"], self.scene_table["description"], strict=False
+        ):
             duration = pd.to_timedelta(end) - pd.to_timedelta(start)
             duration_str = time_format.timedelta_to_str(duration)
-            vals = (start, end, duration_str, description)
+            vals = (start, end, duration_str, member, description)
             self.tree.insert(values=vals)
         self._update()
 
@@ -160,15 +165,17 @@ class App(ttk.Frame):
         # ラベリング、-1とNaNはastypeでTrueになる
         starts = bool_df.loc[(bool_df[tar_col_name] & diff_prev_sr), "timestamp"].values.tolist()
         ends = bool_df.loc[(bool_df[tar_col_name] & diff_follow_sr), "timestamp"].values.tolist()
+        members = bool_df.loc[(bool_df[tar_col_name] & diff_follow_sr), "timestamp"].index.get_level_values(1).astype(str).tolist()
+
         # 要素の先頭を比較してstartsの先頭にtime_minを追加
         if starts[0] > ends[0]:
             starts.insert(0, self.time_min)
-        for start, end in itertools.zip_longest(starts, ends, fillvalue=self.time_max):
+        for start, end, member in itertools.zip_longest(starts, ends, members, fillvalue=self.time_max):
             start_str = time_format.msec_to_timestr_with_fff(start)
             end_str = time_format.msec_to_timestr_with_fff(end)
             duration = end - start
             duration_str = time_format.msec_to_timestr_with_fff(duration)
-            values = (start_str, end_str, duration_str, tar_col_name)
+            values = (start_str, end_str, duration_str, member, tar_col_name)
             self.tree.insert(values)
         self._update()
 
@@ -179,6 +186,9 @@ class App(ttk.Frame):
         plot_df = tar_df
 
         rects = self.scene_table
+        # concat member and description
+        rects["description"] = [f"{m}|{d}" for m, d in zip(rects["member"], rects["description"])]
+
         if rects is None or len(rects["start"]) == 0:
             return
 
@@ -288,7 +298,7 @@ class App(ttk.Frame):
         for tar in tar_list:
             if start_str == tar[0] and end_str == tar[1]:
                 return
-        values = (start_str, end_str, duration_str, self.description_entry.get())
+        values = (start_str, end_str, duration_str, "", self.description_entry.get())
         self.tree.insert(values)
 
         # tree_viewをstartカラムでソート
@@ -303,27 +313,29 @@ class App(ttk.Frame):
 
     def _update(self):
         self.clear()
-        scene_table = {"start": [], "end": [], "description": []}
+        scene_table = {"start": [], "end": [], "member": [], "description": []}
         for item in self.tree.tree.get_children(""):
             scene_table["start"].append(self.tree.get_selected_one(item)[0])
             scene_table["end"].append(self.tree.get_selected_one(item)[1])
-            scene_table["description"].append(self.tree.get_selected_one(item)[3])
+            scene_table["member"].append(self.tree.get_selected_one(item)[3])
+            scene_table["description"].append(self.tree.get_selected_one(item)[4])
         self.scene_table = scene_table
         self.draw()
 
     def _update_new_scene_df(self, new_scene_df):
         self.clear()
         self.tree.clear()
-        self.scene_table = {"start": [], "end": [], "description": []}
+        self.scene_table = {"start": [], "end": [], "member": [], "description": []}
         for i, row in new_scene_df.iterrows():
             start = time_format.msec_to_timestr_with_fff(row["start"])
             end = time_format.msec_to_timestr_with_fff(row["end"])
             duration = row["end"] - row["start"]
             duration_str = time_format.msec_to_timestr_with_fff(duration)
-            values = (start, end, duration_str, row["description"])
+            values = (start, end, duration_str, row["member"], row["description"])
             self.tree.insert(values)
             self.scene_table["start"].append(start)
             self.scene_table["end"].append(end)
+            self.scene_table["member"].append(row["member"])
             self.scene_table["description"].append(row["description"])
         self.draw()
 
