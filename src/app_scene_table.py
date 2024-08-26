@@ -84,7 +84,8 @@ class App(ttk.Frame):
         ]
         self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT)
-        self.tree.add_menu("Rename descripiton", self.rename)
+        self.tree.add_member_rename_to_menu(column=3)
+        self.tree.add_menu("Edit descripiton", self.rename)
         self.tree.add_menu("Extract MP4", self.extract_mp4)
         self.tree.add_menu("Export MP4", self.export_mp4)
         self.tree.tree.bind("<Button-1>", self.left_click_tree)
@@ -106,6 +107,7 @@ class App(ttk.Frame):
         # string型に変換してmemberを取得
         members = self.src_df.index.get_level_values(1).unique().astype(str).tolist()
         self.plot.set_members_to_draw(members)
+        self.tree.set_members(members)
 
         # UIの更新
         self.time_span_entry.update_entry(self.time_min, self.time_max)
