@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from python_senpai import img_draw
+from behavior_senpai import img_draw
 
 
 class VideoCap(cv2.VideoCapture):

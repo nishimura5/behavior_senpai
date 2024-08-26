@@ -1,13 +1,10 @@
-import sys
 import os
+import sys
 
 import pandas as pd
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from python_senpai import keypoints_proc
-from python_senpai import file_inout
-from python_senpai import time_format
-
+from behavior_senpai import file_inout, time_format
 
 DURATION_MSEC_THRESHOLD = 1000 * 60
 

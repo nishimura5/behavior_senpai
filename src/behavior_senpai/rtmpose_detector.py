@@ -7,7 +7,8 @@ from mmpose.apis import inference_topdown, init_model
 from mmpose.evaluation.functional import nms
 from mmpose.registry import VISUALIZERS
 from mmpose.structures import merge_data_samples
-from python_senpai import img_draw, vcap
+
+from behavior_senpai import img_draw, vcap
 
 
 class RTMPoseDetector:

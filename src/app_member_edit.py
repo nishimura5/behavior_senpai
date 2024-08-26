@@ -2,9 +2,10 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
+
+from behavior_senpai import keypoints_proc, time_format
 from gui_parts import StrEntry, TempFile, TimeSpanEntry, Tree
 from line_plotter import LinePlotter
-from python_senpai import keypoints_proc, time_format
 
 
 class App(ttk.Frame):

@@ -2,8 +2,7 @@ import importlib.util
 import os
 import time
 
-from mediapipe_detector import MediaPipeDetector
-from python_senpai import file_inout
+from behavior_senpai import file_inout, mediapipe_detector
 
 
 def is_module_available(module_name):
@@ -13,12 +12,14 @@ def is_module_available(module_name):
 
 # CUDAが使えない環境ではrye sync時にultralyticsとmmposeをインストールしていない
 if is_module_available("ultralytics"):
-    from yolo_detector import YoloDetector
+    from behavior_senpai import yolo_detector
+
     YOLOV8_AVAILABLE = True
 else:
     YOLOV8_AVAILABLE = False
 if is_module_available("mmpose"):
-    from rtmpose_detector import RTMPoseDetector
+    from behavior_senpai import rtmpose_detector
+
     MMPOSE_AVAILABLE = True
 else:
     MMPOSE_AVAILABLE = False
@@ -42,22 +43,22 @@ def exec(rcap, model_name, video_path, use_roi=False):
 
     # モデルの初期化
     if model_name == "YOLOv8 x-pose-p6":
-        model = YoloDetector()
+        model = yolo_detector.YoloDetector()
     elif model_name == "MediaPipe Holistic":
-        model = MediaPipeDetector()
+        model = mediapipe_detector.MediaPipeDetector()
     elif model_name == "MMPose RTMPose-x":
-        model = RTMPoseDetector()
+        model = rtmpose_detector.RTMPoseDetector()
 
     model.set_cap(rcap)
     model.detect(roi=use_roi)
     result_df = model.get_result()
 
     # attrsを埋め込み
-    result_df.attrs['model'] = model_name
-    result_df.attrs['frame_size'] = (rcap.width, rcap.height)
-    result_df.attrs['video_name'] = os.path.basename(video_path)
-    result_df.attrs['roi_left_top'] = rcap.get_left_top()
-    result_df.attrs['created'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    result_df.attrs["model"] = model_name
+    result_df.attrs["frame_size"] = (rcap.width, rcap.height)
+    result_df.attrs["video_name"] = os.path.basename(video_path)
+    result_df.attrs["roi_left_top"] = rcap.get_left_top()
+    result_df.attrs["created"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
     file_inout.overwrite_track_file(pkl_path, result_df, not_found_ok=True)
     rcap.release()

@@ -6,9 +6,9 @@ from tkinter import ttk
 import pandas as pd
 
 import export_mp4
+from behavior_senpai import file_inout, time_format
 from gui_parts import IntEntry, StrEntry, TempFile, TimeSpanEntry, Tree
 from line_plotter import LinePlotter
-from python_senpai import file_inout, time_format
 
 
 class App(ttk.Frame):

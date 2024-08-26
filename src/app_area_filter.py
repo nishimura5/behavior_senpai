@@ -5,9 +5,10 @@ from tkinter import ttk
 import cv2
 import numpy as np
 import pandas as pd
-from gui_parts import Combobox, TempFile
 from PIL import Image, ImageTk
-from python_senpai import keypoints_proc
+
+from behavior_senpai import keypoints_proc
+from gui_parts import Combobox, TempFile
 
 
 class App(ttk.Frame):

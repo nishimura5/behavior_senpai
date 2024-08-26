@@ -8,7 +8,7 @@ from scipy.stats import jarque_bera
 from sklearn.preprocessing import RobustScaler
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from python_senpai import file_inout
+from behavior_senpai import file_inout
 
 # Load Feature file
 video_dir = "%USERPROFILE%/Videos"

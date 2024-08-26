@@ -4,8 +4,9 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
+
+from behavior_senpai import windows_and_mac
 from gui_parts import Combobox, StrEntry
-from python_senpai import windows_and_mac
 
 
 class App(ttk.Frame):

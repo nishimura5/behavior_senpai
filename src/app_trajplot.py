@@ -3,8 +3,9 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
+
+from behavior_senpai import df_attrs, file_inout, keypoints_proc
 from gui_parts import CalcCaseEntry, IntEntry, MemberKeypointComboboxes, TempFile
-from python_senpai import df_attrs, file_inout, keypoints_proc
 from trajectory_plotter import TrajectoryPlotter
 
 

@@ -4,15 +4,11 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
+
+from behavior_senpai import df_attrs, file_inout, keypoints_proc
 from gui_parts import CalcCaseEntry, Combobox, IntEntry, TempFile, Tree
 from line_plotter import LinePlotter
-from python_senpai import df_attrs, file_inout, keypoints_proc
 from vector_gui_parts import MemberKeypointComboboxesFor3Point
-
-pd.set_option("display.min_rows", 50)
-pd.set_option("display.max_rows", 50)
-pd.set_option("display.max_columns", 20)
-pd.set_option("display.width", 1000)
 
 
 class App(ttk.Frame):

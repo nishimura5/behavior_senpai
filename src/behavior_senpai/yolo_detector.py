@@ -1,8 +1,8 @@
 import cv2
 import pandas as pd
-import yolo_drawer
-from python_senpai import img_draw, vcap
 from ultralytics import YOLO
+
+from behavior_senpai import img_draw, vcap, yolo_drawer
 
 
 class YoloDetector:
@@ -39,7 +39,7 @@ class YoloDetector:
                 img_draw.put_message(frame, "'x' key to exit.", font_size=1.5, y=55)
                 cv2.imshow("dst", frame)
                 key = cv2.waitKey(1) & 0xFF
-                if key == ord('x'):
+                if key == ord("x"):
                     break
 
             # 検出結果の取り出し

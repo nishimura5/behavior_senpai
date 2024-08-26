@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from python_senpai import time_format
+from behavior_senpai import time_format
 
 
 class DfAttrs:

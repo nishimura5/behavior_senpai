@@ -2,6 +2,9 @@ import os
 import tkinter as tk
 from tkinter import messagebox, ttk
 
+import cv2
+import ttkthemes
+
 import app_area_filter
 import app_detect
 import app_dimredu
@@ -13,13 +16,11 @@ import app_scene_table
 import app_smoothing
 import app_track_list
 import app_trajplot as k2t
-import cv2
 import license_view
 import pref_list
-import ttkthemes
+from behavior_senpai import df_attrs, file_inout, keypoints_proc, vcap, windows_and_mac
 from gui_parts import TempFile
 from main_gui_parts import PklSelector, VideoViewer
-from python_senpai import df_attrs, file_inout, keypoints_proc, vcap, windows_and_mac
 
 
 class App(ttk.Frame):

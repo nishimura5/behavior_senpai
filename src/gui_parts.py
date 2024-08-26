@@ -7,7 +7,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from python_senpai import keypoints_proc, time_format
+from behavior_senpai import keypoints_proc, time_format
 
 
 class MemberKeypointComboboxes(ttk.Frame):

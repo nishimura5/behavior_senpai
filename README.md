@@ -1,12 +1,12 @@
 # Behavior Senpai v.1.3.2
 
-[pyproject]: https://github.com/nishimura5/python_senpai/blob/master/pyproject.toml
-[app_detect]: https://github.com/nishimura5/python_senpai/blob/master/src/app_detect.py
-[app_track_list]: https://github.com/nishimura5/python_senpai/blob/master/src/app_track_list.py
-[app_2point_calc]: https://github.com/nishimura5/python_senpai/blob/master/src/app_2point_calc.py
-[app_3point_calc]: https://github.com/nishimura5/python_senpai/blob/master/src/app_3point_calc.py
-[gui_parts]: https://github.com/nishimura5/python_senpai/blob/master/src/gui_parts.py
-[detector_proc]: https://github.com/nishimura5/python_senpai/blob/master/src/detector_proc.py
+[pyproject]: https://github.com/nishimura5/behavior_senpai/blob/master/pyproject.toml
+[app_detect]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_detect.py
+[app_track_list]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_track_list.py
+[app_2point_calc]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_2point_calc.py
+[app_3point_calc]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_3point_calc.py
+[gui_parts]: https://github.com/nishimura5/behavior_senpai/blob/master/src/gui_parts.py
+[detector_proc]: https://github.com/nishimura5/behavior_senpai/blob/master/src/detector_proc.py
 
 ![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.2.0%20_%20Python%20senpai_files/bs_capture_120.jpg)
 

@@ -5,7 +5,8 @@ import cv2
 import numpy as np
 import pandas as pd
 import torch
-from python_senpai import img_draw
+
+from behavior_senpai import img_draw
 
 
 def draw(src_img, result):
@@ -98,8 +99,8 @@ class Annotate:
             cv2.circle(self.dst_img, self.right_ankle, 3, right_color, -1)
 
         # トラッキングIDを描画
-        cv2.putText(self.dst_img, str(self.id), [self.pos[0]-10, self.pos[1]-35], cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-        cv2.line(self.dst_img, self.pos, (self.pos[0], self.pos[1]-25), (50, 50, 255), 1, cv2.LINE_AA)
+        cv2.putText(self.dst_img, str(self.id), [self.pos[0] - 10, self.pos[1] - 35], cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+        cv2.line(self.dst_img, self.pos, (self.pos[0], self.pos[1] - 25), (50, 50, 255), 1, cv2.LINE_AA)
         return self.dst_img
 
     def _draw_line(self, start, end, color, thickness):
@@ -128,7 +129,7 @@ if __name__ == "__main__":
 
     # さっきの結果の読み込み
     src_df = pd.read_pickle(pkl_path)
-    total_frame_num = src_df.index.unique(level='frame').max() + 1
+    total_frame_num = src_df.index.unique(level="frame").max() + 1
     print(src_df.attrs)
 
     anno = Annotate()
@@ -137,7 +138,7 @@ if __name__ == "__main__":
         ret, frame = cap.read()
         anno.set_img(frame)
 
-        members = src_df.loc[pd.IndexSlice[i, :, :], :].index.unique(level='member')
+        members = src_df.loc[pd.IndexSlice[i, :, :], :].index.unique(level="member")
         for member in members:
             keypoints = src_df.loc[pd.IndexSlice[i, member, :], :]
             kps = keypoints.to_numpy()

@@ -10,8 +10,8 @@ import seaborn as sns
 import ttkthemes
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
+from behavior_senpai import time_format, windows_and_mac
 from gui_parts import Combobox, TempFile, Tree
-from python_senpai import time_format, windows_and_mac
 
 # plt.rcParams["font.family"] = "sans-serif"
 # plt.rcParams["font.sans-serif"] = ["Yu Gothic", "Meiryo", "Takao", "IPAexGothic", "IPAPGothic", "VL PGothic", "Noto Sans CJK JP"]

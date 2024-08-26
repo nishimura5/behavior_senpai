@@ -4,8 +4,8 @@ from tkinter import filedialog
 
 import pandas as pd
 
-from . import keypoints_proc
-from . import windows_and_mac
+from . import keypoints_proc, windows_and_mac
+
 
 def open_pkl(init_dir, org_path=None, filetypes=[("pkl files", "*.pkl")]):
     if init_dir == "":

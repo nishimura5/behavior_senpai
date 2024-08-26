@@ -3,9 +3,10 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
+
+from behavior_senpai import df_attrs, file_inout, keypoints_proc
 from dimredu_plotter import DimensionalReductionPlotter
 from gui_parts import Combobox, IntEntry, MemberKeypointComboboxes, StrEntry, TempFile
-from python_senpai import df_attrs, file_inout, keypoints_proc
 
 
 class App(ttk.Frame):

@@ -2,9 +2,10 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
+
+from behavior_senpai import keypoints_proc
 from gui_parts import Combobox, IntEntry, MemberKeypointComboboxes, TempFile
 from line_plotter import LinePlotter
-from python_senpai import keypoints_proc
 
 
 class App(ttk.Frame):

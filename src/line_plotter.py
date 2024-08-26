@@ -9,10 +9,7 @@ import seaborn as sns
 from matplotlib import gridspec, ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-import mediapipe_drawer
-import rtmpose_drawer
-import yolo_drawer
-from python_senpai import time_format
+from behavior_senpai import mediapipe_drawer, rtmpose_drawer, time_format, yolo_drawer
 
 
 class LinePlotter:

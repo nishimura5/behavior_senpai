@@ -4,7 +4,7 @@ import sys
 import pandas as pd
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from python_senpai import file_inout, keypoints_proc
+from behavior_senpai import file_inout, keypoints_proc
 
 # macは/Users/username
 video_dir = "%USERPROFILE%/Videos"

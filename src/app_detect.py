@@ -4,10 +4,11 @@ import os
 import tkinter as tk
 from tkinter import filedialog, ttk
 
-import detector_proc
 import ttkthemes
+
+import detector_proc
+from behavior_senpai import vcap, windows_and_mac
 from gui_parts import Combobox
-from python_senpai import vcap, windows_and_mac
 
 
 class App(ttk.Frame):

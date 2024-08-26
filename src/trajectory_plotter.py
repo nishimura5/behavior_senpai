@@ -4,7 +4,8 @@ import pandas as pd
 import seaborn as sns
 from matplotlib import gridspec, ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from python_senpai import time_format
+
+from behavior_senpai import time_format
 
 
 class TrajectoryPlotter:

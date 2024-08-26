@@ -3,9 +3,10 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
+
+from behavior_senpai import df_attrs, file_inout
 from gui_parts import Combobox, StrEntry, TempFile, Tree
 from line_plotter import LinePlotter
-from python_senpai import df_attrs, file_inout
 
 
 class App(ttk.Frame):

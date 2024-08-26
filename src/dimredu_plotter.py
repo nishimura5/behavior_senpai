@@ -2,14 +2,12 @@ import time
 
 import cv2
 import matplotlib.pyplot as plt
-import mediapipe_drawer
 import numpy as np
 import pandas as pd
-import rtmpose_drawer
-import yolo_drawer
 from matplotlib import gridspec, ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from python_senpai import time_format
+
+from behavior_senpai import mediapipe_drawer, rtmpose_drawer, time_format, yolo_drawer
 
 
 class DimensionalReductionPlotter:

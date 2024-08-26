@@ -4,9 +4,7 @@ from tkinter import messagebox
 import cv2
 import pandas as pd
 
-import mediapipe_drawer
-import rtmpose_drawer
-import yolo_drawer
+from behavior_senpai import mediapipe_drawer, rtmpose_drawer, yolo_drawer
 from gui_parts import TempFile
 
 

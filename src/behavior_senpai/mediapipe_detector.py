@@ -1,7 +1,8 @@
 import cv2
 import mediapipe as mp
 import pandas as pd
-from python_senpai import img_draw, vcap
+
+from behavior_senpai import img_draw, vcap
 
 
 class MediaPipeDetector:
@@ -9,7 +10,7 @@ class MediaPipeDetector:
         self.mph = mp.solutions.holistic
         self.model = self.mph.Holistic(model_complexity=2, refine_face_landmarks=True)
 
-        self.number_of_keypoints = {'face': 478, 'right_hand': 21, 'left_hand': 21}
+        self.number_of_keypoints = {"face": 478, "right_hand": 21, "left_hand": 21}
         self.show = show
         if self.show is True:
             self.drawing = mp.solutions.drawing_utils
@@ -43,13 +44,13 @@ class MediaPipeDetector:
                 img_draw.put_message(frame, "'x' key to exit.", font_size=1.5, y=55)
                 cv2.imshow("dst", frame)
                 key = cv2.waitKey(1) & 0xFF
-                if key == ord('x'):
+                if key == ord("x"):
                     break
 
             # 検出結果の取り出し
-            member_ids = ['face', 'right_hand', 'left_hand']
+            member_ids = ["face", "right_hand", "left_hand"]
             for member_id in member_ids:
-                landmarks = getattr(results, f'{member_id}_landmarks')
+                landmarks = getattr(results, f"{member_id}_landmarks")
                 if landmarks is None:
                     continue
                 keypoints = landmarks.landmark
