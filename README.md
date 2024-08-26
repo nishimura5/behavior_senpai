@@ -120,6 +120,19 @@ An illustrative example of a DataFrame stored in the Track file is presented bel
 
 In Behavior Senpai, the data obtained by calculating the positional relationship of multiple keypoints is referred to as a feature. The data processed by [app_2point_calc.py][app_2point_calc] or [app_3point_calc.py][app_3point_calc] is stored in a pickled format. The data processed by [app_3point_calc][app_3point_calc] is saved as a "Feature file" in the "calc" folder. The file extension is ".feat.pkl". The Feature file holds time-series data in 2-level-multi-index format, with the indices designated as "frame" and "member", respectively, and the columns including a "timestamp". It should be noted that the data in the Track file is only the result of keypoint detection, while the data in the Feature file are features that are deeply related to the purpose of behavior observation.
 
+|       |        | feat_1   | feat_2   | timestamp |
+| ----- | ------ | -------- | -------- | --------- |
+| frame | member |          |          |           |
+| 0     | 1      | NaN      | 0.050946 | 0.000000  |
+| 0     | 2      | 0.065052 | 0.049657 | 0.000000  |
+| 1     | 1      | NaN      | 0.064225 | 16.683333 |
+| 1     | 2      | 0.050946 | 0.050946 | 16.683333 |
+| 2     | 1      | NaN      | 0.065145 | 33.366667 |
+| 2     | 2      | 0.061077 | 0.068058 | 33.366667 |
+| 3     | 1      | NaN      | 0.049712 | 50.050000 |
+| 3     | 2      | 0.052715 | 0.055282 | 50.050000 |
+|       | ...    | ...      | ...      | ...       |
+
 #### Column name definition
 
 The feature files processed by [app_2point_calc.py][app_2point_calc] and [app_3point_calc.py][app_3point_calc] have rules for columns names (to enable parsing).
