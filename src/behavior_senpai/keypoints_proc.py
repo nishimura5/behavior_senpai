@@ -108,7 +108,9 @@ def umap(src_df, tar_cols: list, n_components: int = 1, n_neighbors: int = 15, m
     dst_df["timestamp"] = src_df["timestamp"]
     plot_df = src_df.dropna(how="all", axis=1)
     plot_df = plot_df.dropna(subset=tar_cols, how="any")
-    model = UMAP(n_components=n_components, n_neighbors=n_neighbors, min_dist=min_dist, random_state=seed, n_jobs=n_jobs)
+    model = UMAP(
+        n_components=n_components, n_neighbors=n_neighbors, min_dist=min_dist, random_state=seed, n_jobs=n_jobs, tqdm_kwds={"disable": False}
+    )
     reduced_arr = model.fit_transform(plot_df[tar_cols])
     reduced_df = pd.DataFrame(reduced_arr, columns=[f"umap_{i}" for i in range(n_components)], index=plot_df.index)
     reduced_df["umap_t"] = plot_df["timestamp"]
