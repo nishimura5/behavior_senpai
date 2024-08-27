@@ -24,7 +24,7 @@ class App(ttk.Frame):
 
         load_frame = ttk.Frame(self)
         load_frame.pack(anchor=tk.NW, expand=True, fill=tk.X, pady=5)
-        self.load_combo = Combobox(load_frame, label="Load:", values=["Initial", "Add right", "Add bottom"], width=15)
+        self.load_combo = Combobox(load_frame, label="Load:", values=["Initial", "Add right"], width=15)
         self.load_combo.pack_horizontal(padx=5)
         self.load_combo.set_state("disabled")
         feat_btn = ttk.Button(load_frame, text="Select feature file", command=self.load_feat)
@@ -140,7 +140,7 @@ class App(ttk.Frame):
         if load_option == "Initial":
             self.tar_df = tar_df
             self.feat_path_label["text"] = feat_path
-            self.load_combo.set_values(["Initial", "Add right", "Add bottom"])
+            self.load_combo.set_values(["Initial", "Add right"])
         elif load_option == "Add right":
             if len(self.tar_df) != len(tar_df):
                 print("The length of the dataframes are not the same.")
@@ -150,21 +150,6 @@ class App(ttk.Frame):
             self.feat_path_label["text"] = f"{self.feat_path_label['text']}, {feat_path}"
             self.load_combo.set_values(["Add right", "Initial"])
             print(f"New width: {len(self.tar_df.columns)}")
-        elif load_option == "Add bottom":
-            if len(self.tar_df.columns) != len(tar_df.columns):
-                print("The number of columns are not the same.")
-                return
-            print(f"track_name: {track_name}")
-            next_df = tar_df
-            prev_max_frame = self.tar_df.index.get_level_values("frame").max()
-            prev_max_timestamp = self.tar_df["timestamp"].max()
-            step = self.tar_df.groupby(level=1)["timestamp"].diff().max()
-            next_df.index = next_df.index.set_levels(next_df.index.levels[0] + prev_max_frame + 1, level=0)
-            next_df["timestamp"] = next_df["timestamp"] + prev_max_timestamp + step
-            self.tar_df = pd.concat([self.tar_df, next_df], axis=0)
-            self.feat_path_label["text"] = f"{self.feat_path_label['text']}, {feat_path}"
-            self.load_combo.set_values(["Add bottom", "Initial"])
-            print(f"New length: {len(self.tar_df)}")
 
         # update GUI
         self.member_combo.set_df(self.tar_df)
