@@ -1,7 +1,7 @@
 import glob
 import os
 import tkinter as tk
-from tkinter import ttk
+from tkinter import messagebox, ttk
 
 import pandas as pd
 
@@ -34,6 +34,8 @@ class App(ttk.Frame):
         assign_btn.pack(side=tk.LEFT, padx=5)
         overwrite_btn = ttk.Button(take_part_frame, text="Overwrite", command=self.overwrite)
         overwrite_btn.pack(side=tk.LEFT, padx=5)
+        merge_btn = ttk.Button(take_part_frame, text="Merge track files", command=self.merge)
+        merge_btn.pack(side=tk.LEFT, padx=5)
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
@@ -86,6 +88,8 @@ class App(ttk.Frame):
                 if take == "":
                     part_num = ""
                 attr = attr_dict[file_name]
+                if isinstance(attr["video"], list):
+                    attr["video"] = attr["video"][0]
                 self.tree.insert("", "end", values=(take, part_num, file_name, attr["model"], attr["video"]))
 
     def _on_select(self, event):
@@ -148,8 +152,58 @@ class App(ttk.Frame):
         print("overwrite done")
         self._load_folder()
 
+    def merge(self):
+        """Merge the track files based on the treeview."""
+        ret = messagebox.askokcancel("Merge track files", "Merge the track files?")
+        if ret is False:
+            return
+
+        merge_dict = {}
+        for item in self.tree.get_children(""):
+            take = self.tree.set(item, "take")
+            part = self.tree.set(item, "part")
+            file_name = self.tree.set(item, "track")
+            if take == "":
+                continue
+            if take not in merge_dict.keys():
+                merge_dict[take] = {}
+            merge_dict[take][int(part)] = file_name
+        for take, part_dict in merge_dict.items():
+            part_list = [part_dict[k] for k in sorted(part_dict.keys())]
+            if len(part_list) > 1:
+                self._merge_track_files(take, part_list)
+        messagebox.showinfo("Merge track files", "Merge finished.")
+
     def close(self):
         pass
+
+    def _merge_track_files(self, take_name, file_name_list):
+        dst_df = pd.DataFrame()
+        videos = []
+        for file_name in file_name_list:
+            src_df = pd.read_pickle(os.path.join(self.folder_path, file_name))
+            if len(dst_df) == 0:
+                dst_df = src_df
+                attrs = src_df.attrs
+            else:
+                prev_max_frame = dst_df.index.get_level_values("frame").max()
+                prev_max_timestamp = dst_df["timestamp"].max()
+                step = dst_df.groupby(level=1)["timestamp"].diff().max()
+                src_df.index = src_df.index.set_levels(src_df.index.levels[0] + prev_max_frame + 1, level=0)
+                src_df["timestamp"] = src_df["timestamp"] + prev_max_timestamp + step
+                dst_df = pd.concat([dst_df, src_df], axis=0)
+            videos.append(src_df.attrs["video_name"])
+            # move to backup folder
+            backup_path = os.path.join(self.folder_path, "backup", file_name)
+            if os.path.exists(backup_path):
+                os.remove(backup_path)
+            os.rename(os.path.join(self.folder_path, file_name), backup_path)
+        attrs["prev"] = None
+        attrs["next"] = None
+        attrs["video_name"] = videos
+        dst_df.attrs = attrs
+        dst_path = os.path.join(self.folder_path, take_name + ".pkl")
+        dst_df.to_pickle(dst_path)
 
 
 class TrackList:

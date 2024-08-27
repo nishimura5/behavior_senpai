@@ -134,7 +134,7 @@ class App(ttk.Frame):
         in_trk_df = pl.load_pkl()
         in_trk_attrs = df_attrs.DfAttrs(in_trk_df)
         in_trk_attrs.load_proc_history()
-        if in_trk_attrs.validate_model(self.src_attrs["model"], self.src_attrs["video_name"]) is False:
+        if in_trk_attrs.validate_model(self.src_attrs) is False:
             return
         if in_trk_attrs.validate_newest_history_proc("points") is False:
             return
@@ -196,7 +196,7 @@ class App(ttk.Frame):
             return
         self.feat_df = self.feat_df.sort_index()
         members = self.feat_df.index.get_level_values(1).unique()
-        file_name = os.path.splitext(self.src_attrs["video_name"])[0]
+        file_name = os.path.splitext(self.track_name)[0]
         first_keypoint_id = self.tar_df.index.get_level_values(2).values[0]
         timestamp_df = self.tar_df.loc[pd.IndexSlice[:, members, first_keypoint_id], :].droplevel(2)["timestamp"]
         timestamp_df = timestamp_df[~timestamp_df.index.duplicated(keep="last")]

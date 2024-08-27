@@ -20,7 +20,9 @@ class VideoCap(cv2.VideoCapture):
             print(f"Failed to open {file_path}")
         frame_count = int(self.get(cv2.CAP_PROP_FRAME_COUNT))
         self.set(cv2.CAP_PROP_POS_FRAMES, frame_count - 1)
-        _ = self.read()
+        ret, _ = self.read()
+        if ret is False:
+            print("Failed to read last frame.")
         self.max_msec = self.get(cv2.CAP_PROP_POS_MSEC)
 
     def read_at(self, msec, scale=None, rgb=False, read_anyway=True):
@@ -108,6 +110,9 @@ class MultiVcap:
     def set_frame_size(self, frame_size):
         self.vcap.set_frame_size(frame_size)
 
+    def get_frame_size(self):
+        return self.vcap.get_frame_size()
+
     def clear(self):
         self.file_path_list = []
         self.current_file_idx = 0
@@ -115,7 +120,7 @@ class MultiVcap:
     def _search_file_idx_and_msec(self, msec):
         tar_idx = np.searchsorted(self.total_msec_list, msec, side="left")
         if tar_idx >= len(self.total_msec_list):
-            return None
+            return None, None
         if tar_idx != self.current_file_idx:
             tar_path = self.file_path_list[tar_idx]
             self.vcap.open_file(tar_path)

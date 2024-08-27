@@ -170,7 +170,7 @@ class App(ttk.Frame):
         cluster_df = pl.load_pkl()
         in_trk_attrs = df_attrs.DfAttrs(cluster_df)
         in_trk_attrs.load_proc_history()
-        if in_trk_attrs.validate_model(self.src_attrs.attrs["model"], self.src_attrs.attrs["video_name"]) is False:
+        if in_trk_attrs.validate_model(self.src_attrs) is False:
             return
         if in_trk_attrs.validate_newest_history_proc("dimredu") is False:
             return

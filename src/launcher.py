@@ -139,14 +139,12 @@ class App(ttk.Frame):
         src_attrs = df_attrs.DfAttrs(self.src_df)
         self.pkl_dir = os.path.dirname(self.pkl_path)
         self.vcap.set_frame_size(src_attrs.attrs["frame_size"])
-        # if the first video is loaded, use MultiVcap
-        if src_attrs.get_prev() is False:
-            _, video_list = df_attrs.make_take_list(pkl_path)
-            video_list = [os.path.join(self.pkl_dir, os.pardir, video) for video in video_list]
+        if isinstance(src_attrs.attrs["video_name"], list):
+            video_list = [os.path.abspath(os.path.join(self.pkl_dir, os.pardir, video)) for video in src_attrs.attrs["video_name"]]
             self.cap = vcap.MultiVcap(self.vcap)
             self.cap.open_files(video_list)
         else:
-            self.vcap.open_file(os.path.join(self.pkl_dir, os.pardir, src_attrs.get_video_name()))
+            self.vcap.open_file(os.path.join(self.pkl_dir, os.pardir, src_attrs.attrs["video_name"]))
             self.cap = self.vcap
 
         # UIの更新

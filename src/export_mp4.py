@@ -19,6 +19,7 @@ class MakeMp4:
         self.time_min = None
         self.time_max = None
         self.pkl_dir = args["pkl_dir"]
+        self.track_name = args["trk_pkl_name"]
 
     def set_time_range(self, time_min, time_max):
         self.time_min = time_min
@@ -38,7 +39,7 @@ class MakeMp4:
         tmp = TempFile()
         scale = tmp.get_mp4_setting()
 
-        file_name = os.path.splitext(self.src_attrs["video_name"])[0]
+        file_name = os.path.splitext(self.track_name)[0]
         if self.src_attrs["model"] == "YOLOv8 x-pose-p6":
             anno = yolo_drawer.Annotate()
             suffix = "yolov8"
@@ -100,7 +101,7 @@ class MakeMp4:
         else:
             fps = 29.97
 
-        file_name = os.path.splitext(self.src_attrs["video_name"])[0]
+        file_name = os.path.splitext(self.track_name)[0]
         dst_dir = os.path.join(self.pkl_dir, os.pardir, "mp4")
         os.makedirs(dst_dir, exist_ok=True)
         out_file_path = os.path.join(dst_dir, f"{file_name}_extracted.mp4")

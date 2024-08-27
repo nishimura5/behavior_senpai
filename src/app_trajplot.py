@@ -62,7 +62,7 @@ class App(ttk.Frame):
 
         self.traj.set_vcap(args["cap"])
         self.track_name = args["trk_pkl_name"]
-        self.src_attrs = src_df.attrs
+        self.src_attrs = df_attrs.DfAttrs(src_df)
 
         # Update GUI
         self.member_keypoints_combos.set_df(self.tar_df)
@@ -104,12 +104,12 @@ class App(ttk.Frame):
         if len(self.feat_df) == 0:
             print("No data to export.")
             return
-        file_name = os.path.splitext(self.src_attrs["video_name"])[0]
+        file_name = os.path.splitext(self.track_name)[0]
         timestamp_df = self.timestamp_df
         timestamp_df = timestamp_df[~timestamp_df.index.duplicated(keep="last")]
         self.feat_df = self.feat_df[~self.feat_df.index.duplicated(keep="last")]
         export_df = pd.concat([self.feat_df, timestamp_df], axis=1)
-        export_df.attrs = self.src_attrs
+        export_df.attrs = self.src_attrs.attrs
         calc_case = self.calc_case_entry.get_calc_case()
         dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_trj.feat.pkl")
         history_dict = df_attrs.make_history_dict("trajectory", [], {}, self.track_name)

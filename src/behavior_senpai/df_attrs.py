@@ -56,13 +56,13 @@ class DfAttrs:
         ]
         return start_and_end_list
 
-    def get_video_name(self):
-        if "video_name" not in self.attrs.keys():
-            print("video_name not found.")
-            return ""
-        return self.attrs["video_name"]
-
-    def validate_model(self, model_name, video_name=""):
+    def validate_model(self, tar_attrs_dict):
+        if isinstance(tar_attrs_dict, dict) is True:
+            model_name = tar_attrs_dict["model"]
+            video_name = tar_attrs_dict["video_name"]
+        else:
+            model_name = tar_attrs_dict.attrs["model"]
+            video_name = tar_attrs_dict.attrs["video_name"]
         if self.attrs["video_name"] != video_name and video_name != "":
             print(f'warning: video_name "{video_name}", expected "{self.attrs["video_name"]}".')
         if self.attrs["model"] != model_name:
@@ -104,20 +104,3 @@ class DfAttrs:
 def make_history_dict(feat_type, source_cols, params, track_name=None):
     history_dict = {"type": feat_type, "source_cols": source_cols, "params": params, "track_name": track_name}
     return history_dict
-
-
-def make_take_list(first_path):
-    trk_list = [first_path]
-    video_list = []
-    tar_trk = first_path
-    for i in range(10):
-        tar_df = pd.read_pickle(tar_trk)
-        tar_attrs = DfAttrs(tar_df)
-        video_list.append(tar_attrs.get_video_name())
-        next_take = tar_attrs.get_next()
-        if next_take is False:
-            break
-        next_take = os.path.join(os.path.dirname(first_path), next_take)
-        trk_list.append(next_take)
-        tar_trk = next_take
-    return trk_list, video_list

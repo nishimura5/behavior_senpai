@@ -244,7 +244,7 @@ class App(ttk.Frame):
         in_trk_df = pl.load_pkl()
         in_trk_attrs = df_attrs.DfAttrs(in_trk_df)
         in_trk_attrs.load_proc_history()
-        if in_trk_attrs.validate_model(self.src_attrs.attrs["model"], self.src_attrs.attrs["video_name"]) is False:
+        if in_trk_attrs.validate_model(self.src_attrs) is False:
             return
         if in_trk_attrs.validate_newest_history_proc("mix") is False:
             return
