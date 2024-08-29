@@ -167,7 +167,7 @@ cross(2-1,2-3)
 
 ### Category file
 
-The category file contains boolean data indicating the presence of specific behaviors for each member at each frame. It includes frame and member identifiers, a class column for internal use, boolean columns for each category (e.g., cat_1, cat_2), and a timestamp. True values represent the occurrence of a behavior for a given member at a specific frame.
+The category file contains boolean data indicating the presence of specific behaviors for each member at each frame. It includes frame and member identifiers, a class column for internal use, boolean columns for each category (e.g., cat_1, cat_2), and a timestamp. True values represent the occurrence of a behavior for a given member at a specific frame.The file extension is ".bc.pkl". 
 
 |       |        | class | cat_1 | cat_2 | timestamp |
 | ----- | ------ | ----- | ----- | ----- | --------- |
