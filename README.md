@@ -165,6 +165,23 @@ As a concrete example, a column name meaning the outer product of two vectors st
 cross(2-1,2-3)
 ```
 
+### Category file
+
+The category file contains boolean data indicating the presence of specific behaviors for each member at each frame. It includes frame and member identifiers, a class column for internal use, boolean columns for each category (e.g., cat_1, cat_2), and a timestamp. True values represent the occurrence of a behavior for a given member at a specific frame.
+
+|       |        | class | cat_1 | cat_2 | timestamp |
+| ----- | ------ | ----- | ----- | ----- | --------- |
+| frame | member |       |       |       |           |
+| 0     | 1      | 0.0   | True  | False | 0.000000  |
+| 0     | 2      | 1.0   | False | True  | 0.000000  |
+| 1     | 1      | 0.0   | True  | False | 16.683333 |
+| 1     | 2      | 1.0   | False | True  | 16.683333 |
+| 2     | 1      | 0.0   | True  | False | 33.366667 |
+| 2     | 2      | 1.0   | False | True  | 33.366667 |
+| 3     | 1      | 0.0   | True  | False | 50.050000 |
+| 3     | 2      | 1.0   | False | True  | 50.050000 |
+|       | ...    | ...   | ...   | ...   | ...       |
+
 ### Attributes of Track (or Feature) file
 
 The [attrs property](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.attrs.html) of the DataFrame stored in Track file (and Feature files) records information such as the original video file name, its frame size, and the name of the AI model used for keypoint detection.
