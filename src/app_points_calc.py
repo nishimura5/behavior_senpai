@@ -6,7 +6,8 @@ from tkinter import ttk
 import pandas as pd
 
 from behavior_senpai import df_attrs, file_inout, keypoints_proc
-from gui_parts import CalcCaseEntry, Combobox, IntEntry, TempFile, Tree
+from gui_parts import CalcCaseEntry, Combobox, IntEntry, TempFile
+from gui_tree import Tree
 from line_plotter import LinePlotter
 from vector_gui_parts import MemberKeypointComboboxesFor3Point
 

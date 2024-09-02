@@ -4,7 +4,8 @@ from tkinter import ttk
 import pandas as pd
 
 from behavior_senpai import keypoints_proc, time_format
-from gui_parts import StrEntry, TempFile, TimeSpanEntry, Tree
+from gui_parts import StrEntry, TempFile, TimeSpanEntry
+from gui_tree import Tree
 from line_plotter import LinePlotter
 
 

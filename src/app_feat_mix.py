@@ -5,7 +5,8 @@ from tkinter import ttk
 import pandas as pd
 
 from behavior_senpai import df_attrs, file_inout
-from gui_parts import Combobox, StrEntry, TempFile, Tree
+from gui_parts import Combobox, StrEntry, TempFile
+from gui_tree import Tree
 from line_plotter import LinePlotter
 
 
@@ -86,7 +87,7 @@ class App(ttk.Frame):
         self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT)
         self.tree.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
-        self.tree.add_member_rename_to_menu(column=1)
+        self.tree.add_menu("Edit", self.edit)
         self.tree.add_row_copy(column=1)
 
         plot_frame = ttk.Frame(self)
@@ -216,6 +217,9 @@ class App(ttk.Frame):
         col_list.append(" ")
         self.col_a_combo.set_values(col_list)
         self.col_b_combo.set_values(col_list)
+
+    def edit(self):
+        self.tree.feat_mix_edit()
 
     def import_feat(self):
         """Open a file dialog to select a feature file.

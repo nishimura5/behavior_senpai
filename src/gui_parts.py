@@ -53,20 +53,22 @@ class MemberKeypointComboboxes(ttk.Frame):
 
 
 class StrEntry(ttk.Frame):
-    def __init__(self, master, label: str, default="", width=10):
+    def __init__(self, master, label: str, default="", width=10, allow_blank=False):
         super().__init__(master)
         self.default = default
         self.invalid_characters = ["<", ">", ":", '"', "/", "\\", "|", "?", "*"]
         self.frame = ttk.Frame(master)
         caption = ttk.Label(self.frame, text=label)
         caption.pack(side=tk.LEFT, padx=(0, 1))
+        self.allow_blank = allow_blank
         self.entry = ttk.Entry(
             self.frame,
             width=width,
             validate="key",
             validatecommand=(self.register(self._validate), "%P"),
         )
-        self.entry.bind("<FocusOut>", self._set_default)
+        if self.allow_blank is False:
+            self.entry.bind("<FocusOut>", self._set_default)
         self.entry.insert(tk.END, self.default)
         self.entry.pack(side=tk.LEFT)
 
@@ -91,7 +93,10 @@ class StrEntry(ttk.Frame):
         self.entry.insert(tk.END, text)
 
     def _validate(self, text):
-        return all(c not in text for c in self.invalid_characters) or text == ""
+        if self.allow_blank is True and text == "":
+            return True
+        else:
+            return all(c not in text for c in self.invalid_characters) or text == ""
 
     def _set_default(self, event):
         if self.entry.get() == "":
@@ -304,201 +309,6 @@ class Combobox(ttk.Frame):
         data[key] = thinning
         tmp.save(data)
         return thinning
-
-
-class Tree(ttk.Frame):
-    def __init__(self, master, columns: list, height: int, right_click=False):
-        super().__init__(master)
-        cols = [col["name"] for col in columns]
-        self.tree = ttk.Treeview(self, columns=cols, height=height, show="headings", selectmode="extended")
-        for column in columns:
-            self.tree.heading(column["name"], text=column["name"])
-            self.tree.column(column["name"], width=column["width"])
-        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scroll = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
-        scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        self.tree.configure(yscrollcommand=scroll.set)
-        if right_click is True:
-            self.tree.bind("<Button-3>", self._right_click_tree)
-            self.menu = tk.Menu(self, tearoff=0)
-            self.menu.add_command(label="Remove", command=self._delete_selected)
-
-    def add_member_rename_to_menu(self, column):
-        self.member_column = column
-        self.add_menu("Rename member", self._rename_member)
-
-    def add_row_copy(self, column):
-        self.member_column = column
-        self.add_menu("Copy", self._copy_row)
-
-    def add_rename(self, column):
-        self.member_column = column
-        self.add_menu("Rename", self.rename_item)
-
-    def set_members(self, members):
-        self.member_list = members
-
-    def add_menu(self, label, command):
-        self.menu.add_command(label=label, command=command)
-
-    def insert(self, values: list):
-        self.tree.insert("", tk.END, values=values)
-
-    def clear(self):
-        self.tree.delete(*self.tree.get_children())
-
-    def selection(self):
-        return self.tree.selection()
-
-    def set_select(self, col, value):
-        items = self.tree.get_children("")
-        for item in items:
-            if str(self.tree.item(item)["values"][col]) == value:
-                self.tree.selection_set(item)
-
-    def get_selected_one(self, selected=None, force_str=False):
-        if selected is None:
-            selected = self.tree.selection()
-            if len(selected) == 0:
-                return None
-            selected = selected[0]
-        if force_str is True:
-            ret = [str(self.tree.item(selected)["values"][i]) for i in range(len(self.tree.item(selected)["values"]))]
-        else:
-            ret = self.tree.item(selected)["values"]
-        return ret
-
-    def get_all(self):
-        return [self.tree.item(item)["values"] for item in self.tree.get_children("")]
-
-    def _right_click_tree(self, event):
-        selected = self.tree.selection()
-        if len(selected) == 0:
-            return
-        self.menu.post(event.x_root, event.y_root)
-
-    def _delete_selected(self):
-        selected = self.tree.selection()
-        if len(selected) == 0:
-            return
-        for item in selected:
-            self.tree.delete(item)
-
-    def _rename_member(self):
-        selected = self.tree.selection()
-        if len(selected) == 0:
-            return
-        dialog = MemberComboDialog(self, self.member_list)
-        self.wait_window(dialog.dialog)
-        selected_member = dialog.selected_member
-        if selected_member is None:
-            return
-        for item in selected:
-            values = self.tree.item(item)["values"]
-            values[self.member_column] = selected_member
-            self.tree.item(item, values=values)
-
-    def rename_item(self):
-        selected = self.tree.selection()
-        if len(selected) == 0:
-            return
-        default = self.tree.item(selected[0])["values"][self.member_column]
-        dialog = MemberEntryDialog(self, default=default)
-        self.wait_window(dialog.dialog)
-        new_name = dialog.new_name
-        if new_name is None:
-            return
-        for item in selected:
-            values = self.tree.item(item)["values"]
-            values[self.member_column] = new_name
-            self.tree.item(item, values=values)
-
-    def _copy_row(self):
-        selected = self.tree.selection()
-        if len(selected) == 0:
-            return
-        dialog = MemberComboDialog(self, self.member_list)
-        self.wait_window(dialog.dialog)
-        selected_member = dialog.selected_member
-        if selected_member is None:
-            return
-        for item in selected:
-            values = self.tree.item(item)["values"]
-            values[self.member_column] = selected_member
-            self.tree.insert("", tk.END, values=values)
-
-
-class MemberComboDialog(ttk.Frame):
-    def __init__(self, master, member_list):
-        super().__init__(master)
-        dialog = tk.Toplevel(master)
-        dialog.focus_set()
-        dialog.title("Select member")
-        dialog.geometry("300x100")
-        dialog.resizable(0, 0)
-
-        combo_frame = ttk.Frame(dialog)
-        combo_frame.pack(side=tk.TOP, pady=(5, 10))
-        label = ttk.Label(combo_frame, text="Member:")
-        label.pack(side=tk.LEFT, padx=5)
-        self.member_combo = ttk.Combobox(combo_frame, state="readonly", width=12)
-        self.member_combo.pack(side=tk.LEFT, padx=5)
-        self.member_combo["values"] = member_list
-        self.member_combo.current(0)
-
-        button_frame = ttk.Frame(dialog)
-        button_frame.pack(side=tk.TOP, pady=(10, 5))
-        ok_btn = ttk.Button(button_frame, text="OK", command=self.on_ok)
-        ok_btn.pack(side=tk.LEFT, padx=5)
-        cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.cancel)
-        cancel_btn.pack(side=tk.LEFT)
-
-        dialog.grab_set()
-        self.dialog = dialog
-        self.selected_member = None
-
-    def on_ok(self):
-        self.selected_member = self.member_combo.get()
-        self.dialog.destroy()
-
-    def cancel(self):
-        self.selected_member = None
-        self.dialog.destroy()
-
-
-class MemberEntryDialog(ttk.Frame):
-    def __init__(self, master, title="Rename", label="New Value", default=""):
-        super().__init__(master)
-        dialog = tk.Toplevel(master)
-        dialog.focus_set()
-        dialog.title(title)
-        dialog.geometry("300x100")
-        dialog.resizable(0, 0)
-
-        entry_frame = ttk.Frame(dialog)
-        entry_frame.pack(side=tk.TOP, pady=(5, 10))
-        self.member_entry = StrEntry(entry_frame, label, default=default, width=14)
-        self.member_entry.pack_horizontal(padx=5)
-
-        button_frame = ttk.Frame(dialog)
-        button_frame.pack(side=tk.TOP, pady=(10, 5))
-        ok_btn = ttk.Button(button_frame, text="OK", command=self.on_ok)
-        ok_btn.pack(side=tk.LEFT, padx=5)
-        cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.cancel)
-        cancel_btn.pack(side=tk.LEFT)
-
-        dialog.grab_set()
-        self.dialog = dialog
-        self.new_name = None
-        self.member_entry.entry.focus_set()
-
-    def on_ok(self):
-        self.new_name = self.member_entry.get()
-        self.dialog.destroy()
-
-    def cancel(self):
-        self.new_name = None
-        self.dialog.destroy()
 
 
 class TempFile:

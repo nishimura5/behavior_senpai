@@ -11,7 +11,8 @@ import ttkthemes
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 from behavior_senpai import time_format, windows_and_mac
-from gui_parts import Combobox, TempFile, Tree
+from gui_parts import Combobox, TempFile
+from gui_tree import Tree
 
 # plt.rcParams["font.family"] = "sans-serif"
 # plt.rcParams["font.sans-serif"] = ["Yu Gothic", "Meiryo", "Takao", "IPAexGothic", "IPAPGothic", "VL PGothic", "Noto Sans CJK JP"]

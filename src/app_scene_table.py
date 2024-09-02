@@ -7,7 +7,8 @@ import pandas as pd
 
 import export_mp4
 from behavior_senpai import file_inout, time_format
-from gui_parts import IntEntry, StrEntry, TempFile, TimeSpanEntry, Tree
+from gui_parts import IntEntry, StrEntry, TempFile, TimeSpanEntry
+from gui_tree import Tree
 from line_plotter import LinePlotter
 
 
@@ -84,8 +85,7 @@ class App(ttk.Frame):
         ]
         self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT)
-        self.tree.add_member_rename_to_menu(column=3)
-        self.tree.add_menu("Edit descripiton", self.rename)
+        self.tree.add_menu("Edit", self.edit)
         self.tree.add_menu("Extract MP4", self.extract_mp4)
         self.tree.add_menu("Export MP4", self.export_mp4)
         self.tree.tree.bind("<Button-1>", self.left_click_tree)
@@ -273,9 +273,8 @@ class App(ttk.Frame):
         self.export.set_time_range(start_msec, end_msec)
         self.export.extract()
 
-    def rename(self):
-        self.tree.member_column = 3
-        self.tree.rename_item()
+    def edit(self):
+        self.tree.scene_table_edit()
         self._update()
 
     def clear(self):
