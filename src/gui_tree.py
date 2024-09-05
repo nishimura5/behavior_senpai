@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 
-from gui_parts import StrEntry
+from behavior_senpai import time_format
+from gui_parts import StrEntry, TimeSpanEntry
 
 
 class Tree(ttk.Frame):
@@ -19,7 +20,6 @@ class Tree(ttk.Frame):
         if right_click is True:
             self.tree.bind("<Button-3>", self._right_click_tree)
             self.menu = tk.Menu(self, tearoff=0)
-            self.menu.add_command(label="Remove", command=self._delete_selected)
 
     def add_member_rename_to_menu(self, column):
         self.member_column = column
@@ -75,7 +75,7 @@ class Tree(ttk.Frame):
             return
         self.menu.post(event.x_root, event.y_root)
 
-    def _delete_selected(self):
+    def delete_selected(self):
         selected = self.tree.selection()
         if len(selected) == 0:
             return
@@ -115,17 +115,25 @@ class Tree(ttk.Frame):
         selected = self.tree.selection()
         if len(selected) == 0:
             return
+        if len(selected) > 1:
+            default_timespan = ["", ""]
+        elif len(selected) == 1:
+            default_timespan = self.tree.item(selected[0])["values"][:2]
         default_description = self.tree.item(selected[0])["values"][4]
-        dialog = SceneTableTreeDialog(self, self.member_list, default_description)
+        dialog = SceneTableTreeDialog(self, self.member_list, default_timespan, default_description)
         self.wait_window(dialog.dialog)
         new_member = dialog.selected_member
+        new_timespan = dialog.new_timespan
         new_description = dialog.new_description
-        print(f"{new_member},'{new_description}'is new value")
 
         if new_member is None:
             return
         for item in selected:
             values = self.tree.item(item)["values"]
+            if new_timespan[0] != "":
+                values[0] = new_timespan[0]
+            if new_timespan[1] != "":
+                values[1] = new_timespan[1]
             if new_member != "":
                 values[3] = new_member
             if new_description != "":
@@ -169,17 +177,25 @@ class Tree(ttk.Frame):
 
 
 class SceneTableTreeDialog(ttk.Frame):
-    def __init__(self, master, member_list, default_description=""):
+    def __init__(self, master, member_list, default_timespan=["", ""], default_description=""):
         super().__init__(master)
         dialog = tk.Toplevel(master)
         dialog.focus_set()
         dialog.title("Scene")
-        dialog.geometry("300x160")
+        dialog.geometry("500x200")
         dialog.resizable(0, 0)
+
+        time_frame = ttk.Frame(dialog)
+        time_frame.pack(side=tk.TOP, pady=(5, 10))
+        self.time_entry = TimeSpanEntry(time_frame)
+
+        if default_timespan[0] != "" and default_timespan[1] != "":
+            start_msec = time_format.timestr_to_msec(default_timespan[0])
+            end_msec = time_format.timestr_to_msec(default_timespan[1])
+            self.time_entry.update_entry(start_msec=start_msec, end_msec=end_msec)
 
         combo_frame = ttk.Frame(dialog)
         combo_frame.pack(side=tk.TOP, pady=(5, 10))
-
         label = ttk.Label(combo_frame, text="Member:")
         label.pack(side=tk.LEFT, padx=5)
         self.member_combo = ttk.Combobox(combo_frame, state="readonly", width=12)
@@ -187,9 +203,7 @@ class SceneTableTreeDialog(ttk.Frame):
         self.member_combo["values"] = member_list + [""]
         self.member_combo.current(0)
 
-        entry_frame = ttk.Frame(dialog)
-        entry_frame.pack(side=tk.TOP, pady=(5, 10))
-        self.member_entry = StrEntry(entry_frame, "Description:", default=default_description, width=14, allow_blank=True)
+        self.member_entry = StrEntry(combo_frame, "Description:", default=default_description, width=14, allow_blank=True)
         self.member_entry.pack_horizontal(padx=5)
 
         button_frame = ttk.Frame(dialog)
@@ -199,18 +213,20 @@ class SceneTableTreeDialog(ttk.Frame):
         cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.cancel)
         cancel_btn.pack(side=tk.LEFT)
 
-        dialog.grab_set()
         self.dialog = dialog
         self.selected_member = None
+        self.new_timespan = None
         self.new_description = None
 
     def on_ok(self):
         self.selected_member = self.member_combo.get()
+        self.new_timespan = self.time_entry.get_start_end_str()
         self.new_description = self.member_entry.get()
         self.dialog.destroy()
 
     def cancel(self):
         self.selected_member = None
+        self.new_timespan = None
         self.new_description = None
         self.dialog.destroy()
 

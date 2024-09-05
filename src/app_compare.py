@@ -67,6 +67,7 @@ class App(ttk.Frame):
         self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.tree.add_rename(column=1)
+        self.tree.add_menu("Remove", self.remove)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5, fill=tk.BOTH, expand=True)
@@ -162,6 +163,9 @@ class App(ttk.Frame):
         self.box_ax.grid(axis="y", color="gray", linestyle="--", linewidth=0.5)
         self.box_ax.grid(axis="y", color="gray", linestyle="--", linewidth=0.5, which="minor")
         self.canvas.draw()
+
+    def remove(self):
+        self.tree.delete_selected()
 
 
 def bool_to_dict(src_df, time_min=0, time_max=60 * 3600 * 1000 * 2):

@@ -86,6 +86,7 @@ class App(ttk.Frame):
         self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT)
         self.tree.add_menu("Edit", self.edit)
+        self.tree.add_menu("Remove", self.remove)
         self.tree.add_menu("Extract MP4", self.extract_mp4)
         self.tree.add_menu("Export MP4", self.export_mp4)
         self.tree.tree.bind("<Button-1>", self.left_click_tree)
@@ -187,7 +188,7 @@ class App(ttk.Frame):
         tar_df.index = tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(str)])
         plot_df = tar_df
 
-        rects = self.scene_table
+        rects = self.scene_table.copy()
         # concat member and description
         rects["description"] = [f"{m}|{d}" for m, d in zip(rects["member"], rects["description"])]
 
@@ -232,6 +233,7 @@ class App(ttk.Frame):
 
     def cancel(self):
         """Cancel the operation and destroy the window."""
+        print(self.scene_table)
         self.dst_df = None
         self.master.destroy()
 
@@ -247,7 +249,7 @@ class App(ttk.Frame):
         start_msec = time_format.timestr_to_msec(start)
         end_msec = time_format.timestr_to_msec(end)
         self.time_span_entry.update_entry(start_msec, end_msec)
-        description = self.tree.get_selected_one(row)[3]
+        description = self.tree.get_selected_one(row)[4]
         self.description_entry.update(description)
 
         if col == "#2":
@@ -275,6 +277,10 @@ class App(ttk.Frame):
 
     def edit(self):
         self.tree.scene_table_edit()
+        self._update()
+
+    def remove(self):
+        self.tree.delete_selected()
         self._update()
 
     def clear(self):

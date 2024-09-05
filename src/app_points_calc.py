@@ -79,6 +79,7 @@ class App(ttk.Frame):
         self.tree.pack(side=tk.LEFT)
         self.tree.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
         self.tree.add_member_rename_to_menu(column=1)
+        self.tree.add_menu("Remove", self.remove)
         self.tree.add_row_copy(column=1)
 
         plot_frame = ttk.Frame(self)
@@ -189,6 +190,9 @@ class App(ttk.Frame):
         self.lineplot.draw()
         self.lineplot.set_members_to_draw(members)
         self.export_btn["state"] = "normal"
+
+    def remove(self):
+        self.tree.delete_selected()
 
     def export(self):
         """Export the calculated data to a file."""

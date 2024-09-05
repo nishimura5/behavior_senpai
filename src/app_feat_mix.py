@@ -88,6 +88,7 @@ class App(ttk.Frame):
         self.tree.pack(side=tk.LEFT)
         self.tree.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
         self.tree.add_menu("Edit", self.edit)
+        self.tree.add_menu("Remove", self.remove)
         self.tree.add_row_copy(column=1)
 
         plot_frame = ttk.Frame(self)
@@ -220,6 +221,9 @@ class App(ttk.Frame):
 
     def edit(self):
         self.tree.feat_mix_edit()
+
+    def remove(self):
+        self.tree.delete_selected()
 
     def import_feat(self):
         """Open a file dialog to select a feature file.
