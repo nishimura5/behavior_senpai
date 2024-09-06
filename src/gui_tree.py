@@ -111,6 +111,20 @@ class Tree(ttk.Frame):
             values[self.member_column] = new_name
             self.tree.item(item, values=values)
 
+    def scene_table_add(self):
+        dialog = SceneTableTreeDialog(self, self.member_list)
+        self.wait_window(dialog.dialog)
+        new_member = dialog.selected_member
+        new_timespan = dialog.new_timespan
+        new_description = dialog.new_description
+
+        if new_member is None:
+            return
+        duration = time_format.timestr_to_msec(new_timespan[1]) - time_format.timestr_to_msec(new_timespan[0])
+        duration_str = time_format.msec_to_timestr_with_fff(duration)
+        values = list(new_timespan) + [duration_str, new_member, new_description]
+        self.tree.insert("", tk.END, values=values)
+
     def scene_table_edit(self):
         selected = self.tree.selection()
         if len(selected) == 0:
@@ -134,6 +148,8 @@ class Tree(ttk.Frame):
                 values[0] = new_timespan[0]
             if new_timespan[1] != "":
                 values[1] = new_timespan[1]
+            duration = time_format.timestr_to_msec(values[1]) - time_format.timestr_to_msec(values[0])
+            values[2] = time_format.msec_to_timestr_with_fff(duration)
             if new_member != "":
                 values[3] = new_member
             if new_description != "":

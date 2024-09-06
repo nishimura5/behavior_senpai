@@ -49,23 +49,15 @@ class App(ttk.Frame):
 
         draw_frame = ttk.Frame(setting_frame)
         draw_frame.pack(pady=5)
+        add_btn = ttk.Button(draw_frame, text="Add", command=self.add)
+        add_btn.pack(side=tk.LEFT, padx=(5, 30))
+
         self.connect_msec_entry = IntEntry(draw_frame, "Threshold (msec)", 1000, 6)
         self.connect_msec_entry.pack_horizontal(padx=(10, 0))
         connect_btn = ttk.Button(draw_frame, text="Connect", command=self._connect_nearby_scenes)
         connect_btn.pack(side=tk.LEFT, padx=5)
         remove_btn = ttk.Button(draw_frame, text="Remove", command=self._remove_short_scenes)
         remove_btn.pack(side=tk.LEFT)
-
-        entry_frame = ttk.Frame(setting_frame)
-        entry_frame.pack(pady=5)
-        self.time_span_entry = TimeSpanEntry(entry_frame)
-        self.time_span_entry.pack(side=tk.LEFT, padx=(0, 5))
-
-        self.description_entry = StrEntry(entry_frame, label="Description:", width=40)
-        self.description_entry.pack_horizontal(padx=5)
-
-        add_btn = ttk.Button(entry_frame, text="Add", command=self._add_row)
-        add_btn.pack(side=tk.LEFT, padx=5)
 
         ok_frame = ttk.Frame(control_frame)
         ok_frame.pack(anchor=tk.NE, padx=(20, 0))
@@ -109,9 +101,6 @@ class App(ttk.Frame):
         members = self.src_df.index.get_level_values(1).unique().astype(str).tolist()
         self.plot.set_members_to_draw(members)
         self.tree.set_members(members)
-
-        # UIの更新
-        self.time_span_entry.update_entry(self.time_min, self.time_max)
 
         self.tree.clear()
         self.clear()
@@ -272,6 +261,10 @@ class App(ttk.Frame):
         self.export.set_time_range(start_msec, end_msec)
         self.export.extract()
 
+    def add(self):
+        self.tree.scene_table_add()
+        self._update()
+
     def edit(self):
         self.tree.scene_table_edit()
         self._update()
@@ -284,31 +277,6 @@ class App(ttk.Frame):
         """Clear the plot."""
         self.plot.clear()
 
-    def _add_row(self):
-        start_time, end_time = self.time_span_entry.get_start_end_str()
-        start_td = pd.to_timedelta(start_time)
-        end_td = pd.to_timedelta(end_time)
-        # durationの計算、startとendが逆だったら入れ替える
-        if end_td <= start_td:
-            start_td, end_td = end_td, start_td
-        duration = end_td - start_td
-
-        duration_str = time_format.timedelta_to_str(duration)
-        start_str = time_format.timedelta_to_str(start_td)
-        end_str = time_format.timedelta_to_str(end_td)
-
-        # 重複していたらaddしない
-        tar_list = self.tree.get_all()
-        for tar in tar_list:
-            if start_str == tar[0] and end_str == tar[1]:
-                return
-        values = (start_str, end_str, duration_str, "", self.description_entry.get())
-        self.tree.insert(values)
-
-        # tree_viewをstartカラムでソート
-        self._treeview_sort_column(self.tree.tree, "start")
-        self._update()
-
     def _treeview_sort_column(self, tv, col):
         tar_list = [(tv.set(k, col), k) for k in tv.get_children("")]
         tar_list.sort()
@@ -316,6 +284,7 @@ class App(ttk.Frame):
             tv.move(k, "", index)
 
     def _update(self):
+        self._treeview_sort_column(self.tree.tree, "start")
         self.clear()
         scene_table = {"start": [], "end": [], "member": [], "description": []}
         for item in self.tree.tree.get_children(""):
