@@ -7,7 +7,7 @@ import pandas as pd
 
 import export_mp4
 from behavior_senpai import file_inout, time_format
-from gui_parts import IntEntry, StrEntry, TempFile, TimeSpanEntry
+from gui_parts import IntEntry, TempFile
 from gui_tree import Tree
 from line_plotter import LinePlotter
 
@@ -29,12 +29,12 @@ class App(ttk.Frame):
         self.plot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         control_frame = ttk.Frame(self)
-        control_frame.pack(fill=tk.X)
+        control_frame.pack(padx=(20, 0), fill=tk.X)
         setting_frame = ttk.Frame(control_frame)
         setting_frame.pack(fill=tk.X, expand=True, side=tk.LEFT)
 
         import_frame = ttk.Frame(setting_frame)
-        import_frame.pack(pady=5)
+        import_frame.pack(pady=5, expand=True, anchor=tk.W)
         import_btn = ttk.Button(import_frame, text="Import behavior coding file", command=self.import_bool_pkl)
         import_btn.pack(side=tk.LEFT, padx=(0, 5))
         self.bool_col_combo = ttk.Combobox(import_frame, state="disable", width=18)
@@ -48,9 +48,9 @@ class App(ttk.Frame):
         self.bool_df = None
 
         draw_frame = ttk.Frame(setting_frame)
-        draw_frame.pack(pady=5)
+        draw_frame.pack(pady=5, expand=True, anchor=tk.W)
         add_btn = ttk.Button(draw_frame, text="Add", command=self.add)
-        add_btn.pack(side=tk.LEFT, padx=(5, 30))
+        add_btn.pack(side=tk.LEFT, padx=(0, 150))
 
         self.connect_msec_entry = IntEntry(draw_frame, "Threshold (msec)", 1000, 6)
         self.connect_msec_entry.pack_horizontal(padx=(10, 0))
@@ -67,7 +67,7 @@ class App(ttk.Frame):
         cancel_btn.pack()
 
         tree_frame = ttk.Frame(self)
-        tree_frame.pack(pady=5)
+        tree_frame.pack(padx=(20, 0), pady=5, fill=tk.X, expand=True)
         cols = [
             {"name": "start", "width": 100},
             {"name": "end", "width": 100},
@@ -234,9 +234,6 @@ class App(ttk.Frame):
         end = self.tree.get_selected_one(row)[1]
         start_msec = time_format.timestr_to_msec(start)
         end_msec = time_format.timestr_to_msec(end)
-        self.time_span_entry.update_entry(start_msec, end_msec)
-        description = self.tree.get_selected_one(row)[4]
-        self.description_entry.update(description)
 
         if col == "#2":
             self.plot.jump_to(end_msec)
