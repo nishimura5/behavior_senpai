@@ -192,11 +192,8 @@ class App(ttk.Frame):
         # concat member and description
         rects["description"] = [f"{m}|{d}" for m, d in zip(rects["member"], rects["description"])]
 
-        if rects is None or len(rects["start"]) == 0:
-            return
-
         self.plot.set_trk_df(plot_df)
-        self.plot.set_plot_rect(rects)
+        self.plot.set_plot_rect(rects, self.time_min, self.time_max)
         self.plot.draw()
 
     def _connect_nearby_scenes(self):

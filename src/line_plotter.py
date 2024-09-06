@@ -127,15 +127,15 @@ class LinePlotter:
         show_df = plot_df.reset_index().set_index(["timestamp", "member"]).loc[:, :]
         self.timestamps = show_df.index.get_level_values("timestamp").unique().to_numpy()
 
-    def set_plot_rect(self, rects: list):
+    def set_plot_rect(self, rects: list, time_min_msec: int, time_max_msec: int):
         # カラムごとにdtypeを指定してDataFrameを作成
         rect_df = pd.DataFrame(rects, columns=["start", "end", "description"], dtype="str")
         rect_df = rect_df.sort_values("description")
 
         rect_df["start"] = pd.to_timedelta(rect_df["start"]).dt.total_seconds() * 1000
         rect_df["end"] = pd.to_timedelta(rect_df["end"]).dt.total_seconds() * 1000
-        time_min_msec = rect_df["start"].min()
-        time_max_msec = rect_df["end"].max()
+        #        time_min_msec = rect_df["start"].min()
+        #        time_max_msec = rect_df["end"].max()
 
         descriptions = rect_df["description"].unique()
         ticks = []
