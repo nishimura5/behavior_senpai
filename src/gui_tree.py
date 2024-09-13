@@ -156,6 +156,14 @@ class Tree(ttk.Frame):
                 values[4] = new_description
             self.tree.item(item, values=values)
 
+    def scene_table_copy(self):
+        selected = self.tree.selection()
+        if len(selected) == 0:
+            return
+        for item in selected:
+            values = self.tree.item(item)["values"]
+            self.tree.insert("", tk.END, values=values)
+
     def feat_mix_edit(self):
         selected = self.tree.selection()
         if len(selected) == 0:

@@ -35,7 +35,7 @@ class App(ttk.Frame):
 
         import_frame = ttk.Frame(setting_frame)
         import_frame.pack(pady=5, expand=True, anchor=tk.W)
-        import_btn = ttk.Button(import_frame, text="Import behavior coding file", command=self.import_bool_pkl)
+        import_btn = ttk.Button(import_frame, text="Import category file", command=self.import_bool_pkl)
         import_btn.pack(side=tk.LEFT, padx=(0, 5))
         self.bool_col_combo = ttk.Combobox(import_frame, state="disable", width=18)
         self.bool_col_combo["values"] = ["bool_col"]
@@ -49,7 +49,7 @@ class App(ttk.Frame):
 
         draw_frame = ttk.Frame(setting_frame)
         draw_frame.pack(pady=5, expand=True, anchor=tk.W)
-        add_btn = ttk.Button(draw_frame, text="Add", command=self.add)
+        add_btn = ttk.Button(draw_frame, text="Add scene", command=self.add)
         add_btn.pack(side=tk.LEFT, padx=(0, 150))
 
         self.connect_msec_entry = IntEntry(draw_frame, "Threshold (msec)", 1000, 6)
@@ -78,6 +78,7 @@ class App(ttk.Frame):
         self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT)
         self.tree.add_menu("Edit", self.edit)
+        self.tree.add_menu("Copy", self.copy)
         self.tree.add_menu("Remove", self.remove)
         self.tree.add_menu("Extract MP4", self.extract_mp4)
         self.tree.add_menu("Export MP4", self.export_mp4)
@@ -196,7 +197,7 @@ class App(ttk.Frame):
         scene_df["diff"] = scene_df["diff"].fillna(0)
         scene_df["label"] = scene_df["diff"] < -nearby_time_ms
         scene_df["label"] = scene_df.groupby("description")["label"].cumsum()
-        merged_df = scene_df.groupby(["description", "label"]).agg({"start": "min", "end": "max"}).reset_index()
+        merged_df = scene_df.groupby(["member", "description", "label"]).agg({"start": "min", "end": "max"}).reset_index()
         self._update_new_scene_df(merged_df)
 
     def _remove_short_scenes(self):
@@ -266,6 +267,10 @@ class App(ttk.Frame):
         self.tree.scene_table_edit()
         self._update()
 
+    def copy(self):
+        self.tree.scene_table_copy()
+        self._update()
+
     def remove(self):
         self.tree.delete_selected()
         self._update()
@@ -296,6 +301,7 @@ class App(ttk.Frame):
         self.clear()
         self.tree.clear()
         self.scene_table = {"start": [], "end": [], "member": [], "description": []}
+        print(new_scene_df)
         for i, row in new_scene_df.iterrows():
             start = time_format.msec_to_timestr_with_fff(row["start"])
             end = time_format.msec_to_timestr_with_fff(row["end"])
