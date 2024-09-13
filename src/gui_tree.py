@@ -321,14 +321,14 @@ class MemberComboDialog(ttk.Frame):
 
         dialog.grab_set()
         self.dialog = dialog
-        self.new_member = None
+        self.selected_member = None
 
     def on_ok(self):
-        self.new_member = self.member_combo.get()
+        self.selected_member = self.member_combo.get()
         self.dialog.destroy()
 
     def cancel(self):
-        self.new_member = None
+        self.selected_member = None
         self.dialog.destroy()
 
 
