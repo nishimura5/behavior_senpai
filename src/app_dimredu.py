@@ -26,7 +26,7 @@ class App(ttk.Frame):
 
         load_frame = ttk.Frame(left_frame)
         load_frame.pack(anchor=tk.NW, pady=5)
-        self.feat_button = ttk.Button(load_frame, text="Select feature file", command=self.load_feat)
+        self.feat_button = ttk.Button(load_frame, text="Select feature file", command=self.open_feat)
         self.feat_button.pack(side=tk.LEFT, padx=(20, 0))
         self.feat_path_label = ttk.Label(load_frame, text="No feature file loaded.")
         self.feat_path_label.pack(side=tk.LEFT, padx=(5, 0))
@@ -129,7 +129,14 @@ class App(ttk.Frame):
         for cluster_name in self.cluster_names:
             self.tree.insert("", "end", values=(cluster_name, cluster_name))
 
-    def load_feat(self):
+        expected_pts_file_name = f"{args['trk_pkl_name'].split('.')[0]}_pts_mix.feat.pkl"
+        expected_pts_file_path = os.path.join(self.calc_dir, self.calc_case, expected_pts_file_name)
+        if os.path.exists(expected_pts_file_path) is True:
+            pl = file_inout.PickleLoader(self.calc_dir, "feature")
+            pl.set_tar_path(expected_pts_file_path)
+            self.load_feat(pl)
+
+    def open_feat(self):
         pl = file_inout.PickleLoader(self.calc_dir, "feature")
         pl.join_calc_case(self.calc_case)
         is_file_selected = pl.show_open_dialog()
@@ -143,6 +150,9 @@ class App(ttk.Frame):
         data["calc_case"] = new_calc_case
         temp.save(data)
 
+        self.load_feat(pl)
+
+    def load_feat(self, pl: file_inout.PickleLoader):
         self.feat_path = pl.get_tar_path()
         self.feat_path_label["text"] = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
         self.feat_df = pl.load_pkl()
