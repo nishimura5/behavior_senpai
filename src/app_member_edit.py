@@ -45,10 +45,7 @@ class App(ttk.Frame):
         rename_btn.pack(side=tk.LEFT, padx=5)
 
         self.time_span_entry = TimeSpanEntry(rename_frame)
-        self.time_span_entry.pack(side=tk.LEFT, padx=20)
-
-        remove_btn = ttk.Button(rename_frame, text="Remove", command=self.remove_member)
-        remove_btn.pack(padx=(70, 0))
+        self.time_span_entry.pack(side=tk.LEFT)
 
         tree_frame = ttk.Frame(setting_frame)
         tree_frame.pack(pady=5)
@@ -59,8 +56,9 @@ class App(ttk.Frame):
             {"name": "duration", "width": 100},
             {"name": "keypoints/frame", "width": 100},
         ]
-        self.tree = Tree(tree_frame, cols, height=6)
+        self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack()
+        self.tree.add_menu("Remove", self.remove_member)
         self.tree.tree.bind("<<TreeviewSelect>>", self._select_tree_row)
 
         ok_frame = ttk.Frame(control_frame)
