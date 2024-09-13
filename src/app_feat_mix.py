@@ -28,7 +28,7 @@ class App(ttk.Frame):
         self.load_combo = Combobox(load_frame, label="Load:", values=["Initial", "Add right"], width=15)
         self.load_combo.pack_horizontal(padx=5)
         self.load_combo.set_state("disabled")
-        feat_btn = ttk.Button(load_frame, text="Select feature file", command=self.load_feat)
+        feat_btn = ttk.Button(load_frame, text="Select feature file", command=self.open_feat)
         feat_btn.pack(side=tk.LEFT, padx=5)
         self.feat_path_label = ttk.Label(load_frame, text="No feature file loaded.")
         self.feat_path_label.pack(side=tk.LEFT, padx=(5, 0), expand=True, fill=tk.X)
@@ -113,7 +113,14 @@ class App(ttk.Frame):
         self.scene_combo.set_values(menu)
         self.tree.set_members(src_df.index.levels[1].unique().tolist())
 
-    def load_feat(self):
+        expected_pts_file_name = f"{args['trk_pkl_name'].split('.')[0]}_pts.feat.pkl"
+        expected_pts_file_path = os.path.join(self.calc_dir, self.calc_case, expected_pts_file_name)
+        if os.path.exists(expected_pts_file_path) is True:
+            pl = file_inout.PickleLoader(self.calc_dir, "feature")
+            pl.set_tar_path(expected_pts_file_path)
+            self.load_feat(pl)
+
+    def open_feat(self):
         pl = file_inout.PickleLoader(self.calc_dir, "feature")
         pl.join_calc_case(self.calc_case)
         is_file_selected = pl.show_open_dialog()
@@ -127,9 +134,12 @@ class App(ttk.Frame):
         data["calc_case"] = new_calc_case
         temp.save(data)
 
+        self.load_feat(pl)
+
+    def load_feat(self, pl: file_inout.PickleLoader):
         self.feat_path = pl.get_tar_path()
-        feat_path = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
         tar_df = pl.load_pkl()
+        feat_path = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
         tar_df = tar_df[~tar_df.index.duplicated(keep="last")]
         tar_attrs = df_attrs.DfAttrs(tar_df)
         tar_attrs.load_proc_history()

@@ -87,6 +87,9 @@ class PickleLoader:
     def get_tar_parent(self):
         return os.path.basename(os.path.dirname(self.tar_path))
 
+    def set_tar_path(self, path):
+        self.tar_path = path
+
 
 def overwrite_track_file(tar_path, tar_df, not_found_ok=False):
     """
