@@ -35,13 +35,14 @@ class App(ttk.Frame):
         self.name_and_code = {
             "distance (|AB|)": "norm",
             "sin,cos (∠BAC)": "sin_cos",
+            "direction (∠BAx)": "direction",
             "xy_component (AB_x, AB_y)": "component",
             "cross_product (AB×AC)": "cross",
             "dot_product (AB・AC)": "dot",
             "plus (AB+AC)": "plus",
             "norms (|AB||AC|)": "norms",
         }
-        self.point2_list = ["distance (|AB|)", "xy_component (AB_x, AB_y)"]
+        self.point2_list = ["distance (|AB|)", "direction (∠BAx)", "xy_component (AB_x, AB_y)"]
         self.point3_list = ["sin,cos (∠BAC)", "cross_product (AB×AC)", "dot_product (AB・AC)", "plus (AB+AC)", "norms (|AB||AC|)"]
         self.calc_type_combo = Combobox(calc_select_frame, label="Calc:", width=25, values=self.point2_list)
         self.calc_type_combo.pack_vertical(pady=5)
@@ -191,6 +192,8 @@ class App(ttk.Frame):
                     plot_df = keypoints_proc.calc_plus(member_df, point_a, point_b, int(point_c))
                 elif code == "norms":
                     plot_df = keypoints_proc.calc_norms(member_df, point_a, point_b, int(point_c))
+                elif code == "direction":
+                    plot_df = keypoints_proc.calc_direction(member_df, point_a, point_b)
 
                 col_names = plot_df.columns.tolist()
                 # concat right

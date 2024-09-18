@@ -186,6 +186,22 @@ def calc_xy_component(src_df, kp0: int, kp1: int):
     xy_df.columns = [col_name_x, col_name_y]
     return xy_df
 
+def calc_direction(src_df, kp0: int, kp1: int):
+    """
+    Calculate the direction of kp0 -> kp1
+    """
+    col_name_sin = f"sin({kp0}-{kp1})"
+    col_name_cos = f"cos({kp0}-{kp1})"
+    point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
+    point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
+    point1_0 = point1 - point0
+    norm = np.sqrt(point1_0["x"] ** 2 + point1_0["y"] ** 2)
+    sin_sr = point1_0["y"] / norm
+    cos_sr = point1_0["x"] / norm
+    sin_cos_df = pd.concat([sin_sr, cos_sr], axis=1)
+    sin_cos_df.columns = [col_name_sin, col_name_cos]
+    return sin_cos_df
+
 
 def calc_norm(src_df, kp0: int, kp1: int):
     col_name = f"norm({kp0}-{kp1})"
