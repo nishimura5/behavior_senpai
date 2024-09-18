@@ -27,6 +27,11 @@ class App(ttk.Frame):
 
         tar_frame = ttk.Frame(self)
         tar_frame.pack(pady=5)
+        calc_select_frame = ttk.Frame(tar_frame)
+        calc_select_frame.pack(side=tk.LEFT, padx=5)
+        self.point_num_combo = Combobox(calc_select_frame, label="Point num:", width=25, values=["2", "3"])
+        self.point_num_combo.pack_vertical(pady=5)
+        self.point_num_combo.set_selected_bind(lambda event: self.change_point_num(event))
         self.name_and_code = {
             "distance (|AB|)": "norm",
             "sin,cos (∠BAC)": "sin_cos",
@@ -38,12 +43,14 @@ class App(ttk.Frame):
         }
         self.point2_list = ["distance (|AB|)", "xy_component (AB_x, AB_y)"]
         self.point3_list = ["sin,cos (∠BAC)", "cross_product (AB×AC)", "dot_product (AB・AC)", "plus (AB+AC)", "norms (|AB||AC|)"]
-        self.calc_type_combo = Combobox(tar_frame, label="Calc:", width=22, values=list(self.name_and_code.keys()))
-        self.calc_type_combo.pack_horizontal(padx=5)
+        self.calc_type_combo = Combobox(calc_select_frame, label="Calc:", width=25, values=self.point2_list)
+        self.calc_type_combo.pack_vertical(pady=5)
         data_dir = self._find_data_dir()
-        img_path = os.path.join(data_dir, "img", "vector.gif")
-        self.img = tk.PhotoImage(file=img_path)
-        self.img_label = ttk.Label(tar_frame, image=self.img)
+        img_3_path = os.path.join(data_dir, "img", "vector3.png")
+        self.img_3 = tk.PhotoImage(file=img_3_path)
+        img_2_path = os.path.join(data_dir, "img", "vector2.png")
+        self.img_2 = tk.PhotoImage(file=img_2_path)
+        self.img_label = ttk.Label(tar_frame, image=self.img_2)
         self.img_label.pack(side=tk.LEFT, padx=5)
         self.member_combo = MemberKeypointComboboxesFor3Point(tar_frame)
         self.member_combo.pack(side=tk.LEFT, padx=5)
@@ -122,6 +129,15 @@ class App(ttk.Frame):
                 return
         values = (calc, member, point_a, point_b, point_c)
         self.tree.insert(values)
+
+    def change_point_num(self, event):
+        point_num = self.point_num_combo.get()
+        if point_num == "2":
+            self.calc_type_combo.set_values(self.point2_list)
+            self.img_label["image"] = self.img_2
+        elif point_num == "3":
+            self.calc_type_combo.set_values(self.point3_list)
+            self.img_label["image"] = self.img_3
 
     def import_feat(self):
         """Open a file dialog to select a feature file.
