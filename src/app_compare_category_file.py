@@ -21,7 +21,7 @@ from gui_tree import Tree
 class App(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
-        master.title("Compare")
+        master.title("Compare category file")
         self.pack(padx=14, pady=14)
 
         temp = TempFile()
@@ -45,7 +45,7 @@ class App(ttk.Frame):
 
         head_frame = ttk.Frame(self)
         head_frame.pack(pady=5, fill=tk.X)
-        select_folder_btn = ttk.Button(head_frame, text="Select Folder", command=self.select_folder)
+        select_folder_btn = ttk.Button(head_frame, text="Select calc folder", command=self.select_folder)
         select_folder_btn.pack(padx=(0, 5), side=tk.LEFT)
 
         draw_btn = ttk.Button(head_frame, text="Draw", command=self.calc)
