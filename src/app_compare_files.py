@@ -26,15 +26,6 @@ class App(ttk.Frame):
 
         temp = TempFile()
         width, height, dpi = temp.get_scene_table_graph_size()
-        if temp.data["trk_path"] == "":
-            self.tar_dir = "~"
-        else:
-            trk_path = temp.data["trk_path"]
-            if temp.data["calc_case"] != "":
-                calc_case = temp.data["calc_case"]
-                self.tar_dir = os.path.abspath(os.path.join(trk_path, "..", "..", "calc", calc_case))
-            else:
-                self.tar_dir = os.path.dirname(trk_path)
 
         self.fig = plt.figure(
             figsize=(width / dpi, height / dpi),
@@ -51,11 +42,20 @@ class App(ttk.Frame):
         self.tar_file_type_combo.pack_horizontal(padx=5)
         self.tar_file_type_combo.set_selected_bind(self.type_change)
 
-        self.select_folder_btn = ttk.Button(head_frame, text="Select trk folder", width=16, command=self.select_folder)
-        self.select_folder_btn.pack(padx=(0, 5), side=tk.LEFT)
+        self.tar_dir = args["pkl_dir"]
+        if os.path.basename(self.tar_dir) == "trk":
+            self.tar_file_type_combo.set("track_file (.pkl)")
+        else:
+            self.tar_file_type_combo.set("category file (.bc.pkl)")
 
-        draw_btn = ttk.Button(head_frame, text="Draw", command=self.calc)
-        draw_btn.pack(side=tk.LEFT)
+        self.select_folder_btn = ttk.Button(head_frame, text="Select trk folder", width=16, command=self.select_folder)
+        self.select_folder_btn.pack(side=tk.LEFT)
+
+        self.folder_path_label = ttk.Label(head_frame, text="")
+        self.folder_path_label.pack(padx=5, side=tk.LEFT)
+
+        load_btn = ttk.Button(head_frame, text="Load", command=self.load_files)
+        load_btn.pack(side=tk.LEFT)
 
         control_frame = ttk.Frame(self)
         control_frame.pack(pady=5, fill=tk.X)
@@ -63,6 +63,9 @@ class App(ttk.Frame):
         cols = [1, 2, 3, 4]
         self.legend_col_combo = Combobox(control_frame, label="Legend column:", width=5, values=cols)
         self.legend_col_combo.pack_horizontal(padx=5)
+
+        self.draw_btn = ttk.Button(control_frame, text="Draw", command=self.calc)
+        self.draw_btn.pack(side=tk.LEFT)
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5, fill=tk.X)
@@ -82,19 +85,34 @@ class App(ttk.Frame):
         toolbar.pack()
         self.canvas.get_tk_widget().pack(expand=False)
 
+        self.load_files()
+
     def select_folder(self):
-        calc_type = self.file_type_combo_dict[self.tar_file_type_combo.get()]
         self.tree.clear()
+        self.tar_dir = filedialog.askdirectory(initialdir=self.tar_dir)
+        self.folder_path_label["text"] = self.tar_dir
+        # disable draw button
+        self.draw_btn["state"] = tk.DISABLED
+
+    def load_files(self):
+        calc_type = self.file_type_combo_dict[self.tar_file_type_combo.get()]
         self.member_list = []
-        tar_path = filedialog.askdirectory(initialdir=self.tar_dir)
         if calc_type == "pkl":
-            self.load_keypoint_files(tar_path)
+            file_num, tree_list = self.load_keypoint_files(self.tar_dir)
         elif calc_type == "bc":
-            self.load_category_files(tar_path)
+            file_num, tree_list = self.load_category_files(self.tar_dir)
+
+        self.folder_path_label["text"] = f"{self.tar_dir} ({file_num} files)"
         print(self.member_list)
+        # tree_list is keypoint_list or class_list
+        for i, value in enumerate(tree_list):
+            values = [value, value]
+            self.tree.insert(values)
+        self.draw_btn["state"] = tk.NORMAL
 
     def load_category_files(self, tar_path):
         self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.bc.pkl"))
+        file_num = len(self.tar_pkl_list)
 
         class_list = []
         for file_path in self.tar_pkl_list:
@@ -107,14 +125,15 @@ class App(ttk.Frame):
         class_list.sort()
         self.member_list = list(set(self.member_list))
         self.member_list.sort()
-
         print(class_list)
-        for i, class_name in enumerate(class_list):
-            values = [class_name, class_name]
-            self.tree.insert(values)
+        return file_num, class_list
 
     def load_keypoint_files(self, tar_path):
         self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.pkl"))
+        # remove feat.pkl files and bc.pkl files
+        self.tar_pkl_list = [f for f in self.tar_pkl_list if not f.endswith(".feat.pkl") and not f.endswith(".bc.pkl")]
+
+        file_num = len(self.tar_pkl_list)
 
         keypoint_list = []
         for file_path in self.tar_pkl_list:
@@ -125,10 +144,7 @@ class App(ttk.Frame):
         keypoint_list = list(set(keypoint_list))
         self.member_list = list(set(self.member_list))
         self.member_list.sort()
-
-        for i, keypoint in enumerate(keypoint_list):
-            values = [keypoint, keypoint]
-            self.tree.insert(values)
+        return file_num, keypoint_list
 
     def calc(self):
         calc_type = self.file_type_combo_dict[self.tar_file_type_combo.get()]
@@ -141,6 +157,9 @@ class App(ttk.Frame):
     def calc_categories(self, tree_list):
         total_df = pd.DataFrame()
         for file_path in self.tar_pkl_list:
+            # if not bc.pkl file, skip
+            if not file_path.endswith(".bc.pkl"):
+                continue
             src_df = pd.read_pickle(file_path)
             src_columns = src_df.columns
             columns_white_list = [str(c) for c, _ in tree_list] + ["class", "timestamp"]
@@ -223,6 +242,10 @@ class App(ttk.Frame):
             self.select_folder_btn["text"] = "Select trk folder"
         elif calc_type == "bc":
             self.select_folder_btn["text"] = "Select calc folder"
+        self.draw_btn["state"] = tk.DISABLED
+
+    def close(self):
+        pass
 
 
 def bool_to_dict(src_df, time_min=0, time_max=60 * 3600 * 1000 * 2):
