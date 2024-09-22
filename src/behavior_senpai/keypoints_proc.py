@@ -75,6 +75,14 @@ def calc_acceleration(speed_df, step_frame: int):
     return acc_df
 
 
+def calc_total_distance(src_df, step_frame: int):
+    """
+    src_dfの各keypointの総移動距離を計算する
+    """
+    diff_df = src_df.groupby(level=["member", "keypoint"]).diff(step_frame) ** 2
+    total_distance_df = pd.DataFrame(np.sqrt(diff_df["x"] + diff_df["y"]).groupby(level=["member", "keypoint"]).sum(), columns=["total_distance"])
+    return total_distance_df
+
 def thinning(src_df, thinning: int):
     """
     thinningの値だけsrc_dfのframeを間引く

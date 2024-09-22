@@ -10,7 +10,7 @@ import seaborn as sns
 import ttkthemes
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-from behavior_senpai import time_format, windows_and_mac
+from behavior_senpai import keypoints_proc, time_format, windows_and_mac
 from gui_parts import Combobox, TempFile
 from gui_tree import Tree
 
@@ -21,7 +21,7 @@ from gui_tree import Tree
 class App(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
-        master.title("Compare category file")
+        master.title("Compare file")
         self.pack(padx=14, pady=14)
 
         temp = TempFile()
@@ -45,8 +45,14 @@ class App(ttk.Frame):
 
         head_frame = ttk.Frame(self)
         head_frame.pack(pady=5, fill=tk.X)
-        select_folder_btn = ttk.Button(head_frame, text="Select calc folder", command=self.select_folder)
-        select_folder_btn.pack(padx=(0, 5), side=tk.LEFT)
+        #        self.file_type_combo_dict = {"track_file (.pkl)": "pkl", "feature file (.feat.pkl)": "feat", "category file (.bc.pkl)": "bc"}
+        self.file_type_combo_dict = {"track_file (.pkl)": "pkl", "category file (.bc.pkl)": "bc"}
+        self.tar_file_type_combo = Combobox(head_frame, label="File type:", width=18, values=list(self.file_type_combo_dict.keys()))
+        self.tar_file_type_combo.pack_horizontal(padx=5)
+        self.tar_file_type_combo.set_selected_bind(self.type_change)
+
+        self.select_folder_btn = ttk.Button(head_frame, text="Select trk folder", width=16, command=self.select_folder)
+        self.select_folder_btn.pack(padx=(0, 5), side=tk.LEFT)
 
         draw_btn = ttk.Button(head_frame, text="Draw", command=self.calc)
         draw_btn.pack(side=tk.LEFT)
@@ -61,8 +67,8 @@ class App(ttk.Frame):
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5, fill=tk.X)
         cols = [
-            {"name": "code", "width": 100},
-            {"name": "label", "width": 100},
+            {"name": "keypoint or code", "width": 100},
+            {"name": "label on boxplot", "width": 100},
         ]
         self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -77,12 +83,20 @@ class App(ttk.Frame):
         self.canvas.get_tk_widget().pack(expand=False)
 
     def select_folder(self):
+        calc_type = self.file_type_combo_dict[self.tar_file_type_combo.get()]
+        self.tree.clear()
+        self.member_list = []
         tar_path = filedialog.askdirectory(initialdir=self.tar_dir)
+        if calc_type == "pkl":
+            self.load_keypoint_files(tar_path)
+        elif calc_type == "bc":
+            self.load_category_files(tar_path)
+        print(self.member_list)
+
+    def load_category_files(self, tar_path):
         self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.bc.pkl"))
 
-        self.tree.clear()
         class_list = []
-        self.member_list = []
         for file_path in self.tar_pkl_list:
             src_df = pd.read_pickle(file_path)
             members = src_df.index.get_level_values("member").unique().tolist()
@@ -95,13 +109,36 @@ class App(ttk.Frame):
         self.member_list.sort()
 
         print(class_list)
-        print(self.member_list)
         for i, class_name in enumerate(class_list):
             values = [class_name, class_name]
             self.tree.insert(values)
 
+    def load_keypoint_files(self, tar_path):
+        self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.pkl"))
+
+        keypoint_list = []
+        for file_path in self.tar_pkl_list:
+            src_df = pd.read_pickle(file_path)
+            members = src_df.index.get_level_values("member").unique().tolist()
+            keypoint_list += src_df.index.get_level_values("keypoint").unique().tolist()
+            self.member_list += members
+        keypoint_list = list(set(keypoint_list))
+        self.member_list = list(set(self.member_list))
+        self.member_list.sort()
+
+        for i, keypoint in enumerate(keypoint_list):
+            values = [keypoint, keypoint]
+            self.tree.insert(values)
+
     def calc(self):
+        calc_type = self.file_type_combo_dict[self.tar_file_type_combo.get()]
         tree_list = self.tree.get_all()
+        if calc_type == "pkl":
+            self.calc_keypoints(tree_list)
+        elif calc_type == "bc":
+            self.calc_categories(tree_list)
+
+    def calc_categories(self, tree_list):
         total_df = pd.DataFrame()
         for file_path in self.tar_pkl_list:
             src_df = pd.read_pickle(file_path)
@@ -141,23 +178,36 @@ class App(ttk.Frame):
         total_df = total_df.set_index(["code", "member"])
         total_df = total_df.rename(index=rename_dict)
         total_df = total_df.sort_index()["time"]
-        self.draw(total_df)
+        self.draw(total_df, "code", "time", locator=0.1)
 
-    def draw(self, total_df):
+    def calc_keypoints(self, tree_list):
+        total_df = pd.DataFrame()
+        for file_path in self.tar_pkl_list:
+            src_df = pd.read_pickle(file_path)
+            total_df = keypoints_proc.calc_total_distance(src_df, step_frame=1)
+            total_df = pd.concat([total_df, total_df], axis=0)
+        total_df = total_df.sort_values("total_distance", ascending=False)
+        total_df = total_df.head(30)
+        print(total_df)
+        self.draw(total_df, "keypoint", "total_distance", locator=100)
+
+    def draw(self, total_df, x, y, locator):
         self.box_ax.clear()
         legend_col = int(self.legend_col_combo.get())
-        palette = sns.color_palette("coolwarm", 19)
-        sns.swarmplot(x="code", y="time", data=total_df.reset_index(), hue="member", size=4, linewidth=1, palette=palette, ax=self.box_ax)
+        # number of hue is number of members
+        members = len(total_df.index.get_level_values("member").unique().tolist())
+        palette = sns.color_palette("coolwarm", members)
+        sns.swarmplot(x=x, y=y, data=total_df.reset_index(), hue="member", size=4, linewidth=1, palette=palette, ax=self.box_ax)
         sns.boxplot(
-            x="code",
-            y="time",
+            x=x,
+            y=y,
             data=total_df.reset_index(),
             color="lightgray",
             width=0.7,
             ax=self.box_ax,
             showmeans=True,
         )
-        self.box_ax.yaxis.set_minor_locator(plt.MultipleLocator(0.1))
+        self.box_ax.yaxis.set_minor_locator(plt.MultipleLocator(locator))
 
         self.box_ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left", borderaxespad=0, ncol=legend_col, fontsize=8, frameon=False)
         self.box_ax.grid(axis="y", color="gray", linestyle="--", linewidth=0.5)
@@ -166,6 +216,13 @@ class App(ttk.Frame):
 
     def remove(self):
         self.tree.delete_selected()
+
+    def type_change(self, event):
+        calc_type = self.file_type_combo_dict[self.tar_file_type_combo.get()]
+        if calc_type == "pkl":
+            self.select_folder_btn["text"] = "Select trk folder"
+        elif calc_type == "bc":
+            self.select_folder_btn["text"] = "Select calc folder"
 
 
 def bool_to_dict(src_df, time_min=0, time_max=60 * 3600 * 1000 * 2):
