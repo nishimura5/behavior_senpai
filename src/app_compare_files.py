@@ -89,7 +89,10 @@ class App(ttk.Frame):
 
     def select_folder(self):
         self.tree.clear()
-        self.tar_dir = filedialog.askdirectory(initialdir=self.tar_dir)
+        tar_dir = filedialog.askdirectory(initialdir=os.path.dirname(self.tar_dir))
+        if not tar_dir:
+            return
+        self.tar_dir = tar_dir
         self.folder_path_label["text"] = self.tar_dir
         # disable draw button
         self.draw_btn["state"] = tk.DISABLED
