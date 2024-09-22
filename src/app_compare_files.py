@@ -11,7 +11,7 @@ import ttkthemes
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 from behavior_senpai import keypoints_proc, time_format, windows_and_mac
-from gui_parts import Combobox, TempFile
+from gui_parts import Combobox, IntEntry, TempFile
 from gui_tree import Tree
 
 # plt.rcParams["font.family"] = "sans-serif"
@@ -59,6 +59,9 @@ class App(ttk.Frame):
 
         control_frame = ttk.Frame(self)
         control_frame.pack(pady=5, fill=tk.X)
+
+        self.diff_entry = IntEntry(control_frame, label="Diff period:", default=temp.data["dt_span"])
+        self.diff_entry.pack_horizontal(padx=5)
 
         cols = [1, 2, 3, 4]
         self.legend_col_combo = Combobox(control_frame, label="Legend column:", width=5, values=cols)
@@ -204,9 +207,10 @@ class App(ttk.Frame):
 
     def calc_keypoints(self, tree_list):
         total_df = pd.DataFrame()
+        dt_span = self.diff_entry.get()
         for file_path in self.tar_pkl_list:
             src_df = pd.read_pickle(file_path)
-            total_df = keypoints_proc.calc_total_distance(src_df, step_frame=1)
+            total_df = keypoints_proc.calc_total_distance(src_df, step_frame=int(dt_span))
             total_df = pd.concat([total_df, total_df], axis=0)
         total_df = total_df.sort_values("total_distance", ascending=False)
         total_df = total_df.head(30)
