@@ -6,6 +6,7 @@ import cv2
 import ttkthemes
 
 import app_area_filter
+import app_compare_files
 import app_detect
 import app_dimredu
 import app_feat_mix
@@ -99,9 +100,11 @@ class App(ttk.Frame):
 
         save_frame = ttk.Frame(head_frame)
         save_frame.pack(anchor=tk.E)
-        self.save_button = ttk.Button(save_frame, text="Overwrite", command=self.overwrite)
+        self.save_button = ttk.Button(save_frame, text="Overwrite", command=self.overwrite, width=10)
         self.save_button.pack()
         self.save_button["state"] = tk.DISABLED
+        compare_button = ttk.Button(save_frame, text="Compare", command=lambda: self.launch_window(app_compare_files.App), width=10)
+        compare_button.pack(pady=4)
 
         view_frame = ttk.Frame(main_frame)
         view_frame.pack(pady=(10, 0), anchor=tk.W)

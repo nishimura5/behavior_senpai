@@ -19,9 +19,9 @@ from gui_tree import Tree
 
 
 class App(ttk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, args):
         super().__init__(master)
-        master.title("Compare file")
+        master.title("Compare")
         self.pack(padx=14, pady=14)
 
         temp = TempFile()
