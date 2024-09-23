@@ -91,7 +91,6 @@ class App(ttk.Frame):
         self.load_files()
 
     def select_folder(self):
-        self.tree.clear()
         tar_dir = filedialog.askdirectory(initialdir=os.path.dirname(self.tar_dir))
         if not tar_dir:
             return
@@ -101,6 +100,7 @@ class App(ttk.Frame):
         self.draw_btn["state"] = tk.DISABLED
 
     def load_files(self):
+        self.tree.clear()
         calc_type = self.file_type_combo_dict[self.tar_file_type_combo.get()]
         self.member_list = []
         if calc_type == "pkl":
@@ -109,7 +109,6 @@ class App(ttk.Frame):
             file_num, tree_list = self.load_category_files(self.tar_dir)
 
         self.folder_path_label["text"] = f"{self.tar_dir} ({file_num} files)"
-        print(self.member_list)
         # tree_list is keypoint_list or class_list
         for i, value in enumerate(tree_list):
             values = [value, value]
@@ -129,9 +128,8 @@ class App(ttk.Frame):
             self.member_list += members
         class_list = list(set(class_list))
         class_list.sort()
-        self.member_list = list(set(self.member_list))
-        self.member_list.sort()
-        print(class_list)
+
+        self._remove_duplicates_and_sort_member_list()
         return file_num, class_list
 
     def load_keypoint_files(self, tar_path):
@@ -148,9 +146,17 @@ class App(ttk.Frame):
             keypoint_list += src_df.index.get_level_values("keypoint").unique().tolist()
             self.member_list += members
         keypoint_list = list(set(keypoint_list))
-        self.member_list = list(set(self.member_list))
-        self.member_list.sort()
+
+        self._remove_duplicates_and_sort_member_list()
         return file_num, keypoint_list
+
+    def _remove_duplicates_and_sort_member_list(self):
+        member_list = list(set(self.member_list))
+        if len(member_list) != len(self.member_list):
+            duplicated = [x for x in member_list if self.member_list.count(x) > 1]
+            print(f"duplicated member: {duplicated}")
+        self.member_list = member_list
+        self.member_list.sort()
 
     def calc(self):
         calc_type = self.file_type_combo_dict[self.tar_file_type_combo.get()]
