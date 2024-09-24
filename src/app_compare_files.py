@@ -81,6 +81,9 @@ class App(ttk.Frame):
         self.tree.add_rename(column=1)
         self.tree.add_menu("Remove", self.remove)
 
+        self.member_listbox = tk.Listbox(tree_frame, selectmode=tk.EXTENDED, height=6, exportselection=False)
+        self.member_listbox.pack(side=tk.LEFT, fill=tk.Y)
+
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5, fill=tk.BOTH, expand=True)
         self.canvas = FigureCanvasTkAgg(self.fig, master=plot_frame)
@@ -101,85 +104,99 @@ class App(ttk.Frame):
 
     def load_files(self):
         self.tree.clear()
+        self.member_listbox.delete(0, tk.END)
         calc_type = self.file_type_combo_dict[self.tar_file_type_combo.get()]
-        self.member_list = []
         if calc_type == "pkl":
-            file_num, tree_list = self.load_keypoint_files(self.tar_dir)
+            file_num, member_list, tree_list = self.load_keypoint_files(self.tar_dir)
         elif calc_type == "bc":
-            file_num, tree_list = self.load_category_files(self.tar_dir)
+            file_num, member_list, tree_list = self.load_category_files(self.tar_dir)
 
         self.folder_path_label["text"] = f"{self.tar_dir} ({file_num} files)"
         # tree_list is keypoint_list or class_list
         for i, value in enumerate(tree_list):
-            values = [value, value]
-            self.tree.insert(values)
+            self.tree.insert([value, value])
+        for i, value in enumerate(member_list):
+            self.member_listbox.insert(tk.END, value)
         self.draw_btn["state"] = tk.NORMAL
 
     def load_category_files(self, tar_path):
         self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.bc.pkl"))
         file_num = len(self.tar_pkl_list)
 
+        member_list = []
         class_list = []
         for file_path in self.tar_pkl_list:
             src_df = pd.read_pickle(file_path)
-            members = src_df.index.get_level_values("member").unique().tolist()
+            idx = src_df.index
+            src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
+
+            member_list += src_df.index.get_level_values("member").unique().tolist()
             scene_table = bool_to_dict(src_df)
             class_list += scene_table["class"]
-            self.member_list += members
         class_list = list(set(class_list))
         class_list.sort()
+        member_list = list(set(member_list))
 
-        self._remove_duplicates_and_sort_member_list()
-        return file_num, class_list
+        return file_num, member_list, class_list
 
     def load_keypoint_files(self, tar_path):
         self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.pkl"))
         # remove feat.pkl files and bc.pkl files
         self.tar_pkl_list = [f for f in self.tar_pkl_list if not f.endswith(".feat.pkl") and not f.endswith(".bc.pkl")]
-
         file_num = len(self.tar_pkl_list)
 
+        member_list = []
         keypoint_list = []
         for file_path in self.tar_pkl_list:
             src_df = pd.read_pickle(file_path)
-            members = src_df.index.get_level_values("member").unique().tolist()
+            idx = src_df.index
+            src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
+
+            member_list += src_df.index.get_level_values("member").unique().tolist()
             keypoint_list += src_df.index.get_level_values("keypoint").unique().tolist()
-            self.member_list += members
         keypoint_list = list(set(keypoint_list))
+        member_list = list(set(member_list))
 
-        self._remove_duplicates_and_sort_member_list()
-        return file_num, keypoint_list
-
-    def _remove_duplicates_and_sort_member_list(self):
-        member_list = list(set(self.member_list))
-        if len(member_list) != len(self.member_list):
-            duplicated = [x for x in member_list if self.member_list.count(x) > 1]
-            print(f"duplicated member: {duplicated}")
-        self.member_list = member_list
-        self.member_list.sort()
+        return file_num, member_list, keypoint_list
 
     def calc(self):
         calc_type = self.file_type_combo_dict[self.tar_file_type_combo.get()]
         tree_list = self.tree.get_all()
+        selected_member_idx_list = self.member_listbox.curselection()
+        selected_member_list = [self.member_listbox.get(i) for i in selected_member_idx_list]
         if calc_type == "pkl":
-            self.calc_keypoints(tree_list)
+            self.calc_keypoints(tree_list, selected_member_list)
         elif calc_type == "bc":
-            self.calc_categories(tree_list)
+            self.calc_categories(tree_list, selected_member_list)
 
-    def calc_categories(self, tree_list):
-        total_df = pd.DataFrame()
+    def calc_categories(self, tree_list, member_list):
+        draw_df = pd.DataFrame()
+        class_list = [str(c) for c, _ in tree_list]
+        member_list = [str(m) for m in member_list]
+        # combination of member and keypoint
         for file_path in self.tar_pkl_list:
             # if not bc.pkl file, skip
             if not file_path.endswith(".bc.pkl"):
                 continue
             src_df = pd.read_pickle(file_path)
+            idx = src_df.index
+            src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
             src_columns = src_df.columns
-            columns_white_list = [str(c) for c, _ in tree_list] + ["class", "timestamp"]
+
+            columns_white_list = class_list + ["class", "timestamp"]
             # and src_columns and columns_white_list
             code_list = [c for c in columns_white_list if c in src_columns]
             src_df = src_df[code_list]
-            member_name = src_df.index.get_level_values("member").unique().tolist()[0]
-            scene_table = bool_to_dict(src_df)
+
+            # extract valid index
+            valid_members = src_df.index.get_level_values("member").unique().tolist()
+            valid_tree_list = [m for m in member_list if m in valid_members]
+            extracted_df = src_df.loc[pd.IndexSlice[:, valid_tree_list], :]
+            if extracted_df.empty:
+                continue
+
+            member_name = extracted_df.index.get_level_values("member").unique().tolist()[0]
+            scene_table = bool_to_dict(extracted_df)
             scene_df = pd.DataFrame(scene_table)
             scene_df["start"] = pd.to_timedelta(scene_df["start"]).dt.total_seconds()
             scene_df["end"] = pd.to_timedelta(scene_df["end"]).dt.total_seconds()
@@ -198,42 +215,58 @@ class App(ttk.Frame):
                     sum_df.loc[(member_name, class_name), :] = 0
 
             sum_df = sum_df.loc[:, ["duration"]]
-            total_df = pd.concat([total_df, sum_df], axis=0)
+            draw_df = pd.concat([draw_df, sum_df], axis=0)
 
-        total_df["total"] = total_df["duration"] / 60
-        total_df["time"] = total_df["total"] / 60
-        total_df = total_df.reset_index()
+        draw_df["total"] = draw_df["duration"] / 60
+        draw_df["time"] = draw_df["total"] / 60
+        draw_df = draw_df.reset_index()
 
         # generate rename_dict from tree view
         rename_dict = {str(c): str(n) for c, n in tree_list}
-        total_df = total_df.set_index(["code", "member"])
-        total_df = total_df.rename(index=rename_dict)
-        total_df = total_df.sort_index()["time"]
-        self.draw(total_df, "code", "time", locator=0.1)
+        draw_df = draw_df.set_index(["code", "member"])
+        print(draw_df)
+        draw_df = draw_df.rename(index=rename_dict)
+        draw_df = draw_df.sort_index()["time"]
+        print(draw_df)
+        self.draw(draw_df, "code", "time", locator=0.1)
 
-    def calc_keypoints(self, tree_list):
-        total_df = pd.DataFrame()
+    def calc_keypoints(self, tree_list, member_list):
+        draw_df = pd.DataFrame()
         dt_span = self.diff_entry.get()
+        keypoint_list = [k for k, _ in tree_list]
+        member_list = [str(m) for m in member_list]
+        # combination of member and keypoint
+        tree_list = [(m, k) for m in member_list for k in keypoint_list]
         for file_path in self.tar_pkl_list:
             src_df = pd.read_pickle(file_path)
-            total_df = keypoints_proc.calc_total_distance(src_df, step_frame=int(dt_span))
-            total_df = pd.concat([total_df, total_df], axis=0)
-        total_df = total_df.sort_values("total_distance", ascending=False)
-        total_df = total_df.head(30)
-        print(total_df)
-        self.draw(total_df, "keypoint", "total_distance", locator=100)
+            idx = src_df.index
+            src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
 
-    def draw(self, total_df, x, y, locator):
+            # extract valid index
+            valid_members = src_df.index.get_level_values("member").unique().tolist()
+            valid_tree_list = [(m, k) for m, k in tree_list if m in valid_members]
+            extracted_df = src_df.loc[pd.IndexSlice[:, [m for m, k in valid_tree_list], [k for m, k in valid_tree_list]], :]
+            if extracted_df.empty:
+                continue
+
+            total_df = keypoints_proc.calc_total_distance(extracted_df, step_frame=int(dt_span))
+            draw_df = pd.concat([draw_df, total_df], axis=0)
+        draw_df = draw_df.sort_values("total_distance", ascending=False)
+        print(draw_df)
+        draw_df = draw_df.head(30)
+        self.draw(draw_df, "keypoint", "total_distance", locator=10000)
+
+    def draw(self, src_df, x, y, locator):
         self.box_ax.clear()
         legend_col = int(self.legend_col_combo.get())
         # number of hue is number of members
-        members = len(total_df.index.get_level_values("member").unique().tolist())
+        members = len(src_df.index.get_level_values("member").unique().tolist())
         palette = sns.color_palette("coolwarm", members)
-        sns.swarmplot(x=x, y=y, data=total_df.reset_index(), hue="member", size=4, linewidth=1, palette=palette, ax=self.box_ax)
+        sns.swarmplot(x=x, y=y, data=src_df.reset_index(), hue="member", size=4, linewidth=1, palette=palette, ax=self.box_ax)
         sns.boxplot(
             x=x,
             y=y,
-            data=total_df.reset_index(),
+            data=src_df.reset_index(),
             color="lightgray",
             width=0.7,
             ax=self.box_ax,
