@@ -63,6 +63,9 @@ class App(ttk.Frame):
         self.diff_entry = IntEntry(control_frame, label="Diff period:", default=temp.data["dt_span"])
         self.diff_entry.pack_horizontal(padx=5)
 
+        self.y_axis_locater_entry = IntEntry(control_frame, label="Y axis locater:", default=0)
+        self.y_axis_locater_entry.pack_horizontal(padx=5)
+
         cols = [1, 2, 3, 4]
         self.legend_col_combo = Combobox(control_frame, label="Legend column:", width=5, values=cols)
         self.legend_col_combo.pack_horizontal(padx=5)
@@ -224,15 +227,15 @@ class App(ttk.Frame):
         # generate rename_dict from tree view
         rename_dict = {str(c): str(n) for c, n in tree_list}
         draw_df = draw_df.set_index(["code", "member"])
-        print(draw_df)
         draw_df = draw_df.rename(index=rename_dict)
         draw_df = draw_df.sort_index()["time"]
-        print(draw_df)
         self.draw(draw_df, "code", "time", locator=0.1)
 
     def calc_keypoints(self, tree_list, member_list):
         draw_df = pd.DataFrame()
         dt_span = self.diff_entry.get()
+        y_axis_locater = self.y_axis_locater_entry.get()
+
         keypoint_list = [k for k, _ in tree_list]
         member_list = [str(m) for m in member_list]
         # combination of member and keypoint
@@ -254,7 +257,7 @@ class App(ttk.Frame):
         draw_df = draw_df.sort_values("total_distance", ascending=False)
         print(draw_df)
         draw_df = draw_df.head(30)
-        self.draw(draw_df, "keypoint", "total_distance", locator=10000)
+        self.draw(draw_df, "keypoint", "total_distance", locator=y_axis_locater)
 
     def draw(self, src_df, x, y, locator):
         self.box_ax.clear()
@@ -272,7 +275,8 @@ class App(ttk.Frame):
             ax=self.box_ax,
             showmeans=True,
         )
-        self.box_ax.yaxis.set_minor_locator(plt.MultipleLocator(locator))
+        if locator > 0:
+            self.box_ax.yaxis.set_major_locator(plt.MultipleLocator(locator))
 
         self.box_ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left", borderaxespad=0, ncol=legend_col, fontsize=8, frameon=False)
         self.box_ax.grid(axis="y", color="gray", linestyle="--", linewidth=0.5)
