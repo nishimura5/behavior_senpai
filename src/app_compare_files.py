@@ -25,7 +25,7 @@ class App(ttk.Frame):
         self.pack(padx=14, pady=14)
 
         temp = TempFile()
-        width, height, dpi = temp.get_scene_table_graph_size()
+        width, height, dpi = temp.get_window_size()
 
         self.fig = plt.figure(
             figsize=(width / dpi, height / dpi),
@@ -36,8 +36,7 @@ class App(ttk.Frame):
 
         head_frame = ttk.Frame(self)
         head_frame.pack(pady=5, fill=tk.X)
-        #        self.file_type_combo_dict = {"track_file (.pkl)": "pkl", "feature file (.feat.pkl)": "feat", "category file (.bc.pkl)": "bc"}
-        self.file_type_combo_dict = {"track_file (.pkl)": "pkl", "category file (.bc.pkl)": "bc"}
+        self.file_type_combo_dict = {"track_file (.pkl)": "pkl", "feature file (.feat.pkl)": "feat", "category file (.bc.pkl)": "bc"}
         self.tar_file_type_combo = Combobox(head_frame, label="File type:", width=18, values=list(self.file_type_combo_dict.keys()))
         self.tar_file_type_combo.pack_horizontal(padx=5)
         self.tar_file_type_combo.set_selected_bind(self.type_change)
@@ -116,6 +115,8 @@ class App(ttk.Frame):
             file_num, member_list, tree_list = self.load_keypoint_files(self.tar_dir)
         elif calc_type == "bc":
             file_num, member_list, tree_list = self.load_category_files(self.tar_dir)
+        elif calc_type == "feat":
+            file_num, member_list, tree_list = self.load_feature_files(self.tar_dir)
 
         self.folder_path_label["text"] = f"{self.tar_dir} ({file_num} files)"
         # tree_list is keypoint_list or class_list
@@ -174,6 +175,33 @@ class App(ttk.Frame):
 
         return file_num, member_list, keypoint_list
 
+    def load_feature_files(self, tar_path):
+        self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.feat.pkl"))
+        file_num = len(self.tar_pkl_list)
+
+        member_list = []
+        feat_list = []
+        scene_list = []
+        for file_path in self.tar_pkl_list:
+            src_df = pd.read_pickle(file_path)
+            idx = src_df.index
+            src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
+
+            member_list += src_df.index.get_level_values("member").unique().tolist()
+            feat_list += src_df.columns.tolist()
+
+            src_attrs = df_attrs.DfAttrs(src_df)
+            src_attrs.load_scene_table()
+            scene_list += src_attrs.get_scene_descriptions(add_blank=True)
+
+        feat_list = list(set(feat_list))
+        feat_list.remove("timestamp")
+        member_list = list(set(member_list))
+        scene_list = list(set(scene_list))
+        self.scene_combo.set_values(scene_list)
+
+        return file_num, member_list, feat_list
+
     def calc(self):
         calc_type = self.file_type_combo_dict[self.tar_file_type_combo.get()]
         tree_list = self.tree.get_all()
@@ -183,6 +211,8 @@ class App(ttk.Frame):
             self.calc_keypoints(tree_list, selected_member_list)
         elif calc_type == "bc":
             self.calc_categories(tree_list, selected_member_list)
+        elif calc_type == "feat":
+            self.calc_features(tree_list, selected_member_list)
 
     def calc_categories(self, tree_list, member_list):
         draw_df = pd.DataFrame()
@@ -203,7 +233,7 @@ class App(ttk.Frame):
             code_list = [c for c in columns_white_list if c in src_columns]
             src_df = src_df[code_list]
 
-            # extract valid index
+            # filter by member_list
             valid_members = src_df.index.get_level_values("member").unique().tolist()
             valid_tree_list = [m for m in member_list if m in valid_members]
             extracted_df = src_df.loc[pd.IndexSlice[:, valid_tree_list], :]
@@ -260,19 +290,11 @@ class App(ttk.Frame):
             src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
 
             # filter by scene_table in attrs
-            src_attrs = df_attrs.DfAttrs(src_df)
-            src_attrs.load_scene_table()
-            scenes = src_attrs.get_scenes(tar_scene)
-            scene_filtered_df = src_df.copy()
-            if scenes is not None and len(scenes) > 0:
-                condition_sr = pd.Series(False, index=src_df.index)
-                for scene in scenes:
-                    condition_sr |= src_df["timestamp"].between(scene[0] - 1, scene[1] + 1)
-                scene_filtered_df.loc[~condition_sr, :] = pd.NA
-            elif tar_scene != "":
+            scene_filtered_df = self._filter_by_scene_table(src_df, tar_scene)
+            if scene_filtered_df is None:
                 continue
 
-            # extract valid index
+            # filter by member_list
             valid_members = scene_filtered_df.index.get_level_values("member").unique().tolist()
             valid_tree_list = [(m, k) for m, k in tree_list if m in valid_members]
             extracted_df = scene_filtered_df.loc[pd.IndexSlice[:, [m for m, k in valid_tree_list], [k for m, k in valid_tree_list]], :]
@@ -282,10 +304,59 @@ class App(ttk.Frame):
             total_df = keypoints_proc.calc_total_distance(extracted_df, step_frame=int(dt_span))
             draw_df = pd.concat([draw_df, total_df], axis=0)
         draw_df = draw_df.sort_values("total_distance", ascending=False)
-        print(draw_df)
         draw_df = draw_df.head(len(member_list) * 10)
         draw_df = draw_df.sort_index()
         self.draw(draw_df, "keypoint", "total_distance", locator=y_axis_locater)
+
+    def calc_features(self, tree_list, member_list):
+        draw_df = pd.DataFrame()
+        tar_scene = self.scene_combo.get()
+        y_axis_locater = self.y_axis_locater_entry.get()
+
+        feat_list = [f for f, _ in tree_list]
+        member_list = [str(m) for m in member_list]
+        member_list.sort()
+        # combination of member and feature
+        tree_list = [(m, f) for m in member_list for f in feat_list]
+        for file_path in self.tar_pkl_list:
+            src_df = pd.read_pickle(file_path)
+            idx = src_df.index
+            src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
+
+            # filter by scene_table in attrs
+            scene_filtered_df = self._filter_by_scene_table(src_df, tar_scene)
+            if scene_filtered_df is None:
+                continue
+
+            # filter by member_list and features
+            valid_members = scene_filtered_df.index.get_level_values("member").unique().tolist()
+            valid_features = scene_filtered_df.columns.tolist()
+            valid_tree_list = [(m, f) for m, f in tree_list if m in valid_members and f in valid_features]
+            extracted_df = scene_filtered_df.loc[pd.IndexSlice[:, [m for m, f in valid_tree_list]], [f for m, f in valid_tree_list]]
+            if extracted_df.empty:
+                continue
+
+            mean_df = extracted_df.groupby("member").mean()
+            draw_df = pd.concat([draw_df, mean_df], axis=0)
+        draw_df = draw_df.stack().reset_index()
+        draw_df.columns = ["member", "feature", "mean"]
+        draw_df = draw_df.set_index(["member", "feature"])
+        draw_df = draw_df.sort_index()
+        self.draw(draw_df, "feature", "mean", locator=y_axis_locater)
+
+    def _filter_by_scene_table(self, src_df, tar_scene):
+        src_attrs = df_attrs.DfAttrs(src_df)
+        src_attrs.load_scene_table()
+        scenes = src_attrs.get_scenes(tar_scene)
+        scene_filtered_df = src_df.copy()
+        if scenes is not None and len(scenes) > 0:
+            condition_sr = pd.Series(False, index=src_df.index)
+            for scene in scenes:
+                condition_sr |= src_df["timestamp"].between(scene[0] - 1, scene[1] + 1)
+            scene_filtered_df.loc[~condition_sr, :] = pd.NA
+        elif tar_scene != "":
+            return None
+        return scene_filtered_df
 
     def draw(self, src_df, x, y, locator):
         self.box_ax.clear()
