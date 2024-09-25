@@ -118,6 +118,7 @@ class App(ttk.Frame):
         # tree_list is keypoint_list or class_list
         for i, value in enumerate(tree_list):
             self.tree.insert([value, value])
+        member_list.sort()
         for i, value in enumerate(member_list):
             self.member_listbox.insert(tk.END, value)
         self.draw_btn["state"] = tk.NORMAL
@@ -238,6 +239,7 @@ class App(ttk.Frame):
 
         keypoint_list = [k for k, _ in tree_list]
         member_list = [str(m) for m in member_list]
+        member_list.sort()
         # combination of member and keypoint
         tree_list = [(m, k) for m in member_list for k in keypoint_list]
         for file_path in self.tar_pkl_list:
@@ -256,7 +258,8 @@ class App(ttk.Frame):
             draw_df = pd.concat([draw_df, total_df], axis=0)
         draw_df = draw_df.sort_values("total_distance", ascending=False)
         print(draw_df)
-        draw_df = draw_df.head(30)
+        draw_df = draw_df.head(len(member_list) * 10)
+        draw_df = draw_df.sort_index()
         self.draw(draw_df, "keypoint", "total_distance", locator=y_axis_locater)
 
     def draw(self, src_df, x, y, locator):
