@@ -10,7 +10,7 @@ import seaborn as sns
 import ttkthemes
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-from behavior_senpai import keypoints_proc, time_format, windows_and_mac
+from behavior_senpai import df_attrs, keypoints_proc, time_format, windows_and_mac
 from gui_parts import Combobox, IntEntry, TempFile
 from gui_tree import Tree
 
@@ -56,6 +56,9 @@ class App(ttk.Frame):
 
         load_btn = ttk.Button(head_frame, text="Load", command=self.load_files)
         load_btn.pack(side=tk.LEFT)
+
+        self.scene_combo = Combobox(head_frame, label="Scene:", values=[""], width=10)
+        self.scene_combo.pack_horizontal(anchor=tk.E, padx=5)
 
         control_frame = ttk.Frame(self)
         control_frame.pack(pady=5, fill=tk.X)
@@ -151,6 +154,7 @@ class App(ttk.Frame):
 
         member_list = []
         keypoint_list = []
+        scene_list = []
         for file_path in self.tar_pkl_list:
             src_df = pd.read_pickle(file_path)
             idx = src_df.index
@@ -158,8 +162,15 @@ class App(ttk.Frame):
 
             member_list += src_df.index.get_level_values("member").unique().tolist()
             keypoint_list += src_df.index.get_level_values("keypoint").unique().tolist()
+
+            src_attrs = df_attrs.DfAttrs(src_df)
+            src_attrs.load_scene_table()
+            scene_list += src_attrs.get_scene_descriptions(add_blank=True)
+
         keypoint_list = list(set(keypoint_list))
         member_list = list(set(member_list))
+        scene_list = list(set(scene_list))
+        self.scene_combo.set_values(scene_list)
 
         return file_num, member_list, keypoint_list
 
@@ -235,6 +246,7 @@ class App(ttk.Frame):
     def calc_keypoints(self, tree_list, member_list):
         draw_df = pd.DataFrame()
         dt_span = self.diff_entry.get()
+        tar_scene = self.scene_combo.get()
         y_axis_locater = self.y_axis_locater_entry.get()
 
         keypoint_list = [k for k, _ in tree_list]
@@ -247,10 +259,23 @@ class App(ttk.Frame):
             idx = src_df.index
             src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
 
+            # filter by scene_table in attrs
+            src_attrs = df_attrs.DfAttrs(src_df)
+            src_attrs.load_scene_table()
+            scenes = src_attrs.get_scenes(tar_scene)
+            scene_filtered_df = src_df.copy()
+            if scenes is not None and len(scenes) > 0:
+                condition_sr = pd.Series(False, index=src_df.index)
+                for scene in scenes:
+                    condition_sr |= src_df["timestamp"].between(scene[0] - 1, scene[1] + 1)
+                scene_filtered_df.loc[~condition_sr, :] = pd.NA
+            elif tar_scene != "":
+                continue
+
             # extract valid index
-            valid_members = src_df.index.get_level_values("member").unique().tolist()
+            valid_members = scene_filtered_df.index.get_level_values("member").unique().tolist()
             valid_tree_list = [(m, k) for m, k in tree_list if m in valid_members]
-            extracted_df = src_df.loc[pd.IndexSlice[:, [m for m, k in valid_tree_list], [k for m, k in valid_tree_list]], :]
+            extracted_df = scene_filtered_df.loc[pd.IndexSlice[:, [m for m, k in valid_tree_list], [k for m, k in valid_tree_list]], :]
             if extracted_df.empty:
                 continue
 

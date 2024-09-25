@@ -30,6 +30,7 @@ class DfAttrs:
 
     def load_scene_table(self):
         if "scene_table" not in self.attrs.keys():
+            self.scene_table = {}
             print("scene_table not found.")
             return
         self.scene_table = self.attrs["scene_table"]
@@ -49,6 +50,8 @@ class DfAttrs:
     def get_scenes(self, description):
         if description == "":
             return None
+        if "description" not in self.scene_table.keys():
+            return []
         idx_list = [idx for idx, d in enumerate(self.scene_table["description"]) if d == description]
         start_and_end_list = [
             (time_format.timestr_to_msec(self.scene_table["start"][idx]), time_format.timestr_to_msec(self.scene_table["end"][idx]))
