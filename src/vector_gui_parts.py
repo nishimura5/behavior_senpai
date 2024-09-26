@@ -58,6 +58,9 @@ class MemberKeypointComboboxesFor3Point(ttk.Frame):
         keypoint_c = self.keypoint_combo_c.get()
         return member, keypoint_a, keypoint_b, keypoint_c
 
+    def get_members(self):
+        return self.member_combo["values"]
+
     def set(self, member, point_a, point_b, point_c):
         self.member_combo.set(member)
         self.keypoint_combo_a.set(point_a)

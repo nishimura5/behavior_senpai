@@ -258,6 +258,8 @@ class App(ttk.Frame):
             if row[4] not in self.tar_df.columns and row[4] != " ":
                 print(f"Column not found: {row[4]}")
                 continue
+            if row[1] not in self.member_combo.get_values():
+                row[1] = self.member_combo.get()
             self.tree.insert(row)
 
     def draw(self):
