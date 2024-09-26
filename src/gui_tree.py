@@ -168,14 +168,17 @@ class Tree(ttk.Frame):
         selected = self.tree.selection()
         if len(selected) == 0:
             return
-        default_feat_name = self.tree.item(selected[0])["values"][0]
+        elif len(selected) == 1:
+            default_feat_name = self.tree.item(selected[0])["values"][0]
+        else:
+            default_feat_name = ""
         dialog = FeatMixTreeDialog(self, default_feat_name, self.member_list)
         self.wait_window(dialog.dialog)
         new_name = dialog.new_name
         new_member = dialog.selected_member
         print(f"{new_member},'{new_name}'is new value")
 
-        if new_member is None:
+        if new_name is None and new_member is None:
             return
         for item in selected:
             values = self.tree.item(item)["values"]
@@ -292,7 +295,8 @@ class FeatMixTreeDialog(ttk.Frame):
         self.selected_member = None
 
     def on_ok(self):
-        self.new_name = self.member_entry.get()
+        new_name = self.member_entry.get()
+        self.new_name = new_name
         self.selected_member = self.member_combo.get()
         self.dialog.destroy()
 
