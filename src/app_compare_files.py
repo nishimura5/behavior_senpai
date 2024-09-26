@@ -42,6 +42,7 @@ class App(ttk.Frame):
         self.tar_file_type_combo.set_selected_bind(self.type_change)
 
         self.tar_dir = args["pkl_dir"]
+        self.init_tar_dir = self.tar_dir
         if os.path.basename(self.tar_dir) == "trk":
             self.tar_file_type_combo.set("track_file (.pkl)")
         else:
@@ -52,9 +53,6 @@ class App(ttk.Frame):
 
         self.folder_path_label = ttk.Label(head_frame, text="")
         self.folder_path_label.pack(padx=5, side=tk.LEFT)
-
-        load_btn = ttk.Button(head_frame, text="Load", command=self.load_files)
-        load_btn.pack(side=tk.LEFT)
 
         self.scene_combo = Combobox(head_frame, label="Scene:", values=[""], width=10)
         self.scene_combo.pack_horizontal(anchor=tk.E, padx=5)
@@ -103,9 +101,8 @@ class App(ttk.Frame):
         if not tar_dir:
             return
         self.tar_dir = tar_dir
-        self.folder_path_label["text"] = self.tar_dir
-        # disable draw button
         self.draw_btn["state"] = tk.DISABLED
+        self.load_files()
 
     def load_files(self):
         self.tree.clear()
@@ -389,9 +386,13 @@ class App(ttk.Frame):
         calc_type = self.file_type_combo_dict[self.tar_file_type_combo.get()]
         if calc_type == "pkl":
             self.select_folder_btn["text"] = "Select trk folder"
-        elif calc_type == "bc":
+        elif calc_type == "bc" or calc_type == "feat":
             self.select_folder_btn["text"] = "Select calc folder"
         self.draw_btn["state"] = tk.DISABLED
+        self.tar_dir = self.init_tar_dir
+        self.folder_path_label["text"] = self.tar_dir
+        self.member_listbox.delete(0, tk.END)
+        self.tree.clear()
 
     def close(self):
         pass
