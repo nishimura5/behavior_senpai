@@ -33,14 +33,14 @@ class App(ttk.Frame):
         self.feat_path_label = ttk.Label(load_frame, text="No feature file loaded.")
         self.feat_path_label.pack(side=tk.LEFT, padx=(5, 0), expand=True, fill=tk.X)
 
-        self.scene_combo = Combobox(load_frame, label="Scene:", values=[""], width=10)
+        self.scene_combo = Combobox(load_frame, label="Scene:", values=[""], width=15)
         self.scene_combo.pack_horizontal(anchor=tk.E, padx=5)
 
         tar_frame = ttk.Frame(self)
         tar_frame.pack(anchor=tk.NW, side=tk.TOP, pady=5)
         self.name_entry = StrEntry(tar_frame, label="Name:", default="", width=20)
         self.name_entry.pack_horizontal(padx=5)
-        self.member_combo = Combobox(tar_frame, label="Member:", values=[""], width=5)
+        self.member_combo = Combobox(tar_frame, label="Member:", values=[""], width=10)
         self.member_combo.pack_horizontal(padx=5)
         self.member_combo.set_selected_bind(self.selected_member)
         self.col_a_combo = Combobox(tar_frame, label="col A:", values=["Select column"], width=25)
@@ -137,10 +137,6 @@ class App(ttk.Frame):
         tar_df = tar_df[~tar_df.index.duplicated(keep="last")]
         tar_attrs = df_attrs.DfAttrs(tar_df)
         tar_attrs.load_proc_history()
-        if "track_name" in tar_attrs.newest_proc_history:
-            track_name = tar_attrs.newest_proc_history["track_name"]
-        else:
-            track_name = None
 
         load_option = self.load_combo.get()
         if load_option == "Initial":
