@@ -75,12 +75,16 @@ def calc_acceleration(speed_df, step_frame: int):
     return acc_df
 
 
-def calc_total_distance(src_df, step_frame: int):
+def calc_total_distance(src_df, step_frame: int, per_plot=False):
     """
     src_dfの各keypointの総移動距離を計算する
     """
     diff_df = src_df.groupby(level=["member", "keypoint"]).diff(step_frame) ** 2
     total_distance_df = pd.DataFrame(np.sqrt(diff_df["x"] + diff_df["y"]).groupby(level=["member", "keypoint"]).sum(), columns=["total_distance"])
+    if per_plot:
+        plot_count_df = src_df.groupby(level=["member", "keypoint"]).size().to_frame("plot_count")
+        total_distance_df = pd.concat([total_distance_df, plot_count_df], axis=1)
+        total_distance_df["total_distance_per_plot"] = total_distance_df["total_distance"] / total_distance_df["plot_count"]
     return total_distance_df
 
 def thinning(src_df, thinning: int):

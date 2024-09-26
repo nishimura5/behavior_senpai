@@ -4,7 +4,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from behavior_senpai import df_attrs, file_inout
+from behavior_senpai import df_attrs, feature_proc, file_inout
 from gui_parts import Combobox, StrEntry, TempFile
 from gui_tree import Tree
 from line_plotter import LinePlotter
@@ -52,14 +52,8 @@ class App(ttk.Frame):
         self.op_combo.pack_horizontal(padx=5)
         self.col_b_combo = Combobox(tar_frame, label="col B:", values=["Select column"], width=25)
         self.col_b_combo.pack_horizontal(padx=5)
-        self.name_and_code = {
-            "No normalize": "non",
-            "MinMax": "minmax",
-            "Threshold75%": "thresh75",
-            "Threshold50%": "thresh50",
-            "Threshold25%": "thresh25",
-        }
-        self.normalize_list = ["No normalize", "MinMax", "Threshold75%", "Threshold50%", "Threshold25%"]
+        self.name_and_code = feature_proc.get_calc_codes()
+        self.normalize_list = list(self.name_and_code.keys())
         self.normalize_combo = Combobox(tar_frame, label="Normalize:", values=self.normalize_list, width=15)
         self.normalize_combo.pack_horizontal(padx=5)
         self.add_btn = ttk.Button(tar_frame, text="Add", command=self.add_row, state="disabled")
@@ -290,32 +284,8 @@ class App(ttk.Frame):
                 if member != str(m):
                     continue
                 normalize = self.name_and_code[normalize]
-                data_a = member_df[col_a]
-                if op == "+":
-                    data_b = member_df[col_b]
-                    new_sr = data_a + data_b
-                elif op == "-":
-                    data_b = member_df[col_b]
-                    new_sr = data_a - data_b
-                elif op == "*":
-                    data_b = member_df[col_b]
-                    new_sr = data_a * data_b
-                elif op == "/":
-                    data_b = member_df[col_b]
-                    new_sr = data_a / data_b
-                elif op == " ":
-                    new_sr = data_a
-                if normalize == "minmax":
-                    new_sr = (new_sr - new_sr.min()) / (new_sr.max() - new_sr.min())
-                elif normalize == "thresh75":
-                    new_sr = new_sr > new_sr.quantile(0.75)
-                    new_sr = new_sr.astype(int)
-                elif normalize == "thresh50":
-                    new_sr = new_sr > new_sr.median()
-                    new_sr = new_sr.astype(int)
-                elif normalize == "thresh25":
-                    new_sr = new_sr > new_sr.quantile(0.25)
-                    new_sr = new_sr.astype(int)
+                new_sr = feature_proc.arithmetic_operations(member_df, op, col_a, col_b)
+                new_sr = feature_proc.calc(new_sr, normalize)
 
                 # concat right
                 member_feat_df = pd.concat([member_feat_df, new_sr.to_frame(feat_name)], axis=1)
