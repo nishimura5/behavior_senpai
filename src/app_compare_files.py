@@ -35,7 +35,7 @@ class App(ttk.Frame):
         self.box_ax = self.fig.add_subplot(111)
 
         head_frame = ttk.Frame(self)
-        head_frame.pack(pady=5, fill=tk.X)
+        head_frame.pack(anchor=tk.NW, expand=True, fill=tk.X, pady=5)
         self.file_type_combo_dict = {"track_file (.pkl)": "pkl", "feature file (.feat.pkl)": "feat", "category file (.bc.pkl)": "bc"}
         self.tar_file_type_combo = Combobox(head_frame, label="File type:", width=18, values=list(self.file_type_combo_dict.keys()))
         self.tar_file_type_combo.pack_horizontal(padx=5)
@@ -52,9 +52,9 @@ class App(ttk.Frame):
         self.select_folder_btn.pack(side=tk.LEFT)
 
         self.folder_path_label = ttk.Label(head_frame, text="")
-        self.folder_path_label.pack(padx=5, side=tk.LEFT)
+        self.folder_path_label.pack(padx=5, side=tk.LEFT, expand=True, fill=tk.X)
 
-        self.scene_combo = Combobox(head_frame, label="Scene:", values=[""], width=10)
+        self.scene_combo = Combobox(head_frame, label="Scene:", values=[""], width=15)
         self.scene_combo.pack_horizontal(anchor=tk.E, padx=5)
 
         control_frame = ttk.Frame(self)
@@ -62,6 +62,9 @@ class App(ttk.Frame):
 
         self.diff_entry = IntEntry(control_frame, label="Diff period:", default=temp.data["dt_span"])
         self.diff_entry.pack_horizontal(padx=5)
+
+        self.calc_combo = Combobox(control_frame, label="Calc:", values=["mean", "var", "median"])
+        self.calc_combo.pack_horizontal(padx=5)
 
         self.y_axis_locater_entry = IntEntry(control_frame, label="Y axis locater:", default=0)
         self.y_axis_locater_entry.pack_horizontal(padx=5)
@@ -298,12 +301,11 @@ class App(ttk.Frame):
             if extracted_df.empty:
                 continue
 
-            total_df = keypoints_proc.calc_total_distance(extracted_df, step_frame=int(dt_span))
+            total_df = keypoints_proc.calc_total_distance(extracted_df, step_frame=int(dt_span), per_plot=True)
             draw_df = pd.concat([draw_df, total_df], axis=0)
-        draw_df = draw_df.sort_values("total_distance", ascending=False)
-        draw_df = draw_df.head(len(member_list) * 10)
+        draw_df = draw_df.sort_values("total_distance_per_plot", ascending=False)
         draw_df = draw_df.sort_index()
-        self.draw(draw_df, "keypoint", "total_distance", locator=y_axis_locater)
+        self.draw(draw_df, "keypoint", "total_distance_per_plot", locator=y_axis_locater)
 
     def calc_features(self, tree_list, member_list):
         draw_df = pd.DataFrame()
@@ -333,8 +335,15 @@ class App(ttk.Frame):
             if extracted_df.empty:
                 continue
 
-            mean_df = extracted_df.groupby("member").mean()
-            draw_df = pd.concat([draw_df, mean_df], axis=0)
+            calc_code = self.calc_combo.get()
+            if calc_code == "mean":
+                calc_df = extracted_df.groupby("member").mean()
+            elif calc_code == "var":
+                calc_df = extracted_df.groupby("member").var()
+            elif calc_code == "median":
+                calc_df = extracted_df.groupby("member").median()
+
+            draw_df = pd.concat([draw_df, calc_df], axis=0)
         draw_df = draw_df.stack().reset_index()
         draw_df.columns = ["member", "feature", "mean"]
         draw_df = draw_df.set_index(["member", "feature"])
@@ -360,8 +369,12 @@ class App(ttk.Frame):
         legend_col = int(self.legend_col_combo.get())
         # number of hue is number of members
         members = len(src_df.index.get_level_values("member").unique().tolist())
+        if len(members) < 10:
+            plot_size = 8
+        else:
+            plot_size = 6
         palette = sns.color_palette("coolwarm", members)
-        sns.swarmplot(x=x, y=y, data=src_df.reset_index(), hue="member", size=4, linewidth=1, palette=palette, ax=self.box_ax)
+        sns.swarmplot(x=x, y=y, data=src_df.reset_index(), hue="member", size=plot_size, linewidth=1, palette=palette, ax=self.box_ax)
         sns.boxplot(
             x=x,
             y=y,
