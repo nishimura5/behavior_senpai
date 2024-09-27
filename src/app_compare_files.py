@@ -369,7 +369,7 @@ class App(ttk.Frame):
         legend_col = int(self.legend_col_combo.get())
         # number of hue is number of members
         members = len(src_df.index.get_level_values("member").unique().tolist())
-        if len(members) < 10:
+        if members < 10:
             plot_size = 8
         else:
             plot_size = 6
