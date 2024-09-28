@@ -6,10 +6,9 @@ from tkinter import ttk
 import pandas as pd
 
 from behavior_senpai import df_attrs, file_inout, keypoints_proc
-from gui_parts import CalcCaseEntry, Combobox, IntEntry, TempFile
+from gui_parts import CalcCaseEntry, IntEntry, TempFile
 from gui_tree import Tree
 from line_plotter import LinePlotter
-from vector_gui_parts import MemberKeypointComboboxesFor3Point
 
 
 class App(ttk.Frame):
@@ -27,34 +26,6 @@ class App(ttk.Frame):
 
         tar_frame = ttk.Frame(self)
         tar_frame.pack(pady=5)
-        calc_select_frame = ttk.Frame(tar_frame)
-        calc_select_frame.pack(side=tk.LEFT, padx=5)
-        self.point_num_combo = Combobox(calc_select_frame, label="Point num:", width=25, values=["2", "3"])
-        self.point_num_combo.pack_vertical(pady=5)
-        self.point_num_combo.set_selected_bind(lambda event: self.change_point_num(event))
-        self.name_and_code = {
-            "distance (|AB|)": "norm",
-            "sin,cos (∠BAC)": "sin_cos",
-            "direction (∠BAx)": "direction",
-            "xy_component (AB_x, AB_y)": "component",
-            "cross_product (AB×AC)": "cross",
-            "dot_product (AB・AC)": "dot",
-            "plus (AB+AC)": "plus",
-            "norms (|AB||AC|)": "norms",
-        }
-        self.point2_list = ["distance (|AB|)", "direction (∠BAx)", "xy_component (AB_x, AB_y)"]
-        self.point3_list = ["sin,cos (∠BAC)", "cross_product (AB×AC)", "dot_product (AB・AC)", "plus (AB+AC)", "norms (|AB||AC|)"]
-        self.calc_type_combo = Combobox(calc_select_frame, label="Calc:", width=25, values=self.point2_list)
-        self.calc_type_combo.pack_vertical(pady=5)
-        data_dir = self._find_data_dir()
-        img_3_path = os.path.join(data_dir, "img", "vector3.png")
-        self.img_3 = tk.PhotoImage(file=img_3_path)
-        img_2_path = os.path.join(data_dir, "img", "vector2.png")
-        self.img_2 = tk.PhotoImage(file=img_2_path)
-        self.img_label = ttk.Label(tar_frame, image=self.img_2)
-        self.img_label.pack(side=tk.LEFT, padx=5)
-        self.member_combo = MemberKeypointComboboxesFor3Point(tar_frame)
-        self.member_combo.pack(side=tk.LEFT, padx=5)
         add_btn = ttk.Button(tar_frame, text="Add", command=self.add_row)
         add_btn.pack(side=tk.LEFT, padx=5)
 
@@ -85,7 +56,6 @@ class App(ttk.Frame):
         ]
         self.tree = Tree(tree_frame, cols, height=6, right_click=True)
         self.tree.pack(side=tk.LEFT)
-        self.tree.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
         self.tree.add_member_rename_to_menu(column=1)
         self.tree.add_menu("Remove", self.remove)
         self.tree.add_row_copy(column=1)
@@ -109,27 +79,10 @@ class App(ttk.Frame):
         self.src_attrs = src_df.attrs
 
         # Update GUI
-        self.member_combo.set_df(self.tar_df)
         self.tree.set_members(self.tar_df.index.levels[1].unique().tolist())
 
-    def select_tree_row(self, event):
-        """Handle the selection of a row in the tree."""
-        calc, member, point_a, point_b, point_c = self.tree.get_selected_one()
-        self.calc_type_combo.set(calc)
-        self.member_combo.set(member, point_a, point_b, point_c)
-
     def add_row(self):
-        calc = self.calc_type_combo.get()
-        member, point_a, point_b, point_c = self.member_combo.get_selected()
-        # Ignore point_c if calc uses 2-point-vector.
-        if calc in self.point2_list and point_c != " ":
-            point_c = " "
-        tar_list = self.tree.get_all()
-        for tar in tar_list:
-            if calc == tar[0] and member == tar[1] and point_a == str(tar[2]) and point_b == str(tar[3]) and point_c == str(tar[4]):
-                return
-        values = (calc, member, point_a, point_b, point_c)
-        self.tree.insert(values)
+        self.tree.point_calc_add(self.tar_df)
 
     def change_point_num(self, event):
         point_num = self.point_num_combo.get()
@@ -178,7 +131,7 @@ class App(ttk.Frame):
             for calc, m, point_a, point_b, point_c in self.source_cols:
                 if member != str(m):
                     continue
-                code = self.name_and_code[calc]
+                code = self.tree.point_calc_get_name_and_code(calc)
                 point_a, point_b = int(point_a), int(point_b)
                 if code == "norm":
                     plot_df = keypoints_proc.calc_norm(member_df, point_a, point_b)

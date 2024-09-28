@@ -1,8 +1,11 @@
+import os
+import sys
 import tkinter as tk
 from tkinter import ttk
 
 from behavior_senpai import time_format
-from gui_parts import StrEntry, TimeSpanEntry
+from gui_parts import Combobox, StrEntry, TimeSpanEntry
+from vector_gui_parts import MemberKeypointComboboxesFor3Point
 
 
 class Tree(ttk.Frame):
@@ -164,6 +167,36 @@ class Tree(ttk.Frame):
             values = self.tree.item(item)["values"]
             self.tree.insert("", tk.END, values=values)
 
+    def point_calc_add(self, tar_df):
+        dialog = PointsCalcTreeDialog(self, self.member_list)
+        dialog.set_df(tar_df)
+        self.wait_window(dialog.dialog)
+        new_calc_code = dialog.selected_calc_code
+        new_member = dialog.selected_member
+        new_point_a = dialog.selected_point_a
+        new_point_b = dialog.selected_point_b
+        new_point_c = dialog.selected_point_c
+
+        if new_member is None:
+            return
+        if new_calc_code in dialog.point2_list:
+            new_point_c = ""
+        values = [new_calc_code, new_member, new_point_a, new_point_b, new_point_c]
+        self.tree.insert("", tk.END, values=values)
+
+    def point_calc_get_name_and_code(self, key):
+        name_and_code = {
+            "distance (|AB|)": "norm",
+            "sin,cos (∠BAC)": "sin_cos",
+            "direction (∠BAx)": "direction",
+            "xy_component (AB_x, AB_y)": "component",
+            "cross_product (AB×AC)": "cross",
+            "dot_product (AB・AC)": "dot",
+            "plus (AB+AC)": "plus",
+            "norms (|AB||AC|)": "norms",
+        }
+        return name_and_code[key]
+
     def feat_mix_edit(self):
         selected = self.tree.selection()
         if len(selected) == 0:
@@ -230,7 +263,13 @@ class SceneTableTreeDialog(ttk.Frame):
         self.member_combo["values"] = member_list + [""]
         self.member_combo.current(0)
 
-        self.member_entry = StrEntry(combo_frame, "Description:", default=default_description, width=14, allow_blank=True)
+        self.member_entry = StrEntry(
+            combo_frame,
+            "Description:",
+            default=default_description,
+            width=14,
+            allow_blank=True,
+        )
         self.member_entry.pack_horizontal(padx=5)
 
         button_frame = ttk.Frame(dialog)
@@ -256,6 +295,108 @@ class SceneTableTreeDialog(ttk.Frame):
         self.new_timespan = None
         self.new_description = None
         self.dialog.destroy()
+
+
+class PointsCalcTreeDialog(ttk.Frame):
+    def __init__(self, master, member_list):
+        super().__init__(master)
+        dialog = tk.Toplevel(master)
+        dialog.focus_set()
+        dialog.title("Points calculation")
+        dialog.geometry("900x200")
+        dialog.resizable(0, 0)
+
+        tar_frame = ttk.Frame(dialog)
+        tar_frame.pack(side=tk.TOP, pady=(5, 10))
+        calc_select_frame = ttk.Frame(tar_frame)
+        calc_select_frame.pack(side=tk.LEFT, padx=5)
+        self.point_num_combo = Combobox(calc_select_frame, label="Point num:", width=25, values=["2", "3"])
+        self.point_num_combo.pack_vertical(pady=5)
+        self.point_num_combo.set_selected_bind(lambda event: self.change_point_num(event))
+        self.name_and_code = {
+            "distance (|AB|)": "norm",
+            "sin,cos (∠BAC)": "sin_cos",
+            "direction (∠BAx)": "direction",
+            "xy_component (AB_x, AB_y)": "component",
+            "cross_product (AB×AC)": "cross",
+            "dot_product (AB・AC)": "dot",
+            "plus (AB+AC)": "plus",
+            "norms (|AB||AC|)": "norms",
+        }
+        self.point2_list = [
+            "distance (|AB|)",
+            "direction (∠BAx)",
+            "xy_component (AB_x, AB_y)",
+        ]
+        self.point3_list = [
+            "sin,cos (∠BAC)",
+            "cross_product (AB×AC)",
+            "dot_product (AB・AC)",
+            "plus (AB+AC)",
+            "norms (|AB||AC|)",
+        ]
+        self.calc_type_combo = Combobox(calc_select_frame, label="Calc:", width=25, values=self.point2_list)
+        self.calc_type_combo.pack_vertical(pady=5)
+        data_dir = self._find_data_dir()
+        img_3_path = os.path.join(data_dir, "img", "vector3.png")
+        self.img_3 = tk.PhotoImage(file=img_3_path)
+        img_2_path = os.path.join(data_dir, "img", "vector2.png")
+        self.img_2 = tk.PhotoImage(file=img_2_path)
+        self.img_label = ttk.Label(tar_frame, image=self.img_2)
+        self.img_label.pack(side=tk.LEFT, padx=5)
+        self.member_combo = MemberKeypointComboboxesFor3Point(tar_frame)
+        self.member_combo.pack(side=tk.LEFT, padx=5)
+
+        button_frame = ttk.Frame(dialog)
+        button_frame.pack(side=tk.TOP, pady=(10, 5))
+        ok_btn = ttk.Button(button_frame, text="OK", command=self.on_ok)
+        ok_btn.pack(side=tk.LEFT, padx=5)
+        cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.on_cancel)
+        cancel_btn.pack(side=tk.LEFT)
+
+        dialog.grab_set()
+        self.dialog = dialog
+        self.selected_calc_code = None
+        self.selected_member = None
+        self.selected_point_a = None
+        self.selected_point_b = None
+        self.selected_point_c = None
+
+    def set_df(self, df):
+        self.member_combo.set_df(df)
+
+    def on_ok(self):
+        self.selected_calc_code = self.calc_type_combo.get()
+        (
+            self.selected_member,
+            self.selected_point_a,
+            self.selected_point_b,
+            self.selected_point_c,
+        ) = self.member_combo.get_selected()
+        self.dialog.destroy()
+
+    def on_cancel(self):
+        self.selected_member = None
+        self.dialog.destroy()
+
+    def change_point_num(self, event):
+        point_num = self.point_num_combo.get()
+        if point_num == "2":
+            self.calc_type_combo.set_values(self.point2_list)
+            self.img_label["image"] = self.img_2
+        elif point_num == "3":
+            self.calc_type_combo.set_values(self.point3_list)
+            self.img_label["image"] = self.img_3
+
+    def _find_data_dir(self):
+        if getattr(sys, "frozen", False):
+            # The application is frozen
+            datadir = os.path.dirname(sys.executable)
+        else:
+            # The application is not frozen
+            # Change this bit to match where you store your data files:
+            datadir = os.path.dirname(__file__)
+        return datadir
 
 
 class FeatMixTreeDialog(ttk.Frame):
