@@ -24,13 +24,11 @@ class App(ttk.Frame):
         width, height, dpi = temp.get_window_size()
         self.lineplot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
-        tar_frame = ttk.Frame(self)
-        tar_frame.pack(pady=5)
-        add_btn = ttk.Button(tar_frame, text="Add", command=self.add_row)
-        add_btn.pack(side=tk.LEFT, padx=5)
-
         setting_frame = ttk.Frame(self)
         setting_frame.pack(pady=5)
+
+        add_btn = ttk.Button(setting_frame, text="Add calc", command=self.add_row)
+        add_btn.pack(side=tk.LEFT, padx=5)
 
         self.calc_case_entry = CalcCaseEntry(setting_frame, temp.data["calc_case"])
         self.calc_case_entry.pack(side=tk.LEFT, padx=5)
@@ -54,7 +52,7 @@ class App(ttk.Frame):
             {"name": "B", "width": 50},
             {"name": "C", "width": 50},
         ]
-        self.tree = Tree(tree_frame, cols, height=6, right_click=True)
+        self.tree = Tree(tree_frame, cols, height=12, right_click=True)
         self.tree.pack(side=tk.LEFT)
         self.tree.add_member_rename_to_menu(column=1)
         self.tree.add_menu("Remove", self.remove)

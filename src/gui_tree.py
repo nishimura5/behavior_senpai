@@ -242,7 +242,7 @@ class SceneTableTreeDialog(ttk.Frame):
         dialog = tk.Toplevel(master)
         dialog.focus_set()
         dialog.title("Scene")
-        dialog.geometry("500x200")
+        dialog.geometry("500x150")
         dialog.resizable(0, 0)
 
         time_frame = ttk.Frame(dialog)
@@ -303,7 +303,7 @@ class PointsCalcTreeDialog(ttk.Frame):
         dialog = tk.Toplevel(master)
         dialog.focus_set()
         dialog.title("Points calculation")
-        dialog.geometry("900x200")
+        dialog.geometry("700x180")
         dialog.resizable(0, 0)
 
         tar_frame = ttk.Frame(dialog)
