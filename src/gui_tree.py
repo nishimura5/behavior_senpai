@@ -1,8 +1,11 @@
+import sys
 import tkinter as tk
 from tkinter import ttk
 
 from behavior_senpai import time_format
 from gui_parts import StrEntry, TimeSpanEntry
+
+IS_DARWIN = sys.platform.startswith("darwin")
 
 
 class Tree(ttk.Frame):
@@ -18,7 +21,10 @@ class Tree(ttk.Frame):
         scroll.pack(side=tk.RIGHT, fill=tk.Y)
         self.tree.configure(yscrollcommand=scroll.set)
         if right_click is True:
-            self.tree.bind("<Button-3>", self._right_click_tree)
+            if not IS_DARWIN:
+                self.tree.bind("<Button-3>", self._right_click_tree)
+            else:
+                self.tree.bind("<Button-2>", self._right_click_tree)
             self.menu = tk.Menu(self, tearoff=0)
 
     def add_member_rename_to_menu(self, column):

@@ -3,11 +3,13 @@ from tkinter import ttk
 
 
 class MemberKeypointComboboxesFor3Point(ttk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, contain_blank=False):
         super().__init__(master)
         self.member_combo = ttk.Combobox(master, state="readonly", width=12)
         self.member_combo.pack(side=tk.LEFT, padx=5)
         self.member_combo.bind("<<ComboboxSelected>>", self._on_selected)
+
+        self.contain_blank = contain_blank
 
         kp_frame = ttk.Frame(master)
         kp_frame.pack(side=tk.LEFT)
@@ -45,11 +47,16 @@ class MemberKeypointComboboxesFor3Point(ttk.Frame):
         keypoints = self.indexes[self.indexes.get_level_values(0) == member].get_level_values(1).unique().tolist()
         keypoints.append(" ")
         self.keypoint_combo_a["values"] = keypoints
-        self.keypoint_combo_a.current(0)
         self.keypoint_combo_b["values"] = keypoints
-        self.keypoint_combo_b.current(0)
         self.keypoint_combo_c["values"] = keypoints
-        self.keypoint_combo_c.current(0)
+        if self.contain_blank:
+            self.keypoint_combo_a.current(len(keypoints) - 1)
+            self.keypoint_combo_b.current(len(keypoints) - 1)
+            self.keypoint_combo_c.current(len(keypoints) - 1)
+        else:
+            self.keypoint_combo_a.current(0)
+            self.keypoint_combo_b.current(0)
+            self.keypoint_combo_c.current(0)
 
     def get_selected(self):
         member = self.member_combo.get()

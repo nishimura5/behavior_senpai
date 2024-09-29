@@ -60,10 +60,9 @@ class App(ttk.Frame):
         ]
         self.tree = Tree(tree_frame, cols, height=10)
         self.tree.pack(side=tk.LEFT)
-        self.tree.add_member_rename_to_menu(column=1)
-        self.tree.add_menu("Remove", self.remove)
         self.tree.add_menu("Edit", self.tree.edit_calc)
         self.tree.add_row_copy(column=1)
+        self.tree.add_menu("Remove", self.remove)
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
