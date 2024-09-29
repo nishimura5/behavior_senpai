@@ -7,7 +7,7 @@ import pandas as pd
 
 from behavior_senpai import df_attrs, file_inout, keypoints_proc
 from gui_parts import CalcCaseEntry, IntEntry, TempFile
-from gui_tree import Tree
+from gui_points_calc import Tree
 from line_plotter import LinePlotter
 
 
@@ -26,23 +26,28 @@ class App(ttk.Frame):
         self.lineplot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         setting_frame = ttk.Frame(self)
-        setting_frame.pack(padx=20, pady=5, fill=tk.X, expand=True)
+        setting_frame.pack(padx=(20, 0), fill=tk.X, expand=True)
 
-        add_btn = ttk.Button(setting_frame, text="Add calc", command=self.add_row)
-        add_btn.pack(padx=(0, 30), side=tk.LEFT)
+        import_frame = ttk.Frame(setting_frame)
+        import_frame.pack(pady=5, expand=True, anchor=tk.W)
+        import_btn = ttk.Button(import_frame, text="Import another feature file", command=self.import_feat)
+        import_btn.pack()
 
-        self.calc_case_entry = CalcCaseEntry(setting_frame, temp.data["calc_case"])
+        draw_frame = ttk.Frame(setting_frame)
+        draw_frame.pack(pady=5, expand=True, anchor=tk.W)
+        add_btn = ttk.Button(draw_frame, text="Add calc", command=self.add_row)
+        add_btn.pack(padx=(0, 60), side=tk.LEFT)
+
+        self.calc_case_entry = CalcCaseEntry(draw_frame, temp.data["calc_case"])
         self.calc_case_entry.pack(side=tk.LEFT, padx=5)
 
-        self.thinning_entry = IntEntry(setting_frame, label="Thinning:", default=temp.data["thinning"])
+        self.thinning_entry = IntEntry(draw_frame, label="Thinning:", default=temp.data["thinning"])
         self.thinning_entry.pack_horizontal(padx=5)
 
-        draw_btn = ttk.Button(setting_frame, text="Draw", command=self.draw)
+        draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT)
-        self.export_btn = ttk.Button(setting_frame, text="Export", command=self.export, state="disabled")
+        self.export_btn = ttk.Button(draw_frame, text="Export", command=self.export, state="disabled")
         self.export_btn.pack(side=tk.LEFT, padx=(5, 50))
-        import_btn = ttk.Button(setting_frame, text="Import", command=self.import_feat)
-        import_btn.pack(side=tk.LEFT)
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(padx=(20, 0), pady=5, fill=tk.X, expand=True)
@@ -53,10 +58,11 @@ class App(ttk.Frame):
             {"name": "B", "width": 50},
             {"name": "C", "width": 50},
         ]
-        self.tree = Tree(tree_frame, cols, height=10, right_click=True)
+        self.tree = Tree(tree_frame, cols, height=10)
         self.tree.pack(side=tk.LEFT)
         self.tree.add_member_rename_to_menu(column=1)
         self.tree.add_menu("Remove", self.remove)
+        self.tree.add_menu("Edit", self.tree.edit_calc)
         self.tree.add_row_copy(column=1)
 
         plot_frame = ttk.Frame(self)
@@ -79,18 +85,10 @@ class App(ttk.Frame):
 
         # Update GUI
         self.tree.set_members(self.tar_df.index.levels[1].unique().tolist())
+        self.tree.set_df(self.tar_df)
 
     def add_row(self):
-        self.tree.point_calc_add(self.tar_df)
-
-    def change_point_num(self, event):
-        point_num = self.point_num_combo.get()
-        if point_num == "2":
-            self.calc_type_combo.set_values(self.point2_list)
-            self.img_label["image"] = self.img_2
-        elif point_num == "3":
-            self.calc_type_combo.set_values(self.point3_list)
-            self.img_label["image"] = self.img_3
+        self.tree.add_calc()
 
     def import_feat(self):
         """Open a file dialog to select a feature file.
@@ -130,7 +128,7 @@ class App(ttk.Frame):
             for calc, m, point_a, point_b, point_c in self.source_cols:
                 if member != str(m):
                     continue
-                code = self.tree.point_calc_get_name_and_code(calc)
+                code = self.tree.get_name_and_code(calc)
                 point_a, point_b = int(point_a), int(point_b)
                 if code == "norm":
                     plot_df = keypoints_proc.calc_norm(member_df, point_a, point_b)
