@@ -72,7 +72,7 @@ class App(ttk.Frame):
             {"name": "start", "width": 100},
             {"name": "end", "width": 100},
             {"name": "duration", "width": 100},
-            {"name": "member", "width": 100},
+            {"name": "member", "width": 200},
             {"name": "description", "width": 350},
         ]
         self.tree = Tree(tree_frame, cols, height=6, right_click=True)

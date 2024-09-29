@@ -17,6 +17,7 @@ class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
         master.title("Points Calculation")
+        master.geometry("800x600")
         self.pack(padx=10, pady=10)
         self.bind("<Map>", lambda event: self._load(event, args))
 
@@ -25,10 +26,10 @@ class App(ttk.Frame):
         self.lineplot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         setting_frame = ttk.Frame(self)
-        setting_frame.pack(pady=5)
+        setting_frame.pack(padx=20, pady=5, fill=tk.X, expand=True)
 
         add_btn = ttk.Button(setting_frame, text="Add calc", command=self.add_row)
-        add_btn.pack(side=tk.LEFT, padx=5)
+        add_btn.pack(padx=(0, 30), side=tk.LEFT)
 
         self.calc_case_entry = CalcCaseEntry(setting_frame, temp.data["calc_case"])
         self.calc_case_entry.pack(side=tk.LEFT, padx=5)
@@ -44,7 +45,7 @@ class App(ttk.Frame):
         import_btn.pack(side=tk.LEFT)
 
         tree_frame = ttk.Frame(self)
-        tree_frame.pack(pady=5)
+        tree_frame.pack(padx=(20, 0), pady=5, fill=tk.X, expand=True)
         cols = [
             {"name": "calc", "width": 300},
             {"name": "member", "width": 200},
@@ -52,7 +53,7 @@ class App(ttk.Frame):
             {"name": "B", "width": 50},
             {"name": "C", "width": 50},
         ]
-        self.tree = Tree(tree_frame, cols, height=12, right_click=True)
+        self.tree = Tree(tree_frame, cols, height=10, right_click=True)
         self.tree.pack(side=tk.LEFT)
         self.tree.add_member_rename_to_menu(column=1)
         self.tree.add_menu("Remove", self.remove)
@@ -61,7 +62,7 @@ class App(ttk.Frame):
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
         self.lineplot.pack(plot_frame)
-        self.lineplot.set_single_ax()
+        self.lineplot.set_single_ax(bottom=0.1)
 
     def _load(self, event, args):
         src_df = args["src_df"].copy()
