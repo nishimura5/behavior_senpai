@@ -17,7 +17,7 @@ class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
         master.title("Points Calculation")
-        master.geometry("800x600")
+        master.geometry("1200x700")
         self.pack(padx=10, pady=10)
         self.bind("<Map>", lambda event: self._load(event, args))
 
@@ -49,8 +49,9 @@ class App(ttk.Frame):
         self.export_btn = ttk.Button(draw_frame, text="Export", command=self.export, state="disabled")
         self.export_btn.pack(side=tk.LEFT, padx=(5, 50))
 
-        tree_frame = ttk.Frame(self)
-        tree_frame.pack(padx=(20, 0), pady=5, fill=tk.X, expand=True)
+        tree_canvas_frame = ttk.Frame(self)
+        tree_canvas_frame.pack(padx=10, pady=5, fill=tk.X, expand=True)
+
         cols = [
             {"name": "calc", "width": 300},
             {"name": "member", "width": 200},
@@ -58,16 +59,21 @@ class App(ttk.Frame):
             {"name": "B", "width": 50},
             {"name": "C", "width": 50},
         ]
-        self.tree = Tree(tree_frame, cols, height=10)
+        self.tree = Tree(tree_canvas_frame, cols, height=12)
         self.tree.pack(side=tk.LEFT)
         self.tree.add_menu("Edit", self.tree.edit_calc)
         self.tree.add_row_copy(column=1)
         self.tree.add_menu("Remove", self.remove)
 
+        self.canvas = tk.Canvas(tree_canvas_frame, width=600)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
         self.lineplot.pack(plot_frame)
         self.lineplot.set_single_ax(bottom=0.1)
+
+        self.lineplot.set_img_canvas(self.canvas)
 
     def _load(self, event, args):
         src_df = args["src_df"].copy()

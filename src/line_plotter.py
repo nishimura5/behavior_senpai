@@ -5,6 +5,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import PIL
 import seaborn as sns
 from matplotlib import gridspec, ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -24,6 +25,7 @@ class LinePlotter:
         # グラフクリック時にアノテーションを描画するかのフラグ
         self.draw_anno = False
         self.line_ax = None
+        self.img_canvas = None
 
     def pack(self, master):
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)
@@ -168,6 +170,9 @@ class LinePlotter:
     def set_members_to_draw(self, members):
         self.members = members
 
+    def set_img_canvas(self, canvas):
+        self.img_canvas = canvas
+
     def draw(self):
         self.vline = self.line_ax.axvline(x=0, color="gray", linewidth=0.5)
         self.canvas.draw_idle()
@@ -226,13 +231,26 @@ class LinePlotter:
                     self.anno.set_track(member)
                     frame = self.anno.draw()
 
-        if frame.shape[0] >= 1080:
-            resize_height = 800
-            resize_width = int(frame.shape[1] * resize_height / frame.shape[0])
-            frame = cv2.resize(frame, (resize_width, resize_height))
         if ret is True:
-            cv2.imshow("frame", frame)
-            cv2.waitKey(1)
+            if self.img_canvas is not None:
+                canvas_height = self.img_canvas.winfo_height()
+                resize_width = int(frame.shape[1] * canvas_height / frame.shape[0])
+                frame = cv2.resize(frame, (resize_width, canvas_height))
+                canvas_width = self.img_canvas.winfo_width()
+                center_padding = (canvas_width - resize_width) // 2
+
+                self.img_canvas.delete("all")
+                pil_img = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
+                self.img_canvas.create_image(center_padding, 0, image=pil_img, anchor="nw")
+                self.img_canvas.image = pil_img
+
+            else:
+                if frame.shape[0] >= 1080:
+                    resize_height = 800
+                    resize_width = int(frame.shape[1] * resize_height / frame.shape[0])
+                    frame = cv2.resize(frame, (resize_width, resize_height))
+                cv2.imshow("frame", frame)
+                cv2.waitKey(1)
 
     def close(self):
         plt.close(self.fig)

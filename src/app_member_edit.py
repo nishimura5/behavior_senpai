@@ -47,8 +47,9 @@ class App(ttk.Frame):
         self.time_span_entry = TimeSpanEntry(rename_frame)
         self.time_span_entry.pack(side=tk.LEFT)
 
-        tree_frame = ttk.Frame(setting_frame)
-        tree_frame.pack(pady=5)
+        tree_canvas_frame = ttk.Frame(self)
+        tree_canvas_frame.pack(padx=10, pady=5, fill=tk.X, expand=True)
+
         cols = [
             {"name": "member", "width": 100},
             {"name": "start", "width": 100},
@@ -56,10 +57,13 @@ class App(ttk.Frame):
             {"name": "duration", "width": 100},
             {"name": "keypoints/frame", "width": 100},
         ]
-        self.tree = Tree(tree_frame, cols, height=6, right_click=True)
-        self.tree.pack()
+        self.tree = Tree(tree_canvas_frame, cols, height=12, right_click=True)
+        self.tree.pack(side=tk.LEFT)
         self.tree.add_menu("Remove", self.remove_member)
         self.tree.tree.bind("<<TreeviewSelect>>", self._select_tree_row)
+
+        self.canvas = tk.Canvas(tree_canvas_frame, width=600)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
 
         ok_frame = ttk.Frame(control_frame)
         ok_frame.pack(anchor=tk.NE, padx=(20, 0))
@@ -72,6 +76,8 @@ class App(ttk.Frame):
         plot_frame.pack(pady=5)
         self.band.pack(plot_frame)
         self.band.set_single_ax()
+
+        self.band.set_img_canvas(self.canvas)
 
         self.dst_df = None
         self.history = "member_edit"

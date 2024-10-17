@@ -18,6 +18,7 @@ class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
         master.title("Scene Table")
+        master.geometry("1200x700")
         self.pack(padx=10, pady=10)
         self.bind("<Map>", lambda event: self._load(event, args))
         self.export = export_mp4.MakeMp4()
@@ -29,7 +30,7 @@ class App(ttk.Frame):
         self.plot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         control_frame = ttk.Frame(self)
-        control_frame.pack(padx=(20, 0), fill=tk.X)
+        control_frame.pack(pady=(0, 20), fill=tk.X, expand=True)
         setting_frame = ttk.Frame(control_frame)
         setting_frame.pack(fill=tk.X, expand=True, side=tk.LEFT)
 
@@ -66,16 +67,17 @@ class App(ttk.Frame):
         cancel_btn = ttk.Button(ok_frame, text="Cancel", command=self.cancel)
         cancel_btn.pack()
 
-        tree_frame = ttk.Frame(self)
-        tree_frame.pack(padx=(20, 0), pady=5, fill=tk.X, expand=True)
+        tree_canvas_frame = ttk.Frame(self)
+        tree_canvas_frame.pack(padx=5, pady=5, fill=tk.X, expand=True)
+
         cols = [
             {"name": "start", "width": 100},
             {"name": "end", "width": 100},
             {"name": "duration", "width": 100},
-            {"name": "member", "width": 200},
-            {"name": "description", "width": 350},
+            {"name": "member", "width": 150},
+            {"name": "description", "width": 200},
         ]
-        self.tree = Tree(tree_frame, cols, height=6, right_click=True)
+        self.tree = Tree(tree_canvas_frame, cols, height=12, right_click=True)
         self.tree.pack(side=tk.LEFT)
         self.tree.add_menu("Edit", self.edit)
         self.tree.add_menu("Copy", self.copy)
@@ -84,10 +86,15 @@ class App(ttk.Frame):
         self.tree.add_menu("Export MP4", self.export_mp4)
         self.tree.tree.bind("<Button-1>", self.left_click_tree)
 
+        self.canvas = tk.Canvas(tree_canvas_frame, width=600)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
         self.plot.pack(plot_frame)
         self.plot.set_single_ax(bottom=0.12)
+
+        self.plot.set_img_canvas(self.canvas)
 
         self.dst_df = None
         # app_scene_table is not appended to proc_history
