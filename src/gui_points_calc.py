@@ -154,11 +154,11 @@ class PointsCalcTreeDialog(ttk.Frame):
         dialog = tk.Toplevel(master)
         dialog.focus_set()
         dialog.title("Points calculation")
-        dialog.geometry("700x180")
+        dialog.geometry("700x220")
         dialog.resizable(0, 0)
 
         tar_frame = ttk.Frame(dialog)
-        tar_frame.pack(side=tk.TOP, pady=(5, 10))
+        tar_frame.pack(side=tk.TOP, padx=20, pady=(20, 10))
         calc_select_frame = ttk.Frame(tar_frame)
         calc_select_frame.pack(side=tk.LEFT, padx=5)
         self.point_num_combo = Combobox(calc_select_frame, label="Point num:", width=25, values=["2", "3"])
@@ -202,7 +202,7 @@ class PointsCalcTreeDialog(ttk.Frame):
         self.member_combo.pack(side=tk.LEFT, padx=5)
 
         button_frame = ttk.Frame(dialog)
-        button_frame.pack(side=tk.TOP, pady=(10, 5))
+        button_frame.pack(side=tk.TOP, pady=(10, 20))
         ok_btn = ttk.Button(button_frame, text="OK", command=self.on_ok)
         ok_btn.pack(side=tk.LEFT, padx=5)
         cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.on_cancel)
