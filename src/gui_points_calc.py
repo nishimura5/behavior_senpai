@@ -34,6 +34,9 @@ class Tree(ttk.Frame):
     def set_members(self, members):
         self.member_list = members
 
+    def get_members(self):
+        return self.member_list
+
     def add_menu(self, label, command):
         self.menu.add_command(label=label, command=command)
 

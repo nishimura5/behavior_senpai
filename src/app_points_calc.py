@@ -107,8 +107,7 @@ class App(ttk.Frame):
         if in_trk_attrs.validate_newest_history_proc("points") is False:
             return
         for row in in_trk_attrs.get_source_cols():
-            if row[1] not in self.member_combo.get_members():
-                row[1] = self.member_combo.get_selected()[0]
+            row[1] = self.tree.get_members()[0]
             self.tree.insert(row)
 
     def draw(self):
