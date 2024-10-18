@@ -14,6 +14,7 @@ class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
         master.title(f"Feature Mixer ({args['trk_pkl_name']})")
+        master.geometry("1300x700")
         self.pack(padx=10, pady=10)
         self.bind("<Map>", lambda event: self._load(event, args))
 
@@ -24,9 +25,9 @@ class App(ttk.Frame):
         self.lineplot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         load_frame = ttk.Frame(self)
-        load_frame.pack(anchor=tk.NW, expand=True, fill=tk.X, pady=5)
+        load_frame.pack(padx=10, pady=5, anchor=tk.NW, expand=True, fill=tk.X)
         self.load_combo = Combobox(load_frame, label="Load:", values=["Initial", "Add right"], width=15)
-        self.load_combo.pack_horizontal(padx=5)
+        self.load_combo.pack_horizontal()
         self.load_combo.set_state("disabled")
         feat_btn = ttk.Button(load_frame, text="Select feature file", command=self.open_feat)
         feat_btn.pack(side=tk.LEFT, padx=5)
@@ -37,57 +38,63 @@ class App(ttk.Frame):
         self.scene_combo.pack_horizontal(anchor=tk.E, padx=5)
 
         tar_frame = ttk.Frame(self)
-        tar_frame.pack(anchor=tk.NW, side=tk.TOP, pady=5)
+        tar_frame.pack(padx=10, pady=5, anchor=tk.NW, side=tk.TOP)
         self.name_entry = StrEntry(tar_frame, label="Name:", default="", width=20)
-        self.name_entry.pack_horizontal(padx=5)
+        self.name_entry.pack_horizontal(padx=(0, 5))
         self.member_combo = Combobox(tar_frame, label="Member:", values=[""], width=10)
         self.member_combo.pack_horizontal(padx=5)
         self.member_combo.set_selected_bind(self.selected_member)
-        self.col_a_combo = Combobox(tar_frame, label="col A:", values=["Select column"], width=25)
+        self.col_a_combo = Combobox(tar_frame, label="col A:", values=["Select column"], width=18)
         self.col_a_combo.pack_horizontal(padx=5)
         op_list = ["/", "-", "*", "+", " "]
         self.op_combo = Combobox(tar_frame, label="", values=op_list, width=3)
         self.op_combo.set_selected_bind(self.selected_op)
 
         self.op_combo.pack_horizontal(padx=5)
-        self.col_b_combo = Combobox(tar_frame, label="col B:", values=["Select column"], width=25)
+        self.col_b_combo = Combobox(tar_frame, label="col B:", values=["Select column"], width=18)
         self.col_b_combo.pack_horizontal(padx=5)
         self.name_and_code = feature_proc.get_calc_codes()
         self.normalize_list = list(self.name_and_code.keys())
         self.normalize_combo = Combobox(tar_frame, label="Normalize:", values=self.normalize_list, width=15)
         self.normalize_combo.pack_horizontal(padx=5)
         self.add_btn = ttk.Button(tar_frame, text="Add", command=self.add_row, state="disabled")
-        self.add_btn.pack(side=tk.LEFT, padx=5)
-
-        draw_frame = ttk.Frame(self)
-        draw_frame.pack(anchor=tk.NW, pady=5)
-        self.draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw, state="disabled")
-        self.draw_btn.pack(side=tk.LEFT, padx=5)
-        self.export_btn = ttk.Button(draw_frame, text="Export", command=self.export, state="disabled")
-        self.export_btn.pack(side=tk.LEFT, padx=(5, 50))
-        self.import_btn = ttk.Button(draw_frame, text="Import", command=self.import_feat, state="disabled")
+        self.add_btn.pack(side=tk.LEFT, padx=(5, 50))
+        self.import_btn = ttk.Button(tar_frame, text="Import", command=self.import_feat, state="disabled")
         self.import_btn.pack(side=tk.LEFT)
 
-        tree_frame = ttk.Frame(self)
-        tree_frame.pack(pady=5)
+        draw_frame = ttk.Frame(self)
+        draw_frame.pack(padx=10, pady=5, anchor=tk.NW)
+        self.draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw, state="disabled")
+        self.draw_btn.pack(side=tk.LEFT)
+        self.export_btn = ttk.Button(draw_frame, text="Export", command=self.export, state="disabled")
+        self.export_btn.pack(side=tk.LEFT, padx=(10, 0))
+
+        tree_canvas_frame = ttk.Frame(self)
+        tree_canvas_frame.pack(padx=10, pady=5, fill=tk.X, expand=True)
+
         cols = [
-            {"name": "feature name", "width": 200},
+            {"name": "feature name", "width": 180},
             {"name": "member", "width": 100},
-            {"name": "col A", "width": 300},
-            {"name": "op", "width": 50},
-            {"name": "col B", "width": 300},
-            {"name": "normalize", "width": 200},
+            {"name": "col A", "width": 150},
+            {"name": "op", "width": 30},
+            {"name": "col B", "width": 150},
+            {"name": "normalize", "width": 140},
         ]
-        self.tree = Tree(tree_frame, cols, height=6, right_click=True)
+        self.tree = Tree(tree_canvas_frame, cols, height=12, right_click=True)
         self.tree.pack(side=tk.LEFT)
         self.tree.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
         self.tree.add_menu("Edit", self.edit)
         self.tree.add_menu("Remove", self.remove)
         self.tree.add_row_copy(column=1)
 
+        self.canvas = tk.Canvas(tree_canvas_frame, width=600)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
         self.lineplot.pack(plot_frame)
+
+        self.lineplot.set_img_canvas(self.canvas)
 
     def _load(self, event, args):
         src_df = args["src_df"].copy()
