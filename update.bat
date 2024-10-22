@@ -1,2 +1,2 @@
-rye run updatesenpai
-rye sync
+uv run python ./src/update.py
+uv sync
