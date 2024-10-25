@@ -34,7 +34,7 @@ class App(ttk.Frame):
 
         yolo_ok, mmpose_ok = detector_proc.check_gpu()
         if yolo_ok and mmpose_ok:
-            combo_list = ["YOLOv8 x-pose-p6", "MediaPipe Holistic", "MMPose RTMPose-x"]
+            combo_list = ["YOLO11 x-pose", "MediaPipe Holistic", "MMPose RTMPose-x"]
         else:
             combo_list = ["MediaPipe Holistic"]
         self.engine_combo = Combobox(bat_mode_frame, "Engine:", values=combo_list, width=24)

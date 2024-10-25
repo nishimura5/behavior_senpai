@@ -40,7 +40,7 @@ class MakeMp4:
         scale = tmp.get_mp4_setting()
 
         file_name = os.path.splitext(self.track_name)[0]
-        if self.src_attrs["model"] == "YOLOv8 x-pose-p6":
+        if self.src_attrs["model"] in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
             anno = yolo_drawer.Annotate()
             suffix = "yolov8"
         elif self.src_attrs["model"] == "MediaPipe Holistic":

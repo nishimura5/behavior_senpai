@@ -18,7 +18,7 @@ class App(ttk.Frame):
         img_name = ""
         if arg_model_name == "MediaPipe Holistic":
             img_name = "facemesh"
-        elif arg_model_name == "YOLOv8 x-pose-p6":
+        elif arg_model_name in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
             img_name = "body_coco"
         elif arg_model_name == "MMPose RTMPose-x":
             img_name = "body_halpe26"

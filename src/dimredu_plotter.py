@@ -40,7 +40,7 @@ class DimensionalReductionPlotter:
     def set_trk_df(self, trk_df):
         start_time = time.perf_counter()
         self.draw_anno = True
-        if trk_df.attrs["model"] == "YOLOv8 x-pose-p6":
+        if trk_df.attrs["model"] in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
             self.anno = yolo_drawer.Annotate()
             cols_for_anno = ["x", "y", "conf"]
         elif trk_df.attrs["model"] == "MediaPipe Holistic":

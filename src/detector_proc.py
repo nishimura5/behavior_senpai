@@ -42,7 +42,7 @@ def exec(rcap, model_name, video_path, use_roi=False):
     pkl_path = os.path.join(trk_dir, f"{file_name}.pkl")
 
     # モデルの初期化
-    if model_name == "YOLOv8 x-pose-p6":
+    if model_name == "YOLO11 x-pose":
         model = yolo_detector.YoloDetector()
     elif model_name == "MediaPipe Holistic":
         model = mediapipe_detector.MediaPipeDetector()

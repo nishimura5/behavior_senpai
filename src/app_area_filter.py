@@ -131,7 +131,7 @@ class App(ttk.Frame):
         low_thresh = 0.5
         if self.model_name == "MMPose RTMPose-x":
             col = "score"
-        elif self.model_name == "YOLOv8 x-pose-p6":
+        elif self.model_name in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
             col = "conf"
         else:
             print(f"Unsupported model: {self.model_name}")

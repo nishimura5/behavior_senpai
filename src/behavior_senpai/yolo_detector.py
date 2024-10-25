@@ -7,7 +7,7 @@ from behavior_senpai import img_draw, vcap, yolo_drawer
 
 class YoloDetector:
     def __init__(self, show=True):
-        self.model = YOLO(model="yolov8x-pose-p6.pt")
+        self.model = YOLO(model="yolo11x-pose.pt")
 
         self.number_of_keypoints = 17
         self.show = show
@@ -76,7 +76,7 @@ class YoloDetector:
 def detect_from_picture(src_path):
     src_img = cv2.imread(src_path)
 
-    model = YOLO(model="yolov8x-pose-p6.pt")
+    model = YOLO(model="yolo11x-pose.pt")
     result = model.track(src_img, verbose=False, persist=True, classes=0)
 
     anno_img = yolo_drawer.draw(src_img, result)

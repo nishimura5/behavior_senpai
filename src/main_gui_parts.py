@@ -152,7 +152,7 @@ class CapCanvas(tk.Canvas):
         self.config(width=canvas_width, height=self.height)
 
     def set_trk(self, src_df):
-        if src_df.attrs["model"] == "YOLOv8 x-pose-p6":
+        if src_df.attrs["model"] in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
             self.anno = yolo_drawer.Annotate()
             cols_for_anno = ["x", "y", "conf"]
         elif src_df.attrs["model"] == "MediaPipe Holistic":

@@ -7,7 +7,7 @@ requires-python = "~=3.11.0"
 dependencies = [
     "torch==2.1.2+cu121",
     "torchvision==0.16.2+cu121",
-    "ultralytics~=8.2.0",
+    "ultralytics~=8.3.0",
     "lapx~=0.5",
     "mediapipe==0.10.14",
     "mmcv==2.1.0",
