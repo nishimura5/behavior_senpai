@@ -39,3 +39,9 @@ def put_message(src_img, message, font_size=2, y=30):
     thickness = 2
     cv2.putText(src_img, message, text_pos, txt_font, font_size, (0, 0, 0), thickness * 3)
     cv2.putText(src_img, message, text_pos, txt_font, font_size, (255, 255, 255), thickness)
+
+
+def draw_line(tar_img, start, end, color, thickness):
+    if (start[0] == 0 and start[1] == 0) or (end[0] == 0 and end[1] == 0):
+        return
+    cv2.line(tar_img, start, end, color, thickness, cv2.LINE_AA)

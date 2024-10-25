@@ -167,7 +167,7 @@ class LinePlotter:
         self.line_ax.xaxis.set_major_locator(ticker.MultipleLocator(locator_interval))
         self.line_ax.grid(which="major", axis="x", linewidth=0.3)
 
-    def set_members_to_draw(self, members):
+    def set_members_to_draw(self, members: list):
         self.members = members
 
     def set_img_canvas(self, canvas):
@@ -213,19 +213,23 @@ class LinePlotter:
             return
         ret, frame = self.vcap.read_at(timestamp_msec)
         if ret is False:
-            print("frame is None")
             return
 
         idx = np.fabs(self.timestamps - timestamp_msec).argmin()
         timestamp_msec = self.timestamps[idx]
 
         if self.draw_anno is True:
+            canvas_height = self.img_canvas.winfo_height()
+            resize_ratio = canvas_height / frame.shape[0]
+            frame = cv2.resize(frame, None, fx=resize_ratio, fy=resize_ratio)
+
             if len(self.members) == 0:
                 self.members = [self.member]
             for member in self.members:
                 if (timestamp_msec, member) in self.anno_time_member_indexes:
                     tar_df = self.anno_df.loc[pd.IndexSlice[timestamp_msec, member, :], :]
                     kps = tar_df.to_numpy()
+                    kps[:, :2] *= resize_ratio
                     self.anno.set_img(frame)
                     self.anno.set_pose(kps)
                     self.anno.set_track(member)
@@ -233,9 +237,7 @@ class LinePlotter:
 
         if ret is True:
             if self.img_canvas is not None:
-                canvas_height = self.img_canvas.winfo_height()
                 resize_width = int(frame.shape[1] * canvas_height / frame.shape[0])
-                frame = cv2.resize(frame, (resize_width, canvas_height))
                 canvas_width = self.img_canvas.winfo_width()
                 center_padding = (canvas_width - resize_width) // 2
 

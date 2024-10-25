@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import torch
 
+from behavior_senpai import img_draw
+
 
 class Annotate:
     def set_pose(self, kps):
@@ -52,24 +54,24 @@ class Annotate:
         left_color = (250, 70, 70)
         right_color = (50, 250, 50)
 
-        self._draw_line(self.left_shoulder, self.neck, self.line_color, 1)
-        self._draw_line(self.neck, self.right_shoulder, self.line_color, 1)
-        self._draw_line(self.left_shoulder, self.left_hip, self.line_color, 1)
-        self._draw_line(self.right_shoulder, self.right_hip, self.line_color, 1)
-        self._draw_line(self.left_hip, self.hip, self.line_color, 1)
-        self._draw_line(self.hip, self.right_hip, self.line_color, 1)
+        img_draw.draw_line(self.dst_img, self.left_shoulder, self.neck, self.line_color, 1)
+        img_draw.draw_line(self.dst_img, self.neck, self.right_shoulder, self.line_color, 1)
+        img_draw.draw_line(self.dst_img, self.left_shoulder, self.left_hip, self.line_color, 1)
+        img_draw.draw_line(self.dst_img, self.right_shoulder, self.right_hip, self.line_color, 1)
+        img_draw.draw_line(self.dst_img, self.left_hip, self.hip, self.line_color, 1)
+        img_draw.draw_line(self.dst_img, self.hip, self.right_hip, self.line_color, 1)
         if self.left_shoulder_score > thresh and self.left_elbow_score > thresh:
-            self._draw_line(self.left_shoulder, self.left_elbow, self.line_color, 1)
-            self._draw_line(self.left_elbow, self.left_wrist, self.line_color, 1)
+            img_draw.draw_line(self.dst_img, self.left_shoulder, self.left_elbow, self.line_color, 1)
+            img_draw.draw_line(self.dst_img, self.left_elbow, self.left_wrist, self.line_color, 1)
         if self.right_shoulder_score > thresh and self.right_elbow_score > thresh:
-            self._draw_line(self.right_shoulder, self.right_elbow, self.line_color, 1)
-            self._draw_line(self.right_elbow, self.right_wrist, self.line_color, 1)
+            img_draw.draw_line(self.dst_img, self.right_shoulder, self.right_elbow, self.line_color, 1)
+            img_draw.draw_line(self.dst_img, self.right_elbow, self.right_wrist, self.line_color, 1)
         if self.left_hip_score > thresh and self.left_knee_score > thresh:
-            self._draw_line(self.left_hip, self.left_knee, self.line_color, 1)
-            self._draw_line(self.left_knee, self.left_ankle, self.line_color, 1)
+            img_draw.draw_line(self.dst_img, self.left_hip, self.left_knee, self.line_color, 1)
+            img_draw.draw_line(self.dst_img, self.left_knee, self.left_ankle, self.line_color, 1)
         if self.right_hip_score > thresh and self.right_knee_score > thresh:
-            self._draw_line(self.right_hip, self.right_knee, self.line_color, 1)
-            self._draw_line(self.right_knee, self.right_ankle, self.line_color, 1)
+            img_draw.draw_line(self.dst_img, self.right_hip, self.right_knee, self.line_color, 1)
+            img_draw.draw_line(self.dst_img, self.right_knee, self.right_ankle, self.line_color, 1)
 
         cv2.circle(self.dst_img, self.left_eye, 3, left_color, -1)
         cv2.circle(self.dst_img, self.left_shoulder, 3, left_color, -1)
@@ -92,14 +94,9 @@ class Annotate:
             cv2.circle(self.dst_img, self.right_ankle, 3, right_color, -1)
 
         # トラッキングIDを描画
-        cv2.putText(self.dst_img, str(self.id), [self.pos[0]-10, self.pos[1]-35], cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-        cv2.line(self.dst_img, self.pos, (self.pos[0], self.pos[1]-25), (50, 50, 255), 1, cv2.LINE_AA)
+        cv2.putText(self.dst_img, str(self.id), [self.pos[0] - 10, self.pos[1] - 35], cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+        cv2.line(self.dst_img, self.pos, (self.pos[0], self.pos[1] - 25), (50, 50, 255), 1, cv2.LINE_AA)
         return self.dst_img
-
-    def _draw_line(self, start, end, color, thickness):
-        if (start[0] == 0 and start[1] == 0) or (end[0] == 0 and end[1] == 0):
-            return
-        cv2.line(self.dst_img, start, end, color, thickness, cv2.LINE_AA)
 
     def _cvt_kp(self, kp, idx):
         x = kp[idx][0]
