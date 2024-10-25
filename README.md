@@ -14,7 +14,7 @@ Behavior Senpai is an application that supports quantitative behavior observatio
 Behavior Senpai is distinctive in that it permits the utilization of multiple AI models without the necessity for coding. 
 
  The following AI image processing frameworks/models are supported by Behavior Senpai:
-- [YOLOv8 Pose](https://github.com/ultralytics/ultralytics/issues/1915)
+- [YOLO11 Pose](https://docs.ultralytics.com/tasks/pose/)
 - [MediaPipe Holistic](https://github.com/google/mediapipe/blob/master/docs/solutions/holistic.md)
 - [RTMPose Body8 -Halpe26 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#26-keypoints)
 
@@ -68,11 +68,11 @@ rye self uninstall
 ## Keypoints
 
 The ID of keypoints handled by Behavior Senpai is the same as the ID of each dataset.
-YOLOv8 complies with COCO and RTMPose complies with Halpe26.
+YOLO11 (and YOLOv8) complies with COCO and RTMPose complies with Halpe26.
 The IDs of each keypoints are as follows.
 
 <p align="center">
-  <img width="60%" alt="Keypoints of body (YOLOv8 and MMPose)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_body_110.png">
+  <img width="60%" alt="Keypoints of body (YOLO11 and MMPose)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_body_110.png">
 </p>
 
 The IDs of the keypoints (landmarks) of the faces in MediaPipe Holistic are as follows. See [here](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png) for a document with all IDs.
@@ -201,7 +201,7 @@ Main contents of attrs include, but are not limited to:
 
 The name of the AI image processing framework/model used for keypoint detection. Addition to attrs is done by [app_detector.py][app_detect] ([detector_proc.py][detector_proc]).
 
- - YOLOv8 x-pose-p6
+ - YOLO11 x-pose
  - MediaPipe Holistic
  - MMPose RTMPose-x
 
