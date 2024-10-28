@@ -10,7 +10,7 @@ import seaborn as sns
 from matplotlib import gridspec, ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-from behavior_senpai import mediapipe_drawer, rtmpose_drawer, time_format, yolo_drawer
+from behavior_senpai import mediapipe_drawer, pose_drawer, time_format
 
 
 class LinePlotter:
@@ -53,13 +53,13 @@ class LinePlotter:
         start_time = time.perf_counter()
         self.draw_anno = True
         if trk_df.attrs["model"] in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
-            self.anno = yolo_drawer.Annotate()
+            self.anno = pose_drawer.Annotate("coco17.toml")
             cols_for_anno = ["x", "y", "conf"]
         elif trk_df.attrs["model"] == "MediaPipe Holistic":
             self.anno = mediapipe_drawer.Annotate()
             cols_for_anno = ["x", "y", "z"]
         elif trk_df.attrs["model"] == "MMPose RTMPose-x":
-            self.anno = rtmpose_drawer.Annotate()
+            self.anno = pose_drawer.Annotate("halpe26.toml")
             cols_for_anno = ["x", "y", "score"]
         self.anno_df = trk_df.reset_index().set_index(["timestamp", "member", "keypoint"]).loc[:, cols_for_anno]
         self.anno_time_member_indexes = self.anno_df.index.droplevel(2).unique()

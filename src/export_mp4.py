@@ -4,7 +4,7 @@ from tkinter import messagebox
 import cv2
 import pandas as pd
 
-from behavior_senpai import mediapipe_drawer, rtmpose_drawer, yolo_drawer
+from behavior_senpai import mediapipe_drawer, pose_drawer
 from gui_parts import TempFile
 
 
@@ -41,13 +41,13 @@ class MakeMp4:
 
         file_name = os.path.splitext(self.track_name)[0]
         if self.src_attrs["model"] in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
-            anno = yolo_drawer.Annotate()
+            anno = pose_drawer.Annotate("coco17.toml")
             suffix = "yolov8"
         elif self.src_attrs["model"] == "MediaPipe Holistic":
             anno = mediapipe_drawer.Annotate()
             suffix = "mediapipe"
         elif self.src_attrs["model"] == "MMPose RTMPose-x":
-            anno = rtmpose_drawer.Annotate()
+            anno = pose_drawer.Annotate("halpe26.toml")
             suffix = "rtmpose"
 
         dst_dir = os.path.join(self.pkl_dir, os.pardir, "mp4")

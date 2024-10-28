@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image, ImageTk
 
-from behavior_senpai import file_inout, mediapipe_drawer, rtmpose_drawer, yolo_drawer
+from behavior_senpai import file_inout, mediapipe_drawer, pose_drawer
 from gui_parts import TempFile
 
 
@@ -153,13 +153,13 @@ class CapCanvas(tk.Canvas):
 
     def set_trk(self, src_df):
         if src_df.attrs["model"] in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
-            self.anno = yolo_drawer.Annotate()
+            self.anno = pose_drawer.Annotate("coco17.toml")
             cols_for_anno = ["x", "y", "conf"]
         elif src_df.attrs["model"] == "MediaPipe Holistic":
             self.anno = mediapipe_drawer.Annotate()
             cols_for_anno = ["x", "y", "z"]
         elif src_df.attrs["model"] == "MMPose RTMPose-x":
-            self.anno = rtmpose_drawer.Annotate()
+            self.anno = pose_drawer.Annotate("halpe26.toml")
             cols_for_anno = ["x", "y", "score"]
         self.anno_df = src_df.reset_index().set_index(["timestamp", "member", "keypoint"]).loc[:, cols_for_anno]
         self.timestamps = self.anno_df.index.get_level_values("timestamp").unique().to_numpy()

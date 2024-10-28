@@ -2,7 +2,7 @@ import cv2
 import pandas as pd
 from ultralytics import YOLO
 
-from behavior_senpai import img_draw, vcap, yolo_drawer
+from behavior_senpai import img_draw, pose_drawer, vcap
 
 
 class YoloDetector:
@@ -33,7 +33,7 @@ class YoloDetector:
 
             # 検出結果を描画、xキーで途中終了
             if self.show is True:
-                frame = yolo_drawer.draw(frame, result)
+                frame = pose_drawer.yolo_draw(frame, result)
                 _, frame = vcap.resize_frame(frame)
                 img_draw.put_frame_pos(frame, i, self.total_frame_num)
                 img_draw.put_message(frame, "'x' key to exit.", font_size=1.5, y=55)
@@ -79,6 +79,6 @@ def detect_from_picture(src_path):
     model = YOLO(model="yolo11x-pose.pt")
     result = model.track(src_img, verbose=False, persist=True, classes=0)
 
-    anno_img = yolo_drawer.draw(src_img, result)
+    anno_img = pose_drawer.yolo_draw(src_img, result)
     cv2.imshow("dst", anno_img)
     cv2.waitKey(0)
