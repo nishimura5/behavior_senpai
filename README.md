@@ -51,7 +51,7 @@ If you do not have a CUDA-compatible GPU, only MediaPipe Holistic can be used.
 
 Running BehaviorSenpai.exe will start the application; if you want to use CUDA, check the "Enable features using CUDA" checkbox the first time you start the application and click the "OK" button.
 
-BehaviorSenpai.exe is an application to automate the construction of the Python environment by [Rye](https://rye.astral.sh) and the startup of Behavior Senpai itself.
+BehaviorSenpai.exe is an application to automate the construction of the Python environment by [uv](https://docs.astral.sh/uv/) and the startup of Behavior Senpai itself.
 The initial setup by BehaviorSenpai.exe takes some time. Please wait until the terminal (black screen) closes automatically.
 
 <p align="center">
@@ -60,11 +60,7 @@ The initial setup by BehaviorSenpai.exe takes some time. Please wait until the t
  </a>
 </p>
 
-To uninstall Behavior Senpai or replace it with the latest version, delete the entire folder containing BehaviorSenpai.exe. In addition, to uninstall Rye, run the following from a terminal
-
-```
-rye self uninstall
-```
+To uninstall Behavior Senpai or replace it with the latest version, delete the entire folder containing BehaviorSenpai.exe.
 
 ## Keypoints
 
