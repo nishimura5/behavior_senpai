@@ -6,7 +6,7 @@ from tkinter import messagebox, ttk
 import pandas as pd
 
 from behavior_senpai import windows_and_mac
-from gui_parts import Combobox, StrEntry
+from gui_parts import Combobox, IntEntry, StrEntry
 
 
 class App(ttk.Frame):
@@ -154,9 +154,12 @@ class App(ttk.Frame):
 
     def merge(self):
         """Merge the track files based on the treeview."""
-        ret = messagebox.askokcancel("Merge track files", "Merge the track files?")
-        if ret is False:
+        # open fps dialog
+        fps_dialog = FpsDialog(self)
+        self.wait_window(fps_dialog)
+        if fps_dialog.fps is None:
             return
+        self.fps = fps_dialog.fps
 
         merge_dict = {}
         for item in self.tree.get_children(""):
@@ -188,9 +191,13 @@ class App(ttk.Frame):
             else:
                 prev_max_frame = dst_df.index.get_level_values("frame").max()
                 prev_max_timestamp = dst_df["timestamp"].max()
-                step = dst_df.groupby(level=1)["timestamp"].diff().max()
                 src_df.index = src_df.index.set_levels(src_df.index.levels[0] + prev_max_frame + 1, level=0)
-                src_df["timestamp"] = src_df["timestamp"] + prev_max_timestamp + step
+                src_df["timestamp"] = src_df["timestamp"] + prev_max_timestamp + self.fps
+
+                # old code
+                # step = dst_df.groupby(level=1)["timestamp"].diff().max()
+                # src_df["timestamp"] = src_df["timestamp"] + prev_max_timestamp + step
+
                 dst_df = pd.concat([dst_df, src_df], axis=0)
             videos.append(src_df.attrs["video_name"])
             # move to backup folder
@@ -338,3 +345,21 @@ class LinkItem:
         self.name = item
         self.next = None
         self.prev = None
+
+
+class FpsDialog(tk.Toplevel):
+    def __init__(self, master):
+        super().__init__(master)
+        self.title("FPS")
+        self.geometry("200x100")
+        self.fps_entry = IntEntry(self, label="fps:", default=29.97, width=10)
+        self.fps_entry.pack_vertical(pady=10)
+        self.cancel_btn = ttk.Button(self, text="Cancel", command=self.destroy)
+        self.cancel_btn.pack(side=tk.LEFT, padx=10)
+        self.ok_btn = ttk.Button(self, text="OK", command=self.ok)
+        self.ok_btn.pack(pady=10)
+        self.fps = None
+
+    def ok(self):
+        self.fps = float(self.fps_entry.get())
+        self.destroy()
