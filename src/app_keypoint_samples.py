@@ -20,7 +20,7 @@ class App(ttk.Frame):
             img_name = "facemesh"
         elif arg_model_name in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
             img_name = "body_coco"
-        elif arg_model_name == "MMPose RTMPose-x":
+        elif arg_model_name in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
             img_name = "body_halpe26"
 
         left_frame = ttk.Frame(self)

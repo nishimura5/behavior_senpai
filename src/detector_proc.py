@@ -46,8 +46,10 @@ def exec(rcap, model_name, video_path, use_roi=False):
         model = yolo_detector.YoloDetector()
     elif model_name == "MediaPipe Holistic":
         model = mediapipe_detector.MediaPipeDetector()
-    elif model_name == "MMPose RTMPose-x":
+    elif model_name == "RTMPose-x Halpe26":
         model = rtmpose_detector.RTMPoseDetector()
+    elif model_name == "RTMPose-x WholeBody133":
+        model = rtmpose_detector.RTMPoseDetector(whole_body=True)
 
     model.set_cap(rcap)
     model.detect(roi=use_roi)

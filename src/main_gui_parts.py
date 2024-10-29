@@ -158,8 +158,12 @@ class CapCanvas(tk.Canvas):
         elif src_df.attrs["model"] == "MediaPipe Holistic":
             self.anno = mediapipe_drawer.Annotate()
             cols_for_anno = ["x", "y", "z"]
-        elif src_df.attrs["model"] == "MMPose RTMPose-x":
+        # "MMPose RTMPos-x" <- To maintain backward compatibility (ver 1.3)
+        elif src_df.attrs["model"] in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
             self.anno = pose_drawer.Annotate("halpe26.toml")
+            cols_for_anno = ["x", "y", "score"]
+        elif src_df.attrs["model"] == "RTMPose-x WholeBody133":
+            self.anno = pose_drawer.Annotate("coco133.toml")
             cols_for_anno = ["x", "y", "score"]
         self.anno_df = src_df.reset_index().set_index(["timestamp", "member", "keypoint"]).loc[:, cols_for_anno]
         self.timestamps = self.anno_df.index.get_level_values("timestamp").unique().to_numpy()
