@@ -60,6 +60,14 @@ class Tree(ttk.Frame):
             if str(self.tree.item(item)["values"][col]) == value:
                 self.tree.selection_set(item)
 
+    def get_selected(self, selected=None):
+        if selected is None:
+            selected = self.tree.selection()
+            if len(selected) == 0:
+                return None
+            return [self.tree.item(item)["values"] for item in selected]
+        return [self.tree.item(item)["values"] for item in selected]
+
     def get_selected_one(self, selected=None, force_str=False):
         if selected is None:
             selected = self.tree.selection()

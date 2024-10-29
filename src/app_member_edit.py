@@ -119,6 +119,7 @@ class App(ttk.Frame):
         time_min = time_range_df.min()["timestamp"]
         time_max = time_range_df.max()["timestamp"]
         min_max_range = time_max - time_min
+        self.band.set_members_to_draw([row[0]])
         self.band.set_plot_band(plot_df, row[0], time_min - min_max_range * 0.03, time_max + min_max_range * 0.03)
         self.band.draw()
 
@@ -177,17 +178,28 @@ class App(ttk.Frame):
 
     def remove_member(self):
         """Remove a member from the DataFrame."""
-        current_member = self.tar_member_label_var.get()
-        if current_member == "":
-            print("current member is empty")
+        selected = self.tree.get_selected()
+        if selected is None or len(selected) == 0:
             return
-        start_time, end_time = self.time_span_entry.get_start_end()
-        between_sr = self.src_df["timestamp"].between(start_time - 1, end_time + 1)
-        tar_member_sr = self.src_df.index.get_level_values(1) == current_member
-        remove_sr = between_sr & tar_member_sr
-        self.src_df = self.src_df[~remove_sr]
-        self.update_tree()
-        print(f"removed {current_member}")
+        elif len(selected) > 1:
+            for sel in selected:
+                tar_member = str(sel[0])
+                remove_sr = self.src_df.index.get_level_values(1) == tar_member
+                self.src_df = self.src_df[~remove_sr]
+                self.update_tree()
+                print(f"removed {tar_member}")
+        else:
+            current_member = str(selected[0][0])
+            if current_member == "":
+                print("current member is empty")
+                return
+            start_time, end_time = self.time_span_entry.get_start_end()
+            between_sr = self.src_df["timestamp"].between(start_time - 1, end_time + 1)
+            tar_member_sr = self.src_df.index.get_level_values(1) == current_member
+            remove_sr = between_sr & tar_member_sr
+            self.src_df = self.src_df[~remove_sr]
+            self.update_tree()
+            print(f"removed {current_member}")
 
     def export_tree(self):
         """Export the tree data to a CSV file."""

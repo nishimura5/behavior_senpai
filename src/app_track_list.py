@@ -194,6 +194,7 @@ class App(ttk.Frame):
                 dst_df = pd.concat([dst_df, src_df], axis=0)
             videos.append(src_df.attrs["video_name"])
             # move to backup folder
+            os.makedirs(os.path.join(self.folder_path, "backup"), exist_ok=True)
             backup_path = os.path.join(self.folder_path, "backup", file_name)
             if os.path.exists(backup_path):
                 os.remove(backup_path)
