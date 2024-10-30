@@ -245,6 +245,9 @@ class IntEntry(ttk.Frame):
         tmp.save(data)
         return data[key]
 
+    def set_state(self, state):
+        self.entry["state"] = state
+
     def _validate(self, text):
         return text.isdigit() or text == ""
 

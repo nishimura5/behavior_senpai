@@ -24,18 +24,21 @@ class App(ttk.Frame):
         take_part_frame = ttk.Frame(self)
         take_part_frame.pack(pady=5)
         self.take_entry = StrEntry(take_part_frame, label="take:", width=10)
-        self.take_entry.pack_horizontal(padx=(0, 10))
+        self.take_entry.pack_horizontal(padx=5)
 
         # 文字列でソートする都合で9までに対応、(''も想定しているので10以上に拡張するときは注意)
         vals = ("1", "2", "3", "4", "5", "6", "7", "8", "9")
         self.part_combo = Combobox(take_part_frame, "part:", values=vals, width=5)
         self.part_combo.pack_horizontal(padx=5)
         assign_btn = ttk.Button(take_part_frame, text="Assign", command=self.assign)
-        assign_btn.pack(side=tk.LEFT, padx=5)
+        assign_btn.pack(padx=5, side=tk.LEFT)
         overwrite_btn = ttk.Button(take_part_frame, text="Overwrite", command=self.overwrite)
-        overwrite_btn.pack(side=tk.LEFT, padx=5)
+        overwrite_btn.pack(padx=(25, 5), side=tk.LEFT)
         merge_btn = ttk.Button(take_part_frame, text="Merge track files", command=self.merge)
-        merge_btn.pack(side=tk.LEFT, padx=5)
+        merge_btn.pack(padx=5, side=tk.LEFT)
+
+        open_btn = ttk.Button(take_part_frame, text="Open video", command=self._open_video)
+        open_btn.pack(padx=5, side=tk.LEFT)
 
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5)
@@ -52,11 +55,6 @@ class App(ttk.Frame):
         self.tree.bind("<<TreeviewSelect>>", self._on_select)
 
         self.tree.pack()
-
-        bottom_btn_frame = ttk.Frame(self)
-        bottom_btn_frame.pack(pady=10)
-        open_btn = ttk.Button(bottom_btn_frame, text="Open", command=self._open_video)
-        open_btn.pack(side=tk.LEFT)
 
         if self.folder_path != "":
             self._load_folder()
@@ -350,16 +348,35 @@ class LinkItem:
 class FpsDialog(tk.Toplevel):
     def __init__(self, master):
         super().__init__(master)
-        self.title("FPS")
-        self.geometry("200x100")
-        self.fps_entry = IntEntry(self, label="fps:", default=29.97, width=10)
+        self.title("Frame rate to merge")
+        self.geometry("300x130")
+        fps_frame = ttk.Frame(self)
+        fps_frame.pack(pady=10)
+        fps_list = ["29.97", "59.94", "23.98", "119.88", "othres"]
+        self.fps_combo = Combobox(fps_frame, "fps:", values=fps_list, width=10)
+        self.fps_combo.pack_horizontal(padx=10)
+        self.fps_combo.set_selected_bind(self.on_selected)
+        self.fps_combo.set("29.97")
+        self.fps_entry = IntEntry(fps_frame, label="", default=29.97, width=10)
         self.fps_entry.pack_vertical(pady=10)
-        self.cancel_btn = ttk.Button(self, text="Cancel", command=self.destroy)
-        self.cancel_btn.pack(side=tk.LEFT, padx=10)
-        self.ok_btn = ttk.Button(self, text="OK", command=self.ok)
-        self.ok_btn.pack(pady=10)
+        self.fps_entry.set_state("disabled")
+        ok_cancel_frame = ttk.Frame(self)
+        ok_cancel_frame.pack(pady=10)
+        self.cancel_btn = ttk.Button(ok_cancel_frame, text="Cancel", command=self.destroy)
+        self.cancel_btn.pack(padx=5, side=tk.LEFT)
+        self.ok_btn = ttk.Button(ok_cancel_frame, text="OK", command=self.ok)
+        self.ok_btn.pack(padx=5)
         self.fps = None
 
+    def on_selected(self, event):
+        if self.fps_combo.get() == "othres":
+            self.fps_entry.set_state("normal")
+        else:
+            self.fps_entry.set_state("disabled")
+
     def ok(self):
-        self.fps = float(self.fps_entry.get())
+        if self.fps_combo.get() == "othres":
+            self.fps = float(self.fps_entry.get())
+        else:
+            self.fps = float(self.fps_combo.get())
         self.destroy()
