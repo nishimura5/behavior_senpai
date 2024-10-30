@@ -346,7 +346,7 @@ class TempFile:
 
     def get_scene_table_graph_size(self):
         if "scene_table_width" not in self.data.keys() or self.data["scene_table_width"] == "":
-            width = 1200
+            width = 1600
         else:
             width = int(self.data["scene_table_width"])
         if "scene_table_height" not in self.data.keys() or self.data["scene_table_height"] == "":
@@ -361,7 +361,7 @@ class TempFile:
 
     def get_window_size(self):
         if "width" not in self.data.keys() or self.data["width"] == "":
-            width = 1200
+            width = 1600
         else:
             width = int(self.data["width"])
         if "height" not in self.data.keys() or self.data["height"] == "":

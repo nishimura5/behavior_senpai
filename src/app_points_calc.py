@@ -71,7 +71,7 @@ class App(ttk.Frame):
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
         self.lineplot.pack(plot_frame)
-        self.lineplot.set_single_ax(bottom=0.1)
+        self.lineplot.set_single_ax(bottom=0.12)
 
         self.lineplot.set_img_canvas(self.canvas)
 

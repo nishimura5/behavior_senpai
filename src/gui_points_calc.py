@@ -77,7 +77,7 @@ class Tree(ttk.Frame):
     def add_calc(self):
         dialog = PointsCalcTreeDialog(self, self.member_list, contain_blank=False)
         dialog.set_df(self.tar_df)
-        self.wait_window(dialog.dialog)
+        self.wait_window(dialog)
         new_calc_code = dialog.selected_calc_code
         new_member = dialog.selected_member
         new_point_a = dialog.selected_point_a
@@ -97,7 +97,9 @@ class Tree(ttk.Frame):
             return
         dialog = PointsCalcTreeDialog(self, self.member_list, contain_blank=True)
         dialog.set_df(self.tar_df)
-        self.wait_window(dialog.dialog)
+        if len(selected) == 1:
+            dialog.set_default(*self.tree.item(selected[0])["values"])
+        self.wait_window(dialog)
         new_calc_code = dialog.selected_calc_code
         new_member = dialog.selected_member
         new_point_a = dialog.selected_point_a
@@ -141,7 +143,7 @@ class Tree(ttk.Frame):
         if len(selected) == 0:
             return
         dialog = MemberComboDialog(self, self.member_list)
-        self.wait_window(dialog.dialog)
+        self.wait_window(dialog)
         selected_member = dialog.selected_member
         if selected_member is None:
             return
@@ -151,16 +153,15 @@ class Tree(ttk.Frame):
             self.tree.insert("", tk.END, values=values)
 
 
-class PointsCalcTreeDialog(ttk.Frame):
+class PointsCalcTreeDialog(tk.Toplevel):
     def __init__(self, master, member_list, contain_blank=False):
         super().__init__(master)
-        dialog = tk.Toplevel(master)
-        dialog.focus_set()
-        dialog.title("Points calculation")
-        dialog.geometry("700x220")
-        dialog.resizable(0, 0)
+        self.focus_set()
+        self.title("Points calculation")
+        self.geometry("700x220")
+        self.resizable(0, 0)
 
-        tar_frame = ttk.Frame(dialog)
+        tar_frame = ttk.Frame(self)
         tar_frame.pack(side=tk.TOP, padx=20, pady=(20, 10))
         calc_select_frame = ttk.Frame(tar_frame)
         calc_select_frame.pack(side=tk.LEFT, padx=5)
@@ -204,15 +205,14 @@ class PointsCalcTreeDialog(ttk.Frame):
         self.member_combo = MemberKeypointComboboxesFor3Point(tar_frame, contain_blank=contain_blank)
         self.member_combo.pack(side=tk.LEFT, padx=5)
 
-        button_frame = ttk.Frame(dialog)
+        button_frame = ttk.Frame(self)
         button_frame.pack(side=tk.TOP, pady=(10, 20))
         ok_btn = ttk.Button(button_frame, text="OK", command=self.on_ok)
         ok_btn.pack(side=tk.LEFT, padx=5)
         cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.on_cancel)
         cancel_btn.pack(side=tk.LEFT)
 
-        dialog.grab_set()
-        self.dialog = dialog
+        self.grab_set()
         self.selected_calc_code = None
         self.selected_member = None
         self.selected_point_a = None
@@ -222,6 +222,12 @@ class PointsCalcTreeDialog(ttk.Frame):
     def set_df(self, df):
         self.member_combo.set_df(df)
 
+    def set_default(self, calc_code, member, point_a, point_b, point_c):
+        point_num = "2" if point_c == "" else "3"
+        self.point_num_combo.set(point_num)
+        self.calc_type_combo.set(calc_code)
+        self.member_combo.set(member, point_a, point_b, point_c)
+
     def on_ok(self):
         self.selected_calc_code = self.calc_type_combo.get()
         (
@@ -230,11 +236,11 @@ class PointsCalcTreeDialog(ttk.Frame):
             self.selected_point_b,
             self.selected_point_c,
         ) = self.member_combo.get_selected()
-        self.dialog.destroy()
+        self.destroy()
 
     def on_cancel(self):
         self.selected_member = None
-        self.dialog.destroy()
+        self.destroy()
 
     def change_point_num(self, event):
         point_num = self.point_num_combo.get()
@@ -256,16 +262,15 @@ class PointsCalcTreeDialog(ttk.Frame):
         return datadir
 
 
-class MemberComboDialog(ttk.Frame):
+class MemberComboDialog(tk.Toplevel):
     def __init__(self, master, member_list):
         super().__init__(master)
-        dialog = tk.Toplevel(master)
-        dialog.focus_set()
-        dialog.title("Select member")
-        dialog.geometry("300x100")
-        dialog.resizable(0, 0)
+        self.focus_set()
+        self.title("Select member")
+        self.geometry("300x100")
+        self.resizable(0, 0)
 
-        combo_frame = ttk.Frame(dialog)
+        combo_frame = ttk.Frame(self)
         combo_frame.pack(side=tk.TOP, pady=(5, 10))
         label = ttk.Label(combo_frame, text="Member:")
         label.pack(side=tk.LEFT, padx=5)
@@ -274,21 +279,20 @@ class MemberComboDialog(ttk.Frame):
         self.member_combo["values"] = member_list
         self.member_combo.current(0)
 
-        button_frame = ttk.Frame(dialog)
+        button_frame = ttk.Frame(self)
         button_frame.pack(side=tk.TOP, pady=(10, 5))
         ok_btn = ttk.Button(button_frame, text="OK", command=self.on_ok)
         ok_btn.pack(side=tk.LEFT, padx=5)
         cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.cancel)
         cancel_btn.pack(side=tk.LEFT)
 
-        dialog.grab_set()
-        self.dialog = dialog
+        self.grab_set()
         self.selected_member = None
 
     def on_ok(self):
         self.selected_member = self.member_combo.get()
-        self.dialog.destroy()
+        self.destroy()
 
     def cancel(self):
         self.selected_member = None
-        self.dialog.destroy()
+        self.destroy()

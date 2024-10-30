@@ -101,7 +101,7 @@ class Tree(ttk.Frame):
         if len(selected) == 0:
             return
         dialog = MemberComboDialog(self, self.member_list)
-        self.wait_window(dialog.dialog)
+        self.wait_window(dialog)
         selected_member = dialog.selected_member
         if selected_member is None:
             return
@@ -116,7 +116,7 @@ class Tree(ttk.Frame):
             return
         default = self.tree.item(selected[0])["values"][self.member_column]
         dialog = MemberEntryDialog(self, default=default)
-        self.wait_window(dialog.dialog)
+        self.wait_window(dialog)
         new_name = dialog.new_name
         if new_name is None:
             return
@@ -127,7 +127,7 @@ class Tree(ttk.Frame):
 
     def scene_table_add(self):
         dialog = SceneTableTreeDialog(self, self.member_list)
-        self.wait_window(dialog.dialog)
+        self.wait_window(dialog)
         new_member = dialog.selected_member
         new_timespan = dialog.new_timespan
         new_description = dialog.new_description
@@ -149,7 +149,7 @@ class Tree(ttk.Frame):
             default_timespan = self.tree.item(selected[0])["values"][:2]
         default_description = self.tree.item(selected[0])["values"][4]
         dialog = SceneTableTreeDialog(self, self.member_list, default_timespan, default_description)
-        self.wait_window(dialog.dialog)
+        self.wait_window(dialog)
         new_member = dialog.selected_member
         new_timespan = dialog.new_timespan
         new_description = dialog.new_description
@@ -187,7 +187,7 @@ class Tree(ttk.Frame):
         else:
             default_feat_name = ""
         dialog = FeatMixTreeDialog(self, default_feat_name, self.member_list)
-        self.wait_window(dialog.dialog)
+        self.wait_window(dialog)
         new_name = dialog.new_name
         new_member = dialog.selected_member
         print(f"{new_member},'{new_name}'is new value")
@@ -207,7 +207,7 @@ class Tree(ttk.Frame):
         if len(selected) == 0:
             return
         dialog = MemberComboDialog(self, self.member_list)
-        self.wait_window(dialog.dialog)
+        self.wait_window(dialog)
         selected_member = dialog.selected_member
         if selected_member is None:
             return
@@ -217,16 +217,15 @@ class Tree(ttk.Frame):
             self.tree.insert("", tk.END, values=values)
 
 
-class SceneTableTreeDialog(ttk.Frame):
+class SceneTableTreeDialog(tk.Toplevel):
     def __init__(self, master, member_list, default_timespan=["", ""], default_description=""):
         super().__init__(master)
-        dialog = tk.Toplevel(master)
-        dialog.focus_set()
-        dialog.title("Scene")
-        dialog.geometry("500x150")
-        dialog.resizable(0, 0)
+        self.focus_set()
+        self.title("Scene")
+        self.geometry("500x150")
+        self.resizable(0, 0)
 
-        time_frame = ttk.Frame(dialog)
+        time_frame = ttk.Frame(self)
         time_frame.pack(side=tk.TOP, pady=(5, 10))
         self.time_entry = TimeSpanEntry(time_frame)
 
@@ -235,7 +234,7 @@ class SceneTableTreeDialog(ttk.Frame):
             end_msec = time_format.timestr_to_msec(default_timespan[1])
             self.time_entry.update_entry(start_msec=start_msec, end_msec=end_msec)
 
-        combo_frame = ttk.Frame(dialog)
+        combo_frame = ttk.Frame(self)
         combo_frame.pack(side=tk.TOP, pady=(5, 10))
         label = ttk.Label(combo_frame, text="Member:")
         label.pack(side=tk.LEFT, padx=5)
@@ -253,14 +252,13 @@ class SceneTableTreeDialog(ttk.Frame):
         )
         self.member_entry.pack_horizontal(padx=5)
 
-        button_frame = ttk.Frame(dialog)
+        button_frame = ttk.Frame(self)
         button_frame.pack(side=tk.TOP, pady=(10, 5))
         ok_btn = ttk.Button(button_frame, text="OK", command=self.on_ok)
         ok_btn.pack(side=tk.LEFT, padx=5)
         cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.cancel)
         cancel_btn.pack(side=tk.LEFT)
 
-        self.dialog = dialog
         self.selected_member = None
         self.new_timespan = None
         self.new_description = None
@@ -269,30 +267,29 @@ class SceneTableTreeDialog(ttk.Frame):
         self.selected_member = self.member_combo.get()
         self.new_timespan = self.time_entry.get_start_end_str()
         self.new_description = self.member_entry.get()
-        self.dialog.destroy()
+        self.destroy()
 
     def cancel(self):
         self.selected_member = None
         self.new_timespan = None
         self.new_description = None
-        self.dialog.destroy()
+        self.destroy()
 
 
-class FeatMixTreeDialog(ttk.Frame):
+class FeatMixTreeDialog(tk.Toplevel):
     def __init__(self, master, default_name, member_list):
         super().__init__(master)
-        dialog = tk.Toplevel(master)
-        dialog.focus_set()
-        dialog.title("Feature")
-        dialog.geometry("300x160")
-        dialog.resizable(0, 0)
+        self.focus_set()
+        self.title("Feature")
+        self.geometry("300x160")
+        self.resizable(0, 0)
 
-        entry_frame = ttk.Frame(dialog)
+        entry_frame = ttk.Frame(self)
         entry_frame.pack(side=tk.TOP, pady=(5, 10))
         self.member_entry = StrEntry(entry_frame, "Name:", default=default_name, width=14, allow_blank=True)
         self.member_entry.pack_horizontal(padx=5)
 
-        combo_frame = ttk.Frame(dialog)
+        combo_frame = ttk.Frame(self)
         combo_frame.pack(side=tk.TOP, pady=(5, 10))
 
         label = ttk.Label(combo_frame, text="Member:")
@@ -302,15 +299,14 @@ class FeatMixTreeDialog(ttk.Frame):
         self.member_combo["values"] = member_list + [""]
         self.member_combo.current(0)
 
-        button_frame = ttk.Frame(dialog)
+        button_frame = ttk.Frame(self)
         button_frame.pack(side=tk.TOP, pady=(10, 5))
         ok_btn = ttk.Button(button_frame, text="OK", command=self.on_ok)
         ok_btn.pack(side=tk.LEFT, padx=5)
         cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.cancel)
         cancel_btn.pack(side=tk.LEFT)
 
-        dialog.grab_set()
-        self.dialog = dialog
+        self.grab_set()
         self.new_name = None
         self.selected_member = None
 
@@ -318,24 +314,23 @@ class FeatMixTreeDialog(ttk.Frame):
         new_name = self.member_entry.get()
         self.new_name = new_name
         self.selected_member = self.member_combo.get()
-        self.dialog.destroy()
+        self.destroy()
 
     def cancel(self):
         self.new_name = None
         self.selected_member = None
-        self.dialog.destroy()
+        self.destroy()
 
 
-class MemberComboDialog(ttk.Frame):
+class MemberComboDialog(tk.Toplevel):
     def __init__(self, master, member_list):
         super().__init__(master)
-        dialog = tk.Toplevel(master)
-        dialog.focus_set()
-        dialog.title("Select member")
-        dialog.geometry("300x100")
-        dialog.resizable(0, 0)
+        self.focus_set()
+        self.title("Select member")
+        self.geometry("300x100")
+        self.resizable(0, 0)
 
-        combo_frame = ttk.Frame(dialog)
+        combo_frame = ttk.Frame(self)
         combo_frame.pack(side=tk.TOP, pady=(5, 10))
         label = ttk.Label(combo_frame, text="Member:")
         label.pack(side=tk.LEFT, padx=5)
@@ -344,56 +339,53 @@ class MemberComboDialog(ttk.Frame):
         self.member_combo["values"] = member_list
         self.member_combo.current(0)
 
-        button_frame = ttk.Frame(dialog)
+        button_frame = ttk.Frame(self)
         button_frame.pack(side=tk.TOP, pady=(10, 5))
         ok_btn = ttk.Button(button_frame, text="OK", command=self.on_ok)
         ok_btn.pack(side=tk.LEFT, padx=5)
         cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.cancel)
         cancel_btn.pack(side=tk.LEFT)
 
-        dialog.grab_set()
-        self.dialog = dialog
+        self.grab_set()
         self.selected_member = None
 
     def on_ok(self):
         self.selected_member = self.member_combo.get()
-        self.dialog.destroy()
+        self.destroy()
 
     def cancel(self):
         self.selected_member = None
-        self.dialog.destroy()
+        self.destroy()
 
 
-class MemberEntryDialog(ttk.Frame):
+class MemberEntryDialog(tk.Toplevel):
     def __init__(self, master, title="Rename", label="New Value", default=""):
         super().__init__(master)
-        dialog = tk.Toplevel(master)
-        dialog.focus_set()
-        dialog.title(title)
-        dialog.geometry("300x100")
-        dialog.resizable(0, 0)
+        self.focus_set()
+        self.title(title)
+        self.geometry("300x100")
+        self.resizable(0, 0)
 
-        entry_frame = ttk.Frame(dialog)
+        entry_frame = ttk.Frame(self)
         entry_frame.pack(side=tk.TOP, pady=(5, 10))
         self.member_entry = StrEntry(entry_frame, label, default=default, width=14)
         self.member_entry.pack_horizontal(padx=5)
 
-        button_frame = ttk.Frame(dialog)
+        button_frame = ttk.Frame(self)
         button_frame.pack(side=tk.TOP, pady=(10, 5))
         ok_btn = ttk.Button(button_frame, text="OK", command=self.on_ok)
         ok_btn.pack(side=tk.LEFT, padx=5)
         cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.cancel)
         cancel_btn.pack(side=tk.LEFT)
 
-        dialog.grab_set()
-        self.dialog = dialog
+        self.grab_set()
         self.new_name = None
         self.member_entry.entry.focus_set()
 
     def on_ok(self):
         self.new_name = self.member_entry.get()
-        self.dialog.destroy()
+        self.destroy()
 
     def cancel(self):
         self.new_name = None
-        self.dialog.destroy()
+        self.destroy()

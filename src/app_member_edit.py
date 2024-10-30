@@ -75,7 +75,7 @@ class App(ttk.Frame):
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
         self.band.pack(plot_frame)
-        self.band.set_single_ax()
+        self.band.set_single_ax(bottom=0.1)
 
         self.band.set_img_canvas(self.canvas)
 

@@ -33,13 +33,13 @@ class LinePlotter:
         toolbar.pack()
         self.canvas.get_tk_widget().pack(expand=False)
 
-    def set_single_ax(self, bottom=0.05):
+    def set_single_ax(self, bottom=0.15):
         # axesのレイアウト設定
-        gs = gridspec.GridSpec(1, 1, top=0.97, bottom=bottom)
+        gs = gridspec.GridSpec(1, 1, top=0.95, right=0.97, bottom=bottom)
         self.line_ax = self.fig.add_subplot(gs[0, 0])
 
     def add_ax(self, row, col, pos):
-        gs = gridspec.GridSpec(row, col, top=0.97, width_ratios=(4, 1))
+        gs = gridspec.GridSpec(row, col, top=0.95, width_ratios=(4, 1))
         self.line_ax = self.fig.add_subplot(gs[pos, 0], sharex=self.line_ax)
         self.violin_ax = self.fig.add_subplot(gs[pos, 1])
 
