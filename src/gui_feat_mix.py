@@ -90,6 +90,7 @@ class Tree(ttk.Frame):
         if new_member is None:
             return
         values = [new_feature_name, new_member, new_col_a, new_op, new_col_b, new_normalize]
+        print(values)
         self.tree.insert("", tk.END, values=values)
 
     def edit_calc(self):
@@ -209,6 +210,8 @@ class FeatMixTreeDialog(tk.Toplevel):
         col_list.append(" ")
         self.col_a_combo.set_values(col_list)
         self.col_b_combo.set_values(col_list)
+        self.op_combo.set(" ")
+        self.col_b_combo.set(" ")
 
     def set_default(self, feature_name, member, col_a, op_b, col_b, normalize):
         self.feature_name_entry.update(feature_name)
@@ -221,10 +224,10 @@ class FeatMixTreeDialog(tk.Toplevel):
     def on_ok(self):
         self.selected_feature_name = self.feature_name_entry.get()
         self.selected_member = self.member_combo.get()
-        self.col_a = self.col_a_combo.get()
-        self.op = self.op_combo.get()
-        self.col_b = self.col_b_combo.get()
-        self.normalize = self.normalize_combo.get()
+        self.selected_col_a = self.col_a_combo.get()
+        self.selected_op = self.op_combo.get()
+        self.selected_col_b = self.col_b_combo.get()
+        self.selected_normalize = self.normalize_combo.get()
         self.destroy()
 
     def on_cancel(self):
