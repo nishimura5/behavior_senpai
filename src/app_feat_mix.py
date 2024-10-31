@@ -14,7 +14,7 @@ class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
         master.title(f"Feature mixer ({args['trk_pkl_name']})")
-        master.geometry("1300x700")
+        master.geometry("1300x800")
         self.pack(padx=10, pady=10)
         self.bind("<Map>", lambda event: self._load(event, args))
 
@@ -52,7 +52,7 @@ class App(ttk.Frame):
         self.draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw, state="disabled")
         self.draw_btn.pack(side=tk.LEFT)
         self.export_btn = ttk.Button(draw_frame, text="Export", command=self.export, state="disabled")
-        self.export_btn.pack(side=tk.LEFT, padx=(10, 0))
+        self.export_btn.pack(side=tk.LEFT, padx=5)
 
         tree_canvas_frame = ttk.Frame(self)
         tree_canvas_frame.pack(padx=10, pady=5, fill=tk.X, expand=True)

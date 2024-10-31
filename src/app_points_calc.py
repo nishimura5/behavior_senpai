@@ -26,15 +26,15 @@ class App(ttk.Frame):
         self.lineplot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         setting_frame = ttk.Frame(self)
-        setting_frame.pack(padx=(20, 0), fill=tk.X, expand=True)
+        setting_frame.pack(fill=tk.X, expand=True)
 
         import_frame = ttk.Frame(setting_frame)
-        import_frame.pack(pady=5, expand=True, anchor=tk.W)
+        import_frame.pack(padx=10, pady=5, expand=True, anchor=tk.W)
         import_btn = ttk.Button(import_frame, text="Import another feature file", command=self.import_feat)
         import_btn.pack()
 
         draw_frame = ttk.Frame(setting_frame)
-        draw_frame.pack(pady=5, expand=True, anchor=tk.W)
+        draw_frame.pack(padx=10, pady=5, expand=True, anchor=tk.W)
         add_btn = ttk.Button(draw_frame, text="Add calc", command=self.add_row)
         add_btn.pack(padx=(0, 60), side=tk.LEFT)
 
@@ -47,7 +47,7 @@ class App(ttk.Frame):
         draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT)
         self.export_btn = ttk.Button(draw_frame, text="Export", command=self.export, state="disabled")
-        self.export_btn.pack(side=tk.LEFT, padx=(5, 50))
+        self.export_btn.pack(side=tk.LEFT, padx=5)
 
         tree_canvas_frame = ttk.Frame(self)
         tree_canvas_frame.pack(padx=10, pady=5, fill=tk.X, expand=True)
@@ -63,7 +63,7 @@ class App(ttk.Frame):
         self.tree.pack(side=tk.LEFT)
         self.tree.add_menu("Edit", self.tree.edit_calc)
         self.tree.add_row_copy(column=1)
-        self.tree.add_menu("Remove", self.remove)
+        self.tree.add_menu("Remove", self.tree.delete_selected)
 
         self.canvas = tk.Canvas(tree_canvas_frame, width=600)
         self.canvas.pack(fill=tk.BOTH, expand=True)
@@ -165,9 +165,6 @@ class App(ttk.Frame):
         self.lineplot.draw()
         self.lineplot.set_members_to_draw(members)
         self.export_btn["state"] = "normal"
-
-    def remove(self):
-        self.tree.delete_selected()
 
     def export(self):
         """Export the calculated data to a file."""
