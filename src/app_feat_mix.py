@@ -5,15 +5,15 @@ from tkinter import ttk
 import pandas as pd
 
 from behavior_senpai import df_attrs, feature_proc, file_inout
-from gui_parts import Combobox, StrEntry, TempFile
-from gui_tree import Tree
+from gui_feat_mix import Tree
+from gui_parts import Combobox, TempFile
 from line_plotter import LinePlotter
 
 
 class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
-        master.title(f"Feature Mixer ({args['trk_pkl_name']})")
+        master.title(f"Feature mixer ({args['trk_pkl_name']})")
         master.geometry("1300x700")
         self.pack(padx=10, pady=10)
         self.bind("<Map>", lambda event: self._load(event, args))
@@ -23,6 +23,8 @@ class App(ttk.Frame):
         self.calc_case = temp.data["calc_case"]
         self.tar_df = None
         self.lineplot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
+
+        self.name_and_code = feature_proc.get_calc_codes()
 
         load_frame = ttk.Frame(self)
         load_frame.pack(padx=10, pady=5, anchor=tk.NW, expand=True, fill=tk.X)
@@ -39,31 +41,14 @@ class App(ttk.Frame):
 
         tar_frame = ttk.Frame(self)
         tar_frame.pack(padx=10, pady=5, anchor=tk.NW, side=tk.TOP)
-        self.name_entry = StrEntry(tar_frame, label="Name:", default="", width=20)
-        self.name_entry.pack_horizontal(padx=(0, 5))
-        self.member_combo = Combobox(tar_frame, label="Member:", values=[""], width=10)
-        self.member_combo.pack_horizontal(padx=5)
-        self.member_combo.set_selected_bind(self.selected_member)
-        self.col_a_combo = Combobox(tar_frame, label="col A:", values=["Select column"], width=18)
-        self.col_a_combo.pack_horizontal(padx=5)
-        op_list = ["/", "-", "*", "+", " "]
-        self.op_combo = Combobox(tar_frame, label="", values=op_list, width=3)
-        self.op_combo.set_selected_bind(self.selected_op)
 
-        self.op_combo.pack_horizontal(padx=5)
-        self.col_b_combo = Combobox(tar_frame, label="col B:", values=["Select column"], width=18)
-        self.col_b_combo.pack_horizontal(padx=5)
-        self.name_and_code = feature_proc.get_calc_codes()
-        self.normalize_list = list(self.name_and_code.keys())
-        self.normalize_combo = Combobox(tar_frame, label="Normalize:", values=self.normalize_list, width=15)
-        self.normalize_combo.pack_horizontal(padx=5)
-        self.add_btn = ttk.Button(tar_frame, text="Add", command=self.add_row, state="disabled")
-        self.add_btn.pack(side=tk.LEFT, padx=(5, 50))
-        self.import_btn = ttk.Button(tar_frame, text="Import", command=self.import_feat, state="disabled")
-        self.import_btn.pack(side=tk.LEFT)
+        self.import_btn = ttk.Button(tar_frame, text="Import another feature file", command=self.import_feat, state="disabled")
+        self.import_btn.pack()
 
         draw_frame = ttk.Frame(self)
         draw_frame.pack(padx=10, pady=5, anchor=tk.NW)
+        self.add_btn = ttk.Button(draw_frame, text="Add calc", command=self.add_row, state="disabled")
+        self.add_btn.pack(side=tk.LEFT, padx=(0, 60))
         self.draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw, state="disabled")
         self.draw_btn.pack(side=tk.LEFT)
         self.export_btn = ttk.Button(draw_frame, text="Export", command=self.export, state="disabled")
@@ -80,12 +65,11 @@ class App(ttk.Frame):
             {"name": "col B", "width": 150},
             {"name": "normalize", "width": 140},
         ]
-        self.tree = Tree(tree_canvas_frame, cols, height=12, right_click=True)
+        self.tree = Tree(tree_canvas_frame, cols, height=12)
         self.tree.pack(side=tk.LEFT)
-        self.tree.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
-        self.tree.add_menu("Edit", self.edit)
-        self.tree.add_menu("Remove", self.remove)
+        self.tree.add_menu("Edit", self.tree.edit_calc)
         self.tree.add_row_copy(column=1)
+        self.tree.add_menu("Remove", self.tree.delete_selected)
 
         self.canvas = tk.Canvas(tree_canvas_frame, width=600)
         self.canvas.pack(fill=tk.BOTH, expand=True)
@@ -161,27 +145,16 @@ class App(ttk.Frame):
             print(f"New width: {len(self.tar_df.columns)}")
 
         # update GUI
-        self.member_combo.set_df(self.tar_df)
-        self._set_col_combos(self.member_combo.get())
+        self.tree.set_df(self.tar_df)
         self.add_btn["state"] = "normal"
         self.draw_btn["state"] = "normal"
         self.import_btn["state"] = "normal"
         self.load_combo.set_state("readonly")
 
-    def select_tree_row(self, event):
-        """Handle the selection of a row in the tree."""
-        selected = self.tree.get_selected_one()
-        if selected is None:
-            return
-        feat_name, member, col_a, op, col_b, normalize = selected
-        self.name_entry.update(feat_name)
-        self.member_combo.set(member)
-        self.col_a_combo.set(col_a)
-        self.op_combo.set(op)
-        self.col_b_combo.set(col_b)
-        self.normalize_combo.set(normalize)
-
     def add_row(self):
+        self.tree.add_calc()
+
+    def add_row_old(self):
         feat_name = self.name_entry.get()
         if feat_name == "":
             return
@@ -208,30 +181,6 @@ class App(ttk.Frame):
         values = (feat_name, member, col_a, op, col_b, normalize)
         self.tree.insert(values)
 
-    def selected_op(self, event):
-        op = self.op_combo.get()
-        if op == " ":
-            self.col_b_combo.set_values([" "])
-        else:
-            self.col_b_combo.set_values(self.col_a_combo.get_values())
-
-    def selected_member(self, event):
-        self._set_col_combos(self.member_combo.get())
-
-    def _set_col_combos(self, member):
-        # print(self.tar_df.loc[pd.IndexSlice[:, member], :])
-        col_list = self.tar_df.loc[pd.IndexSlice[:, member], :].dropna(how="all", axis=1).columns.tolist()
-        col_list.remove("timestamp")
-        col_list.append(" ")
-        self.col_a_combo.set_values(col_list)
-        self.col_b_combo.set_values(col_list)
-
-    def edit(self):
-        self.tree.feat_mix_edit()
-
-    def remove(self):
-        self.tree.delete_selected()
-
     def import_feat(self):
         """Open a file dialog to select a feature file.
         Import the contents of the attrs.
@@ -255,8 +204,11 @@ class App(ttk.Frame):
             if row[4] not in self.tar_df.columns and row[4] != " ":
                 print(f"Column not found: {row[4]}")
                 continue
-            if row[1] not in self.member_combo.get_values():
-                row[1] = self.member_combo.get()
+
+            row[1] = str(row[1])
+            if row[1] not in self.tree.get_members():
+                print(f"Member not found: {row[1]} in {self.tree.get_members()}")
+                row[1] = self.tree.get_members()[0]
             self.tree.insert(row)
 
     def draw(self):

@@ -46,6 +46,11 @@ class MemberKeypointComboboxes(ttk.Frame):
         self.keypoint_combo["values"] = keypoints
         self.keypoint_combo.current(0)
 
+    def set(self, member, keypoint=None):
+        self.member_combo.set(member)
+        if keypoint is not None:
+            self.keypoint_combo.set(keypoint)
+
     def get_selected(self):
         member = self.member_combo.get()
         keypoint = self.keypoint_combo.get()
@@ -290,9 +295,12 @@ class Combobox(ttk.Frame):
     def get_values(self):
         return self.combobox["values"]
 
-    def set(self, value):
+    def set(self, value=None):
         """Set value to the combo box"""
-        self.combobox.set(value)
+        if value is None:
+            self.combobox.current(0)
+        else:
+            self.combobox.set(value)
 
     def set_df(self, src_df):
         self.combobox["values"] = src_df.index.get_level_values("member").unique().tolist()
