@@ -10,7 +10,7 @@ class MediaPipeDetector:
         self.mph = mp.solutions.holistic
         self.model = self.mph.Holistic(model_complexity=2, refine_face_landmarks=True)
 
-        self.number_of_keypoints = {"face": 478, "right_hand": 21, "left_hand": 21}
+        self.number_of_keypoints = {"face": 478, "right_hand": 21, "left_hand": 21, "pose": 33}
         self.show = show
         if self.show is True:
             self.drawing = mp.solutions.drawing_utils
@@ -48,7 +48,7 @@ class MediaPipeDetector:
                     break
 
             # 検出結果の取り出し
-            member_ids = ["face", "right_hand", "left_hand"]
+            member_ids = ["face", "right_hand", "left_hand", "pose"]
             for member_id in member_ids:
                 landmarks = getattr(results, f"{member_id}_landmarks")
                 if landmarks is None:
@@ -102,5 +102,12 @@ class MediaPipeDetector:
             results.left_hand_landmarks,
             self.mph.HAND_CONNECTIONS,
             self.drawing.DrawingSpec(color=(10, 50, 200), thickness=1, circle_radius=1),
+            self.drawing.DrawingSpec(color=(180, 180, 180), thickness=1, circle_radius=1),
+        )
+        self.drawing.draw_landmarks(
+            anno_img,
+            results.pose_landmarks,
+            self.mph.POSE_CONNECTIONS,
+            self.drawing.DrawingSpec(color=(50, 50, 250), thickness=1, circle_radius=1),
             self.drawing.DrawingSpec(color=(180, 180, 180), thickness=1, circle_radius=1),
         )

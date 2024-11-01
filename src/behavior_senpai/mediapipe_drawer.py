@@ -285,6 +285,18 @@ class Annotate:
         #            self.lines(kps, True)
         #            kps = [self.kps[458], self.kps[250], self.kps[290], self.kps[305], self.kps[289], self.kps[392], self.kps[309], self.kps[459]]
         #            self.lines(kps, True)
+        elif self.member == "pose":
+            kps = [self.kps[11], self.kps[12], self.kps[24], self.kps[23]]
+            self.lines(kps, True)
+            kps = [self.kps[12], self.kps[14], self.kps[16]]
+            self.lines(kps, False)
+            kps = [self.kps[11], self.kps[13], self.kps[15]]
+            self.lines(kps, False)
+            kps = [self.kps[24], self.kps[26], self.kps[28]]
+            self.lines(kps, False)
+            kps = [self.kps[23], self.kps[25], self.kps[27]]
+            self.lines(kps, False)
+
         for i in range(len(self.kps)):
             if self.member == "left_hand":
                 cv2.circle(self.dst_img, self.kps[i], 2, (250, 70, 70), -1)
@@ -292,8 +304,8 @@ class Annotate:
                 cv2.circle(self.dst_img, self.kps[i], 2, (50, 250, 50), -1)
             elif self.member == "face":
                 cv2.circle(self.dst_img, self.kps[i], 0, (150, 50, 150), -1)
-            else:
-                cv2.circle(self.dst_img, self.kps[i], 1, (150, 50, 150), -1)
+            elif self.member == "pose":
+                cv2.circle(self.dst_img, self.kps[i], 2, (100, 250, 100), -1)
 
         return self.dst_img
 
