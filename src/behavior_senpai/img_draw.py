@@ -1,13 +1,13 @@
 import cv2
 
 
-def mosaic(src_img, center, size):
+def mosaic(src_img, center, size, dilate=50):
     x, y = center
     size = int(size / 2)
-    top = y - size
-    bottom = y + size
-    left = x - size
-    right = x + size
+    top = y - size - dilate
+    bottom = y + size + dilate
+    left = x - size - dilate
+    right = x + size + dilate
     if top < 0:
         top = 0
     if bottom > src_img.shape[0]:

@@ -17,8 +17,9 @@
 "left_ankle"= {id=15, color=[250,70,70]}
 "right_ankle"= {id=16, color=[50,250,50]}
 
-[label]
+[draw]
 labels = ["nose", "left_shoulder", "right_shoulder"]
+mask = ["nose", "left_ear", "right_ear", "left_eye", "right_eye"]
 
 [bones]
 bones = [

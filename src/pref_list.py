@@ -23,6 +23,9 @@ class App(ttk.Frame):
 
         pref_frame = ttk.Frame(self)
         pref_frame.pack()
+        self.mask_chk_var = tk.BooleanVar()
+        mask_chk = ttk.Checkbutton(pref_frame, text="Draw mask", variable=self.mask_chk_var)
+        mask_chk.pack(side=tk.TOP, anchor=tk.W)
         self.top_height_entry = IntEntry(pref_frame, label="Top preview height:", default=top_height)
         self.top_height_entry.pack_vertical(pady=5, anchor=tk.W)
         graph_size_frame = ttk.Frame(pref_frame)
@@ -45,7 +48,7 @@ class App(ttk.Frame):
         mp4_frame = ttk.Frame(pref_frame)
         mp4_frame.pack(side=tk.TOP, anchor=tk.NW, pady=5)
         mp4_scale_label = ttk.Label(mp4_frame, text="Export mp4 scale:")
-        mp4_scale_label.pack(side=tk.LEFT, padx=(10, 0))
+        mp4_scale_label.pack(side=tk.LEFT)
         self.mp4_scale_entry = ttk.Entry(mp4_frame, width=5, validate="key", validatecommand=(self.register(self._validate_float), "%P"))
         self.mp4_scale_entry.pack(side=tk.LEFT, padx=(0, 5))
         self.mp4_scale_entry.insert(tk.END, mp4_scale)
@@ -64,6 +67,7 @@ class App(ttk.Frame):
         data["scene_table_height"] = self.st_graph_height_entry.get()
         data["scene_table_dpi"] = self.st_graph_dpi_entry.get()
         data["mp4_scale"] = self.mp4_scale_entry.get()
+        data["draw_mask"] = self.mask_chk_var.get()
         tmp.save(data)
         print("saved")
 

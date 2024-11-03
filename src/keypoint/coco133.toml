@@ -133,8 +133,9 @@
 "right_hand_20"={id=131, color=[50,250,50]}
 "right_hand_21"={id=132, color=[50,250,50]}
 
-[label]
+[draw]
 labels = ["nose", "left_shoulder", "right_shoulder"]
+mask = ["nose", "left_ear", "right_ear", "left_eye", "right_eye"]
 
 [bones]
 bones = [

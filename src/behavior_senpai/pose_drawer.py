@@ -7,10 +7,13 @@ import numpy as np
 import torch
 
 from behavior_senpai import img_draw
+from gui_parts import TempFile
 
 
 class Annotate:
     def __init__(self, kp_toml_name=None):
+        temp = TempFile()
+        self.draw_mask = temp.get_draw_mask()
         toml_path = os.path.join(os.path.dirname(__file__), "..", "keypoint", kp_toml_name)
         with open(toml_path, "rb") as f:
             self.data = tomllib.load(f)
@@ -24,20 +27,29 @@ class Annotate:
             self.keypoints[key], self.keypoint_scores[key] = self._cvt_kp(kps, val["id"])
             self.keypoint_colors[key] = val["color"]
         self.line_color = (random.randint(180, 250), random.randint(180, 250), random.randint(180, 250))
-        self.label_keypoint = self.data["label"]["labels"]
+        self.label_keypoints = self.data["draw"]["labels"]
+        self.mask_points = self.data["draw"]["mask"]
         self.draw_threshold = self.data["bones"]["threshold"]
 
     def set_track(self, trk):
-        if self.keypoints[self.label_keypoint[0]] != (0, 0):
-            self.pos = self.keypoints[self.label_keypoint[0]]
+        if self.keypoints[self.label_keypoints[0]] != (0, 0):
+            self.pos = self.keypoints[self.label_keypoints[0]]
         else:
-            self.pos = self.keypoints[self.label_keypoint[1]]
+            self.pos = self.keypoints[self.label_keypoints[1]]
         self.id = trk
 
     def set_img(self, src_img):
         self.dst_img = src_img.copy()
 
     def draw(self):
+        # draw mask
+        if self.draw_mask:
+            center_x = [self.keypoints[key][0] for key in self.mask_points if self.keypoints[key][0] != 0]
+            center_y = [self.keypoints[key][1] for key in self.mask_points if self.keypoints[key][1] != 0]
+            center = (int(sum(center_x) / len(center_x)), int(sum(center_y) / len(center_y)))
+            size = max(max(center_x) - min(center_x), max(center_y) - min(center_y))
+            img_draw.mosaic(self.dst_img, center, size)
+
         for bone in self.bones:
             score_a = self.keypoint_scores[bone[0]]
             score_b = self.keypoint_scores[bone[1]]
@@ -63,6 +75,7 @@ class Annotate:
             return (0, 0), 0
         return (int(kp[idx][0]), int(kp[idx][1])), kp[idx][2]
 
+
 def yolo_draw(src_img, result):
     anno = Annotate("coco17.toml")
     anno.set_img(src_img)
@@ -75,4 +88,3 @@ def yolo_draw(src_img, result):
         anno.set_track(member)
         dst_img = anno.draw()
     return dst_img
-

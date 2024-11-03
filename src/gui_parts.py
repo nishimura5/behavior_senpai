@@ -33,7 +33,9 @@ class MemberKeypointComboboxes(ttk.Frame):
         else:
             self.keypoint_combo["state"] = "disabled"
 
-        self.member_combo["values"] = combo_df.index.get_level_values("member").unique().astype(str).tolist()
+        self.member_combo["values"] = (
+            combo_df.index.get_level_values("member").unique().astype(str).tolist()
+        )
         self.member_combo.current(0)
         self._on_selected()
 
@@ -42,7 +44,13 @@ class MemberKeypointComboboxes(ttk.Frame):
             return
         current_member = self.member_combo.get()
         idx = pd.IndexSlice[:, current_member, :]
-        keypoints = self.src_df.loc[idx, :].index.get_level_values("keypoint").unique().astype(str).tolist()
+        keypoints = (
+            self.src_df.loc[idx, :]
+            .index.get_level_values("keypoint")
+            .unique()
+            .astype(str)
+            .tolist()
+        )
         self.keypoint_combo["values"] = keypoints
         self.keypoint_combo.current(0)
 
@@ -166,7 +174,9 @@ class TimeSpanEntry(ttk.Frame):
         )
         self.time_end_entry.pack(side=tk.LEFT)
         self.time_end_entry.bind("<FocusIn>", self._select_all)
-        self.reset_btn = ttk.Button(master, text="Reset", state="disable", command=self.reset, width=6)
+        self.reset_btn = ttk.Button(
+            master, text="Reset", state="disable", command=self.reset, width=6
+        )
         self.reset_btn.pack(side=tk.LEFT, padx=(5, 10))
 
     def get_start_end(self):
@@ -303,7 +313,9 @@ class Combobox(ttk.Frame):
             self.combobox.set(value)
 
     def set_df(self, src_df):
-        self.combobox["values"] = src_df.index.get_level_values("member").unique().tolist()
+        self.combobox["values"] = (
+            src_df.index.get_level_values("member").unique().tolist()
+        )
         self.combobox.current(0)
 
     def set_values(self, values):
@@ -324,7 +336,13 @@ class Combobox(ttk.Frame):
 
 class TempFile:
     def __init__(self):
-        self.data = {"trk_path": "", "calc_case": "", "dt_span": 10, "thinning": 0}
+        self.data = {
+            "trk_path": "",
+            "calc_case": "",
+            "dt_span": 10,
+            "thinning": 0,
+            "draw_mask": False,
+        }
 
         file_name = "temp.pkl"
         self.file_path = os.path.join(self._find_data_dir(), file_name)
@@ -356,15 +374,24 @@ class TempFile:
         return width, height
 
     def get_scene_table_graph_size(self):
-        if "scene_table_width" not in self.data.keys() or self.data["scene_table_width"] == "":
+        if (
+            "scene_table_width" not in self.data.keys()
+            or self.data["scene_table_width"] == ""
+        ):
             width = 1600
         else:
             width = int(self.data["scene_table_width"])
-        if "scene_table_height" not in self.data.keys() or self.data["scene_table_height"] == "":
+        if (
+            "scene_table_height" not in self.data.keys()
+            or self.data["scene_table_height"] == ""
+        ):
             height = 260
         else:
             height = int(self.data["scene_table_height"])
-        if "scene_table_dpi" not in self.data.keys() or self.data["scene_table_dpi"] == "":
+        if (
+            "scene_table_dpi" not in self.data.keys()
+            or self.data["scene_table_dpi"] == ""
+        ):
             dpi = 100
         else:
             dpi = int(self.data["scene_table_dpi"])
@@ -391,6 +418,9 @@ class TempFile:
         else:
             mp4_scale = float(self.data["mp4_scale"])
         return mp4_scale
+
+    def get_draw_mask(self):
+        return self.data["draw_mask"]
 
     def _find_data_dir(self):
         if getattr(sys, "frozen", False):
