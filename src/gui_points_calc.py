@@ -3,6 +3,7 @@ import sys
 import tkinter as tk
 from tkinter import ttk
 
+import app_keypoint_samples
 from gui_parts import Combobox
 from vector_gui_parts import MemberKeypointComboboxesFor3Point
 
@@ -158,13 +159,16 @@ class PointsCalcTreeDialog(tk.Toplevel):
         super().__init__(master)
         self.focus_set()
         self.title("Points calculation")
-        self.geometry("700x220")
+        self.geometry("700x240")
         self.resizable(0, 0)
 
         tar_frame = ttk.Frame(self)
         tar_frame.pack(side=tk.TOP, padx=20, pady=(20, 10))
         calc_select_frame = ttk.Frame(tar_frame)
         calc_select_frame.pack(side=tk.LEFT, padx=5)
+        keypoints_btn = ttk.Button(calc_select_frame, text="Keypoint samples", command=self.open_kp_samples)
+        keypoints_btn.pack(pady=5, side=tk.TOP, anchor=tk.E)
+
         self.point_num_combo = Combobox(calc_select_frame, label="Point num:", width=25, values=["2", "3"])
         self.point_num_combo.pack_vertical(pady=5)
         self.point_num_combo.set_selected_bind(lambda event: self.change_point_num(event))
@@ -221,6 +225,7 @@ class PointsCalcTreeDialog(tk.Toplevel):
 
     def set_df(self, df):
         self.member_combo.set_df(df)
+        self.dataset_name = df.attrs["model"]
 
     def set_default(self, calc_code, member, point_a, point_b, point_c):
         point_num = "2" if point_c == "" else "3"
@@ -250,6 +255,10 @@ class PointsCalcTreeDialog(tk.Toplevel):
         elif point_num == "3":
             self.calc_type_combo.set_values(self.point3_list)
             self.img_label["image"] = self.img_3
+
+    def open_kp_samples(self):
+        kp_sample_dialog = app_keypoint_samples.App(self, self.dataset_name)
+        self.wait_window(kp_sample_dialog)
 
     def _find_data_dir(self):
         if getattr(sys, "frozen", False):

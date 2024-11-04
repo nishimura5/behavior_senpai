@@ -6,21 +6,20 @@ from tkinter import ttk
 from gui_parts import Combobox
 
 
-class App(ttk.Frame):
+class App(tk.Toplevel):
     """Application for showing images."""
 
-    def __init__(self, master, args):
+    def __init__(self, master, dataset_name):
         super().__init__(master)
-        master.title("Keypoint samples")
-        self.pack()
+        self.focus_set()
+        self.title("Keypoint samples")
 
-        arg_model_name = args["src_df"].attrs["model"]
         img_name = ""
-        if arg_model_name == "MediaPipe Holistic":
+        if dataset_name == "MediaPipe Holistic":
             img_name = "facemesh"
-        elif arg_model_name in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
+        elif dataset_name in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
             img_name = "body_coco"
-        elif arg_model_name in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
+        elif dataset_name in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
             img_name = "body_halpe26"
 
         left_frame = ttk.Frame(self)
@@ -35,6 +34,7 @@ class App(ttk.Frame):
         data_dir = self._find_data_dir()
         img_path = os.path.join(data_dir, "img", f"{img_name}.png")
         self.img = tk.PhotoImage(file=img_path)
+        self.img = self.img.subsample(2)
         self.img_label = ttk.Label(img_frame, image=self.img)
         self.img_label.pack(side=tk.LEFT)
 
@@ -43,6 +43,7 @@ class App(ttk.Frame):
         data_dir = self._find_data_dir()
         img_path = os.path.join(data_dir, "img", f"{img_name}.png")
         self.img = tk.PhotoImage(file=img_path)
+        self.img = self.img.subsample(2)
         self.img_label.configure(image=self.img)
         self.img_label.image = self.img
 

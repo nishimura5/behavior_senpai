@@ -119,7 +119,7 @@ class App(ttk.Frame):
         self.attrs_textbox = tk.Text(attrs_frame, relief=tk.FLAT, width=40, padx=10, pady=10)
         self.attrs_textbox.pack(fill=tk.BOTH, expand=True, padx=(10, 0))
 
-        keypoints_btn = ttk.Button(attrs_frame, text="Keypoint samples", command=lambda: self.launch_window(app_keypoint_samples.App))
+        keypoints_btn = ttk.Button(attrs_frame, text="Keypoint samples", command=self.open_kp_samples)
         keypoints_btn.pack(padx=(10, 0), pady=(5, 0), expand=True, fill=tk.X)
 
         self.vcap = vcap.VideoCap()
@@ -220,6 +220,11 @@ class App(ttk.Frame):
 
         member_count = self.src_df.index.get_level_values(1).unique().size
         print(f"member_num = {member_count}")
+
+    def open_kp_samples(self):
+        dataset_name = self.src_df.attrs["model"]
+        kp_sample_dialog = app_keypoint_samples.App(self, dataset_name)
+        self.wait_window(kp_sample_dialog)
 
     def pkl_to_csv(self):
         dir_path = os.path.dirname(self.pkl_path)
