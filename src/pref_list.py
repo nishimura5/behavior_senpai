@@ -20,12 +20,15 @@ class App(ttk.Frame):
         st_width, st_height, st_dpi = tmp.get_scene_table_graph_size()
         top_width, top_height = tmp.get_top_window_size()
         mp4_scale = tmp.get_mp4_setting()
+        draw_mask = tmp.get_draw_mask()
 
         pref_frame = ttk.Frame(self)
         pref_frame.pack()
         self.mask_chk_var = tk.BooleanVar()
         mask_chk = ttk.Checkbutton(pref_frame, text="Draw mask", variable=self.mask_chk_var)
         mask_chk.pack(side=tk.TOP, anchor=tk.W)
+        self.mask_chk_var.set(draw_mask)
+
         self.top_height_entry = IntEntry(pref_frame, label="Top preview height:", default=top_height)
         self.top_height_entry.pack_vertical(pady=5, anchor=tk.W)
         graph_size_frame = ttk.Frame(pref_frame)
