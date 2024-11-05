@@ -299,13 +299,13 @@ class Annotate:
 
         for i in range(len(self.kps)):
             if self.member == "left_hand":
-                cv2.circle(self.dst_img, self.kps[i], 2, (250, 70, 70), -1)
+                cv2.circle(self.dst_img, self.kps[i], 3, (250, 70, 70), -1)
             elif self.member == "right_hand":
-                cv2.circle(self.dst_img, self.kps[i], 2, (50, 250, 50), -1)
+                cv2.circle(self.dst_img, self.kps[i], 3, (50, 250, 50), -1)
             elif self.member == "face":
                 cv2.circle(self.dst_img, self.kps[i], 0, (150, 50, 150), -1)
             elif self.member == "pose":
-                cv2.circle(self.dst_img, self.kps[i], 2, (100, 250, 100), -1)
+                cv2.circle(self.dst_img, self.kps[i], 3, (100, 250, 100), -1)
 
         return self.dst_img
 
