@@ -42,13 +42,16 @@ class MakeMp4:
         file_name = os.path.splitext(self.track_name)[0]
         if self.src_attrs["model"] in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
             anno = pose_drawer.Annotate("coco17.toml")
-            suffix = "yolov8"
+            suffix = "yolo"
         elif self.src_attrs["model"] == "MediaPipe Holistic":
             anno = mediapipe_drawer.Annotate()
             suffix = "mediapipe"
-        elif self.src_attrs["model"] == "MMPose RTMPose-x":
+        elif self.src_attrs["model"] in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
             anno = pose_drawer.Annotate("halpe26.toml")
-            suffix = "rtmpose"
+            suffix = "rtm_halpe26"
+        elif self.src_attrs["model"] == "RTMPose-x WholeBody133":
+            anno = pose_drawer.Annotate("coco133.toml")
+            suffix = "rtm_coco133"
 
         dst_dir = os.path.join(self.pkl_dir, os.pardir, "mp4")
         os.makedirs(dst_dir, exist_ok=True)
