@@ -49,7 +49,7 @@ class Annotate:
             if len(center_x) != 0 and len(center_y) != 0:
                 center = (int(sum(center_x) / len(center_x)), int(sum(center_y) / len(center_y)))
                 size = max(max(center_x) - min(center_x), max(center_y) - min(center_y))
-                img_draw.mosaic(self.dst_img, center, size)
+                img_draw.mosaic(self.dst_img, center, size, 10)
 
         for bone in self.bones:
             score_a = self.keypoint_scores[bone[0]]

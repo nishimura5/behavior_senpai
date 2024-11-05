@@ -1,7 +1,7 @@
 import cv2
 
 
-def mosaic(src_img, center, size, dilate=50):
+def mosaic(src_img, center, size, dilate=10):
     x, y = center
     size = int(size / 2)
     top = y - size - dilate
@@ -20,7 +20,7 @@ def mosaic(src_img, center, size, dilate=50):
     mos_height = bottom - top
 
     # 一度縮小して拡大することでモザイクをかける
-    small = cv2.resize(src_img[top:bottom, left:right], None, fx=0.05, fy=0.05, interpolation=cv2.INTER_NEAREST)
+    small = cv2.resize(src_img[top:bottom, left:right], None, fx=0.5 / dilate, fy=0.5 / dilate, interpolation=cv2.INTER_NEAREST)
     src_img[top:bottom, left:right] = cv2.resize(small, (mos_width, mos_height), interpolation=cv2.INTER_NEAREST)
     return src_img
 
