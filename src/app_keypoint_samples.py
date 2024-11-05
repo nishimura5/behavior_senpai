@@ -21,11 +21,13 @@ class App(tk.Toplevel):
             img_name = "body_coco"
         elif dataset_name in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
             img_name = "body_halpe26"
+        elif dataset_name in ["RTMPose-x WholeBody133"]:
+            img_name = "body_wholebody133"
 
-        left_frame = ttk.Frame(self)
-        left_frame.pack(pady=5, side=tk.LEFT)
-        img_list = ["hands", "facemesh", "facemesh2", "body_coco", "body_halpe26"]
-        self.keypoints_combo = Combobox(left_frame, label="Keypoints:", width=12, values=img_list)
+        head_frame = ttk.Frame(self)
+        head_frame.pack(pady=5, side=tk.TOP)
+        img_list = ["hands", "facemesh", "facemesh2", "body_coco", "body_halpe26", "body_wholebody133"]
+        self.keypoints_combo = Combobox(head_frame, label="Keypoints:", width=17, values=img_list)
         self.keypoints_combo.pack_vertical(padx=5, anchor=tk.N)
         self.keypoints_combo.set_selected_bind(self._change_img)
         self.keypoints_combo.set(img_name)
