@@ -6,8 +6,12 @@ from behavior_senpai import img_draw, pose_drawer, vcap
 
 
 class YoloDetector:
-    def __init__(self, show=True):
-        self.model = YOLO(model="yolo11x-pose.pt")
+    def __init__(self, show=True, model="YOLO11 x-pose"):
+        if model == "YOLO11 x-pose":
+            model = "yolo11x-pose"
+        elif model == "YOLOv8 x-pose-p6":
+            model = "yolov8x-pose-p6"
+        self.model = YOLO(model=f"{model}.pt")
 
         self.number_of_keypoints = 17
         self.show = show

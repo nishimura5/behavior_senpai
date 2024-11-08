@@ -30,11 +30,14 @@ class App(ttk.Frame):
         self.bat_chk_val.trace("w", self._on_bat_mode_changed)
         self.roi_chk_val = tk.BooleanVar()
         self.roi_chk = ttk.Checkbutton(bat_mode_frame, text="ROI", variable=self.roi_chk_val)
-        self.roi_chk.pack(side=tk.LEFT, padx=(10, 15))
+        self.roi_chk.pack(side=tk.LEFT, padx=10)
+        self.add_suffix_chk_val = tk.BooleanVar()
+        self.add_suffix_chk = ttk.Checkbutton(bat_mode_frame, text="Add suffix", variable=self.add_suffix_chk_val)
+        self.add_suffix_chk.pack(side=tk.LEFT, padx=(0, 15))
 
         yolo_ok, mmpose_ok = detector_proc.check_gpu()
         if yolo_ok and mmpose_ok:
-            combo_list = ["YOLO11 x-pose", "MediaPipe Holistic", "RTMPose-x Halpe26", "RTMPose-x WholeBody133"]
+            combo_list = ["YOLO11 x-pose", "YOLOv8 x-pose-p6", "MediaPipe Holistic", "RTMPose-x Halpe26", "RTMPose-x WholeBody133"]
         else:
             combo_list = ["MediaPipe Holistic"]
         self.engine_combo = Combobox(bat_mode_frame, "Engine:", values=combo_list, width=24)
@@ -116,7 +119,8 @@ class App(ttk.Frame):
             return
         model_name = self.engine_combo.get()
         use_roi = self.roi_chk_val.get()
-        detector_proc.exec(self.rcap, model_name, video_path, use_roi)
+        add_suffix = True
+        detector_proc.exec(self.rcap, model_name, video_path, use_roi, add_suffix)
 
     def _on_bat_mode_changed(self, *args):
         if self.bat_chk_val.get() is True:
