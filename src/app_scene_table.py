@@ -267,7 +267,9 @@ class App(ttk.Frame):
         self.export.extract()
 
     def add(self):
-        self.tree.scene_table_add()
+        min_time = time_format.msec_to_timestr_with_fff(self.time_min)
+        max_time = time_format.msec_to_timestr_with_fff(self.time_max)
+        self.tree.scene_table_add(min_time, max_time)
         self._update()
 
     def edit(self):

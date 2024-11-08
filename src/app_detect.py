@@ -119,7 +119,7 @@ class App(ttk.Frame):
             return
         model_name = self.engine_combo.get()
         use_roi = self.roi_chk_val.get()
-        add_suffix = True
+        add_suffix = self.add_suffix_chk_val.get()
         detector_proc.exec(self.rcap, model_name, video_path, use_roi, add_suffix)
 
     def _on_bat_mode_changed(self, *args):

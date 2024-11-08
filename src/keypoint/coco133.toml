@@ -17,10 +17,10 @@
 "left_ankle"= {id=15, color=[250,70,70]}
 "right_ankle"= {id=16, color=[50,250,50]}
 "left_big_toe"= {id=17, color=[250,70,70]}
-"right_big_toe"= {id=18, color=[50,250,50]}
-"left_small_toe"= {id=19, color=[250,70,70]}
-"right_small_toe"= {id=20, color=[50,250,50]}
-"left_heel"= {id=21, color=[250,70,70]}
+"left_small_toe"= {id=18, color=[250,70,70]}
+"left_heel"= {id=19, color=[250,70,70]}
+"right_big_toe"= {id=20, color=[50,250,50]}
+"right_small_toe"= {id=21, color=[50,250,50]}
 "right_heel"= {id=22, color=[50,250,50]}
 "face_1"={id=23, color=[40,40,200]}
 "face_2"={id=24, color=[40,40,200]}
