@@ -126,7 +126,8 @@ class Tree(ttk.Frame):
             self.tree.item(item, values=values)
 
     def scene_table_add(self, min_time_str, max_time_str):
-        dialog = SceneTableTreeDialog(self, self.member_list, [min_time_str, max_time_str])
+        dialog = SceneTableTreeDialog(self, self.member_list, [min_time_str, max_time_str], "all")
+        print("TEST")
         self.wait_window(dialog)
         new_member = dialog.selected_member
         new_timespan = dialog.new_timespan
@@ -177,30 +178,6 @@ class Tree(ttk.Frame):
         for item in selected:
             values = self.tree.item(item)["values"]
             self.tree.insert("", tk.END, values=values)
-
-    def feat_mix_edit(self):
-        selected = self.tree.selection()
-        if len(selected) == 0:
-            return
-        elif len(selected) == 1:
-            default_feat_name = self.tree.item(selected[0])["values"][0]
-        else:
-            default_feat_name = ""
-        dialog = FeatMixTreeDialog(self, default_feat_name, self.member_list)
-        self.wait_window(dialog)
-        new_name = dialog.new_name
-        new_member = dialog.selected_member
-        print(f"{new_member},'{new_name}'is new value")
-
-        if new_name is None and new_member is None:
-            return
-        for item in selected:
-            values = self.tree.item(item)["values"]
-            if new_member != "":
-                values[1] = new_member
-            if new_name != "":
-                values[0] = new_name
-            self.tree.item(item, values=values)
 
     def _copy_row(self):
         selected = self.tree.selection()
@@ -273,52 +250,6 @@ class SceneTableTreeDialog(tk.Toplevel):
         self.selected_member = None
         self.new_timespan = None
         self.new_description = None
-        self.destroy()
-
-
-class FeatMixTreeDialog(tk.Toplevel):
-    def __init__(self, master, default_name, member_list):
-        super().__init__(master)
-        self.focus_set()
-        self.title("Feature")
-        self.geometry("300x160")
-        self.resizable(0, 0)
-
-        entry_frame = ttk.Frame(self)
-        entry_frame.pack(side=tk.TOP, pady=(5, 10))
-        self.member_entry = StrEntry(entry_frame, "Name:", default=default_name, width=14, allow_blank=True)
-        self.member_entry.pack_horizontal(padx=5)
-
-        combo_frame = ttk.Frame(self)
-        combo_frame.pack(side=tk.TOP, pady=(5, 10))
-
-        label = ttk.Label(combo_frame, text="Member:")
-        label.pack(side=tk.LEFT, padx=5)
-        self.member_combo = ttk.Combobox(combo_frame, state="readonly", width=12)
-        self.member_combo.pack(side=tk.LEFT, padx=5)
-        self.member_combo["values"] = member_list + [""]
-        self.member_combo.current(0)
-
-        button_frame = ttk.Frame(self)
-        button_frame.pack(side=tk.TOP, pady=(10, 5))
-        ok_btn = ttk.Button(button_frame, text="OK", command=self.on_ok)
-        ok_btn.pack(side=tk.LEFT, padx=5)
-        cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.cancel)
-        cancel_btn.pack(side=tk.LEFT)
-
-        self.grab_set()
-        self.new_name = None
-        self.selected_member = None
-
-    def on_ok(self):
-        new_name = self.member_entry.get()
-        self.new_name = new_name
-        self.selected_member = self.member_combo.get()
-        self.destroy()
-
-    def cancel(self):
-        self.new_name = None
-        self.selected_member = None
         self.destroy()
 
 
