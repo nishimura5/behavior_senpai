@@ -33,9 +33,7 @@ class MemberKeypointComboboxes(ttk.Frame):
         else:
             self.keypoint_combo["state"] = "disabled"
 
-        self.member_combo["values"] = (
-            combo_df.index.get_level_values("member").unique().astype(str).tolist()
-        )
+        self.member_combo["values"] = combo_df.index.get_level_values("member").unique().astype(str).tolist()
         self.member_combo.current(0)
         self._on_selected()
 
@@ -44,13 +42,7 @@ class MemberKeypointComboboxes(ttk.Frame):
             return
         current_member = self.member_combo.get()
         idx = pd.IndexSlice[:, current_member, :]
-        keypoints = (
-            self.src_df.loc[idx, :]
-            .index.get_level_values("keypoint")
-            .unique()
-            .astype(str)
-            .tolist()
-        )
+        keypoints = self.src_df.loc[idx, :].index.get_level_values("keypoint").unique().astype(str).tolist()
         self.keypoint_combo["values"] = keypoints
         self.keypoint_combo.current(0)
 
@@ -123,6 +115,9 @@ class CalcCaseEntry(ttk.Frame):
         self.invalid_characters = ["<", ">", ":", '"', "/", "\\", "|", "?", "*"]
         caption = ttk.Label(master, text="Calc case:")
         caption.pack(side=tk.LEFT)
+        desc = """Calc case will be used as the folder name under the 'calc' folder to save the .feat.pkl file.
+If the specified folder doesn’t exist, a new one will be created when you press the Export button."""
+        ToolTip(caption, desc)
         self.calc_case_entry = ttk.Entry(
             master,
             width=20,
@@ -149,8 +144,10 @@ class TimeSpanEntry(ttk.Frame):
         super().__init__(master)
 
         self.side = tk.LEFT
+        desc = """Specify the time range.\nThe time format is 'hh:mm:ss.fff'."""
         caption_time = ttk.Label(master, text="Time:")
         caption_time.pack(side=tk.LEFT, padx=(5, 1))
+        ToolTip(caption_time, desc)
         vcmd = (self.register(self._validate), "%P")
         invcmd = (self.register(self._invalid_start), "%P")
         self.time_start_entry = ttk.Entry(
@@ -174,9 +171,7 @@ class TimeSpanEntry(ttk.Frame):
         )
         self.time_end_entry.pack(side=tk.LEFT)
         self.time_end_entry.bind("<FocusIn>", self._select_all)
-        self.reset_btn = ttk.Button(
-            master, text="Reset", state="disable", command=self.reset, width=6
-        )
+        self.reset_btn = ttk.Button(master, text="Reset", state="disable", command=self.reset, width=6)
         self.reset_btn.pack(side=tk.LEFT, padx=(5, 10))
 
     def get_start_end(self):
@@ -313,9 +308,7 @@ class Combobox(ttk.Frame):
             self.combobox.set(value)
 
     def set_df(self, src_df):
-        self.combobox["values"] = (
-            src_df.index.get_level_values("member").unique().tolist()
-        )
+        self.combobox["values"] = src_df.index.get_level_values("member").unique().tolist()
         self.combobox.current(0)
 
     def set_values(self, values):
@@ -332,6 +325,36 @@ class Combobox(ttk.Frame):
         data[key] = thinning
         tmp.save(data)
         return thinning
+
+
+class ToolTip:
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tooltip_window = None
+
+        self.widget.bind("<Enter>", self.show_tooltip)
+        self.widget.bind("<Leave>", self.hide_tooltip)
+
+    def show_tooltip(self, event):
+        if self.tooltip_window or not self.text:
+            return
+
+        x, y, _, _ = self.widget.bbox("insert")
+        x += self.widget.winfo_rootx() + 25
+        y += self.widget.winfo_rooty() + 25
+
+        self.tooltip_window = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)
+        tw.wm_geometry(f"+{x}+{y}")
+
+        label = tk.Label(tw, text=self.text, justify="left", background="#ffffe0", relief="solid", borderwidth=1, font=("tahoma", "8", "normal"))
+        label.pack(ipadx=1)
+
+    def hide_tooltip(self, event):
+        if self.tooltip_window:
+            self.tooltip_window.destroy()
+            self.tooltip_window = None
 
 
 class TempFile:
@@ -374,24 +397,15 @@ class TempFile:
         return width, height
 
     def get_scene_table_graph_size(self):
-        if (
-            "scene_table_width" not in self.data.keys()
-            or self.data["scene_table_width"] == ""
-        ):
+        if "scene_table_width" not in self.data.keys() or self.data["scene_table_width"] == "":
             width = 1600
         else:
             width = int(self.data["scene_table_width"])
-        if (
-            "scene_table_height" not in self.data.keys()
-            or self.data["scene_table_height"] == ""
-        ):
+        if "scene_table_height" not in self.data.keys() or self.data["scene_table_height"] == "":
             height = 260
         else:
             height = int(self.data["scene_table_height"])
-        if (
-            "scene_table_dpi" not in self.data.keys()
-            or self.data["scene_table_dpi"] == ""
-        ):
+        if "scene_table_dpi" not in self.data.keys() or self.data["scene_table_dpi"] == "":
             dpi = 100
         else:
             dpi = int(self.data["scene_table_dpi"])
