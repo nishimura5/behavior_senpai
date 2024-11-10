@@ -144,7 +144,7 @@ class TimeSpanEntry(ttk.Frame):
         super().__init__(master)
 
         self.side = tk.LEFT
-        desc = """Specify the time range.\nThe time format is 'hh:mm:ss.fff'."""
+        desc = """Specify the time range.\nThe time format is 'h:mm:ss.fff'."""
         caption_time = ttk.Label(master, text="Time:")
         caption_time.pack(side=tk.LEFT, padx=(5, 1))
         ToolTip(caption_time, desc)
@@ -219,12 +219,16 @@ class TimeSpanEntry(ttk.Frame):
 
 
 class IntEntry(ttk.Frame):
-    def __init__(self, master, label: str, default: str, width=5):
+    def __init__(self, master, label: str, default: str, width=5, description=None):
         super().__init__(master)
         self.default = default
         self.frame = ttk.Frame(master)
         caption = ttk.Label(self.frame, text=label)
         caption.pack(side=tk.LEFT, padx=(0, 1))
+        if description is None:
+            description = "Only integers are allowed."
+        ToolTip(caption, description)
+
         self.entry = ttk.Entry(
             self.frame,
             width=width,
