@@ -126,7 +126,7 @@ class Tree(ttk.Frame):
             self.tree.item(item, values=values)
 
     def scene_table_add(self, min_time_str, max_time_str):
-        dialog = SceneTableTreeDialog(self, self.member_list, [min_time_str, max_time_str], "all")
+        dialog = SceneTableTreeDialog(self, self.member_list, [min_time_str, max_time_str])
         self.wait_window(dialog)
         new_member = dialog.selected_member
         new_timespan = dialog.new_timespan
@@ -198,11 +198,12 @@ class SceneTableTreeDialog(tk.Toplevel):
         super().__init__(master)
         self.focus_set()
         self.title("Scene")
-        self.geometry("500x150")
         self.resizable(0, 0)
 
-        time_frame = ttk.Frame(self)
-        time_frame.pack(side=tk.TOP, pady=(5, 10))
+        tar_frame = ttk.Frame(self)
+        tar_frame.pack(side=tk.TOP, padx=20, pady=(20, 10))
+        time_frame = ttk.Frame(tar_frame)
+        time_frame.pack(side=tk.TOP, pady=5)
         self.time_entry = TimeSpanEntry(time_frame)
 
         if default_timespan[0] != "" and default_timespan[1] != "":
@@ -210,8 +211,8 @@ class SceneTableTreeDialog(tk.Toplevel):
             end_msec = time_format.timestr_to_msec(default_timespan[1])
             self.time_entry.update_entry(start_msec=start_msec, end_msec=end_msec)
 
-        combo_frame = ttk.Frame(self)
-        combo_frame.pack(side=tk.TOP, pady=(5, 10))
+        combo_frame = ttk.Frame(tar_frame)
+        combo_frame.pack(side=tk.TOP, pady=5)
         label = ttk.Label(combo_frame, text="Member:")
         label.pack(side=tk.LEFT, padx=5)
         self.member_combo = ttk.Combobox(combo_frame, state="readonly", width=12)
@@ -229,12 +230,13 @@ class SceneTableTreeDialog(tk.Toplevel):
         self.member_entry.pack_horizontal(padx=5)
 
         button_frame = ttk.Frame(self)
-        button_frame.pack(side=tk.TOP, pady=(10, 5))
+        button_frame.pack(side=tk.TOP, pady=(10, 20))
         ok_btn = ttk.Button(button_frame, text="OK", command=self.on_ok)
         ok_btn.pack(side=tk.LEFT, padx=5)
-        cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.cancel)
+        cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.on_cancel)
         cancel_btn.pack(side=tk.LEFT)
 
+        self.grab_set()
         self.selected_member = None
         self.new_timespan = None
         self.new_description = None
@@ -245,7 +247,7 @@ class SceneTableTreeDialog(tk.Toplevel):
         self.new_description = self.member_entry.get()
         self.destroy()
 
-    def cancel(self):
+    def on_cancel(self):
         self.selected_member = None
         self.new_timespan = None
         self.new_description = None
