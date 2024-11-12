@@ -43,37 +43,53 @@ class App(ttk.Frame):
         detect_label.pack(side=tk.TOP)
         v2k_button = ttk.Button(buttons_frame, text="Detect", command=lambda: self.launch_window(app_detect.App, grab=True))
         v2k_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        tl_button = ttk.Button(buttons_frame, text="Track list", command=lambda: self.launch_window(app_track_list.App, grab=True))
-        tl_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        self.tl_button = ttk.Button(
+            buttons_frame, text="Track list", command=lambda: self.launch_window(app_track_list.App, grab=True), state=tk.DISABLED
+        )
+        self.tl_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         edit_label = ttk.Label(buttons_frame, text="Edit")
         edit_label.pack(side=tk.TOP, pady=(8, 0))
-        member_edit_button = ttk.Button(
-            buttons_frame, text="Member", command=lambda: self.launch_window(app_member_edit.App, dialog_size="1000x750", edit_df=True, grab=True)
+        self.member_edit_button = ttk.Button(
+            buttons_frame,
+            text="Member",
+            command=lambda: self.launch_window(app_member_edit.App, dialog_size="1000x750", edit_df=True, grab=True),
+            state=tk.DISABLED,
         )
-        member_edit_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        area_filter_button = ttk.Button(buttons_frame, text="Area", command=lambda: self.launch_window(app_area_filter.App, edit_df=True, grab=True))
-        area_filter_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        smooth_button = ttk.Button(
-            buttons_frame, text="Smooth", command=lambda: self.launch_window(app_smoothing.App, dialog_size="1000x750", edit_df=True, grab=True)
+        self.member_edit_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        self.area_filter_button = ttk.Button(
+            buttons_frame, text="Area", command=lambda: self.launch_window(app_area_filter.App, edit_df=True, grab=True), state=tk.DISABLED
         )
-        smooth_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        scene_table_button = ttk.Button(
-            buttons_frame, text="Scene table", command=lambda: self.launch_window(app_scene_table.App, edit_df=True, grab=True)
+        self.area_filter_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        self.smooth_button = ttk.Button(
+            buttons_frame,
+            text="Smooth",
+            command=lambda: self.launch_window(app_smoothing.App, dialog_size="1000x750", edit_df=True, grab=True),
+            state=tk.DISABLED,
         )
-        scene_table_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        self.smooth_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        self.scene_table_button = ttk.Button(
+            buttons_frame, text="Scene table", command=lambda: self.launch_window(app_scene_table.App, edit_df=True, grab=True), state=tk.DISABLED
+        )
+        self.scene_table_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         calc_label = ttk.Label(buttons_frame, text="Feature")
         calc_label.pack(side=tk.TOP, pady=(8, 0))
-        k2f_button = ttk.Button(buttons_frame, text="Trajectory", command=lambda: self.launch_window(k2t.App, dialog_size="1200x800"))
-        k2f_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        two_point_button = ttk.Button(
-            buttons_frame, text="Multiple points", command=lambda: self.launch_window(app_points_calc.App, dialog_size="1200x800")
+        self.k2f_button = ttk.Button(
+            buttons_frame, text="Trajectory", command=lambda: self.launch_window(k2t.App, dialog_size="1200x800"), state=tk.DISABLED
         )
-        two_point_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        feat_mix_button = ttk.Button(buttons_frame, text="Mix/Norm", command=lambda: self.launch_window(app_feat_mix.App, dialog_size="1200x800"))
-        feat_mix_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        dimredu_button = ttk.Button(buttons_frame, text="Dim-reduction", command=lambda: self.launch_window(app_dimredu.App, dialog_size="1500x800"))
-        dimredu_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        self.k2f_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        self.multi_point_button = ttk.Button(
+            buttons_frame, text="Multiple points", command=lambda: self.launch_window(app_points_calc.App, dialog_size="1200x800"), state=tk.DISABLED
+        )
+        self.multi_point_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        self.feat_mix_button = ttk.Button(
+            buttons_frame, text="Mix/Norm", command=lambda: self.launch_window(app_feat_mix.App, dialog_size="1200x800"), state=tk.DISABLED
+        )
+        self.feat_mix_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        self.dimredu_button = ttk.Button(
+            buttons_frame, text="Dim-reduction", command=lambda: self.launch_window(app_dimredu.App, dialog_size="1500x800"), state=tk.DISABLED
+        )
+        self.dimredu_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         pref_label = ttk.Label(buttons_frame, text="Misc")
         pref_label.pack(side=tk.TOP, pady=(8, 0))
@@ -135,6 +151,17 @@ class App(ttk.Frame):
         if load_df is None:
             self.pkl_selector.rename_pkl_path_label(self.pkl_path)
             return
+        # enable buttons
+        self.tl_button.config(state="normal")
+        self.member_edit_button.config(state="normal")
+        self.area_filter_button.config(state="normal")
+        self.smooth_button.config(state="normal")
+        self.scene_table_button.config(state="normal")
+        self.k2f_button.config(state="normal")
+        self.multi_point_button.config(state="normal")
+        self.feat_mix_button.config(state="normal")
+        self.dimredu_button.config(state="normal")
+
         self.pkl_path = pkl_path
         self.src_df = load_df
         self.src_df = keypoints_proc.zero_point_to_nan(self.src_df)
