@@ -8,7 +8,7 @@ import ttkthemes
 
 import detector_proc
 from behavior_senpai import vcap, windows_and_mac
-from gui_parts import Combobox
+from gui_parts import Checkbutton, Combobox
 
 
 class App(ttk.Frame):
@@ -17,23 +17,25 @@ class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
         master.title("Detect")
-        self.pack(padx=14, pady=14)
+        self.pack(padx=20, pady=20)
 
         self.tar_path = ""
 
-        self.bat_chk_val = tk.BooleanVar()
-        self.bat_chk_val.set(False)
         bat_mode_frame = ttk.Frame(self)
         bat_mode_frame.pack(anchor=tk.W, side=tk.TOP)
-        bat_chk = ttk.Checkbutton(bat_mode_frame, text="Appy to all files", variable=self.bat_chk_val)
-        bat_chk.pack(side=tk.LEFT)
-        self.bat_chk_val.trace("w", self._on_bat_mode_changed)
-        self.roi_chk_val = tk.BooleanVar()
-        self.roi_chk = ttk.Checkbutton(bat_mode_frame, text="ROI", variable=self.roi_chk_val)
-        self.roi_chk.pack(side=tk.LEFT, padx=10)
-        self.add_suffix_chk_val = tk.BooleanVar()
-        self.add_suffix_chk = ttk.Checkbutton(bat_mode_frame, text="Add suffix", variable=self.add_suffix_chk_val)
-        self.add_suffix_chk.pack(side=tk.LEFT, padx=(0, 15))
+
+        bat_chk_desc = "If checked, the detector will be applied to all video files in the selected folder (not recursively)."
+        self.bat_chk = Checkbutton(bat_mode_frame, "Apply all", description=bat_chk_desc)
+        self.bat_chk.pack_horizontal(padx=(0, 10))
+        self.bat_chk.set_trace(self._on_bat_mode_changed)
+
+        roi_desc = "If checked, you can define a region of interest (ROI) for the detector before starting."
+        self.roi_chk = Checkbutton(bat_mode_frame, "ROI", description=roi_desc)
+        self.roi_chk.pack_horizontal(padx=(0, 10))
+
+        suffix_desc = "If checked, the output video file will have a suffix indicating the engine used."
+        self.add_suffix_chk = Checkbutton(bat_mode_frame, "Add suffix", description=suffix_desc)
+        self.add_suffix_chk.pack_horizontal(padx=(0, 15))
 
         yolo_ok, mmpose_ok = detector_proc.check_gpu()
         if yolo_ok and mmpose_ok:
@@ -76,7 +78,7 @@ class App(ttk.Frame):
         """Open a file dialog to select a video file or folder.
         Update the UI elements based on the selected path.
         """
-        if self.bat_chk_val.get() is True:
+        if self.bat_chk.get() is True:
             self.tar_path = filedialog.askdirectory(initialdir="~")
         else:
             self.tar_path = filedialog.askopenfilename(initialdir="~")
@@ -97,7 +99,7 @@ class App(ttk.Frame):
         If in batch mode, executes the detector for all video files in the selected folder.
         If not in batch mode, executes the detector for the selected video file.
         """
-        if self.bat_chk_val.get() is True:
+        if self.bat_chk.get() is True:
             self.exec_folder()
         else:
             self.exec_video(self.tar_path)
@@ -118,20 +120,20 @@ class App(ttk.Frame):
         if video_path == "":
             return
         model_name = self.engine_combo.get()
-        use_roi = self.roi_chk_val.get()
-        add_suffix = self.add_suffix_chk_val.get()
+        use_roi = self.roi_chk.get()
+        add_suffix = self.add_suffix_chk.get()
         detector_proc.exec(self.rcap, model_name, video_path, use_roi, add_suffix)
 
     def _on_bat_mode_changed(self, *args):
-        if self.bat_chk_val.get() is True:
+        if self.bat_chk.get() is True:
             self.select_video_btn["text"] = "Select folder"
             self.video_path_label["text"] = "No folder selected"
-            self.roi_chk_val.set(False)
-            self.roi_chk["state"] = tk.DISABLED
+            self.roi_chk.set(False)
+            self.roi_chk.set_state(tk.DISABLED)
         else:
             self.select_video_btn["text"] = "Select video file"
             self.video_path_label["text"] = "No video selected"
-            self.roi_chk["state"] = tk.NORMAL
+            self.roi_chk.set_state(tk.NORMAL)
         self.tar_path = ""
         self.open_btn["state"] = tk.DISABLED
         self.go_to_folder_btn["state"] = tk.DISABLED

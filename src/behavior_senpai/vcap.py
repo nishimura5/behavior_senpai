@@ -170,6 +170,9 @@ class RoiCap(cv2.VideoCapture):
             frame = frame[self.left_top_point[1] : self.right_bottom_point[1], self.left_top_point[0] : self.right_bottom_point[0]]
         return ok, frame
 
+    def set_frame_pos(self, msec):
+        self.set(cv2.CAP_PROP_POS_MSEC, msec)
+
     def click_roi(self):
         """
         imshow()を使ったGUIでROIを指定

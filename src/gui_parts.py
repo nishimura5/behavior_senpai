@@ -331,6 +331,34 @@ class Combobox(ttk.Frame):
         return thinning
 
 
+class Checkbutton(ttk.Frame):
+    def __init__(self, master, label: str, default=False, description=None):
+        super().__init__(master)
+        self.var = tk.BooleanVar()
+        self.var.set(default)
+        self.checkbutton = ttk.Checkbutton(self, text=label, variable=self.var)
+        self.checkbutton.pack(side=tk.LEFT)
+        if description is not None:
+            ToolTip(self.checkbutton, description)
+
+    def pack_horizontal(self, anchor=tk.E, padx=0, pady=0):
+        self.pack(side=tk.LEFT, anchor=anchor, padx=padx, pady=pady)
+
+    def pack_vertical(self, anchor=tk.E, padx=0, pady=0):
+        self.pack(side=tk.TOP, anchor=anchor, padx=padx, pady=pady)
+
+    def get(self):
+        return self.var.get()
+
+    def set(self, value):
+        self.var.set(value)
+
+    def set_state(self, state):
+        self.checkbutton["state"] = state
+
+    def set_trace(self, func):
+        self.var.trace("w", func)
+
 class ToolTip:
     def __init__(self, widget, text):
         self.widget = widget
