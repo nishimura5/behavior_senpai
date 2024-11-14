@@ -364,9 +364,13 @@ class ToolTip:
         self.widget = widget
         self.text = text
         self.tooltip_window = None
+        self.delay_id = None
 
-        self.widget.bind("<Enter>", self.show_tooltip)
+        self.widget.bind("<Enter>", self.schedule_tooltip)
         self.widget.bind("<Leave>", self.hide_tooltip)
+
+    def schedule_tooltip(self, event):
+        self.delay_id = self.widget.after(600, self.show_tooltip, event)
 
     def show_tooltip(self, event):
         if self.tooltip_window or not self.text:
@@ -387,6 +391,9 @@ class ToolTip:
         if self.tooltip_window:
             self.tooltip_window.destroy()
             self.tooltip_window = None
+        if self.delay_id:
+            self.widget.after_cancel(self.delay_id)
+            self.delay_id = None
 
 
 class TempFile:

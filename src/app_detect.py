@@ -24,16 +24,16 @@ class App(ttk.Frame):
         bat_mode_frame = ttk.Frame(self)
         bat_mode_frame.pack(anchor=tk.W, side=tk.TOP)
 
-        bat_chk_desc = "If checked, the detector will be applied to all video files in the selected folder (not recursively)."
+        bat_chk_desc = "If checked, applies the detector to all video files in the selected folder (not recursively)."
         self.bat_chk = Checkbutton(bat_mode_frame, "Apply all", description=bat_chk_desc)
         self.bat_chk.pack_horizontal(padx=(0, 10))
         self.bat_chk.set_trace(self._on_bat_mode_changed)
 
-        roi_desc = "If checked, you can define a region of interest (ROI) for the detector before starting."
+        roi_desc = "If checked, enables defining a region of interest (ROI) for the detector before starting."
         self.roi_chk = Checkbutton(bat_mode_frame, "ROI", description=roi_desc)
         self.roi_chk.pack_horizontal(padx=(0, 10))
 
-        suffix_desc = "If checked, the output video file will have a suffix indicating the engine used."
+        suffix_desc = "If checked, adds a suffix to the output video file indicating the engine used."
         self.add_suffix_chk = Checkbutton(bat_mode_frame, "Add suffix", description=suffix_desc)
         self.add_suffix_chk.pack_horizontal(padx=(0, 15))
 
