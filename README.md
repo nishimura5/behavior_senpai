@@ -15,6 +15,7 @@ Behavior Senpai is distinctive in that it permits the utilization of multiple AI
 
  The following AI image processing frameworks/models are supported by Behavior Senpai:
 - [YOLO11 Pose](https://docs.ultralytics.com/tasks/pose/)
+- [YOLOv8 Pose](https://github.com/ultralytics/ultralytics/issues/1915)
 - [MediaPipe Holistic](https://github.com/google/mediapipe/blob/master/docs/solutions/holistic.md)
 - [RTMPose Halpe26 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#26-keypoints)
 - [RTMPose WholeBody133 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#wholebody-2d-133-keypoints)
@@ -199,8 +200,10 @@ Main contents of attrs include, but are not limited to:
 The name of the AI image processing framework/model used for keypoint detection. Addition to attrs is done by [app_detector.py][app_detect] ([detector_proc.py][detector_proc]).
 
  - YOLO11 x-pose
+ - YOLOv8 x-pose-p6
  - MediaPipe Holistic
- - MMPose RTMPose-x
+ - RTMPose-x Halpe26
+ - RTMPose-x WholeBody133
 
 #### frame_size
 
