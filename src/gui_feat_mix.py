@@ -77,10 +77,12 @@ class Tree(ttk.Frame):
         self.tar_df = df
 
     def add_calc(self):
-        dialog = FeatMixTreeDialog(self, self.member_list, contain_blank=False)
+        dialog = FeatMixTreeDialog(self, self.member_list, contain_blank=False, default_feature_name="new_feature")
         dialog.set_df(self.tar_df)
         self.wait_window(dialog)
         new_feature_name = dialog.selected_feature_name
+        new_feature_name = self.fix_feature_name(new_feature_name)
+
         new_member = dialog.selected_member
         new_col_a = dialog.selected_col_a
         new_op = dialog.selected_op
@@ -102,11 +104,14 @@ class Tree(ttk.Frame):
             dialog.set_default(*self.tree.item(selected[0])["values"])
         self.wait_window(dialog)
         new_feature_name = dialog.selected_feature_name
+        selected_feature_name = self.tree.item(selected[0])["values"][0]
+        new_feature_name = self.fix_feature_name(new_feature_name, selected_feature_name)
+
         new_member = dialog.selected_member
-        new_col_a = dialog.col_a
-        new_op = dialog.op
-        new_col_b = dialog.col_b
-        new_normalize = dialog.normalize
+        new_col_a = dialog.selected_col_a
+        new_op = dialog.selected_op
+        new_col_b = dialog.selected_col_b
+        new_normalize = dialog.selected_normalize
 
         if new_member is None:
             return
@@ -127,6 +132,18 @@ class Tree(ttk.Frame):
                 values[5] = new_normalize
             self.tree.item(item, values=values)
 
+    def fix_feature_name(self, feature_name, selected=None):
+        feature_names = [self.tree.item(item)["values"][0] for item in self.tree.get_children("")]
+        if selected is not None:
+            feature_names.remove(selected)
+        for i in range(1, 100):
+            if feature_name not in feature_names:
+                break
+            if feature_name + str(i) not in feature_names:
+                feature_name += str(i)
+                break
+        return feature_name
+
     def _copy_row(self):
         selected = self.tree.selection()
         if len(selected) == 0:
@@ -143,7 +160,7 @@ class Tree(ttk.Frame):
 
 
 class FeatMixTreeDialog(tk.Toplevel):
-    def __init__(self, master, member_list, contain_blank=False):
+    def __init__(self, master, member_list, contain_blank=False, default_feature_name=""):
         super().__init__(master)
         self.focus_set()
         self.title("Feature mixer")
@@ -155,7 +172,7 @@ class FeatMixTreeDialog(tk.Toplevel):
         calc_select_frame.pack(pady=5, side=tk.TOP, fill=tk.X)
         self.feature_name_entry = StrEntry(calc_select_frame, label="Feature name:", width=20)
         self.feature_name_entry.pack_horizontal(padx=5)
-        self.feature_name_entry.update("new_feature")
+        self.feature_name_entry.update(default_feature_name)
         self.member_combo = Combobox(calc_select_frame, label="Member:", width=20, values=member_list)
         self.member_combo.pack_horizontal(padx=5)
         self.member_combo.set_selected_bind(self.on_select_member)
