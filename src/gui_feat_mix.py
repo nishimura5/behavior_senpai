@@ -133,6 +133,8 @@ class Tree(ttk.Frame):
             self.tree.item(item, values=values)
 
     def fix_feature_name(self, feature_name, selected=None):
+        if feature_name == "":
+            feature_name = "new_feature"
         feature_names = [self.tree.item(item)["values"][0] for item in self.tree.get_children("")]
         if selected is not None:
             feature_names.remove(selected)

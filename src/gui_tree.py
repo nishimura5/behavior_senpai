@@ -126,7 +126,7 @@ class Tree(ttk.Frame):
             self.tree.item(item, values=values)
 
     def scene_table_add(self, min_time_str, max_time_str):
-        dialog = SceneTableTreeDialog(self, self.member_list, [min_time_str, max_time_str])
+        dialog = SceneTableTreeDialog(self, self.member_list, [min_time_str, max_time_str], "new_scene")
         self.wait_window(dialog)
         new_member = dialog.selected_member
         new_timespan = dialog.new_timespan
