@@ -14,9 +14,11 @@ Behavior Senpai is an application that supports quantitative behavior observatio
 Behavior Senpai is distinctive in that it permits the utilization of multiple AI models without the necessity for coding. 
 
  The following AI image processing frameworks/models are supported by Behavior Senpai:
+- [YOLO11 Pose](https://docs.ultralytics.com/tasks/pose/)
 - [YOLOv8 Pose](https://github.com/ultralytics/ultralytics/issues/1915)
 - [MediaPipe Holistic](https://github.com/google/mediapipe/blob/master/docs/solutions/holistic.md)
-- [RTMPose Body8 -Halpe26 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#26-keypoints)
+- [RTMPose Halpe26 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#26-keypoints)
+- [RTMPose WholeBody133 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#wholebody-2d-133-keypoints)
 
 Behavior Senpai performs pose estimation of a person in a video using an AI model selected by the user, and outputs time-series coordinate data.
 (These are variously referred to as "pose estimation", "markerless motion capture", "landmark detection", and so forth, depending on the intended purpose and application.)
@@ -50,23 +52,25 @@ If you do not have a CUDA-compatible GPU, only MediaPipe Holistic can be used.
 
 Running BehaviorSenpai.exe will start the application; if you want to use CUDA, check the "Enable features using CUDA" checkbox the first time you start the application and click the "OK" button.
 
-BehaviorSenpai.exe is an application to automate the construction of the Python environment by [Rye](https://rye.astral.sh) and the startup of Behavior Senpai itself.
+BehaviorSenpai.exe is an application to automate the construction of the Python environment by [uv](https://docs.astral.sh/uv/) and the startup of Behavior Senpai itself.
 The initial setup by BehaviorSenpai.exe takes some time. Please wait until the terminal (black screen) closes automatically.
 
-To uninstall Behavior Senpai or replace it with the latest version, delete the entire folder containing BehaviorSenpai.exe. In addition, to uninstall Rye, run the following from a terminal
+<p align="center">
+ <a href="https://youtu.be/0k8GA1DscKQ">
+   <img width="30%" alt="How to install Behavior Senpai" src="https://img.youtube.com/vi/0k8GA1DscKQ/0.jpg">
+ </a>
+</p>
 
-```
-rye self uninstall
-```
+To uninstall Behavior Senpai or replace it with the latest version, delete the entire folder containing BehaviorSenpai.exe.
 
 ## Keypoints
 
 The ID of keypoints handled by Behavior Senpai is the same as the ID of each dataset.
-YOLOv8 complies with COCO and RTMPose complies with Halpe26.
+YOLO11 (and YOLOv8) complies with COCO and RTMPose complies with Halpe26.
 The IDs of each keypoints are as follows.
 
 <p align="center">
-  <img width="60%" alt="Keypoints of body (YOLOv8 and MMPose)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_body_110.png">
+  <img width="60%" alt="Keypoints of body (YOLO11 and MMPose)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_body_110.png">
 </p>
 
 The IDs of the keypoints (landmarks) of the faces in MediaPipe Holistic are as follows. See [here](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png) for a document with all IDs.
@@ -114,6 +118,19 @@ An illustrative example of a DataFrame stored in the Track file is presented bel
 
 In Behavior Senpai, the data obtained by calculating the positional relationship of multiple keypoints is referred to as a feature. The data processed by [app_2point_calc.py][app_2point_calc] or [app_3point_calc.py][app_3point_calc] is stored in a pickled format. The data processed by [app_3point_calc][app_3point_calc] is saved as a "Feature file" in the "calc" folder. The file extension is ".feat.pkl". The Feature file holds time-series data in 2-level-multi-index format, with the indices designated as "frame" and "member", respectively, and the columns including a "timestamp". It should be noted that the data in the Track file is only the result of keypoint detection, while the data in the Feature file are features that are deeply related to the purpose of behavior observation.
 
+|       |        | feat_1   | feat_2   | timestamp |
+| ----- | ------ | -------- | -------- | --------- |
+| frame | member |          |          |           |
+| 0     | 1      | NaN      | 0.050946 | 0.000000  |
+| 0     | 2      | 0.065052 | 0.049657 | 0.000000  |
+| 1     | 1      | NaN      | 0.064225 | 16.683333 |
+| 1     | 2      | 0.050946 | 0.050946 | 16.683333 |
+| 2     | 1      | NaN      | 0.065145 | 33.366667 |
+| 2     | 2      | 0.061077 | 0.068058 | 33.366667 |
+| 3     | 1      | NaN      | 0.049712 | 50.050000 |
+| 3     | 2      | 0.052715 | 0.055282 | 50.050000 |
+|       | ...    | ...      | ...      | ...       |
+
 #### Column name definition
 
 The feature files processed by [app_2point_calc.py][app_2point_calc] and [app_3point_calc.py][app_3point_calc] have rules for columns names (to enable parsing).
@@ -146,6 +163,23 @@ As a concrete example, a column name meaning the outer product of two vectors st
 cross(2-1,2-3)
 ```
 
+### Category file
+
+The category file contains boolean data indicating the presence of specific behaviors for each member at each frame. It includes frame and member identifiers, a class column for internal use, boolean columns for each category (e.g., cat_1, cat_2), and a timestamp. True values represent the occurrence of a behavior for a given member at a specific frame.The file extension is ".bc.pkl". 
+
+|       |        | class | cat_1 | cat_2 | timestamp |
+| ----- | ------ | ----- | ----- | ----- | --------- |
+| frame | member |       |       |       |           |
+| 0     | 1      | 0.0   | True  | False | 0.000000  |
+| 0     | 2      | 1.0   | False | True  | 0.000000  |
+| 1     | 1      | 0.0   | True  | False | 16.683333 |
+| 1     | 2      | 1.0   | False | True  | 16.683333 |
+| 2     | 1      | 0.0   | True  | False | 33.366667 |
+| 2     | 2      | 1.0   | False | True  | 33.366667 |
+| 3     | 1      | 0.0   | True  | False | 50.050000 |
+| 3     | 2      | 1.0   | False | True  | 50.050000 |
+|       | ...    | ...   | ...   | ...   | ...       |
+
 ### Attributes of Track (or Feature) file
 
 The [attrs property](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.attrs.html) of the DataFrame stored in Track file (and Feature files) records information such as the original video file name, its frame size, and the name of the AI model used for keypoint detection.
@@ -165,9 +199,11 @@ Main contents of attrs include, but are not limited to:
 
 The name of the AI image processing framework/model used for keypoint detection. Addition to attrs is done by [app_detector.py][app_detect] ([detector_proc.py][detector_proc]).
 
+ - YOLO11 x-pose
  - YOLOv8 x-pose-p6
  - MediaPipe Holistic
- - MMPose RTMPose-x
+ - RTMPose-x Halpe26
+ - RTMPose-x WholeBody133
 
 #### frame_size
 
