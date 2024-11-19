@@ -124,6 +124,8 @@ If the specified folder doesn’t exist, a new one will be created when you pres
             validate="key",
             validatecommand=(self.register(self._validate), "%P"),
         )
+        if default == "":
+            default = "untitled"
         self.calc_case_entry.insert(tk.END, default)
         self.calc_case_entry.pack(side=tk.LEFT, padx=(0, 5))
 
@@ -358,6 +360,7 @@ class Checkbutton(ttk.Frame):
 
     def set_trace(self, func):
         self.var.trace("w", func)
+
 
 class ToolTip:
     def __init__(self, widget, text):
