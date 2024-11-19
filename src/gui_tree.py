@@ -126,20 +126,12 @@ class Tree(ttk.Frame):
             self.tree.item(item, values=values)
 
     def scene_table_add(self, min_time_str, max_time_str):
-        dialog = SceneTableTreeDialog(self, self.member_list, [min_time_str, max_time_str], "new_scene")
+        dialog = SceneTableTreeDialog(self, self.member_list, [min_time_str, max_time_str])
         self.wait_window(dialog)
         new_member = dialog.selected_member
         new_timespan = dialog.new_timespan
         new_description = dialog.new_description
-
-        # search description in tree
-        descriptions = [self.tree.item(item)["values"][4] for item in self.tree.get_children("")]
-        for i in range(1, 100):
-            if new_description not in descriptions:
-                break
-            if new_description + str(i) not in descriptions:
-                new_description = new_description + str(i)
-                break
+        new_description = self.fix_description(new_description)
 
         if new_member is None:
             return
@@ -162,6 +154,7 @@ class Tree(ttk.Frame):
         new_member = dialog.selected_member
         new_timespan = dialog.new_timespan
         new_description = dialog.new_description
+        new_description = self.fix_description(new_description)
 
         if new_member is None:
             return
@@ -178,6 +171,11 @@ class Tree(ttk.Frame):
             if new_description != "":
                 values[4] = new_description
             self.tree.item(item, values=values)
+
+    def fix_description(self, description):
+        if description == "":
+            return "untitled"
+        return description
 
     def scene_table_copy(self):
         selected = self.tree.selection()
