@@ -7,7 +7,7 @@ import pandas as pd
 from matplotlib import gridspec, ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-from behavior_senpai import mediapipe_drawer, pose_drawer, time_format
+from behavior_senpai import img_draw, mediapipe_drawer, pose_drawer, time_format
 
 
 class DimensionalReductionPlotter:
@@ -27,6 +27,7 @@ class DimensionalReductionPlotter:
         self.class_names = None
         self.picker_range = None
         self.plot_df = None
+        self.timestamps = np.array([])
 
     def pack(self, master):
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)
@@ -156,9 +157,11 @@ class DimensionalReductionPlotter:
         self.canvas.draw_idle()
 
         time_format.copy_to_clipboard(timestamp_msec)
-        self._show(timestamp_msec)
+        self._show(timestamp_msec, near_df.iloc[np.argmin(distances)]["class"])
 
     def _click_graph(self, event):
+        if self.timestamps.size == 0:
+            return
         x = event.xdata
         y = event.ydata
         tar_ax = event.inaxes
@@ -181,9 +184,10 @@ class DimensionalReductionPlotter:
 
         if tar_ax == self.line_ax:
             time_format.copy_to_clipboard(timestamp_msec)
-            self._show(timestamp_msec)
+            class_num = self.plot_df.loc[self.plot_df.index[idx], "class"]
+            self._show(timestamp_msec, class_num)
 
-    def _show(self, timestamp_msec):
+    def _show(self, timestamp_msec, class_num):
         if self.vcap.isOpened() is False:
             return
         ret, frame = self.vcap.read_at(timestamp_msec)
@@ -199,13 +203,14 @@ class DimensionalReductionPlotter:
                 self.anno.set_track(self.member)
                 frame = self.anno.draw()
 
-        if frame.shape[0] >= 1080:
-            resize_height = 800
+        if frame.shape[0] >= 600:
+            resize_height = 600
             resize_width = int(frame.shape[1] * resize_height / frame.shape[0])
             frame = cv2.resize(frame, (resize_width, resize_height))
-        if ret is True:
-            cv2.imshow("frame", frame)
-            cv2.waitKey(1)
+        class_name = self.class_names[int(class_num)]
+        img_draw.put_message(frame, class_name, font_size=2, y=30)
+        cv2.imshow("frame", frame)
+        cv2.waitKey(1)
 
     def close(self):
         plt.close(self.fig)

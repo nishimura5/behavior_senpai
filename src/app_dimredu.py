@@ -27,7 +27,7 @@ class App(ttk.Frame):
         load_frame = ttk.Frame(left_frame)
         load_frame.pack(anchor=tk.NW, pady=5)
         self.feat_button = ttk.Button(load_frame, text="Select feature file", command=self.open_feat)
-        self.feat_button.pack(side=tk.LEFT, padx=(20, 0))
+        self.feat_button.pack(side=tk.LEFT)
         self.feat_path_label = ttk.Label(load_frame, text="No feature file loaded.")
         self.feat_path_label.pack(side=tk.LEFT, padx=(5, 0))
 
@@ -74,7 +74,7 @@ class App(ttk.Frame):
         self.draw_button.pack(side=tk.LEFT, expand=True, pady=5, fill=tk.X)
 
         draw_frame = ttk.Frame(left_frame)
-        draw_frame.pack(anchor=tk.NW, fill=tk.X, expand=True, padx=5)
+        draw_frame.pack(anchor=tk.NW, fill=tk.X, expand=True, padx=(0, 5))
         vals = [0.1, 1, 10, 30, 50]
         self.picker_range_combobox = Combobox(draw_frame, label="Picker range:", values=vals, current=2)
         self.picker_range_combobox.set_selected_bind(self.combo_selected)
