@@ -155,7 +155,7 @@ class App(ttk.Frame):
     def load_feat(self, pl: file_inout.PickleLoader):
         self.feat_path = pl.get_tar_path()
         self.feat_path_label["text"] = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
-        self.feat_df = pl.load_pkl()
+        self.feat_df = pl.load_h5("norm")
 
         # update GUI
         self.member_keypoints_combos.set_df(self.feat_df)
@@ -177,7 +177,7 @@ class App(ttk.Frame):
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
             return
-        cluster_df = pl.load_pkl()
+        cluster_df = pl.load_h5("bc")
         in_trk_attrs = df_attrs.DfAttrs(cluster_df)
         in_trk_attrs.load_proc_history()
         if in_trk_attrs.validate_model(self.src_attrs) is False:
@@ -185,6 +185,7 @@ class App(ttk.Frame):
         if in_trk_attrs.validate_newest_history_proc("dimredu") is False:
             return
 
+        print(cluster_df.attrs)
         if "features" not in cluster_df.attrs.keys():
             print("features not found in attrs")
             return
@@ -292,9 +293,8 @@ class App(ttk.Frame):
 
     def export(self):
         """Export the calculated data to a file."""
-        current_member = self.member_keypoints_combos.get_selected()[0]
-        file_name = os.path.basename(self.feat_path).split(".")[0] + "_" + current_member
-        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_dimredu.bc.pkl")
+        file_name = os.path.basename(self.feat_path).split(".")[0]
+        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".h5")
 
         cluster_df = self.drp.get_cluster_df()
         # class column: for repeat_draw
@@ -313,7 +313,7 @@ class App(ttk.Frame):
         thinning = self.thinning_entry.get()
         params = {"n_neighbors": n_neighbors, "min_dist": min_dist, "random": rand_mode, "thinning": thinning}
         history_dict = df_attrs.make_history_dict("dimredu", self.source_cols, params)
-        file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
+        file_inout.save_h5(dst_path, export_df, df_type="bc", proc_history=history_dict)
 
     def filter_word(self, event):
         tar_word = self.name_filter_entry.get()

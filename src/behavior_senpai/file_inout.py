@@ -4,7 +4,7 @@ from tkinter import filedialog
 
 import pandas as pd
 
-from . import keypoints_proc, windows_and_mac
+from . import hdf_df, keypoints_proc, windows_and_mac
 
 
 def open_pkl(init_dir, org_path=None, filetypes=[("pkl files", "*.pkl")]):
@@ -40,7 +40,7 @@ class PickleLoader:
         if pkl_type == "track":
             self.filetypes = [("pkl files", "*.pkl"), ("trk-pkl files", "*.trk.pkl")]
         elif pkl_type == "feature":
-            self.filetypes = [("feat-pkl files", "*.feat.pkl"), ("pkl files", "*.pkl")]
+            self.filetypes = [("HDf5 files", "*.h5")]
         elif pkl_type == "behavioral_coding":
             self.filetypes = [("bc-pkl files", "*.bc.pkl")]
         self.filetypes = windows_and_mac.file_types(self.filetypes)
@@ -73,6 +73,20 @@ class PickleLoader:
             print(f"File not found: {self.tar_path}")
             return
         src_df = pd.read_pickle(self.tar_path)
+        frame_num = src_df.index.get_level_values(0).nunique()
+        member_num = src_df.index.get_level_values(1).nunique()
+        called_in = os.path.basename(inspect.stack()[1].filename)
+        print(
+            f"{called_in} < {os.path.basename(self.tar_path)}: shape={src_df.shape[0]:,}x{src_df.shape[1]} frames={frame_num:,} members={member_num}"
+        )
+        return src_df
+
+    def load_h5(self, df_type="feat"):
+        if os.path.exists(self.tar_path) is False:
+            print(f"File not found: {self.tar_path}")
+            return
+        hdf = hdf_df.DataFrameStorage(self.tar_path)
+        src_df = hdf.load_df(df_type)
         frame_num = src_df.index.get_level_values(0).nunique()
         member_num = src_df.index.get_level_values(1).nunique()
         called_in = os.path.basename(inspect.stack()[1].filename)
@@ -140,6 +154,33 @@ def save_pkl(org_pkl_path, dst_df, proc_history=None):
     called_in = os.path.basename(inspect.stack()[1].filename)
     print(f"{called_in} > {os.path.basename(os.path.basename(file_name))}")
 
+def save_h5(org_pkl_path, dst_df, df_type="feat", proc_history=None):
+    file_name = os.path.basename(org_pkl_path)
+    dst_dir = os.path.dirname(org_pkl_path)
+    os.makedirs(dst_dir, exist_ok=True)
+
+    if proc_history is not None:
+        if "proc_history" not in dst_df.attrs.keys():
+            dst_df.attrs["proc_history"] = [proc_history]
+        else:
+            dst_df.attrs["proc_history"].append(proc_history)
+    file_name = filedialog.asksaveasfilename(
+        title="Save as",
+        filetypes=[("HDf5 files", ".h5")],
+        initialdir=dst_dir,
+        initialfile=file_name,
+        defaultextension="h5",
+    )
+    if file_name == "":
+        print("export() canceled.")
+        return
+
+    hdf = hdf_df.DataFrameStorage(file_name)
+    hdf.save_df(df_type, dst_df)
+
+    #    dst_df.to_pickle(file_name)
+    called_in = os.path.basename(inspect.stack()[1].filename)
+    print(f"{called_in} > {os.path.basename(os.path.basename(file_name))}")
 
 def pkl_to_csv(init_dir="~"):
     """

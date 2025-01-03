@@ -123,7 +123,7 @@ class App(ttk.Frame):
 
     def load_feat(self, pl: file_inout.PickleLoader):
         self.feat_path = pl.get_tar_path()
-        tar_df = pl.load_pkl()
+        tar_df = pl.load_h5("feat")
         feat_path = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
         tar_df = tar_df[~tar_df.index.duplicated(keep="last")]
         tar_attrs = df_attrs.DfAttrs(tar_df)
@@ -190,7 +190,7 @@ class App(ttk.Frame):
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
             return
-        in_trk_df = pl.load_pkl()
+        in_trk_df = pl.load_h5("norm")
         in_trk_attrs = df_attrs.DfAttrs(in_trk_df)
         in_trk_attrs.load_proc_history()
         if in_trk_attrs.validate_model(self.src_attrs) is False:
@@ -270,9 +270,9 @@ class App(ttk.Frame):
 
         export_df = self.feat_df
         export_df.attrs = self.src_attrs.attrs
-        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + "_mix.feat.pkl")
+        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".h5")
         history_dict = df_attrs.make_history_dict("mix", self.source_cols, {})
-        file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
+        file_inout.save_h5(dst_path, export_df, "norm", proc_history=history_dict)
 
     def close(self):
         self.lineplot.close()
