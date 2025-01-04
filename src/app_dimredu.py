@@ -155,7 +155,7 @@ class App(ttk.Frame):
     def load_feat(self, pl: file_inout.PickleLoader):
         self.feat_path = pl.get_tar_path()
         self.feat_path_label["text"] = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
-        self.feat_df = pl.load_h5("norm")
+        self.feat_df = pl.load_h5("mixnorm")
 
         # update GUI
         self.member_keypoints_combos.set_df(self.feat_df)
@@ -177,7 +177,7 @@ class App(ttk.Frame):
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
             return
-        cluster_df = pl.load_h5("bc")
+        cluster_df = pl.load_h5("dimredu")
         in_trk_attrs = df_attrs.DfAttrs(cluster_df)
         in_trk_attrs.load_proc_history()
         if in_trk_attrs.validate_model(self.src_attrs) is False:
@@ -313,7 +313,7 @@ class App(ttk.Frame):
         thinning = self.thinning_entry.get()
         params = {"n_neighbors": n_neighbors, "min_dist": min_dist, "random": rand_mode, "thinning": thinning}
         history_dict = df_attrs.make_history_dict("dimredu", self.source_cols, params)
-        file_inout.save_h5(dst_path, export_df, df_type="bc", proc_history=history_dict)
+        file_inout.save_h5(dst_path, export_df, df_type="dimredu", proc_history=history_dict)
 
     def filter_word(self, event):
         tar_word = self.name_filter_entry.get()

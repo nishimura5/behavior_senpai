@@ -81,7 +81,7 @@ class PickleLoader:
         )
         return src_df
 
-    def load_h5(self, df_type="feat"):
+    def load_h5(self, df_type):
         if os.path.exists(self.tar_path) is False:
             print(f"File not found: {self.tar_path}")
             return
@@ -154,7 +154,8 @@ def save_pkl(org_pkl_path, dst_df, proc_history=None):
     called_in = os.path.basename(inspect.stack()[1].filename)
     print(f"{called_in} > {os.path.basename(os.path.basename(file_name))}")
 
-def save_h5(org_pkl_path, dst_df, df_type="feat", proc_history=None):
+
+def save_h5(org_pkl_path, dst_df, df_type, proc_history=None):
     file_name = os.path.basename(org_pkl_path)
     dst_dir = os.path.dirname(org_pkl_path)
     os.makedirs(dst_dir, exist_ok=True)
@@ -181,6 +182,7 @@ def save_h5(org_pkl_path, dst_df, df_type="feat", proc_history=None):
     #    dst_df.to_pickle(file_name)
     called_in = os.path.basename(inspect.stack()[1].filename)
     print(f"{called_in} > {os.path.basename(os.path.basename(file_name))}")
+
 
 def pkl_to_csv(init_dir="~"):
     """
