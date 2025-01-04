@@ -43,6 +43,7 @@ class DataFrameStorage:
                 feature_list = df.attrs["features"]
                 feature_df = pd.DataFrame({"feat": feature_list})
                 store.put(f"{group_name}/features", feature_df, format="table")
+
             print("soutce_cols_df")
             print(source_cols_df)
             print("setting_df")
@@ -118,6 +119,7 @@ class DataFrameStorage:
             pd.DataFrame: Loaded DataFrame
         """
         with pd.HDFStore(self.filepath, mode="r") as store:
+            # bc/df -> used in scene_table
             df = store.get(f"{group_name}/df")
 
             attrs_df = store.get("attrs")
@@ -134,6 +136,7 @@ class DataFrameStorage:
             source_cols_df = store.get(f"{group_name}/source_cols")
             if group_name == "feat":
                 source_cols = self._df_to_feat(source_cols_df)
+                settings["type"] = "points"
             elif group_name == "norm":
                 source_cols = self._df_to_norm(source_cols_df)
 
