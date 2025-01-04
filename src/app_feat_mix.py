@@ -98,7 +98,7 @@ class App(ttk.Frame):
         self.scene_combo.set_values(menu)
         self.tree.set_members(src_df.index.levels[1].unique().tolist())
 
-        expected_pts_file_name = f"{args['trk_pkl_name'].split('.')[0]}_pts.feat.pkl"
+        expected_pts_file_name = f"{args['trk_pkl_name'].split('.')[0]}.h5"
         expected_pts_file_path = os.path.join(self.calc_dir, self.calc_case, expected_pts_file_name)
         if os.path.exists(expected_pts_file_path) is True:
             pl = file_inout.PickleLoader(self.calc_dir, "feature")

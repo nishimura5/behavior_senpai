@@ -27,7 +27,7 @@ class DataFrameStorage:
         Save DataFrame to specified group in HDF store
 
         Args:
-            group_name: Name of group to save to ('points', 'mixnorm', 'dimredu', 'bc')
+            group_name: Name of group to save to ('points', 'mixnorm', 'dimredu')
             df: DataFrame to save
         """
         with pd.HDFStore(self.filepath, mode="a") as store:
@@ -106,7 +106,7 @@ class DataFrameStorage:
         Load DataFrame from specified group
 
         Args:
-            group_name: Name of group to load ('feat', 'norm', 'bc')
+            group_name: Name of group to load ('points', 'mixnorm', 'dimredu')
 
         Returns:
             pd.DataFrame: Loaded DataFrame
@@ -142,10 +142,6 @@ class DataFrameStorage:
 
             profile_dict["source_cols"] = source_cols
             df.attrs["proc_history"] = [profile_dict]
-
-        # sprint all groups
-        with pd.HDFStore(self.filepath, mode="r") as store:
-            print(store.keys())
 
         return df
 
