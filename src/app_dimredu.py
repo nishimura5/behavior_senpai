@@ -119,6 +119,7 @@ class App(ttk.Frame):
 
         self.drp.set_trk_df(src_df)
         self.drp.set_vcap(args["cap"])
+        self.track_name = args["trk_pkl_name"]
         self.src_attrs = df_attrs.DfAttrs(src_df)
 
         self.time_min, self.time_max = args["time_span_msec"]
@@ -129,7 +130,7 @@ class App(ttk.Frame):
         for cluster_name in self.cluster_names:
             self.tree.insert("", "end", values=(cluster_name, cluster_name))
 
-        expected_pts_file_name = f"{args['trk_pkl_name'].split('.')[0]}_pts_mix.feat.pkl"
+        expected_pts_file_name = f"{args['trk_pkl_name'].split('.')[0]}.h5"
         expected_pts_file_path = os.path.join(self.calc_dir, self.calc_case, expected_pts_file_name)
         if os.path.exists(expected_pts_file_path) is True:
             pl = file_inout.PickleLoader(self.calc_dir, "feature")
@@ -312,7 +313,7 @@ class App(ttk.Frame):
         min_dist = self.min_dist_combobox.get_current_value()
         thinning = self.thinning_entry.get()
         params = {"n_neighbors": n_neighbors, "min_dist": min_dist, "random": rand_mode, "thinning": thinning}
-        history_dict = df_attrs.make_history_dict("dimredu", self.source_cols, params)
+        history_dict = df_attrs.make_history_dict("dimredu", self.source_cols, params, self.track_name)
         file_inout.save_h5(dst_path, export_df, df_type="dimredu", proc_history=history_dict)
 
     def filter_word(self, event):

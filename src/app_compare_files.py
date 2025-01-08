@@ -10,7 +10,7 @@ import seaborn as sns
 import ttkthemes
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-from behavior_senpai import df_attrs, keypoints_proc, time_format, windows_and_mac
+from behavior_senpai import df_attrs, hdf_df, keypoints_proc, time_format, windows_and_mac
 from gui_parts import Combobox, IntEntry, TempFile
 from gui_tree import Tree
 
@@ -133,13 +133,14 @@ class App(ttk.Frame):
         self.export_btn["state"] = tk.NORMAL
 
     def load_category_files(self, tar_path):
-        self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.bc.pkl"))
+        self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.h5"))
         file_num = len(self.tar_pkl_list)
 
         member_list = []
         class_list = []
         for file_path in self.tar_pkl_list:
-            src_df = pd.read_pickle(file_path)
+            h5 = hdf_df.DataFrameStorage(file_path)
+            src_df = h5.load_df("dimredu")
             idx = src_df.index
             src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
 
@@ -181,23 +182,37 @@ class App(ttk.Frame):
         return file_num, member_list, keypoint_list
 
     def load_feature_files(self, tar_path):
-        self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.feat.pkl"))
+        self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.h5"))
         file_num = len(self.tar_pkl_list)
 
         member_list = []
         feat_list = []
         scene_list = []
         for file_path in self.tar_pkl_list:
-            src_df = pd.read_pickle(file_path)
+            h5 = hdf_df.DataFrameStorage(file_path)
+
+            # get scene_table from attrs
+            profile = h5.load_profile()
+            dir_path = os.path.dirname(file_path)
+            trk_path = os.path.join(dir_path, "..", "..", "trk", profile["track_name"])
+            if not os.path.exists(trk_path):
+                trk_path = os.path.join(dir_path, "..", "trk", profile["track_name"])
+            if os.path.exists(trk_path):
+                trk_df = pd.read_pickle(trk_path)
+            src_attrs = df_attrs.DfAttrs(trk_df)
+            src_attrs.load_scene_table()
+            scene_list += src_attrs.get_scene_descriptions(add_blank=True)
+
+            # get DataFrame
+            points_df = h5.load_df("points")
+            mixnorm_df = h5.load_df("mixnorm")
+            # concat horizontally
+            src_df = pd.concat([points_df, mixnorm_df], axis=1)
             idx = src_df.index
             src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
 
             member_list += src_df.index.get_level_values("member").unique().tolist()
             feat_list += src_df.columns.tolist()
-
-            src_attrs = df_attrs.DfAttrs(src_df)
-            src_attrs.load_scene_table()
-            scene_list += src_attrs.get_scene_descriptions(add_blank=True)
 
         feat_list = list(set(feat_list))
         feat_list.remove("timestamp")
@@ -226,9 +241,10 @@ class App(ttk.Frame):
         # combination of member and keypoint
         for file_path in self.tar_pkl_list:
             # if not bc.pkl file, skip
-            if not file_path.endswith(".bc.pkl"):
+            if not file_path.endswith(".h5"):
                 continue
-            src_df = pd.read_pickle(file_path)
+            h5 = hdf_df.DataFrameStorage(file_path)
+            src_df = h5.load_df("dimredu")
             idx = src_df.index
             src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
             src_columns = src_df.columns
@@ -290,7 +306,8 @@ class App(ttk.Frame):
         # combination of member and keypoint
         tree_list = [(m, k) for m in member_list for k in keypoint_list]
         for file_path in self.tar_pkl_list:
-            src_df = pd.read_pickle(file_path)
+            h5 = hdf_df.DataFrameStorage(file_path)
+            src_df = h5.load_df("dimredu")
             idx = src_df.index
             src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
 
@@ -323,7 +340,11 @@ class App(ttk.Frame):
         # combination of member and feature
         tree_list = [(m, f) for m in member_list for f in feat_list]
         for file_path in self.tar_pkl_list:
-            src_df = pd.read_pickle(file_path)
+            h5 = hdf_df.DataFrameStorage(file_path)
+            points_df = h5.load_df("points")
+            mixnorm_df = h5.load_df("mixnorm")
+            # concat horizontally
+            src_df = pd.concat([points_df, mixnorm_df], axis=1)
             idx = src_df.index
             src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
 

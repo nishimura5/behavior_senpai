@@ -42,7 +42,7 @@ class PickleLoader:
         elif pkl_type == "feature":
             self.filetypes = [("HDf5 files", "*.h5")]
         elif pkl_type == "behavioral_coding":
-            self.filetypes = [("bc-pkl files", "*.bc.pkl")]
+            self.filetypes = [("bc-pkl files", "*.h5")]
         self.filetypes = windows_and_mac.file_types(self.filetypes)
 
         self.tar_path = org_path

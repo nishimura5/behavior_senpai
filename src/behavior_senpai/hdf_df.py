@@ -165,3 +165,9 @@ class DataFrameStorage:
         for _, row in params.iterrows():
             params_dict[row["key"]] = row["value"]
         return source_cols, params_dict
+
+    def load_profile(self):
+        with pd.HDFStore(self.filepath, mode="r") as store:
+            profile_df = store.get("profile")
+            profile_dict = dict(zip(profile_df["key"], profile_df["value"]))
+            return profile_dict
