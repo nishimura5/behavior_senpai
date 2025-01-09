@@ -90,6 +90,7 @@ class App(ttk.Frame):
 
         self.lineplot.set_trk_df(src_df)
         self.lineplot.set_vcap(args["cap"])
+        self.track_name = args["trk_pkl_name"]
         self.src_attrs = df_attrs.DfAttrs(src_df)
 
         # Update GUI
@@ -271,7 +272,7 @@ class App(ttk.Frame):
         export_df = self.feat_df
         export_df.attrs = self.src_attrs.attrs
         dst_path = os.path.join(self.calc_dir, self.calc_case, file_name+".h5")
-        history_dict = df_attrs.make_history_dict("mix", self.source_cols, {})
+        history_dict = df_attrs.make_history_dict("mix", self.source_cols, {}, self.track_name)
         file_inout.save_h5(dst_path, export_df, "mixnorm", proc_history=history_dict)
 
     def close(self):
