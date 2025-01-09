@@ -111,9 +111,9 @@ class App(ttk.Frame):
         export_df = pd.concat([self.feat_df, timestamp_df], axis=1)
         export_df.attrs = self.src_attrs.attrs
         calc_case = self.calc_case_entry.get_calc_case()
-        dst_path = os.path.join(self.calc_dir, calc_case, file_name + "_trj.feat.pkl")
+        dst_path = os.path.join(self.calc_dir, calc_case, file_name + ".h5")
         history_dict = df_attrs.make_history_dict("trajectory", [], {}, self.track_name)
-        file_inout.save_pkl(dst_path, export_df, proc_history=history_dict)
+        file_inout.save_h5(dst_path, export_df, "traj", proc_history=history_dict)
 
     def close(self):
         self.traj.close()

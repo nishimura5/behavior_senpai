@@ -4,6 +4,8 @@ import pandas as pd
 class DataFrameStorage:
     """
     group structure in HDF5
+    traj
+        df, source_cols
     points
         df, source_cols
     mixnorm
@@ -32,6 +34,7 @@ class DataFrameStorage:
         """
         with pd.HDFStore(self.filepath, mode="a") as store:
             # Save DataFrame
+            print(f"{group_name}/df")
             store.put(f"{group_name}/df", df, format="table")
 
             # Save attributes DataFrame
@@ -50,6 +53,8 @@ class DataFrameStorage:
             profile_df = pd.DataFrame(track_name)
             store.put("profile", profile_df, format="table")
 
+            if group_name == "traj":
+                pass
             if group_name == "points":
                 source_cols_df = self._feat_to_df(proc_history["source_cols"])
                 store.put(f"{group_name}/source_cols", source_cols_df, format="table")
@@ -126,6 +131,12 @@ class DataFrameStorage:
             source_cols = []
             source_cols_df = store.get(f"{group_name}/source_cols")
             if group_name == "points":
+                print(store.keys())
+                if "/traj/df" in store.keys():
+                    traj_df = store.get("traj/df")
+                    traj_df = traj_df.drop(columns="timestamp")
+                    df = pd.concat([df, traj_df], axis=1)
+                print(df)
                 source_cols = self._df_to_feat(source_cols_df)
                 profile_dict["type"] = "points"
             elif group_name == "mixnorm":
