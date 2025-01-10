@@ -131,12 +131,10 @@ class DataFrameStorage:
             source_cols = []
             source_cols_df = store.get(f"{group_name}/source_cols")
             if group_name == "points":
-                print(store.keys())
                 if "/traj/df" in store.keys():
                     traj_df = store.get("traj/df")
                     traj_df = traj_df.drop(columns="timestamp")
                     df = pd.concat([df, traj_df], axis=1)
-                print(df)
                 source_cols = self._df_to_feat(source_cols_df)
                 profile_dict["type"] = "points"
             elif group_name == "mixnorm":
@@ -176,6 +174,24 @@ class DataFrameStorage:
         for _, row in params.iterrows():
             params_dict[row["key"]] = row["value"]
         return source_cols, params_dict
+
+    def load_points_source_cols(self):
+        source_cols = []
+        with pd.HDFStore(self.filepath, mode="r") as store:
+            if "/points/source_cols" not in store.keys():
+                return source_cols
+            source_cols_df = store.get("points/source_cols")
+            source_cols = source_cols_df[["code", "member", "point_a", "point_b", "point_c"]].values.tolist()
+            return source_cols
+
+    def load_mixnorm_source_cols(self):
+        source_cols = []
+        with pd.HDFStore(self.filepath, mode="r") as store:
+            if "/mixnorm/source_cols" not in store.keys():
+                return source_cols
+            source_cols_df = store.get("mixnorm/source_cols")
+            source_cols = source_cols_df[["name", "member", "col_a", "op", "col_b", "normalize"]].values.tolist()
+            return source_cols
 
     def load_profile(self):
         with pd.HDFStore(self.filepath, mode="r") as store:

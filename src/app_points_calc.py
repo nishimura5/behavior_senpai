@@ -5,7 +5,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from behavior_senpai import df_attrs, file_inout, keypoints_proc
+from behavior_senpai import df_attrs, file_inout, hdf_df, keypoints_proc
 from gui_parts import CalcCaseEntry, IntEntry, TempFile
 from gui_points_calc import Tree
 from line_plotter import LinePlotter
@@ -92,6 +92,12 @@ class App(ttk.Frame):
         self.tree.set_members(self.tar_df.index.levels[1].unique().tolist())
         self.tree.set_df(self.tar_df)
 
+        # load h5 file for tree
+        expected_file_name = f"{args['trk_pkl_name'].split('.')[0]}.h5"
+        calc_case = self.calc_case_entry.get_calc_case()
+        h5_path = os.path.join(self.calc_dir, calc_case, expected_file_name)
+        self._import_source_cols(h5_path)
+
     def add_row(self):
         self.tree.add_calc()
 
@@ -105,16 +111,16 @@ class App(ttk.Frame):
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
             return
-        in_trk_df = pl.load_h5("points")
-        in_trk_attrs = df_attrs.DfAttrs(in_trk_df)
-        in_trk_attrs.load_proc_history()
-        if in_trk_attrs.validate_model(self.src_attrs) is False:
-            return
-        if in_trk_attrs.validate_newest_history_proc("points") is False:
-            return
-        for row in in_trk_attrs.get_source_cols():
-            row[1] = self.tree.get_members()[0]
-            self.tree.insert(row)
+        h5_path = pl.get_tar_path()
+        self._import_source_cols(h5_path)
+
+    def _import_source_cols(self, h5_path):
+        if os.path.exists(h5_path) is True:
+            hdf = hdf_df.DataFrameStorage(h5_path)
+            source_cols = hdf.load_points_source_cols()
+            for row in source_cols:
+                row[1] = self.tree.get_members()[0]
+                self.tree.insert(row)
 
     def draw(self):
         self.lineplot.clear()

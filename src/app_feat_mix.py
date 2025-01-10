@@ -4,7 +4,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from behavior_senpai import df_attrs, feature_proc, file_inout
+from behavior_senpai import df_attrs, feature_proc, file_inout, hdf_df
 from gui_feat_mix import Tree
 from gui_parts import Combobox, TempFile
 from line_plotter import LinePlotter
@@ -106,6 +106,9 @@ class App(ttk.Frame):
             pl.set_tar_path(expected_pts_file_path)
             self.load_feat(pl)
 
+            # load h5 file for tree
+            self._import_source_cols(expected_pts_file_path)
+
     def open_feat(self):
         pl = file_inout.PickleLoader(self.calc_dir, "feature")
         pl.join_calc_case(self.calc_case)
@@ -191,26 +194,26 @@ class App(ttk.Frame):
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
             return
-        in_trk_df = pl.load_h5("mixnorm")
-        in_trk_attrs = df_attrs.DfAttrs(in_trk_df)
-        in_trk_attrs.load_proc_history()
-        if in_trk_attrs.validate_model(self.src_attrs) is False:
-            return
-        if in_trk_attrs.validate_newest_history_proc("mix") is False:
-            return
-        for row in in_trk_attrs.get_source_cols():
-            if row[2] not in self.tar_df.columns and row[2] != " ":
-                print(f"Column not found: {row[2]}")
-                continue
-            if row[4] not in self.tar_df.columns and row[4] != " ":
-                print(f"Column not found: {row[4]}")
-                continue
+        h5_path = pl.get_tar_path()
+        self._import_source_cols(h5_path)
 
-            row[1] = str(row[1])
-            if row[1] not in self.tree.get_members():
-                print(f"Member not found: {row[1]} in {self.tree.get_members()}")
-                row[1] = self.tree.get_members()[0]
-            self.tree.insert(row)
+    def _import_source_cols(self, h5_path):
+        if os.path.exists(h5_path) is True:
+            hdf = hdf_df.DataFrameStorage(h5_path)
+            source_cols = hdf.load_mixnorm_source_cols()
+            for row in source_cols:
+                if row[2] not in self.tar_df.columns and row[2] != " ":
+                    print(f"Column not found: {row[2]}")
+                    continue
+                if row[4] not in self.tar_df.columns and row[4] != " ":
+                    print(f"Column not found: {row[4]}")
+                    continue
+
+                row[1] = str(row[1])
+                if row[1] not in self.tree.get_members():
+                    print(f"Member not found: {row[1]} in {self.tree.get_members()}")
+                    row[1] = self.tree.get_members()[0]
+                self.tree.insert(row)
 
     def draw(self):
         self.lineplot.clear_fig()
