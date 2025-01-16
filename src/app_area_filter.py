@@ -133,6 +133,8 @@ class App(ttk.Frame):
             col = "score"
         elif self.model_name in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
             col = "conf"
+        elif self.model_name in ["DeepLabCut"]:
+            col = "likelihood"
         else:
             print(f"Unsupported model: {self.model_name}")
             return

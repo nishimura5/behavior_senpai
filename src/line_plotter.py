@@ -65,6 +65,9 @@ class LinePlotter:
         elif trk_df.attrs["model"] == "RTMPose-x WholeBody133":
             self.anno = pose_drawer.Annotate("coco133.toml")
             cols_for_anno = ["x", "y", "score"]
+        elif trk_df.attrs["model"] == "DeepLabCut":
+            self.anno = pose_drawer.Annotate("deeplabcut.toml")
+            cols_for_anno = ["x", "y", "likelihood"]
         self.anno_df = trk_df.reset_index().set_index(["timestamp", "member", "keypoint"]).loc[:, cols_for_anno]
         self.anno_time_member_indexes = self.anno_df.index.droplevel(2).unique()
         self.timestamps = self.anno_time_member_indexes.get_level_values("timestamp").unique().to_numpy()

@@ -12,7 +12,7 @@ class DataFrameStorage:
         df, source_cols
     dimredu
         df, params, source_cols, features
-    profile
+    profile: dictionary
     """
 
     def __init__(self, filepath: str):

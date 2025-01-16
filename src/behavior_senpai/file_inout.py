@@ -4,7 +4,7 @@ from tkinter import filedialog
 
 import pandas as pd
 
-from . import hdf_df, keypoints_proc, windows_and_mac
+from . import deeplabcut_hdf, hdf_df, keypoints_proc, windows_and_mac
 
 
 def open_pkl(init_dir, org_path=None, filetypes=[("pkl files", "*.pkl")]):
@@ -16,6 +16,7 @@ def open_pkl(init_dir, org_path=None, filetypes=[("pkl files", "*.pkl")]):
         print("open_pkl() canceled.")
         return org_path
     print(f"open_pkl() done. {tar_path}")
+
     return tar_path
 
 
@@ -23,11 +24,37 @@ def load_track_file(tar_path, allow_calculated_track_file=False):
     if os.path.exists(tar_path) is False:
         print(f"File not found: {tar_path}")
         return
-    src_df = pd.read_pickle(tar_path)
+    # 最終的な仕様は下記
+    # pklをhdf5に変更, 拡張子は.trkにする予定(featの拡張子は最終的には.featに変更する予定)
+    # 拡張子がh5なら
+    #  HDF5を開いた後、group名(df_with_missing)でDLCか否かを判断して分岐
+    #  group名が違う場合は読み込まない
+    #  DLCの場合はmp4のファイル名等の情報を入力するためのダイアログを表示
+    if tar_path.endswith(".h5"):
+        src_df = load_dlc_h5(tar_path)
+    else:
+        src_df = pd.read_pickle(tar_path)
     if keypoints_proc.has_keypoint(src_df) is False and allow_calculated_track_file is False:
         print(f"No keypoint index in {tar_path}")
         return
     return src_df
+
+
+def load_dlc_h5(tar_path):
+    df = deeplabcut_hdf.read_h5(tar_path)
+    kps, df = deeplabcut_hdf.transform_df(df, 29.98)
+
+    # source information
+    #  mp4 file name
+    #  h5 file name
+    #  fps
+    #  frame size(w,h)
+    df.attrs["video_name"] = "desk_2min_a.mp4"
+    df.attrs["model"] = "DeepLabCut"
+    df.attrs["frame_size"] = (3840, 2160)
+    deeplabcut_hdf.generate_toml(kps)
+    print(kps)
+    return df
 
 
 class PickleLoader:
@@ -38,11 +65,9 @@ class PickleLoader:
             self.init_dir = init_dir
 
         if pkl_type == "track":
-            self.filetypes = [("pkl files", "*.pkl"), ("trk-pkl files", "*.trk.pkl")]
-        elif pkl_type == "feature":
-            self.filetypes = [("HDf5 files", "*.h5")]
-        elif pkl_type == "behavioral_coding":
-            self.filetypes = [("bc-pkl files", "*.h5")]
+            self.filetypes = [("pkl files", "*.pkl"), ("trk-pkl files", "*.trk.pkl"), ("HDF5 files", "*.h5")]
+        elif pkl_type in ["feature", "behavioral_coding"]:
+            self.filetypes = [("HDF5 files", "*.h5")]
         self.filetypes = windows_and_mac.file_types(self.filetypes)
 
         self.tar_path = org_path
@@ -94,6 +119,17 @@ class PickleLoader:
             f"{called_in} < {os.path.basename(self.tar_path)}: shape={src_df.shape[0]:,}x{src_df.shape[1]} frames={frame_num:,} members={member_num}"
         )
         return src_df
+
+    def load_dlc_h5(self):
+        df = deeplabcut_hdf.read_h5(self.tar_path)
+        kps, df = deeplabcut_hdf.transform_df(df, 29.98)
+
+        df.attrs["video_name"] = "desk_2min_a.mp4"
+        df.attrs["model"] = "DeepLabCut"
+        df.attrs["frame_size"] = (3840, 2160)
+        deeplabcut_hdf.generate_toml(kps)
+        print(kps)
+        return df
 
     def get_tar_path(self):
         return self.tar_path

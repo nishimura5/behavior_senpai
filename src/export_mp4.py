@@ -52,6 +52,9 @@ class MakeMp4:
         elif self.src_attrs["model"] == "RTMPose-x WholeBody133":
             anno = pose_drawer.Annotate("coco133.toml")
             suffix = "rtm_coco133"
+        elif self.src_attrs["model"] == "DeepLabCut":
+            anno = pose_drawer.Annotate("deeplabcut.toml")
+            suffix = "deeplabcut"
 
         dst_dir = os.path.join(self.pkl_dir, os.pardir, "mp4")
         os.makedirs(dst_dir, exist_ok=True)
