@@ -448,6 +448,9 @@ class App(ttk.Frame):
 
 def bool_to_dict(src_df, time_min=0, time_max=60 * 3600 * 1000 * 2):
     scene_table = {"start": [], "end": [], "class": []}
+    end_src_df = src_df.copy()
+    diff_ave = src_df["timestamp"].diff().mean()
+    end_src_df["timestamp"] = src_df["timestamp"].shift(-1).fillna(src_df["timestamp"].max() + diff_ave)
     for col_name in src_df.columns:
         if col_name == "class" or col_name == "timestamp":
             continue
@@ -455,7 +458,7 @@ def bool_to_dict(src_df, time_min=0, time_max=60 * 3600 * 1000 * 2):
         diff_follow_sr = src_df.groupby("member")[col_name].diff(-1).astype(bool)
         # ラベリング、-1とNaNはastypeでTrueになる
         starts = src_df.loc[(src_df[col_name] & diff_prev_sr), "timestamp"].values.tolist()
-        ends = src_df.loc[(src_df[col_name] & diff_follow_sr), "timestamp"].values.tolist()
+        ends = end_src_df.loc[(src_df[col_name] & diff_follow_sr), "timestamp"].values.tolist()
         # 要素の先頭を比較してstartsの先頭にtime_minを追加
         if starts[0] > ends[0]:
             starts.insert(0, time_min)
