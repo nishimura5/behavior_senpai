@@ -76,6 +76,9 @@ class App(ttk.Frame):
         self.draw_btn = ttk.Button(control_frame, text="Draw", command=self.calc)
         self.draw_btn.pack(side=tk.LEFT)
 
+        self.export_btn = ttk.Button(control_frame, text="Export", command=self.export)
+        self.export_btn.pack(side=tk.LEFT)
+
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5, fill=tk.X)
         cols = [
@@ -105,6 +108,7 @@ class App(ttk.Frame):
             return
         self.tar_dir = tar_dir
         self.draw_btn["state"] = tk.DISABLED
+        self.export_btn["state"] = tk.DISABLED
         self.load_files()
 
     def load_files(self):
@@ -126,6 +130,7 @@ class App(ttk.Frame):
         for i, value in enumerate(member_list):
             self.member_listbox.insert(tk.END, value)
         self.draw_btn["state"] = tk.NORMAL
+        self.export_btn["state"] = tk.NORMAL
 
     def load_category_files(self, tar_path):
         self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.bc.pkl"))
@@ -391,6 +396,7 @@ class App(ttk.Frame):
         self.box_ax.grid(axis="y", color="gray", linestyle="--", linewidth=0.5)
         self.box_ax.grid(axis="y", color="gray", linestyle="--", linewidth=0.5, which="minor")
         self.canvas.draw()
+        self.export_df = src_df
 
     def remove(self):
         self.tree.delete_selected()
@@ -402,10 +408,18 @@ class App(ttk.Frame):
         elif calc_type == "bc" or calc_type == "feat":
             self.select_folder_btn["text"] = "Select calc folder"
         self.draw_btn["state"] = tk.DISABLED
+        self.export_btn["state"] = tk.DISABLED
         self.tar_dir = self.init_tar_dir
         self.folder_path_label["text"] = self.tar_dir
         self.member_listbox.delete(0, tk.END)
         self.tree.clear()
+
+    def export(self):
+        """Export result as csv file"""
+        save_path = filedialog.asksaveasfilename(initialdir=self.tar_dir, filetypes=[("csv file", "*.csv")])
+        if not save_path:
+            return
+        self.export_df.to_csv(save_path, index=True, header=True)
 
     def close(self):
         pass
