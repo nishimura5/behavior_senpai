@@ -76,9 +76,6 @@ class App(ttk.Frame):
         self.draw_btn = ttk.Button(control_frame, text="Draw", command=self.calc)
         self.draw_btn.pack(side=tk.LEFT)
 
-        self.export_btn = ttk.Button(control_frame, text="Export", command=self.export)
-        self.export_btn.pack(side=tk.LEFT)
-
         tree_frame = ttk.Frame(self)
         tree_frame.pack(pady=5, fill=tk.X)
         cols = [
@@ -108,7 +105,6 @@ class App(ttk.Frame):
             return
         self.tar_dir = tar_dir
         self.draw_btn["state"] = tk.DISABLED
-        self.export_btn["state"] = tk.DISABLED
         self.load_files()
 
     def load_files(self):
@@ -130,7 +126,6 @@ class App(ttk.Frame):
         for i, value in enumerate(member_list):
             self.member_listbox.insert(tk.END, value)
         self.draw_btn["state"] = tk.NORMAL
-        self.export_btn["state"] = tk.NORMAL
 
     def load_category_files(self, tar_path):
         self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.bc.pkl"))
@@ -396,7 +391,6 @@ class App(ttk.Frame):
         self.box_ax.grid(axis="y", color="gray", linestyle="--", linewidth=0.5)
         self.box_ax.grid(axis="y", color="gray", linestyle="--", linewidth=0.5, which="minor")
         self.canvas.draw()
-        self.export_df = src_df
 
     def remove(self):
         self.tree.delete_selected()
@@ -408,18 +402,10 @@ class App(ttk.Frame):
         elif calc_type == "bc" or calc_type == "feat":
             self.select_folder_btn["text"] = "Select calc folder"
         self.draw_btn["state"] = tk.DISABLED
-        self.export_btn["state"] = tk.DISABLED
         self.tar_dir = self.init_tar_dir
         self.folder_path_label["text"] = self.tar_dir
         self.member_listbox.delete(0, tk.END)
         self.tree.clear()
-
-    def export(self):
-        """Export result as csv file"""
-        save_path = filedialog.asksaveasfilename(initialdir=self.tar_dir, filetypes=[("csv file", "*.csv")])
-        if not save_path:
-            return
-        self.export_df.to_csv(save_path, index=True, header=True)
 
     def close(self):
         pass
@@ -427,6 +413,9 @@ class App(ttk.Frame):
 
 def bool_to_dict(src_df, time_min=0, time_max=60 * 3600 * 1000 * 2):
     scene_table = {"start": [], "end": [], "class": []}
+    end_src_df = src_df.copy()
+    diff_ave = src_df["timestamp"].diff().mean()
+    end_src_df["timestamp"] = src_df["timestamp"].shift(-1).fillna(src_df["timestamp"].max() + diff_ave)
     for col_name in src_df.columns:
         if col_name == "class" or col_name == "timestamp":
             continue
@@ -434,10 +423,7 @@ def bool_to_dict(src_df, time_min=0, time_max=60 * 3600 * 1000 * 2):
         diff_follow_sr = src_df.groupby("member")[col_name].diff(-1).astype(bool)
         # ラベリング、-1とNaNはastypeでTrueになる
         starts = src_df.loc[(src_df[col_name] & diff_prev_sr), "timestamp"].values.tolist()
-        ends = src_df.loc[(src_df[col_name] & diff_follow_sr), "timestamp"].values.tolist()
-        # 要素の先頭を比較してstartsの先頭にtime_minを追加
-        if starts[0] > ends[0]:
-            starts.insert(0, time_min)
+        ends = end_src_df.loc[(src_df[col_name] & diff_follow_sr), "timestamp"].values.tolist()
         for start, end in itertools.zip_longest(starts, ends, fillvalue=time_max):
             start_str = time_format.msec_to_timestr_with_fff(start)
             end_str = time_format.msec_to_timestr_with_fff(end)
