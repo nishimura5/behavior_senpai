@@ -140,7 +140,7 @@ class App(ttk.Frame):
         class_list = []
         for file_path in self.tar_pkl_list:
             h5 = hdf_df.DataFrameStorage(file_path)
-            src_df = h5.load_df("dimredu")
+            src_df = h5.load_dimredu_df()
             idx = src_df.index
             src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
 
@@ -204,8 +204,8 @@ class App(ttk.Frame):
             scene_list += src_attrs.get_scene_descriptions(add_blank=True)
 
             # get DataFrame
-            points_df = h5.load_df("points")
-            mixnorm_df = h5.load_df("mixnorm")
+            points_df = h5.load_points_df()
+            mixnorm_df = h5.load_mixnorm_df()
             # concat horizontally
             src_df = pd.concat([points_df, mixnorm_df], axis=1)
             idx = src_df.index
@@ -244,7 +244,7 @@ class App(ttk.Frame):
             if not file_path.endswith(".h5"):
                 continue
             h5 = hdf_df.DataFrameStorage(file_path)
-            src_df = h5.load_df("dimredu")
+            src_df = h5.load_dimredu_df()
             idx = src_df.index
             src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
             src_columns = src_df.columns
@@ -307,7 +307,7 @@ class App(ttk.Frame):
         tree_list = [(m, k) for m in member_list for k in keypoint_list]
         for file_path in self.tar_pkl_list:
             h5 = hdf_df.DataFrameStorage(file_path)
-            src_df = h5.load_df("dimredu")
+            src_df = h5.load_dimredu_df()
             idx = src_df.index
             src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2]])
 
@@ -341,9 +341,9 @@ class App(ttk.Frame):
         tree_list = [(m, f) for m in member_list for f in feat_list]
         for file_path in self.tar_pkl_list:
             h5 = hdf_df.DataFrameStorage(file_path)
-            src_df = h5.load_df("points")
+            src_df = h5.load_points_df()
             if h5.has_group("mixnorm"):
-                mixnorm_df = h5.load_df("mixnorm")
+                mixnorm_df = h5.load_mixnorm_df()
                 # concat horizontally
                 mixnorm_df = mixnorm_df.drop(columns="timestamp")
                 src_df = pd.concat([src_df, mixnorm_df], axis=1)

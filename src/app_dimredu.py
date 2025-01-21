@@ -120,7 +120,6 @@ class App(ttk.Frame):
         self.drp.set_trk_df(src_df)
         self.drp.set_vcap(args["cap"])
         self.track_name = args["trk_pkl_name"]
-        self.src_attrs = df_attrs.DfAttrs(src_df)
 
         self.time_min, self.time_max = args["time_span_msec"]
 
@@ -158,6 +157,8 @@ class App(ttk.Frame):
         self.feat_path_label["text"] = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
         h5 = hdf_df.DataFrameStorage(self.feat_path)
         self.feat_df = h5.load_mixnorm_df()
+        if self.feat_df is None:
+            return
 
         # update GUI
         self.member_keypoints_combos.set_df(self.feat_df)
@@ -181,21 +182,7 @@ class App(ttk.Frame):
             return
         h5 = hdf_df.DataFrameStorage(pl.get_tar_path())
         cluster_df = h5.load_dimredu_df()
-        in_trk_attrs = df_attrs.DfAttrs(cluster_df)
-        in_trk_attrs.load_proc_history()
-        if in_trk_attrs.validate_model(self.src_attrs) is False:
-            return
-        if in_trk_attrs.validate_newest_history_proc("dimredu") is False:
-            return
-
-        print(cluster_df.attrs)
-        if "features" not in cluster_df.attrs.keys():
-            print("features not found in attrs")
-            return
-        features = cluster_df.attrs["features"]
-
-        source_cols = in_trk_attrs.get_source_cols()
-        params = in_trk_attrs.get_params()
+        source_cols, params, features = h5.load_dimredu_source_cols_and_params_and_features()
         self.drp.set_cluster_names(features)
 
         # update listbox

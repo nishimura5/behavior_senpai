@@ -56,12 +56,7 @@ class DataFrameStorage:
             profile_df = pd.DataFrame(track_name)
             store.put("profile", profile_df, format="table")
 
-            if group_name == "traj":
-                pass
-            if group_name == "points":
-                source_cols_df = self._feat_to_df(proc_history["source_cols"])
-                store.put(f"{group_name}/source_cols", source_cols_df, format="table")
-            elif group_name == "mixnorm":
+            if group_name == "mixnorm":
                 source_cols_df = self._norm_to_df(proc_history["source_cols"])
                 store.put(f"{group_name}/source_cols", source_cols_df, format="table")
             elif group_name == "dimredu":
@@ -109,6 +104,37 @@ class DataFrameStorage:
         source_cols_df = pd.DataFrame(source_cols)
         return source_cols_df
 
+    def save_traj_df(self, src_df: pd.DataFrame, track_name: str):
+        """
+        Save trajectory DataFrame to HDF store
+        """
+        with pd.HDFStore(self.filepath, mode="a") as store:
+            store.put("traj/df", src_df, format="table")
+
+            track_name = {"key": ["track_name"], "value": [track_name]}
+            profile_df = pd.DataFrame(track_name)
+            store.put("profile", profile_df, format="table")
+        called_in = os.path.basename(inspect.stack()[1].filename)
+        print(f"{called_in} > {os.path.basename(os.path.basename(self.filepath))}")
+
+    def save_points_df(self, src_df: pd.DataFrame, track_name: str, source_cols: list):
+        with pd.HDFStore(self.filepath, mode="a") as store:
+            store.put("points/df", src_df, format="table")
+
+            dst_source_cols = {"code": [], "member": [], "point_a": [], "point_b": [], "point_c": []}
+            for source_col in source_cols:
+                dst_source_cols["code"].append(source_col[0])
+                dst_source_cols["member"].append(source_col[1])
+                dst_source_cols["point_a"].append(str(source_col[2]))
+                dst_source_cols["point_b"].append(str(source_col[3]))
+                dst_source_cols["point_c"].append(str(source_col[4]))
+            source_cols_df = pd.DataFrame(dst_source_cols)
+            store.put("points/source_cols", source_cols_df, format="table")
+
+            track_name = {"key": ["track_name"], "value": [track_name]}
+            profile_df = pd.DataFrame(track_name)
+            store.put("profile", profile_df, format="table")
+
     def has_group(self, group_name: str) -> bool:
         """
         Check if group exists in HDF store. startswith() is used to check for subgroups.
@@ -133,33 +159,14 @@ class DataFrameStorage:
             if "/dimredu/df" not in store.keys():
                 print("No dimredu data in HDF")
                 return None
-            df = store.get(f"dimredu/df")
-
-            attrs_df = store.get("attrs")
-            attrs_dict = dict(zip(attrs_df["key"], attrs_df["value"]))
-            df.attrs = attrs_dict
-
-            # Load proc_history
-            profile_df = store.get("profile")
-            profile_dict = dict(zip(profile_df["key"], profile_df["value"]))
-
-            params_df = store.get("dimredu/params")
-            profile_dict["params"] = dict(zip(params_df["key"], params_df["value"]))
-            profile_dict["type"] = "dimredu"
-
-            features_df = store.get("dimredu/features")
-            features = features_df["feat"].tolist()
-            df.attrs["features"] = features
-
-            source_cols_df = store.get("dimredu/source_cols")
-            source_cols = source_cols_df["code"].tolist()
-            profile_dict["source_cols"] = source_cols
-            df.attrs["proc_history"] = [profile_dict]
-
+            df = store.get("dimredu/df")
         self._print_df_info(df)
         return df
 
     def load_points_df(self) -> pd.DataFrame:
+        """
+        Load DataFrame from points and traj groups if they exist, otherwise load points DataFrame
+        """
         with pd.HDFStore(self.filepath, mode="r") as store:
             points_df = None
             traj_df = None
@@ -182,10 +189,14 @@ class DataFrameStorage:
             return df
 
     def load_mixnorm_df(self) -> pd.DataFrame:
+        """
+        Load DataFrame from specified group if it exists, otherwise load points DataFrame
+        """
         with pd.HDFStore(self.filepath, mode="r") as store:
             if "/mixnorm/df" not in store.keys():
                 print("No mixnorm data in HDF")
-                return None
+                df = self.load_points_df()
+                return df
             df = store.get("mixnorm/df")
             self._print_df_info(df)
             return df
@@ -213,6 +224,22 @@ class DataFrameStorage:
             source_cols_df = store.get("mixnorm/source_cols")
             source_cols = source_cols_df[["name", "member", "col_a", "op", "col_b", "normalize"]].values.tolist()
             return source_cols
+
+    def load_dimredu_source_cols_and_params_and_features(self) -> (list, dict, list):
+        source_cols = []
+        params = {}
+        features = []
+        with pd.HDFStore(self.filepath, mode="r") as store:
+            if "/dimredu/source_cols" in store.keys():
+                source_cols_df = store.get("dimredu/source_cols")
+                source_cols = source_cols_df["code"].tolist()
+            if "/dimredu/params" in store.keys():
+                params_df = store.get("dimredu/params")
+                params = dict(zip(params_df["key"], params_df["value"]))
+            if "/dimredu/features" in store.keys():
+                features_df = store.get("dimredu/features")
+                features = features_df["feat"].tolist()
+            return source_cols, params, features
 
     def load_profile(self) -> dict:
         with pd.HDFStore(self.filepath, mode="r") as store:

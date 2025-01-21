@@ -190,7 +190,8 @@ class App(ttk.Frame):
         calc_case = self.calc_case_entry.get_calc_case()
         dst_path = os.path.join(self.calc_dir, calc_case, file_name + ".h5")
         history_dict = df_attrs.make_history_dict("points", self.source_cols, {}, self.track_name)
-        file_inout.save_h5(dst_path, export_df, proc_history=history_dict, df_type="points")
+        h5 = hdf_df.DataFrameStorage(dst_path)
+        h5.save_points_df(export_df, history_dict["track_name"], history_dict["source_cols"])
 
     def _find_data_dir(self):
         if getattr(sys, "frozen", False):
