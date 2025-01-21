@@ -28,13 +28,10 @@ class App(ttk.Frame):
 
         load_frame = ttk.Frame(self)
         load_frame.pack(padx=10, pady=5, anchor=tk.NW, expand=True, fill=tk.X)
-        self.load_combo = Combobox(load_frame, label="Load:", values=["Initial", "Add right"], width=15)
-        self.load_combo.pack_horizontal()
-        self.load_combo.set_state("disabled")
         feat_btn = ttk.Button(load_frame, text="Select feature file", command=self.open_feat)
-        feat_btn.pack(side=tk.LEFT, padx=5)
+        feat_btn.pack(side=tk.LEFT)
         self.feat_path_label = ttk.Label(load_frame, text="No feature file loaded.")
-        self.feat_path_label.pack(side=tk.LEFT, padx=(5, 0), expand=True, fill=tk.X)
+        self.feat_path_label.pack(side=tk.LEFT, padx=(10, 0), expand=True, fill=tk.X)
 
         self.scene_combo = Combobox(load_frame, label="Scene:", values=[""], width=15)
         self.scene_combo.pack_horizontal(anchor=tk.E, padx=5)
@@ -132,27 +129,14 @@ class App(ttk.Frame):
         feat_path = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
         tar_df = tar_df[~tar_df.index.duplicated(keep="last")]
 
-        load_option = self.load_combo.get()
-        if load_option == "Initial":
-            self.tar_df = tar_df
-            self.feat_path_label["text"] = feat_path
-            self.load_combo.set_values(["Initial", "Add right"])
-        elif load_option == "Add right":
-            if len(self.tar_df) != len(tar_df):
-                print("The length of the dataframes are not the same.")
-                return
-            tar_df = tar_df.drop("timestamp", axis=1)
-            self.tar_df = pd.concat([self.tar_df, tar_df], axis=1)
-            self.feat_path_label["text"] = f"{self.feat_path_label['text']}, {feat_path}"
-            self.load_combo.set_values(["Add right", "Initial"])
-            print(f"New width: {len(self.tar_df.columns)}")
+        self.tar_df = tar_df
+        self.feat_path_label["text"] = feat_path
 
         # update GUI
         self.tree.set_df(self.tar_df)
         self.add_btn["state"] = "normal"
         self.draw_btn["state"] = "normal"
         self.import_btn["state"] = "normal"
-        self.load_combo.set_state("readonly")
 
     def add_row(self):
         self.tree.add_calc()
