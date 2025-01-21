@@ -111,7 +111,7 @@ class DataFrameStorage:
 
     def has_group(self, group_name: str) -> bool:
         """
-        Check if group exists in HDF store
+        Check if group exists in HDF store. startswith() is used to check for subgroups.
 
         Args:
             group_name: Name of group to check ('points', 'mixnorm', 'dimredu')
@@ -130,7 +130,9 @@ class DataFrameStorage:
             pd.DataFrame: Loaded DataFrame
         """
         with pd.HDFStore(self.filepath, mode="r") as store:
-            # bc/df -> used in scene_table
+            if "/dimredu/df" not in store.keys():
+                print("No dimredu data in HDF")
+                return None
             df = store.get(f"dimredu/df")
 
             attrs_df = store.get("attrs")
@@ -141,9 +143,6 @@ class DataFrameStorage:
             profile_df = store.get("profile")
             profile_dict = dict(zip(profile_df["key"], profile_df["value"]))
 
-            source_cols_df = store.get("dimredu/source_cols")
-            source_cols = source_cols_df["code"].tolist()
-
             params_df = store.get("dimredu/params")
             profile_dict["params"] = dict(zip(params_df["key"], params_df["value"]))
             profile_dict["type"] = "dimredu"
@@ -152,13 +151,15 @@ class DataFrameStorage:
             features = features_df["feat"].tolist()
             df.attrs["features"] = features
 
+            source_cols_df = store.get("dimredu/source_cols")
+            source_cols = source_cols_df["code"].tolist()
             profile_dict["source_cols"] = source_cols
             df.attrs["proc_history"] = [profile_dict]
 
         self._print_df_info(df)
         return df
 
-    def load_points_df(self):
+    def load_points_df(self) -> pd.DataFrame:
         with pd.HDFStore(self.filepath, mode="r") as store:
             points_df = None
             traj_df = None
@@ -180,7 +181,7 @@ class DataFrameStorage:
             self._print_df_info(df)
             return df
 
-    def load_mixnorm_df(self):
+    def load_mixnorm_df(self) -> pd.DataFrame:
         with pd.HDFStore(self.filepath, mode="r") as store:
             if "/mixnorm/df" not in store.keys():
                 print("No mixnorm data in HDF")
@@ -195,7 +196,7 @@ class DataFrameStorage:
         called_in = os.path.basename(inspect.stack()[1].filename)
         print(f"{called_in} < {os.path.basename(self.filepath)}: shape={df.shape[0]:,}x{df.shape[1]} frames={frame_num:,} members={member_num}")
 
-    def load_points_source_cols(self):
+    def load_points_source_cols(self) -> list:
         source_cols = []
         with pd.HDFStore(self.filepath, mode="r") as store:
             if "/points/source_cols" not in store.keys():
@@ -204,7 +205,7 @@ class DataFrameStorage:
             source_cols = source_cols_df[["code", "member", "point_a", "point_b", "point_c"]].values.tolist()
             return source_cols
 
-    def load_mixnorm_source_cols(self):
+    def load_mixnorm_source_cols(self) -> list:
         source_cols = []
         with pd.HDFStore(self.filepath, mode="r") as store:
             if "/mixnorm/source_cols" not in store.keys():
@@ -213,7 +214,7 @@ class DataFrameStorage:
             source_cols = source_cols_df[["name", "member", "col_a", "op", "col_b", "normalize"]].values.tolist()
             return source_cols
 
-    def load_profile(self):
+    def load_profile(self) -> dict:
         with pd.HDFStore(self.filepath, mode="r") as store:
             profile_df = store.get("profile")
             profile_dict = dict(zip(profile_df["key"], profile_df["value"]))
