@@ -4,7 +4,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from behavior_senpai import df_attrs, file_inout, keypoints_proc
+from behavior_senpai import df_attrs, file_inout, hdf_df, keypoints_proc
 from dimredu_plotter import DimensionalReductionPlotter
 from gui_parts import Combobox, IntEntry, MemberKeypointComboboxes, StrEntry, TempFile
 
@@ -156,7 +156,8 @@ class App(ttk.Frame):
     def load_feat(self, pl: file_inout.PickleLoader):
         self.feat_path = pl.get_tar_path()
         self.feat_path_label["text"] = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
-        self.feat_df = pl.load_h5("mixnorm")
+        h5 = hdf_df.DataFrameStorage(self.feat_path)
+        self.feat_df = h5.load_mixnorm_df()
 
         # update GUI
         self.member_keypoints_combos.set_df(self.feat_df)
@@ -178,7 +179,8 @@ class App(ttk.Frame):
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
             return
-        cluster_df = pl.load_h5("dimredu")
+        h5 = hdf_df.DataFrameStorage(pl.get_tar_path())
+        cluster_df = h5.load_dimredu_df()
         in_trk_attrs = df_attrs.DfAttrs(cluster_df)
         in_trk_attrs.load_proc_history()
         if in_trk_attrs.validate_model(self.src_attrs) is False:

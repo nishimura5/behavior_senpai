@@ -1,3 +1,6 @@
+import inspect
+import os
+
 import pandas as pd
 
 
@@ -119,19 +122,16 @@ class DataFrameStorage:
         with pd.HDFStore(self.filepath, mode="r") as store:
             return any([key.startswith(f"/{group_name}") for key in store.keys()])
 
-    def load_df(self, group_name: str) -> pd.DataFrame:
+    def load_dimredu_df(self) -> pd.DataFrame:
         """
         Load DataFrame from specified group
-
-        Args:
-            group_name: Name of group to load ('points', 'mixnorm', 'dimredu')
 
         Returns:
             pd.DataFrame: Loaded DataFrame
         """
         with pd.HDFStore(self.filepath, mode="r") as store:
             # bc/df -> used in scene_table
-            df = store.get(f"{group_name}/df")
+            df = store.get(f"dimredu/df")
 
             attrs_df = store.get("attrs")
             attrs_dict = dict(zip(attrs_df["key"], attrs_df["value"]))
@@ -141,52 +141,59 @@ class DataFrameStorage:
             profile_df = store.get("profile")
             profile_dict = dict(zip(profile_df["key"], profile_df["value"]))
 
-            source_cols = []
-            source_cols_df = store.get(f"{group_name}/source_cols")
-            if group_name == "points":
-                if "/traj/df" in store.keys():
-                    traj_df = store.get("traj/df")
-                    traj_df = traj_df.drop(columns="timestamp")
-                    df = pd.concat([df, traj_df], axis=1)
-                source_cols = self._df_to_feat(source_cols_df)
-                profile_dict["type"] = "points"
-            elif group_name == "mixnorm":
-                source_cols = self._df_to_norm(source_cols_df)
-                profile_dict["type"] = "mix"
+            source_cols_df = store.get("dimredu/source_cols")
+            source_cols = source_cols_df["code"].tolist()
 
-            if group_name == "dimredu":
-                params_df = store.get(f"{group_name}/params")
-                profile_dict["type"] = "dimredu"
-                source_cols, profile_dict["params"] = self._df_to_bc(source_cols_df, params_df)
-                features_df = store.get(f"{group_name}/features")
-                features = features_df["feat"].tolist()
-                df.attrs["features"] = features
+            params_df = store.get("dimredu/params")
+            profile_dict["params"] = dict(zip(params_df["key"], params_df["value"]))
+            profile_dict["type"] = "dimredu"
+
+            features_df = store.get("dimredu/features")
+            features = features_df["feat"].tolist()
+            df.attrs["features"] = features
 
             profile_dict["source_cols"] = source_cols
             df.attrs["proc_history"] = [profile_dict]
 
+        self._print_df_info(df)
         return df
 
-    def _df_to_feat(self, source_cols_df: pd.DataFrame):
-        source_cols = []
-        for _, row in source_cols_df.iterrows():
-            source_cols.append([row["code"], row["member"], row["point_a"], row["point_b"], row["point_c"]])
-        return source_cols
+    def load_points_df(self):
+        with pd.HDFStore(self.filepath, mode="r") as store:
+            points_df = None
+            traj_df = None
+            if "/points/df" in store.keys():
+                points_df = store.get("points/df")
+            if "/traj/df" in store.keys():
+                traj_df = store.get("traj/df")
+            if points_df is None and traj_df is None:
+                print("No data in HDF")
+                return None
+            elif points_df is not None and traj_df is not None:
+                traj_df = traj_df.drop(columns="timestamp")
+                df = pd.concat([points_df, traj_df], axis=1)
+            elif points_df is not None:
+                df = points_df
+            elif traj_df is not None:
+                df = traj_df
 
-    def _df_to_norm(self, source_cols_df: pd.DataFrame):
-        source_cols = []
-        for _, row in source_cols_df.iterrows():
-            source_cols.append([row["name"], row["member"], row["col_a"], row["op"], row["col_b"], row["normalize"]])
-        return source_cols
+            self._print_df_info(df)
+            return df
 
-    def _df_to_bc(self, sources, params: pd.DataFrame):
-        source_cols = []
-        for _, row in sources.iterrows():
-            source_cols.append(row["code"])
-        params_dict = {}
-        for _, row in params.iterrows():
-            params_dict[row["key"]] = row["value"]
-        return source_cols, params_dict
+    def load_mixnorm_df(self):
+        with pd.HDFStore(self.filepath, mode="r") as store:
+            if "/mixnorm/df" not in store.keys():
+                print("No mixnorm data in HDF")
+                return None
+            df = store.get("mixnorm/df")
+            self._print_df_info(df)
+            return df
+
+    def _print_df_info(self, df: pd.DataFrame):
+        frame_num = df.index.get_level_values(0).nunique()
+        member_num = df.index.get_level_values(1).nunique()
+        called_in = os.path.basename(inspect.stack()[1].filename)
+        print(f"{called_in} < {os.path.basename(self.filepath)}: shape={df.shape[0]:,}x{df.shape[1]} frames={frame_num:,} members={member_num}")
 
     def load_points_source_cols(self):
         source_cols = []

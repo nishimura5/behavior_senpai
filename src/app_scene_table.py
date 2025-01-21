@@ -141,8 +141,9 @@ class App(ttk.Frame):
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
             return
-        bool_df = pl.load_h5(df_type="dimredu")
         bool_pkl_path = pl.get_tar_path()
+        h5 = file_inout.HdfLoader(bool_pkl_path)
+        bool_df = h5.load_dimredu_df()
         # bool型 or column名がtimestampじゃないカラムは削除
         self.bool_df = bool_df.loc[:, (bool_df.dtypes == "bool") | (bool_df.columns == "timestamp")]
         cols = self.bool_df.columns.tolist()

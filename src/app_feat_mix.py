@@ -127,11 +127,10 @@ class App(ttk.Frame):
 
     def load_feat(self, pl: file_inout.PickleLoader):
         self.feat_path = pl.get_tar_path()
-        tar_df = pl.load_h5("points")
+        h5 = hdf_df.DataFrameStorage(self.feat_path)
+        tar_df = h5.load_points_df()
         feat_path = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
         tar_df = tar_df[~tar_df.index.duplicated(keep="last")]
-        tar_attrs = df_attrs.DfAttrs(tar_df)
-        tar_attrs.load_proc_history()
 
         load_option = self.load_combo.get()
         if load_option == "Initial":
