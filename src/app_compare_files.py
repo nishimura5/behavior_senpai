@@ -341,12 +341,21 @@ class App(ttk.Frame):
         tree_list = [(m, f) for m in member_list for f in feat_list]
         for file_path in self.tar_pkl_list:
             h5 = hdf_df.DataFrameStorage(file_path)
-            points_df = h5.load_df("points")
-            mixnorm_df = h5.load_df("mixnorm")
-            # concat horizontally
-            src_df = pd.concat([points_df, mixnorm_df], axis=1)
+            src_df = h5.load_df("points")
+            if h5.has_group("mixnorm"):
+                mixnorm_df = h5.load_df("mixnorm")
+                # concat horizontally
+                mixnorm_df = mixnorm_df.drop(columns="timestamp")
+                src_df = pd.concat([src_df, mixnorm_df], axis=1)
             idx = src_df.index
             src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
+            profile_dict = h5.load_profile()
+            now_dir = os.path.dirname(file_path)
+            pkl_path = os.path.join(now_dir, "..", "..", "trk", profile_dict["track_name"])
+            if os.path.exists(pkl_path):
+                trk_df = pd.read_pickle(pkl_path)
+                scene_table = trk_df.attrs["scene_table"]
+                src_df.attrs["scene_table"] = scene_table
 
             # filter by scene_table in attrs
             scene_filtered_df = self._filter_by_scene_table(src_df, tar_scene)

@@ -106,6 +106,19 @@ class DataFrameStorage:
         source_cols_df = pd.DataFrame(source_cols)
         return source_cols_df
 
+    def has_group(self, group_name: str) -> bool:
+        """
+        Check if group exists in HDF store
+
+        Args:
+            group_name: Name of group to check ('points', 'mixnorm', 'dimredu')
+
+        Returns:
+            bool: True if group exists, False otherwise
+        """
+        with pd.HDFStore(self.filepath, mode="r") as store:
+            return any([key.startswith(f"/{group_name}") for key in store.keys()])
+
     def load_df(self, group_name: str) -> pd.DataFrame:
         """
         Load DataFrame from specified group
