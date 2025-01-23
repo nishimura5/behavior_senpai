@@ -259,7 +259,8 @@ class App(ttk.Frame):
         export_df.attrs = self.src_attrs.attrs
         dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".h5")
         history_dict = df_attrs.make_history_dict("mix", self.source_cols, {}, self.track_name)
-        file_inout.save_h5(dst_path, export_df, "mixnorm", proc_history=history_dict)
+        h5 = hdf_df.DataFrameStorage(dst_path)
+        h5.save_mixnorm_df(export_df, history_dict["track_name"], history_dict["source_cols"])
 
     def close(self):
         self.lineplot.close()

@@ -6,7 +6,7 @@ from tkinter import ttk
 import pandas as pd
 
 import export_mp4
-from behavior_senpai import file_inout, time_format
+from behavior_senpai import file_inout, hdf_df, time_format
 from gui_parts import IntEntry, TempFile
 from gui_tree import Tree
 from line_plotter import LinePlotter
@@ -134,6 +134,10 @@ class App(ttk.Frame):
             self.tree.insert(values=vals)
         self._update()
 
+        h5_path = os.path.join(self.pkl_dir, "..", "calc", self.calc_case, f"{src_attrs['video_name'].split('.')[0]}.h5")
+        if os.path.exists(h5_path):
+            self._import_h5(h5_path)
+
     def import_bool_pkl(self):
         init_dir = os.path.join(os.path.dirname(self.pkl_dir), "calc")
         pl = file_inout.PickleLoader(init_dir, "behavioral_coding")
@@ -142,8 +146,13 @@ class App(ttk.Frame):
         if is_file_selected is False:
             return
         bool_pkl_path = pl.get_tar_path()
-        h5 = file_inout.HdfLoader(bool_pkl_path)
+        self._import_h5(bool_pkl_path)
+
+    def _import_h5(self, h5_path):
+        h5 = hdf_df.DataFrameStorage(h5_path)
         bool_df = h5.load_dimredu_df()
+        if bool_df is None:
+            return
         # bool型 or column名がtimestampじゃないカラムは削除
         self.bool_df = bool_df.loc[:, (bool_df.dtypes == "bool") | (bool_df.columns == "timestamp")]
         cols = self.bool_df.columns.tolist()
@@ -151,7 +160,7 @@ class App(ttk.Frame):
         self.bool_col_combo["values"] = cols
         self.bool_col_combo["state"] = "readonly"
         self.bool_col_combo.current(0)
-        self.import_label["text"] = os.path.basename(bool_pkl_path)
+        self.import_label["text"] = os.path.basename(h5_path)
 
     def _add_import_bool(self):
         if self.bool_df is None:
