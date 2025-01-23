@@ -93,7 +93,7 @@ class App(ttk.Frame):
         self.tree.set_df(self.tar_df)
 
         # load h5 file for tree
-        expected_file_name = f"{args['trk_pkl_name'].split('.')[0]}.h5"
+        expected_file_name = f"{args['trk_pkl_name'].split('.')[0]}.feat"
         calc_case = self.calc_case_entry.get_calc_case()
         h5_path = os.path.join(self.calc_dir, calc_case, expected_file_name)
         self._import_source_cols(h5_path)
@@ -106,7 +106,7 @@ class App(ttk.Frame):
         Import the contents of the attrs.
         """
         calc_case = self.calc_case_entry.get_calc_case()
-        pl = file_inout.PickleLoader(self.calc_dir, pkl_type="feature")
+        pl = file_inout.PickleLoader(self.calc_dir)
         pl.join_calc_case(calc_case)
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
@@ -188,7 +188,7 @@ class App(ttk.Frame):
         export_df = export_df.dropna(how="all")
         export_df.attrs = self.src_attrs
         calc_case = self.calc_case_entry.get_calc_case()
-        dst_path = os.path.join(self.calc_dir, calc_case, file_name + ".h5")
+        dst_path = os.path.join(self.calc_dir, calc_case, file_name + ".feat")
         history_dict = df_attrs.make_history_dict("points", self.source_cols, {}, self.track_name)
         h5 = hdf_df.DataFrameStorage(dst_path)
         h5.save_points_df(export_df, history_dict["track_name"], history_dict["source_cols"])

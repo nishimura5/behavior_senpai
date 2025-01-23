@@ -96,10 +96,10 @@ class App(ttk.Frame):
         self.scene_combo.set_values(menu)
         self.tree.set_members(src_df.index.levels[1].unique().tolist())
 
-        expected_pts_file_name = f"{args['trk_pkl_name'].split('.')[0]}.h5"
+        expected_pts_file_name = f"{args['trk_pkl_name'].split('.')[0]}.feat"
         expected_pts_file_path = os.path.join(self.calc_dir, self.calc_case, expected_pts_file_name)
         if os.path.exists(expected_pts_file_path) is True:
-            pl = file_inout.PickleLoader(self.calc_dir, "feature")
+            pl = file_inout.PickleLoader(self.calc_dir)
             pl.set_tar_path(expected_pts_file_path)
             self.load_feat(pl)
 
@@ -107,7 +107,7 @@ class App(ttk.Frame):
             self._import_source_cols(expected_pts_file_path)
 
     def open_feat(self):
-        pl = file_inout.PickleLoader(self.calc_dir, "feature")
+        pl = file_inout.PickleLoader(self.calc_dir)
         pl.join_calc_case(self.calc_case)
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
@@ -172,7 +172,7 @@ class App(ttk.Frame):
         """Open a file dialog to select a feature file.
         Import the contents of the attrs.
         """
-        pl = file_inout.PickleLoader(self.calc_dir, "feature")
+        pl = file_inout.PickleLoader(self.calc_dir)
         pl.join_calc_case(self.calc_case)
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
@@ -257,7 +257,7 @@ class App(ttk.Frame):
 
         export_df = self.feat_df
         export_df.attrs = self.src_attrs.attrs
-        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".h5")
+        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".feat")
         history_dict = df_attrs.make_history_dict("mix", self.source_cols, {}, self.track_name)
         h5 = hdf_df.DataFrameStorage(dst_path)
         h5.save_mixnorm_df(export_df, history_dict["track_name"], history_dict["source_cols"])

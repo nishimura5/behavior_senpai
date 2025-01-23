@@ -30,7 +30,7 @@ def load_track_file(tar_path, allow_calculated_track_file=False):
     #  HDF5を開いた後、group名(df_with_missing)でDLCか否かを判断して分岐
     #  group名が違う場合は読み込まない
     #  DLCの場合はmp4のファイル名等の情報を入力するためのダイアログを表示
-    if tar_path.endswith(".h5"):
+    if tar_path.endswith(".feat"):
         src_df = load_dlc_h5(tar_path)
     else:
         src_df = pd.read_pickle(tar_path)
@@ -58,16 +58,17 @@ def load_dlc_h5(tar_path):
 
 
 class PickleLoader:
-    def __init__(self, init_dir=None, pkl_type="track", org_path=None):
+    def __init__(self, init_dir=None, org_path=None, filetype="feat"):
+        print(f"PickleLoader: {init_dir}")
         if init_dir is None or init_dir == "" or os.path.exists(init_dir) is False:
             self.init_dir = "~"
         else:
             self.init_dir = init_dir
 
-        if pkl_type == "track":
-            self.filetypes = [("pkl files", "*.pkl"), ("trk-pkl files", "*.trk.pkl"), ("HDF5 files", "*.h5")]
-        elif pkl_type in ["feature", "behavioral_coding"]:
-            self.filetypes = [("HDF5 files", "*.h5")]
+        if filetype == "feat":
+            self.filetypes = [("Feature files(HDF5)", "*.feat")]
+        elif filetype == "pkl":
+            self.filetypes = [("Track files(Pickle)", "*.pkl")]
         self.filetypes = windows_and_mac.file_types(self.filetypes)
 
         self.tar_path = org_path
@@ -189,10 +190,10 @@ def save_h5(org_pkl_path, dst_df, df_type, proc_history=None):
             dst_df.attrs["proc_history"].append(proc_history)
     file_name = filedialog.asksaveasfilename(
         title="Save as",
-        filetypes=[("HDf5 files", ".h5")],
+        filetypes=[("Feature files(HDF5)", ".feat")],
         initialdir=dst_dir,
         initialfile=file_name,
-        defaultextension="h5",
+        defaultextension="feat",
     )
     if file_name == "":
         print("export() canceled.")

@@ -36,6 +36,9 @@ class DataFrameStorage:
             group_name: Name of group to save to ('points', 'mixnorm', 'dimredu')
             df: DataFrame to save
         """
+        # create directory if it does not exist
+        os.makedirs(os.path.dirname(self.filepath), exist_ok=True)
+
         with pd.HDFStore(self.filepath, mode="a") as store:
             # Save DataFrame
             print(f"{group_name}/df")
@@ -107,6 +110,9 @@ class DataFrameStorage:
         """
         Save trajectory DataFrame to HDF store
         """
+        # create directory if it does not exist
+        os.makedirs(os.path.dirname(self.filepath), exist_ok=True)
+
         with pd.HDFStore(self.filepath, mode="a") as store:
             store.put("traj/df", src_df, format="table")
 
@@ -117,6 +123,9 @@ class DataFrameStorage:
         print(f"{called_in} > {os.path.basename(os.path.basename(self.filepath))}")
 
     def save_points_df(self, src_df: pd.DataFrame, track_name: str, source_cols: list):
+        # create directory if it does not exist
+        os.makedirs(os.path.dirname(self.filepath), exist_ok=True)
+
         with pd.HDFStore(self.filepath, mode="a") as store:
             store.put("points/df", src_df, format="table")
 
@@ -137,9 +146,11 @@ class DataFrameStorage:
         print(f"{called_in} > {os.path.basename(os.path.basename(self.filepath))}")
 
     def save_mixnorm_df(self, src_df: pd.DataFrame, track_name: str, source_cols: list):
-        with pd.HDFStore(self.filepath, mode="a") as store:
+        with pd.HDFStore(self.filepath, mode="r") as store:
             # validate track_name
             correct_track_name = self.load_profile()["track_name"]
+
+        with pd.HDFStore(self.filepath, mode="a") as store:
             if track_name != correct_track_name:
                 print(f"track_name mismatch: {track_name} != {correct_track_name}")
                 return

@@ -36,7 +36,7 @@ class App(ttk.Frame):
 
         head_frame = ttk.Frame(self)
         head_frame.pack(anchor=tk.NW, expand=True, fill=tk.X, pady=5)
-        self.file_type_combo_dict = {"track_file (.pkl)": "pkl", "feature file (.feat.pkl)": "feat", "category file (.bc.pkl)": "bc"}
+        self.file_type_combo_dict = {"track file (.pkl)": "pkl", "feature": "feat", "category": "bc"}
         self.tar_file_type_combo = Combobox(head_frame, label="File type:", width=18, values=list(self.file_type_combo_dict.keys()))
         self.tar_file_type_combo.pack_horizontal(padx=5)
         self.tar_file_type_combo.set_selected_bind(self.type_change)
@@ -44,9 +44,9 @@ class App(ttk.Frame):
         self.tar_dir = args["pkl_dir"]
         self.init_tar_dir = self.tar_dir
         if os.path.basename(self.tar_dir) == "trk":
-            self.tar_file_type_combo.set("track_file (.pkl)")
+            self.tar_file_type_combo.set("track file (.pkl)")
         else:
-            self.tar_file_type_combo.set("category file (.bc.pkl)")
+            self.tar_file_type_combo.set("category")
 
         self.select_folder_btn = ttk.Button(head_frame, text="Select trk folder", width=16, command=self.select_folder)
         self.select_folder_btn.pack(side=tk.LEFT)
@@ -133,7 +133,7 @@ class App(ttk.Frame):
         self.export_btn["state"] = tk.NORMAL
 
     def load_category_files(self, tar_path):
-        self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.h5"))
+        self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.feat"))
         file_num = len(self.tar_pkl_list)
 
         member_list = []
@@ -155,8 +155,8 @@ class App(ttk.Frame):
 
     def load_keypoint_files(self, tar_path):
         self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.pkl"))
-        # remove feat.pkl files and bc.pkl files
-        self.tar_pkl_list = [f for f in self.tar_pkl_list if not f.endswith(".feat.pkl") and not f.endswith(".bc.pkl")]
+        # remove feature files
+        self.tar_pkl_list = [f for f in self.tar_pkl_list if not f.endswith(".feat")]
         file_num = len(self.tar_pkl_list)
 
         member_list = []
@@ -182,7 +182,7 @@ class App(ttk.Frame):
         return file_num, member_list, keypoint_list
 
     def load_feature_files(self, tar_path):
-        self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.h5"))
+        self.tar_pkl_list = glob.glob(os.path.join(tar_path, "*.feat"))
         file_num = len(self.tar_pkl_list)
 
         member_list = []
@@ -240,8 +240,8 @@ class App(ttk.Frame):
         member_list = [str(m) for m in member_list]
         # combination of member and keypoint
         for file_path in self.tar_pkl_list:
-            # if not bc.pkl file, skip
-            if not file_path.endswith(".h5"):
+            # if not feature file, skip
+            if not file_path.endswith(".feat"):
                 continue
             h5 = hdf_df.DataFrameStorage(file_path)
             src_df = h5.load_dimredu_df()

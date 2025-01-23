@@ -34,7 +34,7 @@ class PklSelector(ttk.Frame):
 
     def _select_trk(self):
         init_dir = os.path.dirname(self.trk_path)
-        pl = file_inout.PickleLoader(init_dir=init_dir, org_path=self.trk_path)
+        pl = file_inout.PickleLoader(init_dir=init_dir, org_path=self.trk_path, filetype="pkl")
         is_file_selected = pl.show_open_dialog()
         if is_file_selected:
             self.trk_path = pl.tar_path

@@ -129,15 +129,15 @@ class App(ttk.Frame):
         for cluster_name in self.cluster_names:
             self.tree.insert("", "end", values=(cluster_name, cluster_name))
 
-        expected_pts_file_name = f"{args['trk_pkl_name'].split('.')[0]}.h5"
+        expected_pts_file_name = f"{args['trk_pkl_name'].split('.')[0]}.feat"
         expected_pts_file_path = os.path.join(self.calc_dir, self.calc_case, expected_pts_file_name)
         if os.path.exists(expected_pts_file_path) is True:
-            pl = file_inout.PickleLoader(self.calc_dir, "feature")
+            pl = file_inout.PickleLoader(self.calc_dir)
             pl.set_tar_path(expected_pts_file_path)
             self.load_feat(pl)
 
     def open_feat(self):
-        pl = file_inout.PickleLoader(self.calc_dir, "feature")
+        pl = file_inout.PickleLoader(self.calc_dir)
         pl.join_calc_case(self.calc_case)
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
@@ -175,7 +175,7 @@ class App(ttk.Frame):
         self.repeat_draw_button["state"] = tk.NORMAL
 
     def repeat_draw(self):
-        pl = file_inout.PickleLoader(self.calc_dir, "behavioral_coding")
+        pl = file_inout.PickleLoader(self.calc_dir)
         pl.join_calc_case(self.calc_case)
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
@@ -284,7 +284,7 @@ class App(ttk.Frame):
     def export(self):
         """Export the calculated data to a file."""
         file_name = os.path.basename(self.feat_path).split(".")[0]
-        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".h5")
+        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".feat")
 
         cluster_df = self.drp.get_cluster_df()
         # class column: for repeat_draw

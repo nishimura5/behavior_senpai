@@ -134,13 +134,13 @@ class App(ttk.Frame):
             self.tree.insert(values=vals)
         self._update()
 
-        h5_path = os.path.join(self.pkl_dir, "..", "calc", self.calc_case, f"{src_attrs['video_name'].split('.')[0]}.h5")
+        h5_path = os.path.join(self.pkl_dir, "..", "calc", self.calc_case, f"{src_attrs['video_name'].split('.')[0]}.feat")
         if os.path.exists(h5_path):
             self._import_h5(h5_path)
 
     def import_bool_pkl(self):
         init_dir = os.path.join(os.path.dirname(self.pkl_dir), "calc")
-        pl = file_inout.PickleLoader(init_dir, "behavioral_coding")
+        pl = file_inout.PickleLoader(init_dir)
         pl.join_calc_case(self.calc_case)
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
