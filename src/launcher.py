@@ -9,6 +9,7 @@ import app_area_filter
 import app_compare_files
 import app_detect
 import app_dimredu
+import app_dlc_to_trk
 import app_feat_mix
 import app_keypoint_samples
 import app_member_edit
@@ -147,6 +148,15 @@ class App(ttk.Frame):
 
     def load(self, event=None):
         pkl_path = self.pkl_selector.get_trk_path()
+        # check if deeplabcut file (ext = .h5)
+        if pkl_path.endswith(".h5"):
+            pkl_path = self.launch_dlc_to_trk(pkl_path)
+            self.pkl_selector.rename_pkl_path_label(pkl_path)
+            temp = TempFile()
+            data = temp.load()
+            data["trk_path"] = pkl_path
+            temp.save(data)
+
         load_df = file_inout.load_track_file(pkl_path)
         if load_df is None:
             self.pkl_selector.rename_pkl_path_label(self.pkl_path)
@@ -247,6 +257,16 @@ class App(ttk.Frame):
 
         member_count = self.src_df.index.get_level_values(1).unique().size
         print(f"member_num = {member_count}")
+
+    def launch_dlc_to_trk(self, h5_path):
+        dlg_modal = tk.Toplevel(self)
+        dlg_modal.focus_set()
+        dlg_modal.grab_set()
+        dlg_modal.transient(self.master)
+        self.a = app_dlc_to_trk.App(dlg_modal, h5_path)
+        dlg_modal.protocol("WM_DELETE_WINDOW", lambda: [dlg_modal.destroy()])
+        self.wait_window(dlg_modal)
+        return self.a.trk_path
 
     def open_kp_samples(self):
         dataset_name = self.src_df.attrs["model"]
