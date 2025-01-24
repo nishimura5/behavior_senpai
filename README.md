@@ -65,19 +65,22 @@ To uninstall Behavior Senpai or replace it with the latest version, delete the e
 
 ## Keypoints
 
-### YOLO and RTMPose Halpe26
-
-The keypoint IDs in Behavior Senpai correspond to the IDs in each source dataset. YOLO follows COCO format, RTMPose follows Halpe26 format, and so on.
-Below are the keypoint IDs for different body parts:
+### YOLO11 and YOLOv8
 
 <p align="center">
-  <img width="60%" alt="Keypoints of body (YOLO11 and MMPose)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.4.0%20_%20Python%20senpai_files/keypoints_body_110.png">
+  <img width="24%" alt="Keypoints of body in YOLO" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/body_coco.png">
+</p>
+
+### RTMPose Halpe26
+
+<p align="center">
+  <img width="24%" alt="Keypoints of body in RTMPose Halpe26" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/body_halpe26.png">
 </p>
 
 ### RTMPose WholeBody133
 
 <p align="center">
-  <img width="60%" alt="Keypoints of body and hands in RTMPose WholeBody133" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/body_wholebody133.png">
+  <img width="50%" alt="Keypoints of body and hands in RTMPose WholeBody133" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/body_wholebody133.png">
 </p>
 
 <p align="center">
@@ -89,15 +92,14 @@ Below are the keypoint IDs for different body parts:
 See [here](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png) for a document with all IDs.
 
 <p align="center">
-  <img width="60%" alt="Keypoints of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.4.0%20_%20Python%20senpai_files/keypoints_face_110.png">
+  <img width="60%" alt="Keypoints of face in Mediapipe Holistic" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/facemesh.png">
+</p>
+<p align="center">
+  <img width="60%" alt="Keypoints of face in Mediapipe Holistic" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/facemesh2.png">
 </p>
 
 <p align="center">
-  <img width="60%" alt="Keypoints of parts of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.4.0%20_%20Python%20senpai_files/keypoints_eyemouth_110.png">
-</p>
-
-<p align="center">
-  <img width="60%" alt="Keypoints of hands (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.4.0%20_%20Python%20senpai_files/keypoints_hands_110.png">
+  <img width="50%" alt="Keypoints of hands in Mediapipe Holistic" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/hands.png">
 </p>
 
 ## Interface
