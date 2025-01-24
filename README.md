@@ -65,6 +65,8 @@ To uninstall Behavior Senpai or replace it with the latest version, delete the e
 
 ## Keypoints
 
+### YOLO and RTMPose Halpe26
+
 The keypoint IDs in Behavior Senpai correspond to the IDs in each source dataset. YOLO follows COCO format, RTMPose follows Halpe26 format, and so on.
 Below are the keypoint IDs for different body parts:
 
@@ -72,11 +74,19 @@ Below are the keypoint IDs for different body parts:
   <img width="60%" alt="Keypoints of body (YOLO11 and MMPose)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.4.0%20_%20Python%20senpai_files/keypoints_body_110.png">
 </p>
 
+### RTMPose WholeBody133
+
 <p align="center">
-  <img width="60%" alt="Keypoints of body (YOLO11 and MMPose)" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/body_wholebody133.png">
+  <img width="60%" alt="Keypoints of body and hands in RTMPose WholeBody133" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/body_wholebody133.png">
 </p>
 
-The IDs of the keypoints (landmarks) of the faces in MediaPipe Holistic are as follows. See [here](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png) for a document with all IDs.
+<p align="center">
+  <img width="60%" alt="Keypoints of face in RTMPose WholeBody133" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/face_wholebody133.png">
+</p>
+
+### MediaPipe Holistic
+
+See [here](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png) for a document with all IDs.
 
 <p align="center">
   <img width="60%" alt="Keypoints of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.4.0%20_%20Python%20senpai_files/keypoints_face_110.png">
@@ -85,8 +95,6 @@ The IDs of the keypoints (landmarks) of the faces in MediaPipe Holistic are as f
 <p align="center">
   <img width="60%" alt="Keypoints of parts of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.4.0%20_%20Python%20senpai_files/keypoints_eyemouth_110.png">
 </p>
-
-The IDs of the keypoints (landmarks) of the hands in MediaPipe Holistic are as follows
 
 <p align="center">
   <img width="60%" alt="Keypoints of hands (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.4.0%20_%20Python%20senpai_files/keypoints_hands_110.png">
