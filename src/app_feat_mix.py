@@ -6,7 +6,7 @@ import pandas as pd
 
 from behavior_senpai import df_attrs, feature_proc, file_inout, hdf_df
 from gui_feat_mix import Tree
-from gui_parts import Combobox, TempFile
+from gui_parts import Combobox, TempFile, ToolTip
 from line_plotter import LinePlotter
 
 
@@ -36,19 +36,19 @@ class App(ttk.Frame):
         self.scene_combo = Combobox(load_frame, label="Scene:", values=[""], width=15)
         self.scene_combo.pack_horizontal(anchor=tk.E, padx=5)
 
-        tar_frame = ttk.Frame(self)
-        tar_frame.pack(padx=10, pady=5, anchor=tk.NW, side=tk.TOP)
-
-        self.import_btn = ttk.Button(tar_frame, text="Import another feature file", command=self.import_feat, state="disabled")
-        self.import_btn.pack()
-
         draw_frame = ttk.Frame(self)
-        draw_frame.pack(padx=10, pady=5, anchor=tk.NW)
+        draw_frame.pack(padx=10, pady=5, expand=True, anchor=tk.NW)
         self.add_btn = ttk.Button(draw_frame, text="Add calc", command=self.add_row, state="disabled")
-        self.add_btn.pack(side=tk.LEFT, padx=(0, 60))
+        self.add_btn.pack(padx=(0, 10), side=tk.LEFT)
+
+        self.import_btn = ttk.Button(draw_frame, text="Import", command=self.import_feat, state="disabled")
+        self.import_btn.pack(padx=(0, 60), side=tk.LEFT)
+        description = "Import another feature file and add calc."
+        ToolTip(self.import_btn, description)
+
         self.draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw, state="disabled")
         self.draw_btn.pack(side=tk.LEFT)
-        self.export_btn = ttk.Button(draw_frame, text="Export", command=self.export, state="disabled")
+        self.export_btn = ttk.Button(draw_frame, text="Save", command=self.export, state="disabled")
         self.export_btn.pack(side=tk.LEFT, padx=5)
 
         tree_canvas_frame = ttk.Frame(self)

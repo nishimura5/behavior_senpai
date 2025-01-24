@@ -6,7 +6,7 @@ from tkinter import ttk
 import pandas as pd
 
 from behavior_senpai import df_attrs, file_inout, hdf_df, keypoints_proc
-from gui_parts import CalcCaseEntry, IntEntry, TempFile
+from gui_parts import CalcCaseEntry, IntEntry, TempFile, ToolTip
 from gui_points_calc import Tree
 from line_plotter import LinePlotter
 
@@ -25,18 +25,15 @@ class App(ttk.Frame):
         width, height, dpi = temp.get_window_size()
         self.lineplot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
-        setting_frame = ttk.Frame(self)
-        setting_frame.pack(fill=tk.X, expand=True)
-
-        import_frame = ttk.Frame(setting_frame)
-        import_frame.pack(padx=10, pady=5, expand=True, anchor=tk.W)
-        import_btn = ttk.Button(import_frame, text="Import another feature file", command=self.import_feat)
-        import_btn.pack()
-
-        draw_frame = ttk.Frame(setting_frame)
-        draw_frame.pack(padx=10, pady=5, expand=True, anchor=tk.W)
+        draw_frame = ttk.Frame(self)
+        draw_frame.pack(padx=10, pady=5, expand=True, anchor=tk.W, fill=tk.X)
         add_btn = ttk.Button(draw_frame, text="Add calc", command=self.add_row)
-        add_btn.pack(padx=(0, 60), side=tk.LEFT)
+        add_btn.pack(padx=(0, 10), side=tk.LEFT)
+
+        import_btn = ttk.Button(draw_frame, text="Import", command=self.import_feat)
+        import_btn.pack(padx=(0, 60), side=tk.LEFT)
+        description = "Import another feature file and add calc."
+        ToolTip(import_btn, description)
 
         self.calc_case_entry = CalcCaseEntry(draw_frame, temp.data["calc_case"])
         self.calc_case_entry.pack(side=tk.LEFT, padx=5)
@@ -46,7 +43,7 @@ class App(ttk.Frame):
 
         draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT)
-        self.export_btn = ttk.Button(draw_frame, text="Export", command=self.export, state="disabled")
+        self.export_btn = ttk.Button(draw_frame, text="Save", command=self.export, state="disabled")
         self.export_btn.pack(side=tk.LEFT, padx=5)
 
         tree_canvas_frame = ttk.Frame(self)

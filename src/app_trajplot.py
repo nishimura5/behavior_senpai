@@ -44,7 +44,7 @@ class App(ttk.Frame):
         clear_btn = ttk.Button(setting_frame, text="Clear", command=self.clear)
         clear_btn.pack(side=tk.LEFT, padx=(5, 0))
 
-        export_btn = ttk.Button(setting_frame, text="Export", command=self.export)
+        export_btn = ttk.Button(setting_frame, text="Save", command=self.export)
         export_btn.pack(side=tk.LEFT, padx=(5, 50))
 
         plot_frame = ttk.Frame(self)
