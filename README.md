@@ -50,6 +50,12 @@ If you do not have a CUDA-compatible GPU, only MediaPipe Holistic can be used.
 
 ## Usage
 
+### Download
+
+Download [BehaviorSenpai150.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.5.0/BehaviorSenpai150.zip)
+
+### Install
+
 Running BehaviorSenpai.exe will start the application; if you want to use CUDA, check the "Enable features using CUDA" checkbox the first time you start the application and click the "OK" button.
 
 BehaviorSenpai.exe is an application to automate the construction of the Python environment by [uv](https://docs.astral.sh/uv/) and the startup of Behavior Senpai itself.
@@ -175,6 +181,7 @@ This section explains the default locations for data output by Behavior Senpai. 
 Below is an example of the folder structure when there are files named "ABC.MP4" and "XYZ.MOV" in a folder. Output file names include suffixes according to the model or type of calculation. To avoid file read/write failures, use alphanumeric characters for folder and file names, especially when the file path contains Japanese characters.
 
 ```
+Videos
 ├── ABC.MP4
 ├── XYZ.MOV
 ├── calc
