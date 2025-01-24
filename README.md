@@ -6,6 +6,7 @@
 [app_trajplot]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_trajplot.py
 [app_points_calc]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_points_calc.py
 [app_feat_mix]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_feat_mix.py
+[app_dimredu]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_dimredu.py
 [gui_parts]: https://github.com/nishimura5/behavior_senpai/blob/master/src/gui_parts.py
 [detector_proc]: https://github.com/nishimura5/behavior_senpai/blob/master/src/detector_proc.py
 
@@ -24,9 +25,7 @@ Behavior Senpai is distinctive in that it permits the utilization of multiple AI
 Behavior Senpai performs pose estimation of a person in a video using an AI model selected by the user, and outputs time-series coordinate data.
 (These are variously referred to as "pose estimation", "markerless motion capture", "landmark detection", and so forth, depending on the intended purpose and application.)
 
-<p align="center">
-  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
-</p>
+BehaviorSenpai can import inference results (with .h5 extension) from [DeepLabCut](https://www.mackenziemathislab.org/deeplabcut).
 
 Behavior Senpai is an open source software developed at [Faculty of Design, Kyushu University](https://www.design.kyushu-u.ac.jp/en/home/).
 
@@ -66,7 +65,7 @@ To uninstall Behavior Senpai or replace it with the latest version, delete the e
 
 ## Keypoints
 
-The keypoint IDs in Behavior Senpai correspond to the IDs in each source dataset. YOLO (v8) follows COCO format, RTMPose follows Halpe26 format, and so on.
+The keypoint IDs in Behavior Senpai correspond to the IDs in each source dataset. YOLO follows COCO format, RTMPose follows Halpe26 format, and so on.
 Below are the keypoint IDs for different body parts:
 
 <p align="center">
@@ -88,8 +87,6 @@ The IDs of the keypoints (landmarks) of the hands in MediaPipe Holistic are as f
 <p align="center">
   <img width="60%" alt="Keypoints of hands (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.4.0%20_%20Python%20senpai_files/keypoints_hands_110.png">
 </p>
-
-BehaviorSenpai can import inference results (with .h5 extension) from [DeepLabCut](https://www.mackenziemathislab.org/deeplabcut).
 
 ## Interface
 
@@ -118,7 +115,8 @@ An illustrative example of a DataFrame stored in the Track file is presented bel
 
 ### Feature file
 
-In Behavior Senpai, the data obtained by calculating the positional relationship of multiple keypoints is referred to as a feature. The data processed by [app_points_calc.py][app_points_calc], [app_trajplot.py][app_trajplot] and [app_feat_mix.py][app_feat_mix]. The data is saved as a "Feature file"(HDF5 format) in the "calc" folder. The file extension is ".feat". The Feature file holds time-series data in 2-level-multi-index format, with the indices designated as "frame" and "member", respectively, and the columns including a "timestamp". It should be noted that the data in the Track file is only the result of keypoint detection, while the data in the Feature file are features that are deeply related to the purpose of behavior observation.
+BehaviorSenpai saves calculated features based on Track file data to Feature files. Feature files are created in HDF5 format with the .feat extension.
+Feature files store data calculated by [app_points_calc.py][app_points_calc], [app_trajplot.py][app_trajplot], and [app_feat_mix.py][app_feat_mix] in the format shown in the table below:
 
 |       |        | feat_1   | feat_2   | timestamp |
 | ----- | ------ | -------- | -------- | --------- |
@@ -133,6 +131,7 @@ In Behavior Senpai, the data obtained by calculating the positional relationship
 | 3     | 2      | 0.052715 | 0.055282 | 50.050000 |
 |       | ...    | ...      | ...      | ...       |
 
+Additionally, data calculated by [app_dimredu.py][app_dimredu] is stored in the format shown in the table below. All these data are handled as Pandas DataFrames, with time-series data in 2-level-multi-index format, with the indices designated as "frame" and "member", respectively, and the columns including a "timestamp".
 
 |       |        | class | cat_1 | cat_2 | timestamp |
 | ----- | ------ | ----- | ----- | ----- | --------- |
