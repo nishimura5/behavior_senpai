@@ -9,7 +9,15 @@ def read_h5(file_path):
         return df
 
 
-def transform_df(src_df, fps):
+def get_keypoint_codes(src_df):
+    src_df.columns = src_df.columns.droplevel(0)
+    keypoints = src_df.columns.get_level_values("bodyparts").unique()
+    # rename keypoints string to int
+    rename_table = {k: i for i, k in enumerate(keypoints)}
+    return rename_table
+
+
+def transform_df(src_df, rename_table, fps):
     src_df.columns = src_df.columns.droplevel(0)
     frames = src_df.index
     keypoints = src_df.columns.get_level_values("bodyparts").unique()
@@ -30,14 +38,12 @@ def transform_df(src_df, fps):
         index=multi_index,
     )
 
-    # rename keypoints string to int
-    rename_table = {k: i for i, k in enumerate(keypoints)}
     dst_df = dst_df.rename(index=rename_table, level=2)
 
     # Add timestamp column
     dst_df["timestamp"] = dst_df.index.get_level_values("frame") / fps * 1000
 
-    return rename_table, dst_df
+    return dst_df
 
 
 def generate_toml(rename_table, color_rgb_str="[40,40,255]"):
