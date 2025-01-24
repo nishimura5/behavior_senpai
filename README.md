@@ -72,6 +72,10 @@ Below are the keypoint IDs for different body parts:
   <img width="60%" alt="Keypoints of body (YOLO11 and MMPose)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.4.0%20_%20Python%20senpai_files/keypoints_body_110.png">
 </p>
 
+<p align="center">
+  <img width="60%" alt="Keypoints of body (YOLO11 and MMPose)" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/body_wholebody133.png">
+</p>
+
 The IDs of the keypoints (landmarks) of the faces in MediaPipe Holistic are as follows. See [here](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png) for a document with all IDs.
 
 <p align="center">
