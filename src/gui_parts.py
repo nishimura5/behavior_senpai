@@ -115,8 +115,8 @@ class CalcCaseEntry(ttk.Frame):
         self.invalid_characters = ["<", ">", ":", '"', "/", "\\", "|", "?", "*"]
         caption = ttk.Label(master, text="Calc case:")
         caption.pack(side=tk.LEFT)
-        desc = """Calc case will be used as the folder name under the 'calc' folder to save the .feat.pkl file.
-If the specified folder doesn’t exist, a new one will be created when you press the Export button."""
+        desc = """Calc case will be used as the folder name under the 'calc' folder to save the .feat file.
+If the specified folder doesn’t exist, a new one will be created."""
         ToolTip(caption, desc)
         self.calc_case_entry = ttk.Entry(
             master,
@@ -124,18 +124,27 @@ If the specified folder doesn’t exist, a new one will be created when you pres
             validate="key",
             validatecommand=(self.register(self._validate), "%P"),
         )
+        default = self.load_calc_case()
         if default == "":
             default = "untitled"
         self.calc_case_entry.insert(tk.END, default)
         self.calc_case_entry.pack(side=tk.LEFT, padx=(0, 5))
 
-    def get_calc_case(self):
+    def save(self):
         tmp = TempFile()
         data = tmp.load()
         calc_case = self.calc_case_entry.get()
         data["calc_case"] = calc_case
         tmp.save(data)
+
+    def load_calc_case(self):
+        tmp = TempFile()
+        data = tmp.load()
+        calc_case = data["calc_case"]
         return calc_case
+    
+    def get(self):
+        return self.calc_case_entry.get()
 
     def _validate(self, text):
         return all(c not in text for c in self.invalid_characters) or text == ""

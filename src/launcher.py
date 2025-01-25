@@ -21,7 +21,7 @@ import app_trajplot as k2t
 import license_view
 import pref_list
 from behavior_senpai import df_attrs, file_inout, keypoints_proc, vcap, windows_and_mac
-from gui_parts import TempFile
+from gui_parts import TempFile, CalcCaseEntry
 from main_gui_parts import PklSelector, VideoViewer
 
 
@@ -110,10 +110,18 @@ class App(ttk.Frame):
         head_frame = ttk.Frame(main_frame)
         head_frame.pack(anchor=tk.N, expand=True, fill=tk.X)
         load_frame = ttk.Frame(head_frame)
-        load_frame.pack(side=tk.LEFT, anchor=tk.W, pady=(0, 20))
-        self.pkl_selector = PklSelector(load_frame)
-        self.pkl_selector.pack(side=tk.LEFT)
+        load_frame.pack(side=tk.LEFT, anchor=tk.W, pady=(0, 5))
+
+        a_frame = ttk.Frame(load_frame)
+        a_frame.pack()
+        self.pkl_selector = PklSelector(a_frame)
+        self.pkl_selector.pack()
         self.pkl_selector.set_command(cmd=self.load)
+
+        calc_case_frame = ttk.Frame(load_frame)
+        calc_case_frame.pack(anchor=tk.W, pady=(4, 0))
+        self.calc_case_entry = CalcCaseEntry(calc_case_frame, temp.data["calc_case"])
+        self.calc_case_entry.pack(pady=(4,0))
 
         save_frame = ttk.Frame(head_frame)
         save_frame.pack(anchor=tk.E)
@@ -124,7 +132,7 @@ class App(ttk.Frame):
         compare_button.pack(pady=4)
 
         view_frame = ttk.Frame(main_frame)
-        view_frame.pack(pady=(10, 0), anchor=tk.W)
+        view_frame.pack(pady=(5, 0), anchor=tk.W)
 
         video_frame = ttk.Frame(view_frame)
         video_frame.pack(side=tk.LEFT, anchor=tk.N)
@@ -145,6 +153,7 @@ class App(ttk.Frame):
         self.pkl_dir = None
         self.src_df = None
         self.time_span = None
+        self.calc_case = self.calc_case_entry.get()
 
     def load(self, event=None):
         pkl_path = self.pkl_selector.get_trk_path()
@@ -211,6 +220,7 @@ class App(ttk.Frame):
         self.attrs_textbox.insert(tk.END, print_str)
 
     def launch_window(self, app, dialog_size="", edit_df=False, grab=False):
+        self.calc_case_entry.save()
         window_pos = self.master.geometry().split("+")[1:]
         dlg_modal = tk.Toplevel(self)
         dlg_modal.geometry(dialog_size + f"+{window_pos[0]}+{window_pos[1]}")

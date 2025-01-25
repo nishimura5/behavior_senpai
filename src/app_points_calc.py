@@ -6,7 +6,7 @@ from tkinter import ttk
 import pandas as pd
 
 from behavior_senpai import df_attrs, file_inout, hdf_df, keypoints_proc
-from gui_parts import CalcCaseEntry, IntEntry, TempFile, ToolTip
+from gui_parts import IntEntry, TempFile, ToolTip
 from gui_points_calc import Tree
 from line_plotter import LinePlotter
 
@@ -23,6 +23,7 @@ class App(ttk.Frame):
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
+        self.calc_case = temp.data["calc_case"]
         self.lineplot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         draw_frame = ttk.Frame(self)
@@ -34,9 +35,6 @@ class App(ttk.Frame):
         import_btn.pack(padx=(0, 60), side=tk.LEFT)
         description = "Import another feature file and add calc."
         ToolTip(import_btn, description)
-
-        self.calc_case_entry = CalcCaseEntry(draw_frame, temp.data["calc_case"])
-        self.calc_case_entry.pack(side=tk.LEFT, padx=5)
 
         self.thinning_entry = IntEntry(draw_frame, label="Thinning:", default=temp.data["thinning"])
         self.thinning_entry.pack_horizontal(padx=5)
@@ -91,8 +89,7 @@ class App(ttk.Frame):
 
         # load h5 file for tree
         expected_file_name = f"{args['trk_pkl_name'].split('.')[0]}.feat"
-        calc_case = self.calc_case_entry.get_calc_case()
-        h5_path = os.path.join(self.calc_dir, calc_case, expected_file_name)
+        h5_path = os.path.join(self.calc_dir, self.calc_case, expected_file_name)
         self._import_source_cols(h5_path)
 
     def add_row(self):
@@ -102,9 +99,8 @@ class App(ttk.Frame):
         """Open a file dialog to select a feature file.
         Import the contents of the attrs.
         """
-        calc_case = self.calc_case_entry.get_calc_case()
         pl = file_inout.PickleLoader(self.calc_dir)
-        pl.join_calc_case(calc_case)
+        pl.join_calc_case(self.calc_case)
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
             return
@@ -184,8 +180,7 @@ class App(ttk.Frame):
         export_df = pd.concat([self.feat_df, timestamp_df], axis=1)
         export_df = export_df.dropna(how="all")
         export_df.attrs = self.src_attrs
-        calc_case = self.calc_case_entry.get_calc_case()
-        dst_path = os.path.join(self.calc_dir, calc_case, file_name + ".feat")
+        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".feat")
         history_dict = df_attrs.make_history_dict("points", self.source_cols, {}, self.track_name)
         h5 = hdf_df.DataFrameStorage(dst_path)
         h5.save_points_df(export_df, history_dict["track_name"], history_dict["source_cols"])

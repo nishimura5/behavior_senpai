@@ -5,7 +5,7 @@ from tkinter import ttk
 import pandas as pd
 
 from behavior_senpai import df_attrs, hdf_df, keypoints_proc
-from gui_parts import CalcCaseEntry, IntEntry, MemberKeypointComboboxes, TempFile
+from gui_parts import IntEntry, MemberKeypointComboboxes, TempFile
 from trajectory_plotter import TrajectoryPlotter
 
 
@@ -20,12 +20,11 @@ class App(ttk.Frame):
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
+        self.calc_case = temp.data["calc_case"]
         self.traj = TrajectoryPlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         top_frame = ttk.Frame(self)
-        top_frame.pack(pady=5)
-        self.calc_case_entry = CalcCaseEntry(top_frame, temp.data["calc_case"])
-        self.calc_case_entry.pack(side=tk.LEFT, padx=5)
+        top_frame.pack(pady=5, fill=tk.X, anchor=tk.W)
 
         self.member_keypoints_combos = MemberKeypointComboboxes(top_frame)
 
@@ -33,10 +32,10 @@ class App(ttk.Frame):
         self.diff_entry.pack_horizontal(padx=5)
 
         setting_frame = ttk.Frame(self)
-        setting_frame.pack(pady=5)
+        setting_frame.pack(pady=5, fill=tk.X, anchor=tk.W)
 
         self.thinning_entry = IntEntry(setting_frame, label="Thinning:", default=temp.data["thinning"])
-        self.thinning_entry.pack_horizontal(padx=5)
+        self.thinning_entry.pack_horizontal(padx=(0, 5))
 
         draw_btn = ttk.Button(setting_frame, text="Add and draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT)
@@ -110,8 +109,7 @@ class App(ttk.Frame):
         self.feat_df = self.feat_df[~self.feat_df.index.duplicated(keep="last")]
         export_df = pd.concat([self.feat_df, timestamp_df], axis=1)
         export_df.attrs = self.src_attrs.attrs
-        calc_case = self.calc_case_entry.get_calc_case()
-        dst_path = os.path.join(self.calc_dir, calc_case, file_name + ".feat")
+        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".feat")
         history_dict = df_attrs.make_history_dict("trajectory", [], {}, self.track_name)
         h5 = hdf_df.DataFrameStorage(dst_path)
         h5.save_traj_df(export_df, history_dict["track_name"])
