@@ -95,8 +95,8 @@ class App(ttk.Frame):
         self.tree.pack(fill=tk.X, expand=True)
         self.tree.bind("<<TreeviewSelect>>", self.select_tree_row)
 
-        self.export_button = ttk.Button(draw_frame, text="Export", command=self.export, state=tk.DISABLED)
-        self.export_button.pack(anchor=tk.NW, pady=5, padx=(0, 50), side=tk.LEFT)
+        self.save_button = ttk.Button(draw_frame, text="Save", command=self.export, state=tk.DISABLED)
+        self.save_button.pack(anchor=tk.NW, pady=5, padx=(0, 50), side=tk.LEFT)
 
         self.repeat_draw_button = ttk.Button(draw_frame, text="Repeat draw", command=self.repeat_draw, state=tk.DISABLED)
         self.repeat_draw_button.pack(anchor=tk.NE, pady=5)
@@ -170,7 +170,7 @@ class App(ttk.Frame):
             self.feature_names.append(colname)
             self.column_listbox.insert(tk.END, colname)
         self.drp.clear()
-        self.export_button["state"] = tk.DISABLED
+        self.save_button["state"] = tk.DISABLED
         self.draw_button["state"] = tk.NORMAL
         self.repeat_draw_button["state"] = tk.NORMAL
 
@@ -256,7 +256,7 @@ class App(ttk.Frame):
 
         self.drp.set_member(current_member)
         self.drp.draw(reduced_df, class_sr)
-        self.export_button["state"] = tk.NORMAL
+        self.save_button["state"] = tk.NORMAL
 
         self.tree.selection_set(self.tree.get_children()[0])
 
@@ -303,7 +303,9 @@ class App(ttk.Frame):
         thinning = self.thinning_entry.get()
         params = {"n_neighbors": n_neighbors, "min_dist": min_dist, "random": rand_mode, "thinning": thinning}
         history_dict = df_attrs.make_history_dict("dimredu", self.source_cols, params, self.track_name)
-        file_inout.save_h5(dst_path, export_df, df_type="dimredu", proc_history=history_dict)
+
+        h5 = hdf_df.DataFrameStorage(dst_path)
+        h5.save_dimredu_df(export_df, history_dict)
 
     def filter_word(self, event):
         tar_word = self.name_filter_entry.get()

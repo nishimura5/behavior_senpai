@@ -141,34 +141,6 @@ def save_pkl(org_pkl_path, dst_df, proc_history=None):
     print(f"{called_in} > {os.path.basename(os.path.basename(file_name))}")
 
 
-def save_h5(org_pkl_path, dst_df, df_type, proc_history=None):
-    file_name = os.path.basename(org_pkl_path)
-    dst_dir = os.path.dirname(org_pkl_path)
-    os.makedirs(dst_dir, exist_ok=True)
-
-    if proc_history is not None:
-        if "proc_history" not in dst_df.attrs.keys():
-            dst_df.attrs["proc_history"] = [proc_history]
-        else:
-            dst_df.attrs["proc_history"].append(proc_history)
-    file_name = filedialog.asksaveasfilename(
-        title="Save as",
-        filetypes=[("Feature files(HDF5)", ".feat")],
-        initialdir=dst_dir,
-        initialfile=file_name,
-        defaultextension="feat",
-    )
-    if file_name == "":
-        print("export() canceled.")
-        return
-
-    hdf = hdf_df.DataFrameStorage(file_name)
-    hdf.save_df(df_type, dst_df)
-
-    #    dst_df.to_pickle(file_name)
-    called_in = os.path.basename(inspect.stack()[1].filename)
-    print(f"{called_in} > {os.path.basename(os.path.basename(file_name))}")
-
 
 def pkl_to_csv(init_dir="~"):
     """

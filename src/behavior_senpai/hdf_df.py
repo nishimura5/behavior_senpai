@@ -28,83 +28,43 @@ class DataFrameStorage:
         """
         self.filepath = filepath
 
-    def save_df(self, group_name: str, df: pd.DataFrame):
+    def save_dimredu_df(self, df: pd.DataFrame, history_dict: dict):
         """
-        Save DataFrame to specified group in HDF store
-
-        Args:
-            group_name: Name of group to save to ('points', 'mixnorm', 'dimredu')
-            df: DataFrame to save
+        Save dimredu DataFrame to HDF store
         """
-        # create directory if it does not exist
-        os.makedirs(os.path.dirname(self.filepath), exist_ok=True)
-
         with pd.HDFStore(self.filepath, mode="a") as store:
             # Save DataFrame
-            print(f"{group_name}/df")
-            store.put(f"{group_name}/df", df, format="table")
+            store.put("dimredu/df", df, format="table")
 
             # Save attributes DataFrame
             attrs_dict = {}
             attrs_df = pd.DataFrame({"key": list(attrs_dict.keys()), "value": list(attrs_dict.values())})
             store.put("attrs", attrs_df, format="table")
 
-            # Save proc_history
-            proc_history = df.attrs["proc_history"][-1]
-            if isinstance(proc_history, dict) is False:
+            if isinstance(history_dict, dict) is False:
                 print("not dict")
 
-            track_name = {"key": ["track_name"], "value": [proc_history["track_name"]]}
-            profile_df = pd.DataFrame(track_name)
-            store.put("profile", profile_df, format="table")
+            track_name = {"key": ["track_name"], "value": [history_dict["track_name"]]}
 
-            if group_name == "mixnorm":
-                source_cols_df = self._norm_to_df(proc_history["source_cols"])
-                store.put(f"{group_name}/source_cols", source_cols_df, format="table")
-            elif group_name == "dimredu":
-                source_cols_df = self._bc_to_df(proc_history["source_cols"])
-                store.put(f"{group_name}/source_cols", source_cols_df, format="table")
-                feature_list = df.attrs["features"]
-                feature_df = pd.DataFrame({"feat": feature_list})
-                store.put(f"{group_name}/features", feature_df, format="table")
-                params_dict = proc_history["params"]
-                # stringify values
-                params = {"key": [], "value": []}
-                for key, value in params_dict.items():
-                    params["key"].append(key)
-                    params["value"].append(str(value))
-                params_df = pd.DataFrame(params)
-                store.put(f"{group_name}/params", params_df, format="table")
+            source_cols = {"code": []}
+            for source_col in history_dict["source_cols"]:
+                source_cols["code"].append(source_col)
+            source_cols_df = pd.DataFrame(source_cols)
 
-    def _feat_to_df(self, src_list):
-        source_cols = {"code": [], "member": [], "point_a": [], "point_b": [], "point_c": []}
-        for source_col in src_list:
-            source_cols["code"].append(source_col[0])
-            source_cols["member"].append(source_col[1])
-            source_cols["point_a"].append(source_col[2])
-            source_cols["point_b"].append(source_col[3])
-            source_cols["point_c"].append(source_col[4])
-        source_cols_df = pd.DataFrame(source_cols)
-        return source_cols_df
-
-    def _norm_to_df(self, src_list):
-        source_cols = {"name": [], "member": [], "col_a": [], "op": [], "col_b": [], "normalize": []}
-        for source_col in src_list:
-            source_cols["name"].append(source_col[0])
-            source_cols["member"].append(source_col[1])
-            source_cols["col_a"].append(source_col[2])
-            source_cols["op"].append(source_col[3])
-            source_cols["col_b"].append(source_col[4])
-            source_cols["normalize"].append(source_col[5])
-        source_cols_df = pd.DataFrame(source_cols)
-        return source_cols_df
-
-    def _bc_to_df(self, src_list):
-        source_cols = {"code": []}
-        for source_col in src_list:
-            source_cols["code"].append(source_col)
-        source_cols_df = pd.DataFrame(source_cols)
-        return source_cols_df
+            store.put("dimredu/source_cols", source_cols_df, format="table")
+            feature_list = df.attrs["features"]
+            feature_df = pd.DataFrame({"feat": feature_list})
+            store.put("dimredu/features", feature_df, format="table")
+            params_dict = history_dict["params"]
+            # stringify values
+            params = {"key": [], "value": []}
+            for key, value in params_dict.items():
+                params["key"].append(key)
+                params["value"].append(str(value))
+            params_df = pd.DataFrame(params)
+            store.put("dimredu/params", params_df, format="table")
+        called_in = os.path.basename(inspect.stack()[1].filename)
+        print(f"{called_in} > {os.path.basename(os.path.basename(self.filepath))}")
 
     def save_traj_df(self, src_df: pd.DataFrame, track_name: str):
         """
