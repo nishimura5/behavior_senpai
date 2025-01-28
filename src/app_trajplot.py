@@ -110,9 +110,8 @@ class App(ttk.Frame):
         export_df = pd.concat([self.feat_df, timestamp_df], axis=1)
         export_df.attrs = self.src_attrs.attrs
         dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".feat")
-        history_dict = df_attrs.make_history_dict("trajectory", [], {}, self.track_name)
         h5 = hdf_df.DataFrameStorage(dst_path)
-        h5.save_traj_df(export_df, history_dict["track_name"])
+        h5.save_traj_df(export_df, self.track_name)
 
     def close(self):
         self.traj.close()

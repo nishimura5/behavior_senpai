@@ -52,6 +52,6 @@ class DfAttrs:
         return False
 
 
-def make_history_dict(feat_type, source_cols, params, track_name=None):
-    history_dict = {"type": feat_type, "source_cols": source_cols, "params": params, "track_name": track_name}
+def make_history_dict(feat_type, source_cols, track_name=None):
+    history_dict = {"type": feat_type, "source_cols": source_cols, "track_name": track_name}
     return history_dict

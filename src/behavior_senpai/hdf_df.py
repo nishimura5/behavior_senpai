@@ -28,7 +28,7 @@ class DataFrameStorage:
         """
         self.filepath = filepath
 
-    def save_dimredu_df(self, df: pd.DataFrame, history_dict: dict):
+    def save_dimredu_df(self, df: pd.DataFrame, source_cols: dict, params_dict: dict, cluster_names: list):
         """
         Save dimredu DataFrame to HDF store
         """
@@ -41,21 +41,14 @@ class DataFrameStorage:
             attrs_df = pd.DataFrame({"key": list(attrs_dict.keys()), "value": list(attrs_dict.values())})
             store.put("attrs", attrs_df, format="table")
 
-            if isinstance(history_dict, dict) is False:
-                print("not dict")
-
-            track_name = {"key": ["track_name"], "value": [history_dict["track_name"]]}
-
             source_cols = {"code": []}
-            for source_col in history_dict["source_cols"]:
+            for source_col in source_cols:
                 source_cols["code"].append(source_col)
             source_cols_df = pd.DataFrame(source_cols)
 
             store.put("dimredu/source_cols", source_cols_df, format="table")
-            feature_list = df.attrs["features"]
-            feature_df = pd.DataFrame({"feat": feature_list})
+            feature_df = pd.DataFrame({"feat": cluster_names})
             store.put("dimredu/features", feature_df, format="table")
-            params_dict = history_dict["params"]
             # stringify values
             params = {"key": [], "value": []}
             for key, value in params_dict.items():
@@ -89,7 +82,13 @@ class DataFrameStorage:
         with pd.HDFStore(self.filepath, mode="a") as store:
             store.put("points/df", src_df, format="table")
 
-            dst_source_cols = {"code": [], "member": [], "point_a": [], "point_b": [], "point_c": []}
+            dst_source_cols = {
+                "code": [],
+                "member": [],
+                "point_a": [],
+                "point_b": [],
+                "point_c": [],
+            }
             for source_col in source_cols:
                 dst_source_cols["code"].append(source_col[0])
                 dst_source_cols["member"].append(source_col[1])
@@ -117,7 +116,14 @@ class DataFrameStorage:
 
             store.put("mixnorm/df", src_df, format="table")
 
-            dst_source_cols = {"name": [], "member": [], "col_a": [], "op": [], "col_b": [], "normalize": []}
+            dst_source_cols = {
+                "name": [],
+                "member": [],
+                "col_a": [],
+                "op": [],
+                "col_b": [],
+                "normalize": [],
+            }
             for source_col in source_cols:
                 dst_source_cols["name"].append(source_col[0])
                 dst_source_cols["member"].append(source_col[1])

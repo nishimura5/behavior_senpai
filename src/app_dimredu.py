@@ -211,6 +211,7 @@ class App(ttk.Frame):
         self.source_cols = []
         cols = self.column_listbox.curselection()
         if len(cols) == 0:
+            print("cols", cols)
             return
         cols = [self.column_listbox.get(i) for i in cols]
         self.source_cols = cols
@@ -296,16 +297,14 @@ class App(ttk.Frame):
             cluster_df.loc[cluster_df["class"] == i, cluster_name] = True
         export_df = cluster_df
         export_df.attrs = self.feat_df.attrs
-        export_df.attrs["features"] = self.cluster_names
         n_neighbors = self.n_neighbors_combobox.get_current_value()
         rand_mode = self.umap_seed_combobox.get_current_value()
         min_dist = self.min_dist_combobox.get_current_value()
         thinning = self.thinning_entry.get()
         params = {"n_neighbors": n_neighbors, "min_dist": min_dist, "random": rand_mode, "thinning": thinning}
-        history_dict = df_attrs.make_history_dict("dimredu", self.source_cols, params, self.track_name)
 
         h5 = hdf_df.DataFrameStorage(dst_path)
-        h5.save_dimredu_df(export_df, history_dict)
+        h5.save_dimredu_df(export_df, self.source_cols, params, self.cluster_names)
 
     def filter_word(self, event):
         tar_word = self.name_filter_entry.get()

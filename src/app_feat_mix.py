@@ -42,6 +42,7 @@ class App(ttk.Frame):
         self.add_btn.pack(padx=(0, 10), side=tk.LEFT)
 
         self.import_btn = ttk.Button(draw_frame, text="Import", command=self.import_feat, state="disabled")
+
         self.import_btn.pack(padx=(0, 60), side=tk.LEFT)
         description = "Import another feature file and add calc."
         ToolTip(self.import_btn, description)
@@ -152,7 +153,14 @@ class App(ttk.Frame):
         normalize = self.normalize_combo.get()
         tar_list = self.tree.get_all()
         for i, tar in enumerate(tar_list):
-            tree_feat_name, tree_member, tree_col_a, tree_op, tree_col_b, tree_normalize = tar
+            (
+                tree_feat_name,
+                tree_member,
+                tree_col_a,
+                tree_op,
+                tree_col_b,
+                tree_normalize,
+            ) = tar
             # skip if exactly same row
             if tree_feat_name == feat_name and tree_col_a == col_a and tree_op == op and tree_col_b == col_b and tree_normalize == normalize:
                 return
@@ -258,9 +266,8 @@ class App(ttk.Frame):
         export_df = self.feat_df
         export_df.attrs = self.src_attrs.attrs
         dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".feat")
-        history_dict = df_attrs.make_history_dict("mix", self.source_cols, {}, self.track_name)
         h5 = hdf_df.DataFrameStorage(dst_path)
-        h5.save_mixnorm_df(export_df, history_dict["track_name"], history_dict["source_cols"])
+        h5.save_mixnorm_df(export_df, self.track_name, self.source_cols)
 
     def close(self):
         self.lineplot.close()
