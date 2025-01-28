@@ -21,7 +21,7 @@ import app_trajplot as k2t
 import license_view
 import pref_list
 from behavior_senpai import df_attrs, file_inout, keypoints_proc, vcap, windows_and_mac
-from gui_parts import TempFile, CalcCaseEntry
+from gui_parts import CalcCaseEntry, TempFile
 from main_gui_parts import PklSelector, VideoViewer
 
 
@@ -121,7 +121,13 @@ class App(ttk.Frame):
         calc_case_frame = ttk.Frame(load_frame)
         calc_case_frame.pack(anchor=tk.W, pady=(4, 0))
         self.calc_case_entry = CalcCaseEntry(calc_case_frame, temp.data["calc_case"])
-        self.calc_case_entry.pack(pady=(4,0))
+        self.calc_case_entry.pack(pady=(4, 0), side=tk.LEFT)
+        self.go_to_folder_btn = ttk.Button(
+            calc_case_frame,
+            text="Open calc folder",
+            command=lambda: windows_and_mac.go_to_folder(os.path.dirname(os.path.dirname(self.pkl_path)), "calc"),
+        )
+        self.go_to_folder_btn.pack(padx=(4, 0))
 
         save_frame = ttk.Frame(head_frame)
         save_frame.pack(anchor=tk.E)
