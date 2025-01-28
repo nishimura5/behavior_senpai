@@ -42,10 +42,15 @@ class App(ttk.Frame):
 
         detect_label = ttk.Label(buttons_frame, text="Preparation")
         detect_label.pack(side=tk.TOP)
-        v2k_button = ttk.Button(buttons_frame, text="Detect", command=lambda: self.launch_window(app_detect.App, grab=True))
+        v2k_button = ttk.Button(
+            buttons_frame, text="Detect", command=lambda: self.launch_detect_window()
+        )
         v2k_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         self.tl_button = ttk.Button(
-            buttons_frame, text="Track list", command=lambda: self.launch_window(app_track_list.App, grab=True), state=tk.DISABLED
+            buttons_frame,
+            text="Track list",
+            command=lambda: self.launch_window(app_track_list.App, grab=True),
+            state=tk.DISABLED,
         )
         self.tl_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         edit_label = ttk.Label(buttons_frame, text="Edit")
@@ -53,56 +58,97 @@ class App(ttk.Frame):
         self.member_edit_button = ttk.Button(
             buttons_frame,
             text="Member",
-            command=lambda: self.launch_window(app_member_edit.App, dialog_size="1000x750", edit_df=True, grab=True),
+            command=lambda: self.launch_window(
+                app_member_edit.App, dialog_size="1000x750", edit_df=True, grab=True
+            ),
             state=tk.DISABLED,
         )
         self.member_edit_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         self.area_filter_button = ttk.Button(
-            buttons_frame, text="Area", command=lambda: self.launch_window(app_area_filter.App, edit_df=True, grab=True), state=tk.DISABLED
+            buttons_frame,
+            text="Area",
+            command=lambda: self.launch_window(
+                app_area_filter.App, edit_df=True, grab=True
+            ),
+            state=tk.DISABLED,
         )
         self.area_filter_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         self.smooth_button = ttk.Button(
             buttons_frame,
             text="Smooth",
-            command=lambda: self.launch_window(app_smoothing.App, dialog_size="1000x750", edit_df=True, grab=True),
+            command=lambda: self.launch_window(
+                app_smoothing.App, dialog_size="1000x750", edit_df=True, grab=True
+            ),
             state=tk.DISABLED,
         )
         self.smooth_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         self.scene_table_button = ttk.Button(
-            buttons_frame, text="Scene table", command=lambda: self.launch_window(app_scene_table.App, edit_df=True, grab=True), state=tk.DISABLED
+            buttons_frame,
+            text="Scene table",
+            command=lambda: self.launch_window(
+                app_scene_table.App, edit_df=True, grab=True
+            ),
+            state=tk.DISABLED,
         )
         self.scene_table_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         calc_label = ttk.Label(buttons_frame, text="Feature")
         calc_label.pack(side=tk.TOP, pady=(8, 0))
         self.k2f_button = ttk.Button(
-            buttons_frame, text="Trajectory", command=lambda: self.launch_window(k2t.App, dialog_size="1200x800"), state=tk.DISABLED
+            buttons_frame,
+            text="Trajectory",
+            command=lambda: self.launch_window(k2t.App, dialog_size="1200x800"),
+            state=tk.DISABLED,
         )
         self.k2f_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         self.multi_point_button = ttk.Button(
-            buttons_frame, text="Multiple points", command=lambda: self.launch_window(app_points_calc.App, dialog_size="1200x800"), state=tk.DISABLED
+            buttons_frame,
+            text="Multiple points",
+            command=lambda: self.launch_window(
+                app_points_calc.App, dialog_size="1200x800"
+            ),
+            state=tk.DISABLED,
         )
         self.multi_point_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         self.feat_mix_button = ttk.Button(
-            buttons_frame, text="Mix/Norm", command=lambda: self.launch_window(app_feat_mix.App, dialog_size="1200x800"), state=tk.DISABLED
+            buttons_frame,
+            text="Mix/Norm",
+            command=lambda: self.launch_window(
+                app_feat_mix.App, dialog_size="1200x800"
+            ),
+            state=tk.DISABLED,
         )
         self.feat_mix_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         self.dimredu_button = ttk.Button(
-            buttons_frame, text="Dim-reduction", command=lambda: self.launch_window(app_dimredu.App, dialog_size="1500x800"), state=tk.DISABLED
+            buttons_frame,
+            text="Dim-reduction",
+            command=lambda: self.launch_window(app_dimredu.App, dialog_size="1500x800"),
+            state=tk.DISABLED,
         )
         self.dimredu_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         pref_label = ttk.Label(buttons_frame, text="Misc")
         pref_label.pack(side=tk.TOP, pady=(8, 0))
-        pref_list_button = ttk.Button(buttons_frame, text="Preference", command=lambda: self.launch_window(pref_list.App))
+        pref_list_button = ttk.Button(
+            buttons_frame,
+            text="Preference",
+            command=lambda: self.launch_window(pref_list.App),
+        )
         pref_list_button.pack(side=tk.TOP, fill=tk.X, pady=4)
-        pkl_to_csv_button = ttk.Button(buttons_frame, text="PKL to CSV tool", command=self.pkl_to_csv)
+        pkl_to_csv_button = ttk.Button(
+            buttons_frame, text="PKL to CSV tool", command=self.pkl_to_csv
+        )
         pkl_to_csv_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         # srcにlicense.jsonがある場合はボタンを表示
         license_path = "./src/license.json"
         if os.path.exists(license_path):
-            license_button = ttk.Button(buttons_frame, text="License", command=lambda: self.launch_window(license_view.App), width=20)
+            license_button = ttk.Button(
+                buttons_frame,
+                text="License",
+                command=lambda: self.launch_window(license_view.App),
+                width=20,
+            )
             license_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
         main_frame = ttk.Frame(self)
@@ -125,16 +171,25 @@ class App(ttk.Frame):
         self.go_to_folder_btn = ttk.Button(
             calc_case_frame,
             text="Open calc folder",
-            command=lambda: windows_and_mac.go_to_folder(os.path.dirname(os.path.dirname(self.pkl_path)), "calc"),
+            command=lambda: windows_and_mac.go_to_folder(
+                os.path.dirname(os.path.dirname(self.pkl_path)), "calc"
+            ),
         )
         self.go_to_folder_btn.pack(padx=(4, 0))
 
         save_frame = ttk.Frame(head_frame)
         save_frame.pack(anchor=tk.E)
-        self.save_button = ttk.Button(save_frame, text="Overwrite", command=self.overwrite, width=10)
+        self.save_button = ttk.Button(
+            save_frame, text="Overwrite", command=self.overwrite, width=10
+        )
         self.save_button.pack()
         self.save_button["state"] = tk.DISABLED
-        compare_button = ttk.Button(save_frame, text="Compare", command=lambda: self.launch_window(app_compare_files.App), width=10)
+        compare_button = ttk.Button(
+            save_frame,
+            text="Compare",
+            command=lambda: self.launch_window(app_compare_files.App),
+            width=10,
+        )
         compare_button.pack(pady=4)
 
         view_frame = ttk.Frame(main_frame)
@@ -147,10 +202,14 @@ class App(ttk.Frame):
 
         attrs_frame = ttk.Frame(view_frame)
         attrs_frame.pack(side=tk.RIGHT, anchor=tk.N)
-        self.attrs_textbox = tk.Text(attrs_frame, relief=tk.FLAT, width=40, padx=10, pady=10)
+        self.attrs_textbox = tk.Text(
+            attrs_frame, relief=tk.FLAT, width=40, padx=10, pady=10
+        )
         self.attrs_textbox.pack(fill=tk.BOTH, expand=True, padx=(10, 0))
 
-        keypoints_btn = ttk.Button(attrs_frame, text="Keypoint samples", command=self.open_kp_samples)
+        keypoints_btn = ttk.Button(
+            attrs_frame, text="Keypoint samples", command=self.open_kp_samples
+        )
         keypoints_btn.pack(padx=(10, 0), pady=(5, 0), expand=True, fill=tk.X)
 
         self.vcap = vcap.VideoCap()
@@ -163,6 +222,7 @@ class App(ttk.Frame):
 
     def load(self, event=None):
         pkl_path = self.pkl_selector.get_trk_path()
+        print(f"Loading {pkl_path}")
         # check if deeplabcut file (ext = .h5)
         if pkl_path.endswith(".h5"):
             pkl_path = self.launch_dlc_to_trk(pkl_path)
@@ -195,15 +255,23 @@ class App(ttk.Frame):
         self.pkl_dir = os.path.dirname(self.pkl_path)
         self.vcap.set_frame_size(src_attrs.attrs["frame_size"])
         if isinstance(src_attrs.attrs["video_name"], list):
-            video_list = [os.path.abspath(os.path.join(self.pkl_dir, os.pardir, video)) for video in src_attrs.attrs["video_name"]]
+            video_list = [
+                os.path.abspath(os.path.join(self.pkl_dir, os.pardir, video))
+                for video in src_attrs.attrs["video_name"]
+            ]
             self.cap = vcap.MultiVcap(self.vcap)
             self.cap.open_files(video_list)
         else:
-            self.vcap.open_file(os.path.join(self.pkl_dir, os.pardir, src_attrs.attrs["video_name"]))
+            self.vcap.open_file(
+                os.path.join(self.pkl_dir, os.pardir, src_attrs.attrs["video_name"])
+            )
             self.cap = self.vcap
 
         # UIの更新
-        self.time_span = (self.src_df["timestamp"].min(), self.src_df["timestamp"].max())
+        self.time_span = (
+            self.src_df["timestamp"].min(),
+            self.src_df["timestamp"].max(),
+        )
         self.pkl_selector.set_prev_next(src_attrs.attrs)
 
         self.vw.set_cap(self.cap, src_attrs.attrs["frame_size"], anno_trk=self.src_df)
@@ -225,6 +293,24 @@ class App(ttk.Frame):
                 print_str += f"{key}: {value}\n"
         self.attrs_textbox.insert(tk.END, print_str)
 
+    def launch_detect_window(self):
+        window_pos = self.master.geometry().split("+")[1:]
+        dlg_modal = tk.Toplevel(self)
+        dlg_modal.geometry(f"+{window_pos[0]}+{window_pos[1]}")
+        dlg_modal.focus_set()
+        dlg_modal.grab_set()
+        dlg_modal.transient(self.master)
+        d = app_detect.App(dlg_modal)
+        dlg_modal.protocol(
+            "WM_DELETE_WINDOW",
+            lambda: [dlg_modal.destroy(), cv2.destroyAllWindows(), d.close()],
+        )
+        self.wait_window(dlg_modal)
+        if d.trk_path != "":
+            self.pkl_selector.trk_path = d.trk_path
+            self.pkl_selector.rename_pkl_path_label(d.trk_path)
+            self.load()
+
     def launch_window(self, app, dialog_size="", edit_df=False, grab=False):
         self.calc_case_entry.save()
         window_pos = self.master.geometry().split("+")[1:]
@@ -244,7 +330,10 @@ class App(ttk.Frame):
             "current_position": current_position,
         }
         self.a = app(dlg_modal, args)
-        dlg_modal.protocol("WM_DELETE_WINDOW", lambda: [dlg_modal.destroy(), cv2.destroyAllWindows(), self.a.close()])
+        dlg_modal.protocol(
+            "WM_DELETE_WINDOW",
+            lambda: [dlg_modal.destroy(), cv2.destroyAllWindows(), self.a.close()],
+        )
         self.wait_window(dlg_modal)
 
         # ダイアログを閉じた後の処理
@@ -255,7 +344,10 @@ class App(ttk.Frame):
             return
         if self.a.dst_df is None:
             return
-        if self.src_df.equals(self.a.dst_df) is True and self.src_df.attrs == self.a.dst_df.attrs:
+        if (
+            self.src_df.equals(self.a.dst_df) is True
+            and self.src_df.attrs == self.a.dst_df.attrs
+        ):
             return
 
         print("DataFrame Updated")
@@ -294,7 +386,9 @@ class App(ttk.Frame):
         csv_name = file_inout.pkl_to_csv(dir_path)
         if csv_name is None:
             return
-        messagebox.showinfo("PKL to CSV", f"Conversion finished.\nfile name: {csv_name}")
+        messagebox.showinfo(
+            "PKL to CSV", f"Conversion finished.\nfile name: {csv_name}"
+        )
 
     def overwrite(self):
         pkl_name = file_inout.overwrite_track_file(self.pkl_path, self.src_df)

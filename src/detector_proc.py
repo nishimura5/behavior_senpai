@@ -75,3 +75,4 @@ def exec(rcap, model_name, video_path, use_roi=False, add_suffix=False):
 
     file_inout.overwrite_track_file(pkl_path, result_df, not_found_ok=True)
     rcap.release()
+    return pkl_path
