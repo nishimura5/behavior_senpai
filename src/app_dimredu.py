@@ -4,7 +4,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from behavior_senpai import df_attrs, file_inout, hdf_df, keypoints_proc
+from behavior_senpai import file_inout, hdf_df, keypoints_proc
 from dimredu_plotter import DimensionalReductionPlotter
 from gui_parts import Combobox, IntEntry, MemberKeypointComboboxes, StrEntry, TempFile
 

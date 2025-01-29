@@ -5,7 +5,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from behavior_senpai import df_attrs, file_inout, hdf_df, keypoints_proc
+from behavior_senpai import file_inout, hdf_df, keypoints_proc
 from gui_parts import IntEntry, TempFile, ToolTip
 from gui_points_calc import Tree
 from line_plotter import LinePlotter
