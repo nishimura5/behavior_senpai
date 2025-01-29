@@ -28,7 +28,7 @@ class DataFrameStorage:
         """
         self.filepath = filepath
 
-    def save_dimredu_df(self, df: pd.DataFrame, source_cols: dict, params_dict: dict, cluster_names: list):
+    def save_dimredu_df(self, df: pd.DataFrame, source_cols: list, params_dict: dict, cluster_names: list):
         """
         Save dimredu DataFrame to HDF store
         """
@@ -41,10 +41,10 @@ class DataFrameStorage:
             attrs_df = pd.DataFrame({"key": list(attrs_dict.keys()), "value": list(attrs_dict.values())})
             store.put("attrs", attrs_df, format="table")
 
-            source_cols = {"code": []}
+            source_cols_dict = {"code": []}
             for source_col in source_cols:
-                source_cols["code"].append(source_col)
-            source_cols_df = pd.DataFrame(source_cols)
+                source_cols_dict["code"].append(source_col)
+            source_cols_df = pd.DataFrame(source_cols_dict)
 
             store.put("dimredu/source_cols", source_cols_df, format="table")
             feature_df = pd.DataFrame({"feat": cluster_names})

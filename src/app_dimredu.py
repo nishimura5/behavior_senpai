@@ -211,7 +211,6 @@ class App(ttk.Frame):
         self.source_cols = []
         cols = self.column_listbox.curselection()
         if len(cols) == 0:
-            print("cols", cols)
             return
         cols = [self.column_listbox.get(i) for i in cols]
         self.source_cols = cols
@@ -252,8 +251,6 @@ class App(ttk.Frame):
 
         if self.drp.plot_df is not None and self.drp.plot_df.index.levels[1][0] == current_member:
             class_sr = self.drp.plot_df["class"]
-        else:
-            print(class_sr)
 
         self.drp.set_member(current_member)
         self.drp.draw(reduced_df, class_sr)
