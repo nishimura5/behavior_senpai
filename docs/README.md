@@ -1,14 +1,16 @@
-# Behavior Senpai v.1.4.0
+# Behavior Senpai v.1.5.0
 
 [pyproject]: https://github.com/nishimura5/behavior_senpai/blob/master/pyproject.toml
 [app_detect]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_detect.py
 [app_track_list]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_track_list.py
-[app_2point_calc]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_2point_calc.py
-[app_3point_calc]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_3point_calc.py
+[app_trajplot]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_trajplot.py
+[app_points_calc]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_points_calc.py
+[app_feat_mix]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_feat_mix.py
+[app_dimredu]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_dimredu.py
 [gui_parts]: https://github.com/nishimura5/behavior_senpai/blob/master/src/gui_parts.py
 [detector_proc]: https://github.com/nishimura5/behavior_senpai/blob/master/src/detector_proc.py
 
-![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.2.0%20_%20Python%20senpai_files/bs_capture_120.jpg)
+![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.4.0%20_%20Python%20senpai_files/bs_capture_120.jpg)
 
 Behavior Senpai is an application that supports quantitative behavior observation in video observation methods. It converts video files into time-series coordinate data using keypoint detection AI, enabling quantitative analysis and visualization of human behavior.
 Behavior Senpai is distinctive in that it permits the utilization of multiple AI models without the necessity for coding. 
@@ -23,9 +25,7 @@ Behavior Senpai is distinctive in that it permits the utilization of multiple AI
 Behavior Senpai performs pose estimation of a person in a video using an AI model selected by the user, and outputs time-series coordinate data.
 (These are variously referred to as "pose estimation", "markerless motion capture", "landmark detection", and so forth, depending on the intended purpose and application.)
 
-<p align="center">
-  <img width="60%" alt="What is Behavior Senpai" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/what_is_behavior_senpai.png">
-</p>
+BehaviorSenpai can import inference results (with .h5 extension) from [DeepLabCut](https://www.mackenziemathislab.org/deeplabcut).
 
 Behavior Senpai is an open source software developed at [Faculty of Design, Kyushu University](https://www.design.kyushu-u.ac.jp/en/home/).
 
@@ -50,6 +50,12 @@ If you do not have a CUDA-compatible GPU, only MediaPipe Holistic can be used.
 
 ## Usage
 
+### Download
+
+Download [BehaviorSenpai150.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.5.0/BehaviorSenpai150.zip)
+
+### Install
+
 Running BehaviorSenpai.exe will start the application; if you want to use CUDA, check the "Enable features using CUDA" checkbox the first time you start the application and click the "OK" button.
 
 BehaviorSenpai.exe is an application to automate the construction of the Python environment by [uv](https://docs.astral.sh/uv/) and the startup of Behavior Senpai itself.
@@ -65,28 +71,41 @@ To uninstall Behavior Senpai or replace it with the latest version, delete the e
 
 ## Keypoints
 
-The ID of keypoints handled by Behavior Senpai is the same as the ID of each dataset.
-YOLO11 (and YOLOv8) complies with COCO and RTMPose complies with Halpe26.
-The IDs of each keypoints are as follows.
+### YOLO11 and YOLOv8
 
 <p align="center">
-  <img width="60%" alt="Keypoints of body (YOLO11 and MMPose)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_body_110.png">
+  <img width="24%" alt="Keypoints of body in YOLO" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/body_coco.png">
 </p>
 
-The IDs of the keypoints (landmarks) of the faces in MediaPipe Holistic are as follows. See [here](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png) for a document with all IDs.
+### RTMPose Halpe26
 
 <p align="center">
-  <img width="60%" alt="Keypoints of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_face_110.png">
+  <img width="24%" alt="Keypoints of body in RTMPose Halpe26" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/body_halpe26.png">
+</p>
+
+### RTMPose WholeBody133
+
+<p align="center">
+  <img width="50%" alt="Keypoints of body and hands in RTMPose WholeBody133" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/body_wholebody133.png">
 </p>
 
 <p align="center">
-  <img width="60%" alt="Keypoints of parts of face (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_eyemouth_110.png">
+  <img width="60%" alt="Keypoints of face in RTMPose WholeBody133" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/face_wholebody133.png">
 </p>
 
-The IDs of the keypoints (landmarks) of the hands in MediaPipe Holistic are as follows
+### MediaPipe Holistic
+
+See [here](https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png) for a document with all IDs.
 
 <p align="center">
-  <img width="60%" alt="Keypoints of hands (Mediapipe Holistic)" src="https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.1.0%20_%20Python%20senpai_files/keypoints_hands_110.png">
+  <img width="60%" alt="Keypoints of face in Mediapipe Holistic" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/facemesh.png">
+</p>
+<p align="center">
+  <img width="60%" alt="Keypoints of face in Mediapipe Holistic" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/facemesh2.png">
+</p>
+
+<p align="center">
+  <img width="50%" alt="Keypoints of hands in Mediapipe Holistic" src="https://github.com/nishimura5/behavior_senpai/blob/master/src/img/hands.png">
 </p>
 
 ## Interface
@@ -116,7 +135,8 @@ An illustrative example of a DataFrame stored in the Track file is presented bel
 
 ### Feature file
 
-In Behavior Senpai, the data obtained by calculating the positional relationship of multiple keypoints is referred to as a feature. The data processed by [app_2point_calc.py][app_2point_calc] or [app_3point_calc.py][app_3point_calc] is stored in a pickled format. The data processed by [app_3point_calc][app_3point_calc] is saved as a "Feature file" in the "calc" folder. The file extension is ".feat.pkl". The Feature file holds time-series data in 2-level-multi-index format, with the indices designated as "frame" and "member", respectively, and the columns including a "timestamp". It should be noted that the data in the Track file is only the result of keypoint detection, while the data in the Feature file are features that are deeply related to the purpose of behavior observation.
+BehaviorSenpai saves calculated features based on Track file data to Feature files. Feature files are created in HDF5 format with the .feat extension.
+Feature files store data calculated by [app_points_calc.py][app_points_calc], [app_trajplot.py][app_trajplot], and [app_feat_mix.py][app_feat_mix] in the format shown in the table below:
 
 |       |        | feat_1   | feat_2   | timestamp |
 | ----- | ------ | -------- | -------- | --------- |
@@ -131,41 +151,7 @@ In Behavior Senpai, the data obtained by calculating the positional relationship
 | 3     | 2      | 0.052715 | 0.055282 | 50.050000 |
 |       | ...    | ...      | ...      | ...       |
 
-#### Column name definition
-
-The feature files processed by [app_2point_calc.py][app_2point_calc] and [app_3point_calc.py][app_3point_calc] have rules for columns names (to enable parsing).
-The format of columns names in the DataFrame in the feature file, except for timestamp, is as follows.
-
-```
-{calc_code}({target keypoints})
-```
-
-\{calc_code\} contains the following strings, depending on the calculation.
-
-- x: x
-- y: y
-- component_x and component_y: x or y component of one vector
-- norm: norm of one vector
-- plus_x and plus_y: the sum of two vectors
-- cross: cross product of two vectors
-- dot: inner product of two vectors
-- norms: product of the norms of two vectors
-- sin: cross / norms
-- cos: dot / norms
-
-\{target keypoints\} contains the IDs of the keypoints to be calculated.
-In the case of a calculation for a single vector, such as 'component' or 'norm', a hyphenated set of keypoint IDs is written with the starting point of the vector on the left, such as '1-2'.
-For calculations on two vectors such as 'plus' and 'cross', a comma-separated set of keypoint IDs is written, such as '1-2,1-3'.
-
-As a concrete example, a column name meaning the outer product of two vectors starting from keypoint=2 at three keypoints1,2,3 would be written as follows.
-
-```
-cross(2-1,2-3)
-```
-
-### Category file
-
-The category file contains boolean data indicating the presence of specific behaviors for each member at each frame. It includes frame and member identifiers, a class column for internal use, boolean columns for each category (e.g., cat_1, cat_2), and a timestamp. True values represent the occurrence of a behavior for a given member at a specific frame.The file extension is ".bc.pkl". 
+Additionally, data calculated by [app_dimredu.py][app_dimredu] is stored in the format shown in the table below. All these data are handled as Pandas DataFrames, with time-series data in 2-level-multi-index format, with the indices designated as "frame" and "member", respectively, and the columns including a "timestamp".
 
 |       |        | class | cat_1 | cat_2 | timestamp |
 | ----- | ------ | ----- | ----- | ----- | --------- |
@@ -179,47 +165,6 @@ The category file contains boolean data indicating the presence of specific beha
 | 3     | 1      | 0.0   | True  | False | 50.050000 |
 | 3     | 2      | 1.0   | False | True  | 50.050000 |
 |       | ...    | ...   | ...   | ...   | ...       |
-
-### Attributes of Track (or Feature) file
-
-The [attrs property](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.attrs.html) of the DataFrame stored in Track file (and Feature files) records information such as the original video file name, its frame size, and the name of the AI model used for keypoint detection.
-
-To load a Track file and check the contents recorded in attrs, the Python code
-
- is as follows. The attrs property is of dictionary type:
-
-```
-trk_df = pd.read_pickle("path/to/track_file.pkl")
-print(trk_df.attrs)
-```
-
-Main contents of attrs include, but are not limited to:
-
-#### model
-
-The name of the AI image processing framework/model used for keypoint detection. Addition to attrs is done by [app_detector.py][app_detect] ([detector_proc.py][detector_proc]).
-
- - YOLO11 x-pose
- - YOLOv8 x-pose-p6
- - MediaPipe Holistic
- - RTMPose-x Halpe26
- - RTMPose-x WholeBody133
-
-#### frame_size
-
-The frame size of the video on which keypoint detection was performed is recorded as a tuple (width, height) in pixels. Addition to attrs is done by [app_detector.py][app_detect] ([detector_proc.py][detector_proc]).
-
-#### video_name
-
-The file name of the video on which keypoint detection was performed is recorded. Addition to attrs is done by [app_detector.py][app_detect] ([detector_proc.py][detector_proc]).
-
-#### created
-
-Dates and times when the Track file was created are recorded in the format "%Y-%m-%d %H-%M-%S". Additions to attrs are made in [app_detector.py][app_detect] ([detector_proc.py][detector_proc]).
-
-#### next, prev
-
-Long videos captured by a video camera may be split during recording due to camera specifications. Since Track files are paired with video files, they are also split. 'next' and 'prev' record the sequence of split Track files. Addition to attrs is done by [app_track_list.py][app_track_list].
 
 ### Security Considerations
 
@@ -236,10 +181,15 @@ This section explains the default locations for data output by Behavior Senpai. 
 Below is an example of the folder structure when there are files named "ABC.MP4" and "XYZ.MOV" in a folder. Output file names include suffixes according to the model or type of calculation. To avoid file read/write failures, use alphanumeric characters for folder and file names, especially when the file path contains Japanese characters.
 
 ```
+Videos
 ├── ABC.MP4
 ├── XYZ.MOV
 ├── calc
-│   └── XYZ_2p.pkl
+│   ├── case1
+│   │   ├── ABC.feat
+│   │   └── XYZ.feat
+│   └── case2
+│       └── XYZ.feat
 ├── mp4
 │   └── ABC_mediapipe.mp4
 └── trk
@@ -260,7 +210,7 @@ The application's settings and the path of the most recently loaded Track file a
 Please acknowledge and cite the use of this software and its authors when results are used in publications or published elsewhere.
 
 ```
-Nishimura, E. (2024). Behavior Senpai (Version 1.4.0) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
+Nishimura, E. (2025). Behavior Senpai (Version 1.5.0) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
 ```
 
 ```
