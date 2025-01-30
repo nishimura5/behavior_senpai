@@ -309,6 +309,10 @@ class App(ttk.Frame):
         if d.trk_path != "":
             self.pkl_selector.trk_path = d.trk_path
             self.pkl_selector.rename_pkl_path_label(d.trk_path)
+            temp = TempFile()
+            data = temp.load()
+            data["trk_path"] = d.trk_path
+            temp.save(data)
             self.load()
 
     def launch_window(self, app, dialog_size="", edit_df=False, grab=False):
