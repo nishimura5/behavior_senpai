@@ -1,3 +1,6 @@
+import os
+import sys
+
 import pandas as pd
 
 
@@ -49,7 +52,14 @@ def transform_df(src_df, rename_table, fps):
 def generate_toml(rename_table, color_rgb_str="[40,40,255]"):
     # search values in the rename_table and get val=0
     zero_key = [k for k, v in rename_table.items() if v == 0][0]
-    with open("src/keypoint/deeplabcut.toml", "w") as f:
+    if getattr(sys, "frozen", False):
+        # frozen
+        path = os.path.dirname(sys.executable)
+    else:
+        # unfrozen
+        path = os.path.dirname(os.path.abspath(__file__))
+    toml_path = os.path.join(path, "..", "keypoint", "deeplabcut.toml")
+    with open(toml_path, "w") as f:
         f.write("[keypoints]\n")
         for k, v in rename_table.items():
             f.write(f'"{k}" = {{id={v}, color={color_rgb_str}}}\n')
