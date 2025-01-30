@@ -17,7 +17,7 @@ class DimensionalReductionPlotter:
         self.fig = plt.figure(figsize=self.fig_size, dpi=self.dpi)
         self.fig.canvas.mpl_connect("pick_event", self._click_plot)
         self.fig.canvas.mpl_connect("button_press_event", self._click_graph)
-        self.fig.canvas.mpl_connect("motion_notify_event", self._drug_graph)
+        self.fig.canvas.mpl_connect("motion_notify_event", self._drag_graph)
 
         # axesのレイアウト設定
         gs = gridspec.GridSpec(2, 1, height_ratios=(4, 1), top=0.97, bottom=0.05)
@@ -163,7 +163,7 @@ class DimensionalReductionPlotter:
         time_format.copy_to_clipboard(timestamp_msec)
         self._show(timestamp_msec, near_df.iloc[np.argmin(distances)]["class"])
 
-    def _drug_graph(self, event):
+    def _drag_graph(self, event):
         x = event.xdata
         y = event.ydata
         tar_ax = event.inaxes
@@ -174,10 +174,12 @@ class DimensionalReductionPlotter:
 
         timestamp_msec = float(x)
         idx = np.fabs(self.timestamps - timestamp_msec).argmin()
-        isnan = np.isnan(self.plot_df.loc[self.plot_df.index[idx], "umap_t"])
-        if ~isnan:
-            self.plot_df.loc[self.plot_df.index[idx], "class"] = self.cluster_number
+
+        mask = ~np.isnan(self.plot_df.iloc[idx]["umap_t"])
+        if mask:
+            self.plot_df.iloc[idx, self.plot_df.columns.get_loc("class")] = self.cluster_number
             self.line_plot.set_data(self.timestamps, self.plot_df["class"])
+
         self._update_scatter()
         self.canvas.draw_idle()
 
@@ -193,10 +195,12 @@ class DimensionalReductionPlotter:
         timestamp_msec = float(x)
         idx = np.fabs(self.timestamps - timestamp_msec).argmin()
         timestamp_msec = self.timestamps[idx]
-        isnan = np.isnan(self.plot_df.loc[self.plot_df.index[idx], "umap_t"])
-        if event.button == 3 and ~isnan:
-            self.plot_df.loc[self.plot_df.index[idx], "class"] = self.cluster_number
+
+        mask = ~np.isnan(self.plot_df.iloc[idx]["umap_t"])
+        if mask:
+            self.plot_df.iloc[idx, self.plot_df.columns.get_loc("class")] = self.cluster_number
             self.line_plot.set_data(self.timestamps, self.plot_df["class"])
+
         size = np.ones(len(self.timestamps)) * 5
         size[idx] = 60
         self._update_scatter(size)
