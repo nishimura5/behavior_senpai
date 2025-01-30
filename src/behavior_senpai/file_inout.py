@@ -67,20 +67,6 @@ class PickleLoader:
         self.tar_path = tar_path
         return True
 
-    def load_pkl(self):
-        """Return the loaded DataFrame."""
-        if os.path.exists(self.tar_path) is False:
-            print(f"File not found: {self.tar_path}")
-            return
-        src_df = pd.read_pickle(self.tar_path)
-        frame_num = src_df.index.get_level_values(0).nunique()
-        member_num = src_df.index.get_level_values(1).nunique()
-        called_in = os.path.basename(inspect.stack()[1].filename)
-        print(
-            f"{called_in} < {os.path.basename(self.tar_path)}: shape={src_df.shape[0]:,}x{src_df.shape[1]} frames={frame_num:,} members={member_num}"
-        )
-        return src_df
-
     def get_tar_path(self):
         return self.tar_path
 
