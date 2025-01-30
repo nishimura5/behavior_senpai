@@ -139,21 +139,3 @@ def save_pkl(org_pkl_path, dst_df, proc_history=None):
     dst_df.to_pickle(file_name)
     called_in = os.path.basename(inspect.stack()[1].filename)
     print(f"{called_in} > {os.path.basename(os.path.basename(file_name))}")
-
-
-def pkl_to_csv(init_dir="~"):
-    """
-    pklファイルをcsvファイルに変換する
-    ダイアログを開きファイルを選択させ、同じディレクトリにcsvファイルを保存する
-    """
-    pkl_path = open_pkl(init_dir)
-    if pkl_path == "" or pkl_path is None:
-        print("pkl_to_csv() canceled.")
-        return
-    csv_path = os.path.splitext(pkl_path)[0] + ".csv"
-    df = load_track_file(pkl_path, allow_calculated_track_file=True)
-    if df is None:
-        return
-    df.to_csv(csv_path)
-    csv_name = os.path.basename(csv_path)
-    return csv_name
