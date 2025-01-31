@@ -29,22 +29,19 @@ class App(ttk.Frame):
         self.member_keypoints_combos = MemberKeypointComboboxes(top_frame)
 
         self.diff_entry = IntEntry(top_frame, label="Diff period:", default=temp.data["dt_span"])
-        self.diff_entry.pack_horizontal(padx=5)
+        self.diff_entry.pack_horizontal(padx=(5, 40))
 
-        setting_frame = ttk.Frame(self)
-        setting_frame.pack(pady=5, fill=tk.X, anchor=tk.W)
-
-        self.thinning_entry = IntEntry(setting_frame, label="Thinning:", default=temp.data["thinning"])
+        self.thinning_entry = IntEntry(top_frame, label="Thinning:", default=temp.data["thinning"])
         self.thinning_entry.pack_horizontal(padx=(0, 5))
 
-        draw_btn = ttk.Button(setting_frame, text="Add and draw", command=self.draw)
+        draw_btn = ttk.Button(top_frame, text="Add and draw", command=self.draw)
         draw_btn.pack(side=tk.LEFT)
 
-        clear_btn = ttk.Button(setting_frame, text="Clear", command=self.clear)
+        clear_btn = ttk.Button(top_frame, text="Clear", command=self.clear)
         clear_btn.pack(side=tk.LEFT, padx=(5, 0))
 
-        export_btn = ttk.Button(setting_frame, text="Save", command=self.export)
-        export_btn.pack(side=tk.LEFT, padx=(5, 50))
+        export_btn = ttk.Button(top_frame, text="Save", command=self.export)
+        export_btn.pack(side=tk.LEFT, padx=(5, 0))
 
         plot_frame = ttk.Frame(self)
         plot_frame.pack(pady=5)
