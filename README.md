@@ -110,6 +110,41 @@ See [here](https://storage.googleapis.com/mediapipe-assets/documentation/mediapi
 
 ## Interface
 
+### Folder structure of data
+
+```
+observation_jan31     <------- Root directory
+├── ABC_cond1.MP4
+├── ABC_cond2.MP4
+├── XYZ_cond1.MOV
+├── XYZ_cond2.MOV
+├── calc
+│   ├── case1         <------- calc_case subdirectory
+│   │   ├── ABC_cond1.feat
+│   │   └── XYZ_cond1.feat
+│   └── case2
+│       └── XYZ_cond_1.feat
+└── trk
+    ├── ABC_cond1.pkl
+    ├── ABC_cond2.pkl
+    ├── XYZ_cond1.pkl
+    ├── XYZ_cond2.pkl
+    └── backup
+        └── ABC_cond1.pkl
+```
+
+#### Root Directory
+
+Each root directory (e.g., "observation_jan31") represents a single series of experiments and serves as the base level of the project's file organization. You can create multiple root directories for different experimental series, and they can be located anywhere on your computer where you have appropriate access permissions. When Behavior Senpai processes videos in a root directory, it automatically creates two essential subdirectories within it: trk/ and calc/. These subdirectory names are fixed and must not be modified under any circumstances.
+
+#### Generated Files
+
+Behavior Senpai first generates tracking files (.pkl) from the video files and stores them in the trk directory. These files preserve the video's base name. After tracking files are generated, users can define calc_case names (e.g., "case1", "case2") within Behavior Senpai. Feature files are then stored in these user-defined calc_case subdirectories, inheriting the base name of their source video.
+
+#### Operational Guidelines
+
+All videos from a given experimental series should be placed directly in their corresponding root directory. Creating subdirectories for different experimental conditions or participants is not recommended. When naming video files, we recommend either keeping the original camera-generated file names (such as GX010001.MP4) or using custom names that are meaningful for your project management. It is crucial not to rename video files after processing has begun, as all generated files inherit the base name of the source video. Renaming source videos after processing will break these file relationships.
+
 ### Track file
 
 The time-series coordinate data resulting from keypoint detection in app_detect.py is stored in a [Pickled Pandas DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html). This data is referred to by Behavior Senpai as a "Track file". The Track file is saved in the "trk" folder, which is created in the same directory as the video file where the keypoint detection was performed.
@@ -173,33 +208,6 @@ As mentioned above, Behavior Senpai handles pickle format files, and because of 
 ### Annotated Video file
 
 Behavior Senpai can output videos in mp4 format with detected keypoints drawn on them.
-
-### Folder Structure
-
-This section explains the default locations for data output by Behavior Senpai. Track files are saved in the "trk" folder, Feature files in the "calc" folder, and videos with keypoints drawn are saved in the "mp4" folder. If a Track file is edited and overwritten, the old Track file is saved in the "backup" folder (only one backup is kept). These folders are automatically generated at the time of file saving.
-
-Below is an example of the folder structure when there are files named "ABC.MP4" and "XYZ.MOV" in a folder. Output file names include suffixes according to the model or type of calculation. To avoid file read/write failures, use alphanumeric characters for folder and file names, especially when the file path contains Japanese characters.
-
-```
-Videos
-├── ABC.MP4
-├── XYZ.MOV
-├── calc
-│   ├── case1
-│   │   ├── ABC.feat
-│   │   └── XYZ.feat
-│   └── case2
-│       └── XYZ.feat
-├── mp4
-│   └── ABC_mediapipe.mp4
-└── trk
-    ├── ABC.pkl
-    ├── XYZ.pkl
-    └── backup
-        └── ABC.pkl
-```
-
-When Behavior Senpai loads a Track file, if a video file exists in the parent folder, it also loads that video file. The file name of the video to be loaded is referred from the "video_name" value in Attributes of Track file. If the video file is not found, a black background is used as a substitute.
 
 ### Temporary file
 
