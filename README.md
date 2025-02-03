@@ -134,15 +134,15 @@ observation_jan31     <------- Root directory
         └── ABC_cond1.pkl
 ```
 
-#### Root Directory
+#### Root directory
 
 Each root directory (e.g., "observation_jan31") represents a single series of experiments and serves as the base level of the project's file organization. You can create multiple root directories for different experimental series, and they can be located anywhere on your computer where you have appropriate access permissions. When Behavior Senpai processes videos in a root directory, it automatically creates two essential subdirectories within it: trk/ and calc/. These subdirectory names are fixed and must not be modified under any circumstances.
 
-#### Generated Files
+#### Generated files
 
 Behavior Senpai first generates tracking files (.pkl) from the video files and stores them in the trk directory. These files preserve the video's base name. After tracking files are generated, users can define calc_case names (e.g., "case1", "case2") within Behavior Senpai. Feature files are then stored in these user-defined calc_case subdirectories, inheriting the base name of their source video.
 
-#### Operational Guidelines
+#### Operational guidelines
 
 All videos from a given experimental series should be placed directly in their corresponding root directory. Creating subdirectories for different experimental conditions or participants is not recommended. When naming video files, we recommend either keeping the original camera-generated file names (such as GX010001.MP4) or using custom names that are meaningful for your project management. It is crucial not to rename video files after processing has begun, as all generated files inherit the base name of the source video. Renaming source videos after processing will break these file relationships.
 
@@ -202,11 +202,11 @@ Additionally, data calculated by [app_dimredu.py][app_dimredu] is stored in the 
 | 3     | 2      | 1.0   | False | True  | 50.050000 |
 |       | ...    | ...   | ...   | ...   | ...       |
 
-### Security Considerations
+### Security considerations
 
 As mentioned above, Behavior Senpai handles pickle format files, and because of the security risks associated with pickle format files, please only open files that you trust (e.g., do not open files from unknown sources that are available on the Internet). (For example, do not try to open files of unknown origin published on the Internet). See [here](https://docs.python.org/3/library/pickle.html) for more information.
 
-### Keypoint Definition File Documentation
+### Keypoint definition file
 
 This document describes the TOML configuration file that is generated to [keypoint folder][keypoint_toml] when importing DeepLabCut's keypoint detection results (.h5 files) into Behavior Senpai application.
 
