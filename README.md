@@ -9,6 +9,7 @@
 [app_dimredu]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_dimredu.py
 [gui_parts]: https://github.com/nishimura5/behavior_senpai/blob/master/src/gui_parts.py
 [detector_proc]: https://github.com/nishimura5/behavior_senpai/blob/master/src/detector_proc.py
+[keypoint_toml]: https://github.com/nishimura5/behavior_senpai/tree/master/src/keypoint
 
 ![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.4.0%20_%20Python%20senpai_files/bs_capture_120.jpg)
 
@@ -204,6 +205,19 @@ Additionally, data calculated by [app_dimredu.py][app_dimredu] is stored in the 
 ### Security Considerations
 
 As mentioned above, Behavior Senpai handles pickle format files, and because of the security risks associated with pickle format files, please only open files that you trust (e.g., do not open files from unknown sources that are available on the Internet). (For example, do not try to open files of unknown origin published on the Internet). See [here](https://docs.python.org/3/library/pickle.html) for more information.
+
+### Keypoint Definition File Documentation
+
+This document describes the TOML configuration file that is generated to [keypoint folder][keypoint_toml] when importing DeepLabCut's keypoint detection results (.h5 files) into Behavior Senpai application.
+
+#### [keypoints] Section
+Defines the mapping between keypoint names and their IDs, along with display colors for visualization. While keypoint names are used in the configuration file, Behavior Senpai's GUI displays only the numeric IDs. When importing results from DeepLabCut, keypoint names in the .h5 file are automatically converted to corresponding IDs within Behavior Senpai.
+
+#### [draw] Section
+Specifies the rules for drawing keypoints when displaying on screen or generating video output. This section controls which elements are visible and how they are rendered in the visualization.
+
+#### [bones] Section
+Defines the rules for drawing lines between keypoints when displaying on screen or generating video output. These lines typically represent connections between detected keypoints to visualize the overall structure.
 
 ### Annotated Video file
 
