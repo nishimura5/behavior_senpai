@@ -196,17 +196,18 @@ class DimensionalReductionPlotter:
         idx = np.fabs(self.timestamps - timestamp_msec).argmin()
         timestamp_msec = self.timestamps[idx]
 
-        mask = ~np.isnan(self.plot_df.iloc[idx]["umap_t"])
-        if mask:
-            self.plot_df.iloc[idx, self.plot_df.columns.get_loc("class")] = self.cluster_number
-            self.line_plot.set_data(self.timestamps, self.plot_df["class"])
+        if event.button == 3:
+            mask = ~np.isnan(self.plot_df.iloc[idx]["umap_t"])
+            if mask:
+                self.plot_df.iloc[idx, self.plot_df.columns.get_loc("class")] = self.cluster_number
+                self.line_plot.set_data(self.timestamps, self.plot_df["class"])
 
-        size = np.ones(len(self.timestamps)) * 5
-        size[idx] = 60
-        self._update_scatter(size)
+            size = np.ones(len(self.timestamps)) * 5
+            size[idx] = 60
+            self._update_scatter(size)
 
-        self.vline.set_xdata([timestamp_msec])
-        self.canvas.draw_idle()
+            self.vline.set_xdata([timestamp_msec])
+            self.canvas.draw_idle()
 
         if tar_ax == self.line_ax:
             time_format.copy_to_clipboard(timestamp_msec)
