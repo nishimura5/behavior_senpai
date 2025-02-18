@@ -13,6 +13,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from behavior_senpai import mediapipe_drawer, pose_drawer, time_format
 
 
+plt.rc("svg", fonttype="none")
+
 class LinePlotter:
     def __init__(self, fig_size: tuple, dpi=72):
         self.dpi = dpi
