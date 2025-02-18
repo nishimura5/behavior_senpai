@@ -137,7 +137,10 @@ class App(ttk.Frame):
                     plot_df = keypoints_proc.calc_norm(member_df, point_a, point_b)
                 elif code == "sin_cos":
                     plot_df = keypoints_proc.calc_sin_cos(member_df, point_a, point_b, int(point_c))
-
+                elif code == "angle3":
+                    plot_df = keypoints_proc.calc_angle3(member_df, point_a, point_b, int(point_c))
+                elif code == "angle2":
+                    plot_df = keypoints_proc.calc_angle2(member_df, point_a, point_b)
                 elif code == "component":
                     plot_df = keypoints_proc.calc_xy_component(member_df, point_a, point_b)
                 elif code == "cross":
