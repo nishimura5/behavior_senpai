@@ -200,6 +200,7 @@ class App(ttk.Frame):
 
         self.plot.set_trk_df(plot_df)
         self.plot.set_plot_rect(rects, self.time_min, self.time_max)
+        self.plot.set_file_name(self.src_df.attrs["video_name"])
         self.plot.draw()
 
     def _connect_nearby_scenes(self):
