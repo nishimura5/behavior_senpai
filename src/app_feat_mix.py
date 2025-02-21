@@ -1,7 +1,7 @@
 import os
 import tkinter as tk
 from tkinter import ttk
-
+import tqdm
 import pandas as pd
 
 from behavior_senpai import df_attrs, feature_proc, file_inout, hdf_df
@@ -229,7 +229,8 @@ class App(ttk.Frame):
             member_df = scene_filtered_df.loc[pd.IndexSlice[:, member], :].drop("timestamp", axis=1)
             member_feat_df = pd.DataFrame()
 
-            for i, row in enumerate(self.source_cols):
+#            for i, row in enumerate(self.source_cols):
+            for i, row in tqdm.tqdm(enumerate(self.source_cols), total=row_num):
                 feat_name, m, col_a, op, col_b, normalize = row
                 if member != str(m):
                     continue
