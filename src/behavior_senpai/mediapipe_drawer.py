@@ -5,6 +5,8 @@ import cv2
 import numpy as np
 import pandas as pd
 
+from gui_parts import TempFile
+
 
 class Annotate:
     def set_pose(self, kps):
@@ -16,6 +18,10 @@ class Annotate:
 
     def set_img(self, src_img):
         self.dst_img = src_img
+
+    def reload_temp_file(self):
+        temp = TempFile()
+        self.draw_mask = temp.get_draw_mask()
 
     def draw(self):
         if self.member in ["right_hand", "left_hand"]:
