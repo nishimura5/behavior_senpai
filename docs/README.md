@@ -11,7 +11,7 @@
 [detector_proc]: https://github.com/nishimura5/behavior_senpai/blob/master/src/detector_proc.py
 [keypoint_toml]: https://github.com/nishimura5/behavior_senpai/tree/master/src/keypoint
 
-![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/Behavior%20Senpai%20v.1.4.0%20_%20Python%20senpai_files/bs_capture_120.jpg)
+![ScreenShot](https://www.design.kyushu-u.ac.jp/~eigo/behavior_senpai_files/bs_capture_120.jpg)
 
 Behavior Senpai is an application that supports quantitative behavior observation in video observation methods. It converts video files into time-series coordinate data using keypoint detection AI, enabling quantitative analysis and visualization of human behavior.
 Behavior Senpai is distinctive in that it permits the utilization of multiple AI models without the necessity for coding. 
@@ -53,7 +53,7 @@ If you do not have a CUDA-compatible GPU, only MediaPipe Holistic can be used.
 
 ### Download
 
-Download [BehaviorSenpai150.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.5.0/BehaviorSenpai150.zip)
+Download [BehaviorSenpai151.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.5.1/BehaviorSenpai151.zip)
 
 ### Install
 
