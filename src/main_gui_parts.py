@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image, ImageTk
 
-from behavior_senpai import file_inout, mediapipe_drawer, pose_drawer
+from behavior_senpai import file_inout, img_draw, mediapipe_drawer, pose_drawer, time_format
 from gui_parts import TempFile
 
 
@@ -110,6 +110,9 @@ class VideoViewer(ttk.Frame):
         self.slider.pack(fill=tk.X, padx=5)
         self.time_max = None
 
+        # add mouse scroll event
+        self.canvas.bind("<MouseWheel>", self._on_mouse_wheel)
+
     def set_cap(self, cap, frame_size, anno_trk=None):
         if anno_trk is not None:
             self.time_min = anno_trk["timestamp"].min()
@@ -132,6 +135,13 @@ class VideoViewer(ttk.Frame):
     def on_slider_changed(self, msec):
         msec = float(msec)
         self.canvas.update(msec)
+
+    def _on_mouse_wheel(self, event):
+        if event.delta > 0:
+            self.slider.set(self.slider.get() + 500)
+        else:
+            self.slider.set(self.slider.get() - 500)
+        self.on_slider_changed(self.slider.get())
 
     def get_current_position(self):
         return self.slider.get()
@@ -189,6 +199,9 @@ class CapCanvas(tk.Canvas):
                 self.anno.set_pose(kps)
                 self.anno.set_track(member)
                 image_rgb = self.anno.draw()
+
+        time_str = time_format.msec_to_timestr_with_fff(msec)
+        img_draw.put_message(image_rgb, f"{time_str}", font_size=2, y=self.height - 15)
 
         image_pil = Image.fromarray(image_rgb)
         self.image_tk = ImageTk.PhotoImage(image_pil)
