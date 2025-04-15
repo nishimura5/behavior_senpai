@@ -347,8 +347,11 @@ class App(ttk.Frame):
         )
         self.wait_window(dlg_modal)
 
-        # ダイアログを閉じた後の処理
+        # after closing the dialog
         cv2.destroyAllWindows()
+
+        self.vw.canvas.anno.reload_temp_file()
+
         if edit_df is False:
             return
         if hasattr(self.a, "dst_df") is False:

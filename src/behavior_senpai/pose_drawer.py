@@ -41,6 +41,10 @@ class Annotate:
     def set_img(self, src_img):
         self.dst_img = src_img.copy()
 
+    def reload_temp_file(self):
+        temp = TempFile()
+        self.draw_mask = temp.get_draw_mask()
+
     def draw(self):
         # draw mask
         if self.draw_mask:
