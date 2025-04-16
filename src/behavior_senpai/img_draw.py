@@ -45,3 +45,15 @@ def draw_line(tar_img, start, end, color, thickness):
     if (start[0] == 0 and start[1] == 0) or (end[0] == 0 and end[1] == 0):
         return
     cv2.line(tar_img, start, end, color, thickness, cv2.LINE_AA)
+
+
+def crop_img(src_img, x_min, y_min, x_max, y_max):
+    if x_min < 0:
+        x_min = 0
+    if y_min < 0:
+        y_min = 0
+    if x_max > src_img.shape[1]:
+        x_max = src_img.shape[1]
+    if y_max > src_img.shape[0]:
+        y_max = src_img.shape[0]
+    return src_img[y_min:y_max, x_min:x_max]
