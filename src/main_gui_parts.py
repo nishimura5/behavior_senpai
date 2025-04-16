@@ -261,4 +261,4 @@ class CapCanvas(tk.Canvas):
         self.set_area()
         self.scale_trk()
         self.update(self.current_msec)
-        print(f"scale: {self.scale:.2f}")
+        #        print(f"scale: {self.scale:.2f}")
