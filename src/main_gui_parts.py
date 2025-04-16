@@ -206,11 +206,10 @@ class CapCanvas(tk.Canvas):
             crop_width = x_max - x_min
             crop_height = y_max - y_min
 
-            if crop_width > crop_height:
-                ratio = crop_height / crop_width
-            else:
-                ratio = crop_width / crop_height
+            ratio = crop_width / crop_height
             canvas_width = int(self.height * ratio)
+            if canvas_width > 1000:
+                canvas_width = 1000
             self.scale = canvas_width / crop_width
 
         self.x_min = int(x_min * self.scale)
@@ -262,3 +261,4 @@ class CapCanvas(tk.Canvas):
         self.set_area()
         self.scale_trk()
         self.update(self.current_msec)
+        print(f"scale: {self.scale:.2f}")
