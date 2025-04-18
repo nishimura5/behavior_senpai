@@ -112,6 +112,7 @@ class App(ttk.Frame):
         If in batch mode, executes the detector for all video files in the selected folder.
         If not in batch mode, executes the detector for the selected video file.
         """
+        self.start_datetime = datetime.datetime.now()
         if self.bat_chk.get() is True:
             self.exec_folder()
         else:
@@ -133,7 +134,8 @@ class App(ttk.Frame):
         if video_path == "":
             return
         if self.move_chk.get() is True:
-            video_path = windows_and_mac.move_to_videos(video_path, "BehaviorSenpai")
+            datetime_str = self.start_datetime.strftime("%Y_%m_%d")
+            video_path = windows_and_mac.move_to_videos(video_path, f"BehaviorSenpai_{datetime_str}")
         model_name = self.engine_combo.get()
         use_roi = self.roi_chk.get()
         add_suffix = self.add_suffix_chk.get()

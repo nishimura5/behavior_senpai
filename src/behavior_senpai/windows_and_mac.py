@@ -1,4 +1,3 @@
-import datetime
 import os
 import shutil
 import subprocess
@@ -67,7 +66,6 @@ def move_to_videos(filepath, folder_name=""):
     """
     Move the file to the Videos folder.
     """
-    datetime_str = datetime.datetime.now().strftime("%Y_%m_%d")
     if sys.platform.startswith("win32"):
         videos_dir = os.path.join(os.path.expanduser("~"), "Videos")
     elif sys.platform.startswith("darwin"):
@@ -78,7 +76,7 @@ def move_to_videos(filepath, folder_name=""):
         return filepath
 
     if folder_name != "":
-        videos_dir = os.path.join(videos_dir, f"{folder_name}_{datetime_str}")
+        videos_dir = os.path.join(videos_dir, folder_name)
 
     os.makedirs(videos_dir, exist_ok=True)
 
