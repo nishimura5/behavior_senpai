@@ -26,20 +26,22 @@ class App(ttk.Frame):
         bat_mode_frame.pack(anchor=tk.W, side=tk.TOP)
 
         bat_chk_desc = "If checked, applies the detector to all video files in the selected folder (not recursively)."
-        self.bat_chk = Checkbutton(
-            bat_mode_frame, "Apply all", description=bat_chk_desc
-        )
+        self.bat_chk = Checkbutton(bat_mode_frame, "Apply all", description=bat_chk_desc)
         self.bat_chk.pack_horizontal(padx=(0, 10))
         self.bat_chk.set_trace(self._on_bat_mode_changed)
+
+        move_chk_desc = move_chk_desc = (
+            'If checked, moves the original video file to the "~/Videos/BehaviorSenpai_YYYYMMDD" directory before processing.\nYou can rename the "BehaviorSenpai_YYYYMMDD" folder later.'
+        )
+        self.move_chk = Checkbutton(bat_mode_frame, 'Move to "Videos"', description=move_chk_desc)
+        self.move_chk.pack_horizontal(padx=(0, 10))
 
         roi_desc = "If checked, enables defining a region of interest (ROI) for the detector before starting."
         self.roi_chk = Checkbutton(bat_mode_frame, "ROI", description=roi_desc)
         self.roi_chk.pack_horizontal(padx=(0, 10))
 
         suffix_desc = "If checked, adds a suffix to the output video file indicating the engine used."
-        self.add_suffix_chk = Checkbutton(
-            bat_mode_frame, "Add suffix", description=suffix_desc
-        )
+        self.add_suffix_chk = Checkbutton(bat_mode_frame, "Add suffix", description=suffix_desc)
         self.add_suffix_chk.pack_horizontal(padx=(0, 15))
 
         yolo_ok, mmpose_ok = detector_proc.check_gpu()
@@ -53,16 +55,12 @@ class App(ttk.Frame):
             ]
         else:
             combo_list = ["MediaPipe Holistic"]
-        self.engine_combo = Combobox(
-            bat_mode_frame, "Engine:", values=combo_list, width=24
-        )
+        self.engine_combo = Combobox(bat_mode_frame, "Engine:", values=combo_list, width=24)
         self.engine_combo.pack_horizontal(padx=(10, 0))
 
         top_btn_frame = ttk.Frame(self)
         top_btn_frame.pack(pady=14)
-        self.select_video_btn = ttk.Button(
-            top_btn_frame, text="Select video file", command=self.select_video, width=20
-        )
+        self.select_video_btn = ttk.Button(top_btn_frame, text="Select video file", command=self.select_video, width=20)
         self.select_video_btn.pack(side=tk.LEFT)
         self.video_path_label = ttk.Label(top_btn_frame, text="No video selected")
         self.video_path_label.pack(side=tk.LEFT, padx=(5, 0))
@@ -83,9 +81,7 @@ class App(ttk.Frame):
 
         bottom_frame = ttk.Frame(self)
         bottom_frame.pack()
-        self.exec_detector_btn = ttk.Button(
-            bottom_frame, text="Start", command=self.exec_detector
-        )
+        self.exec_detector_btn = ttk.Button(bottom_frame, text="Start", command=self.exec_detector)
         self.exec_detector_btn.pack(side=tk.LEFT)
         self.exec_detector_btn["state"] = tk.DISABLED
 
@@ -136,12 +132,12 @@ class App(ttk.Frame):
         print(f"{datetime.datetime.now()} {video_path}")
         if video_path == "":
             return
+        if self.move_chk.get() is True:
+            video_path = windows_and_mac.move_to_videos(video_path, "BehaviorSenpai")
         model_name = self.engine_combo.get()
         use_roi = self.roi_chk.get()
         add_suffix = self.add_suffix_chk.get()
-        self.trk_path = detector_proc.exec(
-            self.rcap, model_name, video_path, use_roi, add_suffix
-        )
+        self.trk_path = detector_proc.exec(self.rcap, model_name, video_path, use_roi, add_suffix)
 
     def _on_bat_mode_changed(self, *args):
         if self.bat_chk.get() is True:

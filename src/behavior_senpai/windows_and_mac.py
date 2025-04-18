@@ -1,4 +1,6 @@
+import datetime
 import os
+import shutil
 import subprocess
 import sys
 import tkinter as tk
@@ -59,3 +61,40 @@ def file_types(types):
         return []
     else:
         return types
+
+
+def move_to_videos(filepath, folder_name=""):
+    """
+    Move the file to the Videos folder.
+    """
+    datetime_str = datetime.datetime.now().strftime("%Y_%m_%d")
+    if sys.platform.startswith("win32"):
+        videos_dir = os.path.join(os.path.expanduser("~"), "Videos")
+    elif sys.platform.startswith("darwin"):
+        videos_dir = os.path.join(os.path.expanduser("~"), "Movies")
+
+    if os.path.exists(videos_dir) is False:
+        print(f"{videos_dir} is not found")
+        return filepath
+
+    if folder_name != "":
+        videos_dir = os.path.join(videos_dir, f"{folder_name}_{datetime_str}")
+
+    os.makedirs(videos_dir, exist_ok=True)
+
+    filename = os.path.basename(filepath)
+    new_filepath = os.path.join(videos_dir, filename)
+
+    if os.path.exists(new_filepath):
+        print(f"{new_filepath} is already exists")
+        return filepath
+
+    print(f"Moving {filepath} to {new_filepath}")
+    shutil.copy(filepath, new_filepath)
+    if os.path.getsize(filepath) == os.path.getsize(new_filepath):
+        os.remove(filepath)
+    else:
+        print(f"copy error: {filepath} and {new_filepath} size is different")
+        os.remove(new_filepath)
+        new_filepath = filepath
+    return new_filepath
