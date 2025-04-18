@@ -242,7 +242,7 @@ class CapCanvas(tk.Canvas):
         image_rgb = img_draw.crop_img(image_rgb, self.x_min, self.y_min, self.x_max, self.y_max)
 
         time_str = time_format.msec_to_timestr_with_fff(msec)
-        img_draw.put_message(image_rgb, f"{time_str}", font_size=2, y=self.height - 15)
+        img_draw.put_message(image_rgb, f"{time_str}", font_size=2, y=image_rgb.shape[0] - 15)
 
         image_pil = Image.fromarray(image_rgb)
         self.image_tk = ImageTk.PhotoImage(image_pil)
