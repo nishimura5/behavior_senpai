@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image, ImageTk
 
-from behavior_senpai import file_inout, mediapipe_drawer, pose_drawer
+from behavior_senpai import file_inout, img_draw, mediapipe_drawer, pose_drawer, time_format
 from gui_parts import TempFile
 
 
@@ -110,7 +110,11 @@ class VideoViewer(ttk.Frame):
         self.slider.pack(fill=tk.X, padx=5)
         self.time_max = None
 
+        # add mouse scroll event
+        self.canvas.bind("<MouseWheel>", self._on_mouse_wheel)
+
     def set_cap(self, cap, frame_size, anno_trk=None):
+        # frame_size : [width, height]
         if anno_trk is not None:
             self.time_min = anno_trk["timestamp"].min()
             self.time_max = anno_trk["timestamp"].max()
@@ -120,6 +124,7 @@ class VideoViewer(ttk.Frame):
             self.time_max = cap.get_max_msec()
 
         self.canvas.set_cap(cap, frame_size)
+        self.canvas.set_area()
         self.canvas.scale_trk()
         self.slider.config(from_=self.time_min, to=self.time_max)
         self.canvas.update(self.time_min)
@@ -133,6 +138,13 @@ class VideoViewer(ttk.Frame):
         msec = float(msec)
         self.canvas.update(msec)
 
+    def _on_mouse_wheel(self, event):
+        if event.delta > 0:
+            self.slider.set(self.slider.get() + 500)
+        else:
+            self.slider.set(self.slider.get() - 500)
+        self.on_slider_changed(self.slider.get())
+
     def get_current_position(self):
         return self.slider.get()
 
@@ -143,13 +155,15 @@ class CapCanvas(tk.Canvas):
         self.height = height
         self.img_on_canvas = None
         self.anno_df = None
+        self.current_msec = 0
+        self.is_crop = True
+
+        # set click event
+        self.bind("<Button-1>", self._on_click)
 
     def set_cap(self, cap, frame_size):
         self.cap = cap
-        ratio = frame_size[0] / frame_size[1]
-        canvas_width = int(self.height * ratio)
-        self.scale = canvas_width / frame_size[0]
-        self.config(width=canvas_width, height=self.height)
+        self.frame_size = frame_size
 
     def set_trk(self, src_df):
         if src_df.attrs["model"] in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
@@ -169,10 +183,44 @@ class CapCanvas(tk.Canvas):
             self.anno = pose_drawer.Annotate("deeplabcut.toml")
             cols_for_anno = ["x", "y", "likelihood"]
         self.anno_df = src_df.reset_index().set_index(["timestamp", "member", "keypoint"]).loc[:, cols_for_anno]
+        self.org_anno_df = self.anno_df.copy()
         self.timestamps = self.anno_df.index.get_level_values("timestamp").unique().to_numpy()
 
+    def set_area(self):
+        if self.is_crop is False:
+            ratio = self.frame_size[0] / self.frame_size[1]
+            canvas_width = int(self.height * ratio)
+            self.scale = canvas_width / self.frame_size[0]
+            x_min = 0
+            y_min = 0
+            x_max = self.frame_size[0]
+            y_max = self.frame_size[1]
+        else:
+            # get least x and y
+            x_min = self.org_anno_df["x"].min().astype(int)
+            y_min = self.org_anno_df["y"].min().astype(int)
+            # get max x and y
+            x_max = self.org_anno_df["x"].max().astype(int)
+            y_max = self.org_anno_df["y"].max().astype(int)
+            # frame_size
+            crop_width = x_max - x_min
+            crop_height = y_max - y_min
+
+            ratio = crop_width / crop_height
+            canvas_width = int(self.height * ratio)
+            if canvas_width > 1000:
+                canvas_width = 1000
+            self.scale = canvas_width / crop_width
+
+        self.x_min = int(x_min * self.scale)
+        self.y_min = int(y_min * self.scale)
+        self.x_max = int(x_max * self.scale)
+        self.y_max = int(y_max * self.scale)
+
+        self.config(width=canvas_width, height=self.height)
+
     def scale_trk(self):
-        self.anno_df.loc[:, ["x", "y"]] *= self.scale
+        self.anno_df.loc[:, ["x", "y"]] = self.org_anno_df.loc[:, ["x", "y"]] * self.scale
 
     def update(self, msec):
         msec = self.timestamps[np.fabs(self.timestamps - msec).argsort()[:1]][0]
@@ -190,9 +238,27 @@ class CapCanvas(tk.Canvas):
                 self.anno.set_track(member)
                 image_rgb = self.anno.draw()
 
+        # crop
+        image_rgb = img_draw.crop_img(image_rgb, self.x_min, self.y_min, self.x_max, self.y_max)
+
+        time_str = time_format.msec_to_timestr_with_fff(msec)
+        img_draw.put_message(image_rgb, f"{time_str}", font_size=2, y=image_rgb.shape[0] - 15)
+
         image_pil = Image.fromarray(image_rgb)
         self.image_tk = ImageTk.PhotoImage(image_pil)
         if self.img_on_canvas is None:
             self.img_on_canvas = self.create_image(0, 0, anchor=tk.NW, image=self.image_tk)
         else:
             self.itemconfig(self.img_on_canvas, image=self.image_tk)
+
+        self.current_msec = msec
+
+    def _on_click(self, event):
+        if self.is_crop:
+            self.is_crop = False
+        else:
+            self.is_crop = True
+        self.set_area()
+        self.scale_trk()
+        self.update(self.current_msec)
+        #        print(f"scale: {self.scale:.2f}")

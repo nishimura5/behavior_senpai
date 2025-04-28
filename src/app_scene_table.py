@@ -96,7 +96,6 @@ class App(ttk.Frame):
 
         self.plot.set_img_canvas(self.canvas)
 
-        self.dst_df = None
         # app_scene_table is not appended to proc_history
         self.history = None
 
@@ -200,6 +199,7 @@ class App(ttk.Frame):
 
         self.plot.set_trk_df(plot_df)
         self.plot.set_plot_rect(rects, self.time_min, self.time_max)
+        self.plot.set_file_name(self.src_df.attrs["video_name"])
         self.plot.draw()
 
     def _connect_nearby_scenes(self):
@@ -227,17 +227,11 @@ class App(ttk.Frame):
 
     def on_ok(self):
         """Perform the action when the 'OK' button is clicked."""
-        self.dst_df = self.src_df.copy()
-        self.dst_df.attrs["scene_table"] = self.scene_table
-        if len(self.dst_df) == 0:
-            print("No data in DataFrame")
-            self.dst_df = None
         self.master.destroy()
 
     def cancel(self):
         """Cancel the operation and destroy the window."""
-        print(self.scene_table)
-        self.dst_df = None
+        self.scene_table = None
         self.master.destroy()
 
     def left_click_tree(self, event):

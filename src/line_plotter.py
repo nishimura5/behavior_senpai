@@ -12,6 +12,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 
 from behavior_senpai import mediapipe_drawer, pose_drawer, time_format
 
+plt.rc("svg", fonttype="none")
+plt.rc("savefig", format="svg", transparent=True)
+
 
 class LinePlotter:
     def __init__(self, fig_size: tuple, dpi=72):
@@ -26,6 +29,7 @@ class LinePlotter:
         self.draw_anno = False
         self.line_ax = None
         self.img_canvas = None
+        self.file_name = None
 
     def pack(self, master):
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)
@@ -180,9 +184,15 @@ class LinePlotter:
     def set_img_canvas(self, canvas):
         self.img_canvas = canvas
 
+    def set_file_name(self, file_name):
+        """ file name for export image """
+        self.file_name = file_name
+
     def draw(self):
         self.vline = self.line_ax.axvline(x=0, color="gray", linewidth=0.5)
         self.canvas.draw_idle()
+        if self.file_name is not None:
+            self.fig.canvas.get_default_filename = lambda: self.file_name
 
     def clear(self):
         self.legends = []

@@ -130,6 +130,8 @@ class Tree(ttk.Frame):
         name_and_code = {
             "distance (|AB|)": "norm",
             "sin,cos (∠BAC)": "sin_cos",
+            "angle3 (∠BAC)": "angle3",
+            "angle2 (∠BAx)": "angle2",
             "direction (∠BAx)": "direction",
             "xy_component (AB_x, AB_y)": "component",
             "cross_product (AB×AC)": "cross",
@@ -174,6 +176,8 @@ class PointsCalcTreeDialog(tk.Toplevel):
         self.name_and_code = {
             "distance (|AB|)": "norm",
             "sin,cos (∠BAC)": "sin_cos",
+            "angle3 (∠BAC)": "angle3",
+            "angle2 (∠BAC)": "angle2",
             "direction (∠BAx)": "direction",
             "xy_component (AB_x, AB_y)": "component",
             "cross_product (AB×AC)": "cross",
@@ -182,11 +186,13 @@ class PointsCalcTreeDialog(tk.Toplevel):
             "norms (|AB||AC|)": "norms",
         }
         self.point2_list = [
+            "angle2 (∠BAx)",
             "distance (|AB|)",
             "direction (∠BAx)",
             "xy_component (AB_x, AB_y)",
         ]
         self.point3_list = [
+            "angle3 (∠BAC)",
             "sin,cos (∠BAC)",
             "cross_product (AB×AC)",
             "dot_product (AB・AC)",

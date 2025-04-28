@@ -219,7 +219,13 @@ class FeatMixTreeDialog(tk.Toplevel):
         self._set_col_combos(self.member_combo.get())
 
     def on_select_member(self, event):
+        selected_col_a = self.col_a_combo.get()
+        selected_col_b = self.col_b_combo.get()
+        selected_op = self.op_combo.get()
         self._set_col_combos(self.member_combo.get())
+        self.col_a_combo.set(selected_col_a)
+        self.col_b_combo.set(selected_col_b)
+        self.op_combo.set(selected_op)
 
     def _set_col_combos(self, member):
         # print(self.tar_df.loc[pd.IndexSlice[:, member], :])

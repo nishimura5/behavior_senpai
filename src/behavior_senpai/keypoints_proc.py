@@ -87,6 +87,7 @@ def calc_total_distance(src_df, step_frame: int, per_plot=False):
         total_distance_df["total_distance_per_plot"] = total_distance_df["total_distance"] / total_distance_df["plot_count"]
     return total_distance_df
 
+
 def thinning(src_df, thinning: int):
     """
     thinningの値だけsrc_dfのframeを間引く
@@ -198,6 +199,7 @@ def calc_xy_component(src_df, kp0: int, kp1: int):
     xy_df.columns = [col_name_x, col_name_y]
     return xy_df
 
+
 def calc_direction(src_df, kp0: int, kp1: int):
     """
     Calculate the direction of kp0 -> kp1
@@ -213,6 +215,30 @@ def calc_direction(src_df, kp0: int, kp1: int):
     sin_cos_df = pd.concat([sin_sr, cos_sr], axis=1)
     sin_cos_df.columns = [col_name_sin, col_name_cos]
     return sin_cos_df
+
+
+def calc_angle2(src_df, kp0: int, kp1: int):
+    """
+    Calculate the direction of kp0 -> kp1 in degrees (fast version)
+    """
+    col_name = f"deg({kp0}-{kp1})"
+
+    # x, y のみを抽出
+    xy_df = src_df.loc[:, ["x", "y"]]
+
+    # 各キーポイントの座標を取得
+    point0 = xy_df.xs(kp0, level="keypoint", drop_level=False)
+    point1 = xy_df.xs(kp1, level="keypoint", drop_level=False)
+
+    p0 = point0.to_numpy()
+    p1 = point1.to_numpy()
+
+    vec = p1 - p0
+
+    angles_deg = np.degrees(np.arctan2(vec[:, 1], vec[:, 0]))
+    angle_df = pd.DataFrame({col_name: angles_deg}, index=point0.index.droplevel("keypoint"))
+
+    return angle_df
 
 
 def calc_norm(src_df, kp0: int, kp1: int):
@@ -288,23 +314,36 @@ def calc_sin_cos(src_df, kp0: int, kp1: int, kp2: int):
     return sin_cos_df
 
 
-def calc_angle(src_df, kp0: int, kp1: int, kp2: int):
+def calc_angle3(src_df, kp0: int, kp1: int, kp2: int):
     """
     kp0 -> kp1とkp0 -> kp2の角度を計算する
     """
     col_name = f"angle({kp0}-{kp1},{kp0}-{kp2})"
-    point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
-    point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
-    point2 = src_df.loc[pd.IndexSlice[:, :, kp2], :].droplevel(2)
-    point1_0 = point1 - point0
-    point2_0 = point2 - point0
-    cos_sr = (point1_0["x"] * point2_0["x"] + point1_0["y"] * point2_0["y"]) / (
-        np.sqrt(point1_0["x"] ** 2 + point1_0["y"] ** 2) * np.sqrt(point2_0["x"] ** 2 + point2_0["y"] ** 2)
-    )
-    angle_sr = np.arccos(cos_sr)
 
-    angle_df = angle_sr.to_frame()
-    angle_df.columns = [col_name]
+    # x, y のみを抽出（インデックスはそのまま）
+    xy_df = src_df.loc[:, ["x", "y"]]
+
+    # 各キーポイントの座標を取得
+    point0 = xy_df.xs(kp0, level="keypoint", drop_level=False)
+    point1 = xy_df.xs(kp1, level="keypoint", drop_level=False)
+    point2 = xy_df.xs(kp2, level="keypoint", drop_level=False)
+
+    p0 = point0.to_numpy()
+    p1 = point1.to_numpy()
+    p2 = point2.to_numpy()
+
+    vec1 = p1 - p0
+    vec2 = p2 - p0
+
+    dot_product = np.einsum("ij,ij->i", vec1, vec2)
+    norm1 = np.linalg.norm(vec1, axis=1)
+    norm2 = np.linalg.norm(vec2, axis=1)
+
+    cos_angle = np.clip(dot_product / (norm1 * norm2), -1.0, 1.0)
+
+    angles = np.arccos(cos_angle)
+    angles = np.degrees(angles)
+    angle_df = pd.DataFrame(angles, index=point0.index.droplevel("keypoint"), columns=[col_name])
     return angle_df
 
 

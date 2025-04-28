@@ -77,7 +77,7 @@ class App(ttk.Frame):
         self.scene_table_button = ttk.Button(
             buttons_frame,
             text="Scene table",
-            command=lambda: self.launch_window(app_scene_table.App, edit_df=True, grab=True),
+            command=lambda: self.launch_scene_table_window(app_scene_table.App),
             state=tk.DISABLED,
         )
         self.scene_table_button.pack(side=tk.TOP, fill=tk.X, pady=4)
@@ -284,6 +284,44 @@ class App(ttk.Frame):
             temp.save(data)
             self.load()
 
+    def launch_scene_table_window(self, app):
+        self.calc_case_entry.save()
+        window_pos = self.master.geometry().split("+")[1:]
+        dlg_modal = tk.Toplevel(self)
+        dlg_modal.geometry(f"+{window_pos[0]}+{window_pos[1]}")
+        dlg_modal.focus_set()
+        dlg_modal.grab_set()
+        dlg_modal.transient(self.master)
+        args = {
+            "src_df": self.src_df,
+            "trk_pkl_name": os.path.basename(self.pkl_path),
+            "time_span_msec": self.time_span,
+            "cap": self.cap,
+            "pkl_dir": self.pkl_dir,
+        }
+        self.a = app(dlg_modal, args)
+        dlg_modal.protocol(
+            "WM_DELETE_WINDOW",
+            lambda: [dlg_modal.destroy(), cv2.destroyAllWindows(), self.a.close()],
+        )
+        self.wait_window(dlg_modal)
+
+        # ダイアログを閉じた後の処理
+        cv2.destroyAllWindows()
+        if self.a.scene_table is None:
+            return
+
+        self.src_df.attrs["scene_table"] = self.a.scene_table
+        if "proc_history" not in self.src_df.attrs.keys():
+            self.src_df.attrs["proc_history"] = []
+        if self.a.history is not None:
+            self.src_df.attrs["proc_history"].append(self.a.history)
+
+        self.update_attrs()
+
+        self.save_button["state"] = "normal"
+        args["src_df"] = self.src_df
+
     def launch_window(self, app, dialog_size="", edit_df=False, grab=False):
         self.calc_case_entry.save()
         window_pos = self.master.geometry().split("+")[1:]
@@ -309,8 +347,11 @@ class App(ttk.Frame):
         )
         self.wait_window(dlg_modal)
 
-        # ダイアログを閉じた後の処理
+        # after closing the dialog
         cv2.destroyAllWindows()
+
+        self.vw.canvas.anno.reload_temp_file()
+
         if edit_df is False:
             return
         if hasattr(self.a, "dst_df") is False:

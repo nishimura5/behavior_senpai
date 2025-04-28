@@ -41,7 +41,13 @@ class MemberKeypointComboboxesFor3Point(ttk.Frame):
 
     def _on_selected(self, event):
         current_member = self.member_combo.get()
+        selected_a = self.keypoint_combo_a.get()
+        selected_b = self.keypoint_combo_b.get()
+        selected_c = self.keypoint_combo_c.get()
         self._set_keypoint_combos(current_member)
+        self.keypoint_combo_a.set(selected_a)
+        self.keypoint_combo_b.set(selected_b)
+        self.keypoint_combo_c.set(selected_c)
 
     def _set_keypoint_combos(self, member):
         keypoints = self.indexes[self.indexes.get_level_values(0) == member].get_level_values(1).unique().tolist()
