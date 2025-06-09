@@ -113,7 +113,7 @@ class VideoViewer(ttk.Frame):
         # add mouse scroll event
         self.canvas.bind("<MouseWheel>", self._on_mouse_wheel)
 
-    def set_cap(self, cap, frame_size, anno_trk=None):
+    def set_cap(self, cap, frame_size, anno_trk=None, rotate=0):
         # frame_size : [width, height]
         if anno_trk is not None:
             self.time_min = anno_trk["timestamp"].min()
@@ -123,7 +123,7 @@ class VideoViewer(ttk.Frame):
             self.time_min = 0
             self.time_max = cap.get_max_msec()
 
-        self.canvas.set_cap(cap, frame_size)
+        self.canvas.set_cap(cap, frame_size, rotate)
         self.canvas.set_area()
         self.canvas.scale_trk()
         self.slider.config(from_=self.time_min, to=self.time_max)
@@ -164,9 +164,10 @@ class CapCanvas(tk.Canvas):
         # set click event
         self.bind("<Button-1>", self._on_click)
 
-    def set_cap(self, cap, frame_size):
+    def set_cap(self, cap, frame_size, rotate=0):
         self.cap = cap
         self.frame_size = frame_size
+        self.rotate_angle = rotate
 
     def set_trk(self, src_df):
         if src_df.attrs["model"] in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:

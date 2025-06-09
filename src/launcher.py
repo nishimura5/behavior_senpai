@@ -244,7 +244,8 @@ class App(ttk.Frame):
         )
         self.pkl_selector.set_prev_next(src_attrs.attrs)
         self.rotate_angle = src_attrs.attrs["rotate"] if "rotate" in src_attrs.attrs.keys() else 0
-        self.vw.set_cap(self.cap, src_attrs.attrs["frame_size"], anno_trk=self.src_df)
+        print(f"rotate = {self.rotate_angle}")
+        self.vw.set_cap(self.cap, src_attrs.attrs["frame_size"], anno_trk=self.src_df, raise_angle=self.rotate_angle)
         self.update_attrs()
 
     def update_attrs(self):
