@@ -130,9 +130,11 @@ class VideoViewer(ttk.Frame):
         self.canvas.update(self.time_min)
         self.slider.set(0)
 
-    def set_trk(self, anno_trk):
+    def set_trk(self, anno_trk, rotate=None):
         self.canvas.set_trk(anno_trk)
         self.canvas.scale_trk()
+        if rotate is not None:
+            self.canvas.rotate(rotate)
 
     def on_slider_changed(self, msec):
         msec = float(msec)
@@ -157,6 +159,7 @@ class CapCanvas(tk.Canvas):
         self.anno_df = None
         self.current_msec = 0
         self.is_crop = True
+        self.rotate_angle = 0
 
         # set click event
         self.bind("<Button-1>", self._on_click)
@@ -222,11 +225,19 @@ class CapCanvas(tk.Canvas):
     def scale_trk(self):
         self.anno_df.loc[:, ["x", "y"]] = self.org_anno_df.loc[:, ["x", "y"]] * self.scale
 
+    def rotate(self, angle):
+        self.rotate_angle = angle
+
     def update(self, msec):
         msec = self.timestamps[np.fabs(self.timestamps - msec).argsort()[:1]][0]
         ok, image_rgb = self.cap.read_at(msec, scale=self.scale, rgb=True)
         if ok is False:
             return
+
+        # rotate
+        if self.rotate_angle != 0:
+            image_rgb = img_draw.rotate_img(image_rgb, self.rotate_angle)
+
         if self.anno_df is not None:
             tar_df = self.anno_df.loc[pd.IndexSlice[msec, :, :], :]
             members = tar_df.index.get_level_values("member").unique().tolist()

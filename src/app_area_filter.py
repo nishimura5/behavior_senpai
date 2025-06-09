@@ -84,11 +84,30 @@ class App(ttk.Frame):
         if ok is False:
             return
         image_pil = Image.fromarray(image_rgb)
+        self.image_pil = image_pil  # ここで保持
         self.image_tk = ImageTk.PhotoImage(image_pil)
         if self.img_on_canvas is None:
             self.img_on_canvas = self.canvas.create_image(0, 0, anchor=tk.NW, image=self.image_tk)
         else:
             self.canvas.itemconfig(self.img_on_canvas, image=self.image_tk)
+        # 画像の回転状態を反映
+        if hasattr(self, "image_pil") and self.img_on_canvas is not None:
+            self._update_canvas_image()
+
+    def _update_canvas_image(self):
+        """attrs['rotate']の値に応じてself.image_pilを回転し、canvasに反映"""
+        angle = self.src_df.attrs.get("rotate", 0)
+        img = self.image_pil
+        if angle == 90:
+            img = img.transpose(Image.ROTATE_270)
+        elif angle == 180:
+            img = img.transpose(Image.ROTATE_180)
+        elif angle == 270:
+            img = img.transpose(Image.ROTATE_90)
+        w, h = img.size
+        self.image_tk = ImageTk.PhotoImage(img)
+        self.canvas.config(width=w, height=h)
+        self.canvas.itemconfig(self.img_on_canvas, image=self.image_tk)
 
     def draw_convex_hull(self):
         # src_dfのx,yから凸包を描画
@@ -145,6 +164,8 @@ class App(ttk.Frame):
     def on_ok(self):
         """Perform the action when the 'OK' button is clicked."""
         self.dst_df = self.src_df.copy()
+        self.dst_df.attrs = self.src_df.attrs.copy()
+        print(self.dst_df.attrs)
         if len(self.dst_df) == 0:
             print("No data in DataFrame")
             self.dst_df = None
@@ -215,13 +236,7 @@ class App(ttk.Frame):
         self.src_df.attrs["rotate"] = new_angle
         # 画像も回転
         if hasattr(self, "image_pil") and self.img_on_canvas is not None:
-            img = self.image_pil
-            for _ in range(diff // 90):
-                img = img.transpose(Image.ROTATE_270)
-            self.image_pil = img
-            self.image_tk = ImageTk.PhotoImage(self.image_pil)
-            self.canvas.config(width=w, height=h)
-            self.canvas.itemconfig(self.img_on_canvas, image=self.image_tk)
+            self._update_canvas_image()
         self.draw_convex_hull()
 
     def close(self):

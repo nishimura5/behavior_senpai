@@ -369,7 +369,12 @@ class App(ttk.Frame):
             self.src_df.attrs["proc_history"].append(self.a.history)
 
         self.update_attrs()
-        self.vw.set_trk(self.src_df)
+        rotate = 0
+        print(f"src_df.attrs = {self.src_df.attrs}")
+        if "rotate" in self.src_df.attrs.keys():
+            rotate = self.src_df.attrs["rotate"]
+        print(f"rotate = {rotate}")
+        self.vw.set_trk(self.src_df, rotate=rotate)
 
         self.save_button["state"] = "normal"
         args["src_df"] = self.src_df
