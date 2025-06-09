@@ -66,6 +66,7 @@ class App(ttk.Frame):
         self._load(args)
         self.draw_convex_hull()
         self.reset_anchor_points()
+        self._add_rotate_button(control_frame)
 
     def _load(self, args):
         self.src_df = args["src_df"].copy()
@@ -176,6 +177,52 @@ class App(ttk.Frame):
         poly_points = sum([list(p["point"]) for p in self.anchor_points], [])
         self.canvas.coords(self.selected_id, event.x - 2, event.y - 2, event.x + 2, event.y + 2)
         self.canvas.coords(self.poly_id, *poly_points)
+
+    def _add_rotate_button(self, parent):
+        rotate_frame = ttk.Frame(parent)
+        rotate_frame.pack(side=tk.LEFT, padx=(10, 0))
+        rotate_cw_btn = ttk.Button(rotate_frame, text="Rotate CW", command=self.rotate_cw)
+        rotate_cw_btn.pack(side=tk.LEFT)
+
+    def rotate_cw(self):
+        """CW方向に90度回転。attrs['rotate']を0→90→180→270→0で更新し、画像・座標も回転。"""
+        # 現在の回転角度を取得
+        angle = self.src_df.attrs.get("rotate", 0)
+        new_angle = (angle + 90) % 360
+        self._apply_rotation(new_angle)
+
+    def _apply_rotation(self, new_angle):
+        """指定した角度(new_angle: 0,90,180,270)にself.src_df, self.image_pil, frame_sizeを揃える"""
+        # 現在の角度
+        current_angle = self.src_df.attrs.get("rotate", 0)
+        # 差分回転回数
+        diff = (new_angle - current_angle) % 360
+        if diff == 0:
+            return  # 変化なし
+        # frame_size取得
+        w, h = self.src_df.attrs.get("frame_size", (None, None))
+        if w is None or h is None:
+            print("frame_size not found in attrs")
+            return
+        # x, y座標をdiff回転
+        for _ in range(diff // 90):
+            x = self.src_df["x"].copy()
+            y = self.src_df["y"].copy()
+            self.src_df["x"] = h - y
+            self.src_df["y"] = x
+            w, h = h, w
+        self.src_df.attrs["frame_size"] = (w, h)
+        self.src_df.attrs["rotate"] = new_angle
+        # 画像も回転
+        if hasattr(self, "image_pil") and self.img_on_canvas is not None:
+            img = self.image_pil
+            for _ in range(diff // 90):
+                img = img.transpose(Image.ROTATE_270)
+            self.image_pil = img
+            self.image_tk = ImageTk.PhotoImage(self.image_pil)
+            self.canvas.config(width=w, height=h)
+            self.canvas.itemconfig(self.img_on_canvas, image=self.image_tk)
+        self.draw_convex_hull()
 
     def close(self):
         pass
