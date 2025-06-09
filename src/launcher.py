@@ -193,6 +193,7 @@ class App(ttk.Frame):
         self.src_df = None
         self.time_span = None
         self.calc_case = self.calc_case_entry.get()
+        self.rotate_angle = 0
 
     def load(self, event=None):
         pkl_path = self.pkl_selector.get_trk_path()
@@ -242,7 +243,7 @@ class App(ttk.Frame):
             self.src_df["timestamp"].max(),
         )
         self.pkl_selector.set_prev_next(src_attrs.attrs)
-
+        self.rotate_angle = src_attrs.attrs["rotate"] if "rotate" in src_attrs.attrs.keys() else 0
         self.vw.set_cap(self.cap, src_attrs.attrs["frame_size"], anno_trk=self.src_df)
         self.update_attrs()
 
@@ -369,12 +370,10 @@ class App(ttk.Frame):
             self.src_df.attrs["proc_history"].append(self.a.history)
 
         self.update_attrs()
-        rotate = 0
-        print(f"src_df.attrs = {self.src_df.attrs}")
         if "rotate" in self.src_df.attrs.keys():
-            rotate = self.src_df.attrs["rotate"]
-        print(f"rotate = {rotate}")
-        self.vw.set_trk(self.src_df, rotate=rotate)
+            self.rotate_angle = self.src_df.attrs["rotate"]
+        print(f"rotate = {self.rotate_angle}")
+        self.vw.set_trk(self.src_df, rotate=self.rotate_angle)
 
         self.save_button["state"] = "normal"
         args["src_df"] = self.src_df
