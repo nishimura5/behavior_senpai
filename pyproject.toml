@@ -21,6 +21,7 @@ dependencies = [
     "pip-licenses~=4.3.0",
     "tables>=3.10.2",
     "numpy~=1.26",
+    "seaborn>=0.13.2",
 ]
 
 [tool.uv]
