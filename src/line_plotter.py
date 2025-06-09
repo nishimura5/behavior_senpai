@@ -10,7 +10,7 @@ import seaborn as sns
 from matplotlib import gridspec, ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-from behavior_senpai import mediapipe_drawer, pose_drawer, time_format
+from behavior_senpai import img_draw, mediapipe_drawer, pose_drawer, time_format
 
 plt.rc("svg", fonttype="none")
 plt.rc("savefig", format="svg", transparent=True)
@@ -30,6 +30,7 @@ class LinePlotter:
         self.line_ax = None
         self.img_canvas = None
         self.file_name = None
+        self.rotate_angle = 0
 
     def pack(self, master):
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)
@@ -75,6 +76,9 @@ class LinePlotter:
         self.anno_df = trk_df.reset_index().set_index(["timestamp", "member", "keypoint"]).loc[:, cols_for_anno]
         self.anno_time_member_indexes = self.anno_df.index.droplevel(2).unique()
         self.timestamps = self.anno_time_member_indexes.get_level_values("timestamp").unique().to_numpy()
+
+        if "rotate" in trk_df.attrs:
+            self.rotate_angle = trk_df.attrs["rotate"]
         print(f"set_trk_df() (line_plotter.LinePlotter): {time.perf_counter() - start_time:.3f}sec")
 
     def set_plot(self, plot_df, member: str, data_col_names: list):
@@ -185,7 +189,7 @@ class LinePlotter:
         self.img_canvas = canvas
 
     def set_file_name(self, file_name):
-        """ file name for export image """
+        """file name for export image"""
         self.file_name = file_name
 
     def draw(self):
@@ -236,8 +240,12 @@ class LinePlotter:
         timestamp_msec = self.timestamps[idx]
 
         if self.draw_anno is True:
+            if self.rotate_angle != 0:
+                frame = img_draw.rotate_img(frame, self.rotate_angle)
+
             canvas_height = self.img_canvas.winfo_height()
             resize_ratio = canvas_height / frame.shape[0]
+
             frame = cv2.resize(frame, None, fx=resize_ratio, fy=resize_ratio)
 
             if len(self.members) == 0:
