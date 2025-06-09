@@ -26,7 +26,7 @@ Behavior Senpai is distinctive in that it permits the utilization of multiple AI
 Behavior Senpai performs pose estimation of a person in a video using an AI model selected by the user, and outputs time-series coordinate data.
 (These are variously referred to as "pose estimation", "markerless motion capture", "landmark detection", and so forth, depending on the intended purpose and application.)
 
-BehaviorSenpai can import inference results (with .h5 extension) from [DeepLabCut](https://www.mackenziemathislab.org/deeplabcut).
+Behavior Senpai can import inference results (with .h5 extension) from [DeepLabCut](https://www.mackenziemathislab.org/deeplabcut).
 
 Behavior Senpai is an open source software developed at [Faculty of Design, Kyushu University](https://www.design.kyushu-u.ac.jp/en/home/).
 
@@ -239,7 +239,7 @@ Nishimura, E. (2025). Behavior Senpai (Version 1.5) [Computer software]. Kyushu 
 @misc{behavior-senpai-software,
   title = {Behavior Senpai},
   author = {Nishimura, Eigo},
-  year = {2024},
+  year = {2025},
   publisher = {Kyushu University},
   doi = {10.48708/7160651},
   note = {Available at: \url{https://hdl.handle.net/2324/7160651}},
@@ -247,7 +247,9 @@ Nishimura, E. (2025). Behavior Senpai (Version 1.5) [Computer software]. Kyushu 
 ```
 
 ### Related Documents
+[Nishimura, E. Feature-based behavior coding for efficient exploratory analysis using pose estimation. Behav Res 57, 167 (2025). https://doi.org/10.3758/s13428-025-02702-6](https://link.springer.com/article/10.3758/s13428-025-02702-6)
+
 [Sample Videos for Behavioral Observation Using Keypoint Detection Technology](https://hdl.handle.net/2324/7172619)
 
 [Quantitative Behavioral Observation Using Keypoint Detection Technology:
- Towards the Development of a New Behavioral Observation Method through Video Imagery](https://hdl.handle.net/2324/7170833)
+ Towards the Development of a New Behavioral Observation Method through Video Imagery (Japanese article)](https://hdl.handle.net/2324/7170833)
