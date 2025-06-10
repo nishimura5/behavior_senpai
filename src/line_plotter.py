@@ -77,8 +77,7 @@ class LinePlotter:
         self.anno_time_member_indexes = self.anno_df.index.droplevel(2).unique()
         self.timestamps = self.anno_time_member_indexes.get_level_values("timestamp").unique().to_numpy()
 
-        if "rotate" in trk_df.attrs:
-            self.rotate_angle = trk_df.attrs["rotate"]
+        self.rotate_angle = trk_df.attrs.get("rotate", 0)
         print(f"set_trk_df() (line_plotter.LinePlotter): {time.perf_counter() - start_time:.3f}sec")
 
     def set_plot(self, plot_df, member: str, data_col_names: list):

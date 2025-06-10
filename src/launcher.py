@@ -243,7 +243,7 @@ class App(ttk.Frame):
             self.src_df["timestamp"].max(),
         )
         self.pkl_selector.set_prev_next(src_attrs.attrs)
-        self.rotate_angle = src_attrs.attrs["rotate"] if "rotate" in src_attrs.attrs.keys() else 0
+        self.rotate_angle = src_attrs.attrs.get("rotate", 0)
         print(f"rotate = {self.rotate_angle}")
         self.vw.set_cap(self.cap, src_attrs.attrs["frame_size"], anno_trk=self.src_df, rotate=self.rotate_angle)
         self.update_attrs()
@@ -371,8 +371,7 @@ class App(ttk.Frame):
             self.src_df.attrs["proc_history"].append(self.a.history)
 
         self.update_attrs()
-        if "rotate" in self.src_df.attrs.keys():
-            self.rotate_angle = self.src_df.attrs["rotate"]
+        self.rotate_angle = self.src_df.attrs.get("rotate", 0)
         print(f"rotate = {self.rotate_angle}")
         self.vw.set_trk(self.src_df, rotate=self.rotate_angle)
 

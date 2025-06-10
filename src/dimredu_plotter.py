@@ -29,6 +29,7 @@ class DimensionalReductionPlotter:
         self.picker_range = None
         self.plot_df = None
         self.timestamps = np.array([])
+        self.rotate_angle = 0
 
     def pack(self, master):
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)
@@ -61,6 +62,8 @@ class DimensionalReductionPlotter:
         self.anno_df = trk_df.reset_index().set_index(["timestamp", "member", "keypoint"]).loc[:, cols_for_anno]
         self.anno_time_member_indexes = self.anno_df.index.droplevel(2).unique()
         print(f"set_trk_df() (dimredu_plotter.DimensionalReductionPlotter): {time.perf_counter() - start_time:.3f}sec")
+
+        self.rotate_angle = trk_df.attrs.get("rotate", 0)
 
     def set_init_class_names(self, class_names):
         self.init_class_names = class_names
