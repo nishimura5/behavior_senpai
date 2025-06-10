@@ -235,9 +235,7 @@ class CapCanvas(tk.Canvas):
         if ok is False:
             return
 
-        # rotate
-        if self.rotate_angle != 0:
-            image_rgb = img_draw.rotate_img(image_rgb, self.rotate_angle)
+        image_rgb = img_draw.rotate_img(image_rgb, self.rotate_angle)
 
         if self.anno_df is not None:
             tar_df = self.anno_df.loc[pd.IndexSlice[msec, :, :], :]

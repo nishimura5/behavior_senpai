@@ -225,6 +225,8 @@ class DimensionalReductionPlotter:
             return
 
         if self.draw_anno is True:
+            frame = img_draw.rotate_img(frame, self.rotate_angle)
+
             if (timestamp_msec, self.member) in self.anno_time_member_indexes:
                 tar_df = self.anno_df.loc[pd.IndexSlice[timestamp_msec, self.member, :], :]
                 kps = tar_df.to_numpy()

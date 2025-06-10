@@ -239,8 +239,7 @@ class LinePlotter:
         timestamp_msec = self.timestamps[idx]
 
         if self.draw_anno is True:
-            if self.rotate_angle != 0:
-                frame = img_draw.rotate_img(frame, self.rotate_angle)
+            frame = img_draw.rotate_img(frame, self.rotate_angle)
 
             canvas_height = self.img_canvas.winfo_height()
             resize_ratio = canvas_height / frame.shape[0]
