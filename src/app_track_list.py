@@ -5,7 +5,7 @@ from tkinter import messagebox, ttk
 
 import pandas as pd
 
-from behavior_senpai import windows_and_mac
+from behavior_senpai import windows_and_mac, df_attrs
 from gui_parts import Combobox, IntEntry, StrEntry
 
 
@@ -70,13 +70,11 @@ class App(ttk.Frame):
         for trk_path in trk_paths:
             take, prev_name, next_name = "", None, None
             tar_df = pd.read_pickle(trk_path)
-            if "take" in tar_df.attrs.keys():
-                take = tar_df.attrs["take"]
-            if "next" in tar_df.attrs.keys():
-                next_name = tar_df.attrs["next"]
-            if "prev" in tar_df.attrs.keys():
-                prev_name = tar_df.attrs["prev"]
-            attr_dict[os.path.basename(trk_path)] = {"model": tar_df.attrs["model"], "video": tar_df.attrs["video_name"]}
+            attrs = df_attrs.DfAttrs(tar_df)
+            take, prev_name, next_name = attrs.get_take_prev_next()
+            model_name, video_name = attrs.get_model_video()
+
+            attr_dict[os.path.basename(trk_path)] = {"model": model_name, "video": video_name}
             self.src_tl.append(take, prev_name, next_name, os.path.basename(trk_path))
 
         take_dict = self.src_tl.get_dict()

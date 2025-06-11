@@ -226,26 +226,29 @@ class App(ttk.Frame):
         self.src_df = load_df
         self.src_df = keypoints_proc.zero_point_to_nan(self.src_df)
         self.src_df = self.src_df[~self.src_df.index.duplicated(keep="first")]
+
         src_attrs = df_attrs.DfAttrs(self.src_df)
+        self.rotate_angle, frame_size = src_attrs.get_rotate_size()
+
         self.pkl_dir = os.path.dirname(self.pkl_path)
-        self.vcap.set_frame_size(src_attrs.attrs["frame_size"])
-        if isinstance(src_attrs.attrs["video_name"], list):
-            video_list = [os.path.abspath(os.path.join(self.pkl_dir, os.pardir, video)) for video in src_attrs.attrs["video_name"]]
+        self.vcap.set_frame_size(frame_size)
+        video_names = src_attrs.get_video_name()
+
+        if isinstance(video_names, list):
+            video_list = [os.path.abspath(os.path.join(self.pkl_dir, os.pardir, video)) for video in video_names]
             self.cap = vcap.MultiVcap(self.vcap)
             self.cap.open_files(video_list)
         else:
-            self.vcap.open_file(os.path.join(self.pkl_dir, os.pardir, src_attrs.attrs["video_name"]))
+            self.vcap.open_file(os.path.join(self.pkl_dir, os.pardir, video_names))
             self.cap = self.vcap
 
-        # UIの更新
         self.time_span = (
             self.src_df["timestamp"].min(),
             self.src_df["timestamp"].max(),
         )
-        self.pkl_selector.set_prev_next(src_attrs.attrs)
-        self.rotate_angle = src_attrs.attrs.get("rotate", 0)
-        print(f"rotate = {self.rotate_angle}")
-        self.vw.set_cap(self.cap, src_attrs.attrs["frame_size"], anno_trk=self.src_df, rotate=self.rotate_angle)
+        _, prev_name, next_name = src_attrs.get_take_prev_next()
+        self.pkl_selector.set_prev_next(prev_name, next_name)
+        self.vw.set_cap(self.cap, frame_size, anno_trk=self.src_df, rotate=self.rotate_angle)
         self.update_attrs()
 
     def update_attrs(self):

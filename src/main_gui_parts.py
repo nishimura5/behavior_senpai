@@ -61,16 +61,16 @@ class PklSelector(ttk.Frame):
     def rename_pkl_path_label(self, new_name):
         self.pkl_path_label["text"] = new_name
 
-    def set_prev_next(self, attr_dict):
+    def set_prev_next(self, prev, next):
         dir_path = os.path.dirname(self.trk_path)
-        if "prev" in attr_dict and attr_dict["prev"] != "" and attr_dict["prev"] is not None:
+        if prev != "" and prev is not None:
             self.prev_pkl_btn["state"] = tk.NORMAL
-            self.prev_path = os.path.join(dir_path, attr_dict["prev"])
+            self.prev_path = os.path.join(dir_path, prev)
         else:
             self.prev_path = ""
             self.prev_pkl_btn["state"] = tk.DISABLED
-        if "next" in attr_dict and attr_dict["next"] != "" and attr_dict["next"] is not None:
-            self.next_path = os.path.join(dir_path, attr_dict["next"])
+        if next != "" and next is not None:
+            self.next_path = os.path.join(dir_path, next)
             self.next_pkl_btn["state"] = tk.NORMAL
         else:
             self.next_path = ""
