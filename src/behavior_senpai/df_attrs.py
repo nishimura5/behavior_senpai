@@ -38,16 +38,20 @@ class DfAttrs:
         return take, prev_name, next_name
 
     def get_model_video(self):
-        model_name = self.attrs.get("model", "")
-        video_name = self.attrs.get("video_name", None)
+        model_name = self.get_model_name()
+        video_name = self.get_video_name()
         return model_name, video_name
 
     def get_model_name(self):
-        model_name = self.attrs.get("model", "")
+        model_name = self.attrs.get("model", None)
+        if model_name is None:
+            print("Warning: model_name is not set in attrs.")
         return model_name
 
     def get_video_name(self):
         video_name = self.attrs.get("video_name", None)
+        if video_name is None:
+            print("Warning: video_name is not set in attrs.")
         return video_name
 
     def get_rotate_size(self):
