@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image, ImageTk
 
-from behavior_senpai import keypoints_proc
+from behavior_senpai import keypoints_proc, df_attrs
 from gui_parts import Combobox, TempFile
 
 
@@ -72,14 +72,13 @@ class App(ttk.Frame):
         self.src_df = args["src_df"].copy()
         self.cap = args["cap"]
         current_position = args["current_position"]
-        src_attrs = self.src_df.attrs
+        src_attrs = df_attrs.DfAttrs(self.src_df)
 
-        # 動画のフレームを描画
-        ratio = src_attrs["frame_size"][0] / src_attrs["frame_size"][1]
+        ratio = src_attrs.get_ratio()
         width = int(self.height * ratio)
-        self.scale = width / src_attrs["frame_size"][0]
+        self.scale = width / src_attrs.get_width()
         self.canvas.config(width=width, height=self.height)
-        self.model_name = src_attrs["model"]
+        self.model_name = src_attrs.get_model_name()
         ok, image_rgb = self.cap.read_at(current_position, scale=self.scale, rgb=True)
         if ok is False:
             return

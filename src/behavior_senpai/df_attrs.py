@@ -42,6 +42,10 @@ class DfAttrs:
         video_name = self.attrs.get("video_name", None)
         return model_name, video_name
 
+    def get_model_name(self):
+        model_name = self.attrs.get("model", "")
+        return model_name
+
     def get_video_name(self):
         video_name = self.attrs.get("video_name", None)
         return video_name
@@ -53,6 +57,13 @@ class DfAttrs:
             print(f"rotate={rotate}")
         return rotate, frame_size
 
+    def get_width(self):
+        frame_size = self.attrs.get("frame_size", (1, 1))
+        return frame_size[0]
+
+    def get_ratio(self):
+        width, height = self.attrs.get("frame_size", (1, 1))
+        return width / height
 
 def make_history_dict(feat_type, source_cols, track_name=None):
     history_dict = {"type": feat_type, "source_cols": source_cols, "track_name": track_name}

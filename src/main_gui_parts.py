@@ -224,7 +224,9 @@ class CapCanvas(tk.Canvas):
         self.config(width=canvas_width, height=self.height)
 
     def scale_trk(self):
-        self.anno_df.loc[:, ["x", "y"]] = self.org_anno_df.loc[:, ["x", "y"]] * self.scale
+        # x, y列の型をfloat64に明示的に変換してからスケーリング（FutureWarning対策）
+        self.anno_df["x"] = self.org_anno_df["x"].astype(float) * self.scale
+        self.anno_df["y"] = self.org_anno_df["y"].astype(float) * self.scale
 
     def rotate(self, angle):
         self.rotate_angle = angle
