@@ -59,6 +59,7 @@ class DfAttrs:
         frame_size = self.attrs.get("frame_size", None)
         if rotate != 0:
             print(f"rotate={rotate}")
+        rotate = 0
         return rotate, frame_size
 
     def get_width(self):

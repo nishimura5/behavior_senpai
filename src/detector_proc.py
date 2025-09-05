@@ -51,11 +51,14 @@ def exec(rcap, model_name, video_path, use_roi=False, add_suffix=False):
         model = mediapipe_detector.MediaPipeDetector()
         suffix = "mp_holistic"
     elif model_name == "RTMPose-x Halpe26":
-        model = rtmpose_detector.RTMPoseDetector()
+        model = rtmpose_detector.RTMPoseDetector(model_name)
         suffix = "rtm_halpe26"
     elif model_name == "RTMPose-x WholeBody133":
-        model = rtmpose_detector.RTMPoseDetector(whole_body=True)
+        model = rtmpose_detector.RTMPoseDetector(model_name)
         suffix = "rtm_coco133"
+    elif model_name == "RTMW-x WholeBody133":
+        model = rtmpose_detector.RTMPoseDetector(model_name)
+        suffix = "rtmw_coco133"
     if add_suffix is True:
         dst_file_name = f"{file_name}_{suffix}.pkl"
     else:

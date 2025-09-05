@@ -53,7 +53,7 @@ class DimensionalReductionPlotter:
         elif trk_df.attrs["model"] in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
             self.anno = pose_drawer.Annotate("halpe26.toml")
             cols_for_anno = ["x", "y", "score"]
-        elif trk_df.attrs["model"] == "RTMPose-x WholeBody133":
+        elif trk_df.attrs["model"] in ["RTMPose-x WholeBody133", "RTMW-x WholeBody133"]:
             self.anno = pose_drawer.Annotate("coco133.toml")
             cols_for_anno = ["x", "y", "score"]
         elif trk_df.attrs["model"] == "DeepLabCut":
@@ -63,7 +63,7 @@ class DimensionalReductionPlotter:
         self.anno_time_member_indexes = self.anno_df.index.droplevel(2).unique()
         print(f"set_trk_df() (dimredu_plotter.DimensionalReductionPlotter): {time.perf_counter() - start_time:.3f}sec")
 
-        self.rotate_angle = trk_df.attrs.get("rotate", 0)
+    #        self.rotate_angle = trk_df.attrs.get("rotate", 0)
 
     def set_init_class_names(self, class_names):
         self.init_class_names = class_names

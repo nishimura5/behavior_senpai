@@ -148,7 +148,7 @@ class App(ttk.Frame):
     def filter_low(self):
         """Filter out the keypoints with low confidence or score."""
         low_thresh = 0.5
-        if self.model_name in ["MMPose RTMPose-x", "RTMPose-x Halpe26", "RTMPose-x WholeBody133"]:
+        if self.model_name in ["RTMW-x WholeBody133", "MMPose RTMPose-x", "RTMPose-x Halpe26", "RTMPose-x WholeBody133"]:
             col = "score"
         elif self.model_name in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
             col = "conf"

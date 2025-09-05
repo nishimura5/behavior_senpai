@@ -51,7 +51,13 @@ class App(ttk.Frame):
                 "YOLOv8 x-pose-p6",
                 "MediaPipe Holistic",
                 "RTMPose-x Halpe26",
-                "RTMPose-x WholeBody133",
+                "RTMW-x WholeBody133",
+            ]
+        elif mmpose_ok:
+            combo_list = [
+                "MediaPipe Holistic",
+                "RTMPose-x Halpe26",
+                "RTMW-x WholeBody133",
             ]
         else:
             combo_list = ["MediaPipe Holistic"]

@@ -12,15 +12,19 @@ from behavior_senpai import img_draw, vcap
 
 
 class RTMPoseDetector:
-    def __init__(self, whole_body=False, show=True):
-        if whole_body is True:
+    def __init__(self, model_name, show=True):
+        if model_name == "RTMPose-x WholeBody133":
             config = "./mm_config/rtmpose-x_8xb32-270e_coco-wholebody-384x288.py"
             checkpoint = "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/rtmpose-x_simcc-coco-wholebody_pt-body7_270e-384x288-401dfc90_20230629.pth"
             self.number_of_keypoints = 133
-        else:
+        elif model_name == "RTMPose-x Halpe26":
             config = "./mm_config/rtmpose-x_8xb256-700e_body8-halpe26-384x288.py"
             checkpoint = "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/rtmpose-x_simcc-body7_pt-body7-halpe26_700e-384x288-7fb6e239_20230606.pth"
             self.number_of_keypoints = 26
+        elif model_name == "RTMW-x WholeBody133":
+            config = "./mm_config/rtmw-x_8xb320-270e_cocktail14-384x288.py"
+            checkpoint = "https://download.openmmlab.com/mmpose/v1/projects/rtmw/rtmw-x_simcc-cocktail14_pt-ucoco_270e-384x288-f840f204_20231122.pth"
+            self.number_of_keypoints = 133
         det_config = "./mm_config/rtmdet_m_640-8xb32_coco-person.py"
         det_checkpoint = "https://download.openmmlab.com/mmpose/v1/projects/rtmpose/rtmdet_m_8xb32-100e_coco-obj365-person-235e8209.pth"
         self.det_model = init_detector(det_config, det_checkpoint, device="cuda:0")

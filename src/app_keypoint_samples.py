@@ -22,7 +22,7 @@ class App(tk.Toplevel):
             img_name = "body_coco"
         elif dataset_name in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
             img_name = "body_halpe26"
-        elif dataset_name in ["RTMPose-x WholeBody133"]:
+        elif dataset_name in ["RTMPose-x WholeBody133", "RTMW-x WholeBody133"]:
             img_name = "body_wholebody133"
 
         head_frame = ttk.Frame(self)

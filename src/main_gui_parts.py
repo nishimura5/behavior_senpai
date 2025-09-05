@@ -180,7 +180,7 @@ class CapCanvas(tk.Canvas):
         elif src_df.attrs["model"] in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
             self.anno = pose_drawer.Annotate("halpe26.toml")
             cols_for_anno = ["x", "y", "score"]
-        elif src_df.attrs["model"] == "RTMPose-x WholeBody133":
+        elif src_df.attrs["model"] in ["RTMPose-x WholeBody133", "RTMW-x WholeBody133"]:
             self.anno = pose_drawer.Annotate("coco133.toml")
             cols_for_anno = ["x", "y", "score"]
         elif src_df.attrs["model"] == "DeepLabCut":
