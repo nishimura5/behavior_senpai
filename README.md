@@ -1,4 +1,4 @@
-# Behavior Senpai v.1.5.1
+# Behavior Senpai v.1.6.0
 
 [pyproject]: https://github.com/nishimura5/behavior_senpai/blob/master/pyproject.toml
 [app_detect]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_detect.py
@@ -32,7 +32,7 @@ Behavior Senpai is an open source software developed at [Faculty of Design, Kyus
 
 ## Requirement
 
-In order to use Behavior Senpai, you need a PC that meets the following performance requirements. The functionality has been confirmed on Windows 11 (23H2).
+In order to use Behavior Senpai, you need a PC that meets the following performance requirements. The functionality has been confirmed on Windows 11 (24H2).
 
 ### When using CUDA
 
