@@ -62,7 +62,7 @@ class App(ttk.Frame):
         self.member_edit_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         self.area_filter_button = ttk.Button(
             buttons_frame,
-            text="Area",
+            text="Remove",
             command=lambda: self.launch_window(app_area_filter.App, edit_df=True, grab=True),
             state=tk.DISABLED,
         )

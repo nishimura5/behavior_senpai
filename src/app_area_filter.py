@@ -7,16 +7,16 @@ import numpy as np
 import pandas as pd
 from PIL import Image, ImageTk
 
-from behavior_senpai import keypoints_proc, df_attrs
+from behavior_senpai import df_attrs, keypoint_toml_loader, keypoints_proc
 from gui_parts import Combobox, TempFile
 
 
 class App(ttk.Frame):
-    """Application for filtering keypoints by area."""
+    """Application for removing keypoints."""
 
     def __init__(self, master, args):
         super().__init__(master)
-        master.title("Area Filter")
+        master.title("Remove Keypoints")
         self.pack(padx=10, pady=10)
 
         self.init_anchor_points = [
@@ -30,20 +30,52 @@ class App(ttk.Frame):
         width, self.height, dpi = temp.get_window_size()
 
         control_frame = ttk.Frame(self)
-        control_frame.pack(fill=tk.X, pady=(0, 20))
-        self.filter_low_button = ttk.Button(control_frame, text="Filter Low", command=self.filter_low)
-        self.filter_low_button.pack(side=tk.LEFT)
-        setting_frame = ttk.Frame(control_frame)
-        setting_frame.pack(side=tk.LEFT)
+        control_frame.pack(fill=tk.X, pady=(0, 20), side=tk.TOP)
+        param_frame = ttk.Frame(control_frame)
+        param_frame.pack(side=tk.LEFT, anchor=tk.W)
 
-        vals = ("only keyoints", "member")
-        self.keypoint_member_combo = Combobox(setting_frame, "Target:", values=vals, width=18)
+        # score_threshold
+        low_score_frame = ttk.Frame(param_frame)
+        low_score_frame.pack(side=tk.TOP, anchor=tk.W)
+        self.low_score_var = tk.BooleanVar()
+        low_score_checkbox = ttk.Checkbutton(low_score_frame, text="Low Score", variable=self.low_score_var)
+        low_score_checkbox.pack(side=tk.LEFT)
+        threshold_label = ttk.Label(low_score_frame, text="Less than:")
+        threshold_label.pack(side=tk.LEFT, padx=(10, 0))
+        self.score_threshold_var = tk.DoubleVar()
+        threshold_entry = ttk.Entry(low_score_frame, textvariable=self.score_threshold_var, width=10)
+        threshold_entry.pack(side=tk.LEFT)
+
+        # keypoint groups
+        keypoint_group_frame = ttk.Frame(param_frame)
+        keypoint_group_frame.pack(side=tk.TOP, anchor=tk.W, pady=(5, 5))
+        self.body_check_var = tk.BooleanVar(value=False)
+        self.arm_check_var = tk.BooleanVar(value=False)
+        self.leg_check_var = tk.BooleanVar(value=False)
+        self.hand_check_var = tk.BooleanVar(value=False)
+        body_check = ttk.Checkbutton(keypoint_group_frame, text="Body", variable=self.body_check_var)
+        body_check.pack(side=tk.LEFT)
+        arm_check = ttk.Checkbutton(keypoint_group_frame, text="Arms", variable=self.arm_check_var)
+        arm_check.pack(side=tk.LEFT, padx=(10, 0))
+        leg_check = ttk.Checkbutton(keypoint_group_frame, text="Legs", variable=self.leg_check_var)
+        leg_check.pack(side=tk.LEFT, padx=(10, 0))
+        hand_check = ttk.Checkbutton(keypoint_group_frame, text="Hands", variable=self.hand_check_var)
+        hand_check.pack(side=tk.LEFT, padx=(10, 0))
+
+        # area
+        area_frame = ttk.Frame(param_frame)
+        area_frame.pack(side=tk.TOP, anchor=tk.W)
+        self.area_var = tk.BooleanVar()
+        area_check = ttk.Checkbutton(area_frame, text="Area", variable=self.area_var)
+        area_check.pack(side=tk.LEFT)
+        vals = ("only keypoints", "member")
+        self.keypoint_member_combo = Combobox(area_frame, "Target:", values=vals, width=18)
         self.keypoint_member_combo.pack_horizontal(padx=5)
         vals = ("within area", "outside area")
-        self.in_out_combo = Combobox(setting_frame, "", values=vals, width=18)
+        self.in_out_combo = Combobox(area_frame, "", values=vals, width=18)
         self.in_out_combo.pack_horizontal(padx=5)
 
-        calc_button = ttk.Button(setting_frame, text="Remove", command=self.calc_in_out)
+        calc_button = ttk.Button(area_frame, text="Remove", command=self.exec_remove)
         calc_button.pack(side=tk.LEFT, padx=(10, 0))
 
         ok_frame = ttk.Frame(control_frame)
@@ -66,7 +98,8 @@ class App(ttk.Frame):
         self._load(args)
         self.draw_convex_hull()
         self.reset_anchor_points()
-        self._add_rotate_button(control_frame)
+
+    #        self._add_rotate_button(control_frame)
 
     def _load(self, args):
         self.src_df = args["src_df"].copy()
@@ -130,6 +163,26 @@ class App(ttk.Frame):
             y = point["point"][1]
             point["id"] = self.canvas.create_rectangle(x - 2, y - 2, x + 2, y + 2, fill="white")
 
+    def exec_remove(self):
+        keypoint_groups = []
+        if self.body_check_var.get():
+            keypoint_groups.append("body")
+        if self.arm_check_var.get():
+            keypoint_groups.append("arms")
+        if self.leg_check_var.get():
+            keypoint_groups.append("legs")
+        if self.hand_check_var.get():
+            keypoint_groups.append("hands")
+        if len(keypoint_groups) > 0:
+            self.remove_keypoint_group(keypoint_groups)
+
+        if self.low_score_var.get():
+            self.filter_low()
+        if self.area_var.get():
+            self.calc_in_out()
+
+        self.draw_convex_hull()
+
     def calc_in_out(self):
         poly_points = [p["point"] for p in self.anchor_points]
 
@@ -143,11 +196,18 @@ class App(ttk.Frame):
         dst_df = keypoints_proc.remove_by_bool_col(dst_df, "is_remove", k_m_bool)
         self.src_df = dst_df.drop(columns=["is_remove"])
 
-        self.draw_convex_hull()
-
     def filter_low(self):
         """Filter out the keypoints with low confidence or score."""
-        low_thresh = 0.5
+        low_thresh = self.score_threshold_var.get()
+        # numeric check
+        try:
+            low_thresh = float(low_thresh)
+        except ValueError:
+            print("Invalid threshold value")
+            return
+        if low_thresh <= 0:
+            return
+
         if self.model_name in ["RTMW-x WholeBody133", "MMPose RTMPose-x", "RTMPose-x Halpe26", "RTMPose-x WholeBody133"]:
             col = "score"
         elif self.model_name in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
@@ -158,7 +218,22 @@ class App(ttk.Frame):
             print(f"Unsupported model: {self.model_name}")
             return
         self.src_df.loc[self.src_df[col] < low_thresh, ["x", "y"]] = np.nan
-        self.draw_convex_hull()
+
+    def remove_keypoint_group(self, group_names: list):
+        if self.model_name in ["RTMW-x WholeBody133", "RTMPose-x WholeBody133"]:
+            toml_name = "coco133.toml"
+        elif self.model_name in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
+            toml_name = "coco17.toml"
+        elif self.model_name in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
+            toml_name = "halpe26.toml"
+        else:
+            print(f"Unsupported model: {self.model_name}")
+            return
+        kp_loader = keypoint_toml_loader.KeypointTOMLLoader(toml_name)
+        idx_list = kp_loader.get_keypoint_idx_by_groups(group_names)
+        print(f"Removing keypoints with indices: {idx_list}")
+        # multiindex frame, member keypoints
+        self.src_df.loc[self.src_df.index.get_level_values("keypoint").isin(idx_list), ["x", "y"]] = np.nan
 
     def on_ok(self):
         """Perform the action when the 'OK' button is clicked."""

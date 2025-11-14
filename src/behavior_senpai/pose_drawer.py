@@ -1,12 +1,10 @@
-import os
 import random
-import tomllib
 
 import cv2
 import numpy as np
 import torch
 
-from behavior_senpai import img_draw
+from behavior_senpai import img_draw, keypoint_toml_loader
 from gui_parts import TempFile
 
 
@@ -14,9 +12,8 @@ class Annotate:
     def __init__(self, kp_toml_name=None):
         temp = TempFile()
         self.draw_mask = temp.get_draw_mask()
-        toml_path = os.path.join(os.path.dirname(__file__), "..", "keypoint", kp_toml_name)
-        with open(toml_path, "rb") as f:
-            self.data = tomllib.load(f)
+        self.keypoint_toml_loader = keypoint_toml_loader.KeypointTOMLLoader(kp_toml_name)
+        self.data = self.keypoint_toml_loader.get_data()
 
     def set_pose(self, kps):
         self.keypoints = {}
