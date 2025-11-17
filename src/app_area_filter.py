@@ -38,8 +38,8 @@ class App(ttk.Frame):
         low_score_frame = ttk.Frame(param_frame)
         low_score_frame.pack(side=tk.TOP, anchor=tk.W)
         self.low_score_var = tk.BooleanVar()
-        low_score_checkbox = ttk.Checkbutton(low_score_frame, text="Low Score", variable=self.low_score_var)
-        low_score_checkbox.pack(side=tk.LEFT)
+        self.low_score_checkbox = ttk.Checkbutton(low_score_frame, text="Low Score", variable=self.low_score_var)
+        self.low_score_checkbox.pack(side=tk.LEFT)
         threshold_label = ttk.Label(low_score_frame, text="Less than:")
         threshold_label.pack(side=tk.LEFT, padx=(10, 0))
         self.score_threshold_var = tk.DoubleVar()
@@ -57,16 +57,16 @@ class App(ttk.Frame):
         self.hand_check_var = tk.BooleanVar(value=False)
         head_check = ttk.Checkbutton(keypoint_group_frame, text="Head", variable=self.head_check_var)
         head_check.pack(side=tk.LEFT)
-        face_check = ttk.Checkbutton(keypoint_group_frame, text="Face", variable=self.face_check_var)
-        face_check.pack(side=tk.LEFT)
+        self.face_check = ttk.Checkbutton(keypoint_group_frame, text="Face", variable=self.face_check_var)
+        self.face_check.pack(side=tk.LEFT)
         body_check = ttk.Checkbutton(keypoint_group_frame, text="Body", variable=self.body_check_var)
         body_check.pack(side=tk.LEFT)
         arm_check = ttk.Checkbutton(keypoint_group_frame, text="Arms", variable=self.arm_check_var)
         arm_check.pack(side=tk.LEFT, padx=(10, 0))
         leg_check = ttk.Checkbutton(keypoint_group_frame, text="Legs", variable=self.leg_check_var)
         leg_check.pack(side=tk.LEFT, padx=(10, 0))
-        hand_check = ttk.Checkbutton(keypoint_group_frame, text="Hands", variable=self.hand_check_var)
-        hand_check.pack(side=tk.LEFT, padx=(10, 0))
+        self.hand_check = ttk.Checkbutton(keypoint_group_frame, text="Hands", variable=self.hand_check_var)
+        self.hand_check.pack(side=tk.LEFT, padx=(10, 0))
 
         # area
         area_frame = ttk.Frame(param_frame)
@@ -86,8 +86,8 @@ class App(ttk.Frame):
 
         ok_frame = ttk.Frame(control_frame)
         ok_frame.pack(anchor=tk.NE, padx=(20, 0))
-        ok_btn = ttk.Button(ok_frame, text="OK", command=self.on_ok)
-        ok_btn.pack(pady=(0, 5))
+        self.ok_btn = ttk.Button(ok_frame, text="OK", command=self.on_ok, state=tk.DISABLED)
+        self.ok_btn.pack(pady=(0, 5))
         cancel_btn = ttk.Button(ok_frame, text="Cancel", command=self.cancel)
         cancel_btn.pack()
 
@@ -122,12 +122,31 @@ class App(ttk.Frame):
         if ok is False:
             return
         image_pil = Image.fromarray(image_rgb)
-        self.image_pil = image_pil  # ここで保持
+        self.image_pil = image_pil
         self.image_tk = ImageTk.PhotoImage(image_pil)
         if self.img_on_canvas is None:
             self.img_on_canvas = self.canvas.create_image(0, 0, anchor=tk.NW, image=self.image_tk)
         else:
             self.canvas.itemconfig(self.img_on_canvas, image=self.image_tk)
+
+        if self.model_name in ["RTMW-x WholeBody133", "RTMPose-x WholeBody133"]:
+            toml_name = "coco133.toml"
+        elif self.model_name in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
+            toml_name = "coco17.toml"
+            self.face_check.config(state=tk.DISABLED)
+            self.hand_check.config(state=tk.DISABLED)
+        elif self.model_name in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
+            toml_name = "halpe26.toml"
+            self.face_check.config(state=tk.DISABLED)
+            self.hand_check.config(state=tk.DISABLED)
+        elif self.model_name in ["MediaPipe Holistic"]:
+            toml_name = "mediapipe_holistic.toml"
+            self.low_score_checkbox.config(state=tk.DISABLED)
+        else:
+            print(f"Unsupported model: {self.model_name}")
+            return
+        self.kp_loader = keypoint_toml_loader.KeypointTOMLLoader(toml_name)
+
         # 画像の回転状態を反映
         if hasattr(self, "image_pil") and self.img_on_canvas is not None:
             self._update_canvas_image()
@@ -192,6 +211,7 @@ class App(ttk.Frame):
             self.calc_in_out()
 
         self.draw_convex_hull()
+        self.ok_btn.config(state=tk.NORMAL)
 
     def calc_in_out(self):
         poly_points = [p["point"] for p in self.anchor_points]
@@ -230,19 +250,7 @@ class App(ttk.Frame):
         self.src_df.loc[self.src_df[col] < low_thresh, ["x", "y"]] = np.nan
 
     def remove_keypoint_group(self, group_names: list):
-        if self.model_name in ["RTMW-x WholeBody133", "RTMPose-x WholeBody133"]:
-            toml_name = "coco133.toml"
-        elif self.model_name in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
-            toml_name = "coco17.toml"
-        elif self.model_name in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
-            toml_name = "halpe26.toml"
-        elif self.model_name in ["MediaPipe Holistic"]:
-            toml_name = "mediapipe_holistic.toml"
-        else:
-            print(f"Unsupported model: {self.model_name}")
-            return
-        kp_loader = keypoint_toml_loader.KeypointTOMLLoader(toml_name)
-        idx_list = kp_loader.get_keypoint_idx_by_groups(group_names)
+        idx_list = self.kp_loader.get_keypoint_idx_by_groups(group_names)
         print(f"Removing keypoints with indices: {idx_list}")
 
         # Mediapipe Holisticはmember(face, pose, left_hand, right_hand)ごとにkeypoint indexが異なる
