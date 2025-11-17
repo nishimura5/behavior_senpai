@@ -21,3 +21,4 @@ class KeypointTOMLLoader:
             idxs = self.get_keypoint_idx_by_group(group_name)
             idx_list.extend(idxs)
         return idx_list
+ 

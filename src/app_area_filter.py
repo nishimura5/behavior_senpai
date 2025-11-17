@@ -49,10 +49,16 @@ class App(ttk.Frame):
         # keypoint groups
         keypoint_group_frame = ttk.Frame(param_frame)
         keypoint_group_frame.pack(side=tk.TOP, anchor=tk.W, pady=(5, 5))
+        self.head_check_var = tk.BooleanVar(value=False)
+        self.face_check_var = tk.BooleanVar(value=False)
         self.body_check_var = tk.BooleanVar(value=False)
         self.arm_check_var = tk.BooleanVar(value=False)
         self.leg_check_var = tk.BooleanVar(value=False)
         self.hand_check_var = tk.BooleanVar(value=False)
+        head_check = ttk.Checkbutton(keypoint_group_frame, text="Head", variable=self.head_check_var)
+        head_check.pack(side=tk.LEFT)
+        face_check = ttk.Checkbutton(keypoint_group_frame, text="Face", variable=self.face_check_var)
+        face_check.pack(side=tk.LEFT)
         body_check = ttk.Checkbutton(keypoint_group_frame, text="Body", variable=self.body_check_var)
         body_check.pack(side=tk.LEFT)
         arm_check = ttk.Checkbutton(keypoint_group_frame, text="Arms", variable=self.arm_check_var)
@@ -165,6 +171,10 @@ class App(ttk.Frame):
 
     def exec_remove(self):
         keypoint_groups = []
+        if self.head_check_var.get():
+            keypoint_groups.append("head")
+        if self.face_check_var.get():
+            keypoint_groups.append("face")
         if self.body_check_var.get():
             keypoint_groups.append("body")
         if self.arm_check_var.get():
@@ -226,14 +236,27 @@ class App(ttk.Frame):
             toml_name = "coco17.toml"
         elif self.model_name in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
             toml_name = "halpe26.toml"
+        elif self.model_name in ["MediaPipe Holistic"]:
+            toml_name = "mediapipe_holistic.toml"
         else:
             print(f"Unsupported model: {self.model_name}")
             return
         kp_loader = keypoint_toml_loader.KeypointTOMLLoader(toml_name)
         idx_list = kp_loader.get_keypoint_idx_by_groups(group_names)
         print(f"Removing keypoints with indices: {idx_list}")
-        # multiindex frame, member keypoints
-        self.src_df.loc[self.src_df.index.get_level_values("keypoint").isin(idx_list), ["x", "y"]] = np.nan
+
+        # Mediapipe Holisticはmember(face, pose, left_hand, right_hand)ごとにkeypoint indexが異なる
+        if self.model_name == "MediaPipe Holistic":
+            grp = set(group_names)
+            if {"head", "body", "arms", "legs"} & grp:
+                self.src_df.loc[pd.IndexSlice[:, "pose", idx_list], ["x", "y"]] = np.nan
+            if "hands" in grp:
+                self.src_df.loc[pd.IndexSlice[:, ["left_hand", "right_hand"], range(21)], ["x", "y"]] = np.nan
+            if "face" in grp:
+                self.src_df.loc[pd.IndexSlice[:, "face", range(468)], ["x", "y"]] = np.nan
+        else:
+            # multiindex frame, member keypoints
+            self.src_df.loc[self.src_df.index.get_level_values("keypoint").isin(idx_list), ["x", "y"]] = np.nan
 
     def on_ok(self):
         """Perform the action when the 'OK' button is clicked."""
