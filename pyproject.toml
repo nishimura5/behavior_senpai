@@ -1,7 +1,7 @@
 [project]
 name = "behavior-senpai"
 version = "1.6.0"
-description = "A collection of Python scripts and applications for supporting Quantitative Behavioral Observation using videos."
+description = "An applications for supporting Behavioral Observation."
 readme = "README.md"
 requires-python = "~=3.11.0"
 dependencies = [
@@ -18,14 +18,14 @@ dependencies = [
 
 [project.optional-dependencies]
 cuda = [
-    "torch==2.1.2+cu121",
-    "torchvision==0.16.2+cu121",
-    "ultralytics~=8.3.0",
-    "lapx~=0.5",
-    "mmcv==2.1.0",
-    "mmdet==3.3.0",
-    "chumpy==0.66",
-    "mmpose~=1.3.0",
+    "torch==2.1.2+cu121; sys_platform == 'win32'",
+    "torchvision==0.16.2+cu121; sys_platform == 'win32'",
+    "ultralytics~=8.3.0; sys_platform == 'win32'",
+    "lapx~=0.5; sys_platform == 'win32'",
+    "mmcv==2.1.0; sys_platform == 'win32'",
+    "mmdet==3.3.0; sys_platform == 'win32'",
+    "chumpy==0.66; sys_platform == 'win32'",
+    "mmpose~=1.3.0; sys_platform == 'win32'",
 ]
 
 [tool.uv]
