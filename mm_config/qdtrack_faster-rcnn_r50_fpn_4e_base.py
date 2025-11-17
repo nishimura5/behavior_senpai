@@ -3,6 +3,13 @@ _base_ = ["./faster-rcnn_r50_fpn.py", "./default_runtime.py"]
 detector = _base_.model
 detector.pop("data_preprocessor")
 
+detector["test_cfg"]["rcnn"].update(
+    dict(
+        score_thr=0.5,
+        nms=dict(type="nms", iou_threshold=0.5),
+    )
+)
+
 detector["backbone"].update(
     dict(
         norm_cfg=dict(type="BN", requires_grad=False),

@@ -1,10 +1,10 @@
 import cv2
 import numpy as np
 import pandas as pd
-from mmdet.apis import inference_detector, inference_mot, init_detector, init_track_model
+from mmdet.apis import inference_mot, init_track_model
+from mmdet.utils import register_all_modules
 from mmengine.registry import init_default_scope
 from mmpose.apis import inference_topdown, init_model
-from mmpose.evaluation.functional import nms
 from mmpose.registry import VISUALIZERS
 from mmpose.structures import merge_data_samples
 
@@ -13,6 +13,7 @@ from behavior_senpai import img_draw, vcap
 
 class RTMPoseDetector:
     def __init__(self, model_name, show=True):
+        register_all_modules(init_default_scope=True)
         if model_name == "RTMPose-x WholeBody133":
             config = "./mm_config/rtmpose-x_8xb32-270e_coco-wholebody-384x288.py"
             checkpoint = "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/rtmpose-x_simcc-coco-wholebody_pt-body7_270e-384x288-401dfc90_20230629.pth"
@@ -26,11 +27,6 @@ class RTMPoseDetector:
             checkpoint = "https://download.openmmlab.com/mmpose/v1/projects/rtmw/rtmw-x_simcc-cocktail14_pt-ucoco_270e-384x288-f840f204_20231122.pth"
             self.number_of_keypoints = 133
 
-        # detection
-        det_config = "./mm_config/rtmdet_m_640-8xb32_coco-person.py"
-        det_checkpoint = "https://download.openmmlab.com/mmpose/v1/projects/rtmpose/rtmdet_m_8xb32-100e_coco-obj365-person-235e8209.pth"
-        self.det_model = init_detector(det_config, det_checkpoint, device="cuda:0")
-
         # tracking
         track_config = "./mm_config/qdtrack_faster-rcnn_r50_fpn_8xb2-4e_mot17halftrain_test-mot17halfval.py"
         track_checkpoint = (
@@ -42,9 +38,7 @@ class RTMPoseDetector:
         self.visualizer = VISUALIZERS.build(self.pose_model.cfg.visualizer)
         self.visualizer.set_dataset_meta(self.pose_model.dataset_meta)
 
-        self.det_score_threshold = 0.1
         self.pose_score_threshold = 0.3
-        self.retain_threshold = 0.3
         self.det_cat_id = 0
         self.show = show
 
@@ -87,8 +81,7 @@ class RTMPoseDetector:
             scores = track_instances.scores.cpu().numpy()
             labels = track_instances.labels.cpu().numpy()
             track_ids = track_instances.instances_id.cpu().numpy()
-            # 人クラスだけ＆スコアしきい値で絞る
-            keep = (labels == self.det_cat_id) & (scores > self.det_score_threshold)
+            keep = labels == self.det_cat_id
             bboxes = bboxes[keep]
             track_ids = track_ids[keep]
             scores = scores[keep]
@@ -113,8 +106,7 @@ class RTMPoseDetector:
                 if key == ord("x"):
                     break
 
-            # 検出結果の取り出し
-            for member_id, keypoints in enumerate(results):
+            for tid, keypoints in zip(track_ids, results):
                 pred_instance = keypoints.pred_instances.cpu().numpy()
                 pred_instance.keypoints[pred_instance.keypoint_scores < self.pose_score_threshold] = 0
                 result_keypoints = np.concatenate(
@@ -132,7 +124,7 @@ class RTMPoseDetector:
 
                     # データの詰め込み
                     data_dict["frame"].append(i)
-                    data_dict["member"].append(member_id)
+                    data_dict["member"].append(str(tid))
                     data_dict["keypoint"].append(keypoint_id)
                     data_dict["x"].append(x)
                     data_dict["y"].append(y)
