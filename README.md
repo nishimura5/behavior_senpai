@@ -30,45 +30,43 @@ Behavior Senpai can import inference results (with .h5 extension) from [DeepLabC
 
 Behavior Senpai is an open source software developed at [Faculty of Design, Kyushu University](https://www.design.kyushu-u.ac.jp/en/home/).
 
-## Requirement
-
-In order to use Behavior Senpai, you need a PC that meets the following performance requirements. The functionality has been confirmed on Windows 11 (24H2).
-
-### When using CUDA
-
- - Disk space: 12GB or more
- - RAM: 16GB or more
- - Screen resolution: 1920x1080 or higher
- - GPU: RTX3060~ (and its [drivers](https://www.nvidia.com/download/index.aspx))
-
-### Without CUDA
-
-If you do not have a CUDA-compatible GPU, only MediaPipe Holistic can be used.
-
- - Disk space: 8GB or more
- - RAM: 16GB or more
- - Screen resolution: 1920x1080 or higher
-
-## Usage
+## Install
 
 ### Download
+Download [BehaviorSenpai160.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.6.0/BehaviorSenpai160.zip)
 
-Download [BehaviorSenpai151.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.5.1/BehaviorSenpai151.zip)
+Extract the ZIP file and move the `BehaviorSenpai160` folder to your desired working directory.
 
-### Install
+### Windows
 
-Running BehaviorSenpai.exe will start the application; if you want to use CUDA, check the "Enable features using CUDA" checkbox the first time you start the application and click the "OK" button.
+1. Run `BehaviorSenpai.exe` to start the application
+2. Click the "Install" button
 
-BehaviorSenpai.exe is an application to automate the construction of the Python environment by [uv](https://docs.astral.sh/uv/) and the startup of Behavior Senpai itself.
-The initial setup by BehaviorSenpai.exe takes some time. Please wait until the terminal (black screen) closes automatically.
+**First-time setup:**
+- `uv` will be automatically installed if not present
+- (Optional) Check "Enable CUDA support" if you want to use MMPose and YOLO
+- The initial setup may take several minutes
 
-<p align="center">
- <a href="https://youtu.be/0k8GA1DscKQ">
-   <img width="30%" alt="How to install Behavior Senpai" src="https://img.youtube.com/vi/0k8GA1DscKQ/0.jpg">
- </a>
-</p>
+**Subsequent launches:**
+- Simply run `BehaviorSenpai.exe` to start the application
 
-To uninstall Behavior Senpai or replace it with the latest version, delete the entire folder containing BehaviorSenpai.exe.
+### macOS
+
+1. Install Python 3.11 from [python.org](https://www.python.org/downloads/macos/)
+2. Open Terminal and run the following commands:
+```bash
+   cd <your/directory/BehaviorSenpai160>
+   zsh behavior_senpai_mac.sh
+```
+
+**First-time setup:**
+- `uv` will be automatically installed if not present
+- The initial setup may take several minutes
+
+**Subsequent launches:**
+- Run the same command to start the application
+
+## Usage
 
 ## Keypoints
 
