@@ -35,10 +35,10 @@ find-links = [
 
 [tool.uv.sources]
 torch = [
-    { index = "pytorch-cu121", extra = "cuda", marker = "sys_platform == 'win32'" },
+    { index = "pytorch-cu121", marker= "sys_platform == 'win32' and extra == 'cuda'"},
 ]
 torchvision = [
-    { index = "pytorch-cu121", extra = "cuda", marker = "sys_platform == 'win32'" },
+    { index = "pytorch-cu121", marker= "sys_platform == 'win32' and extra == 'cuda'"},
 ]
 
 [[tool.uv.index]]
