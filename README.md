@@ -55,7 +55,7 @@ Extract the ZIP file and move the `BehaviorSenpai160` folder to your desired wor
 1. Install Python 3.11 from [python.org](https://www.python.org/downloads/macos/)
 2. Open Terminal and run the following commands:
 ```bash
-   cd <your/directory/BehaviorSenpai160>
+   cd your/directory/BehaviorSenpai160
    zsh behavior_senpai_mac.sh
 ```
 
