@@ -45,7 +45,7 @@ fi
 echo "Setting up Behavior Senpai..."
 if [ ! -d "venv" ]; then
     uv python pin "$PYTHON311"
-    uv sync
+    uv sync --extra cpu
 fi
 
 uv run python src/launcher.py
