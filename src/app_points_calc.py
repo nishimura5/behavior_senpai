@@ -84,7 +84,7 @@ class App(ttk.Frame):
         self.src_attrs = src_df.attrs
 
         # Update GUI
-        self.tree.set_members(self.tar_df.index.levels[1].unique().tolist())
+        self.tree.set_members(self.tar_df.index.get_level_values(1).unique().tolist())
         self.tree.set_df(self.tar_df)
 
         # load h5 file for tree
@@ -112,7 +112,8 @@ class App(ttk.Frame):
             hdf = hdf_df.DataFrameStorage(h5_path)
             source_cols = hdf.load_points_source_cols()
             for row in source_cols:
-                row[1] = self.tree.get_members()[0]
+                if row[1] not in self.tree.get_members():
+                    row[1] = self.tree.get_members()[0]
                 self.tree.insert(row)
 
     def draw(self):
