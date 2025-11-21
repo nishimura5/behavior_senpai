@@ -5,6 +5,7 @@ from tkinter import ttk
 
 import pandas as pd
 
+import export_csv
 import export_mp4
 from behavior_senpai import file_inout, hdf_df, time_format
 from gui_parts import IntEntry, TempFile
@@ -84,6 +85,7 @@ class App(ttk.Frame):
         self.tree.add_menu("Remove", self.remove)
         self.tree.add_menu("Extract MP4", self.extract_mp4)
         self.tree.add_menu("Export MP4", self.export_mp4)
+        self.tree.add_menu("Export CSV", self.export_csv)
         self.tree.tree.bind("<Button-1>", self.left_click_tree)
 
         self.canvas = tk.Canvas(tree_canvas_frame, width=600)
@@ -259,6 +261,15 @@ class App(ttk.Frame):
         end_msec = time_format.timestr_to_msec(end)
         self.export.set_time_range(start_msec, end_msec)
         self.export.export()
+
+    def export_csv(self):
+        row = self.tree.tree.selection()[0]
+        start = self.tree.get_selected_one(row)[0]
+        end = self.tree.get_selected_one(row)[1]
+        start_msec = time_format.timestr_to_msec(start)
+        end_msec = time_format.timestr_to_msec(end)
+        member = self.tree.get_selected_one(row)[3]
+        export_csv.export(start_msec, end_msec, member, self.src_df, self.pkl_dir)
 
     def extract_mp4(self):
         row = self.tree.tree.selection()[0]
