@@ -16,10 +16,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-cpu = [
-    "torch==2.1.2",
-]
-
 cuda = [
     "torch==2.1.2+cu121; sys_platform == 'win32'",
     "torchvision==0.16.2+cu121; sys_platform == 'win32'",
@@ -34,10 +30,6 @@ cuda = [
 [tool.uv]
 find-links = [
     "https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html"
-]
-
-conflicts = [
-    [ { extra = "cpu" }, { extra = "cuda" } ],
 ]
 
 [tool.uv.sources]

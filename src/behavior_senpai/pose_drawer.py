@@ -2,7 +2,6 @@ import random
 
 import cv2
 import numpy as np
-import torch
 
 from behavior_senpai import img_draw, keypoint_toml_loader
 from gui_parts import TempFile
@@ -68,14 +67,16 @@ class Annotate:
         return self.dst_img
 
     def _cvt_kp(self, kp, idx):
-        x = kp[idx][0]
-        y = kp[idx][1]
-        if isinstance(x, torch.Tensor):
-            x = x.cpu()
-            y = y.cpu()
+        x = self._to_scalar(kp[idx][0])
+        y = self._to_scalar(kp[idx][1])
         if np.isnan(x) or np.isnan(y):
             return (0, 0), 0
         return (int(kp[idx][0]), int(kp[idx][1])), kp[idx][2]
+
+    def _to_scalar(self, v):
+        if hasattr(v, "cpu"):
+            v = v.cpu()
+        return v
 
 
 def yolo_draw(src_img, result):
