@@ -36,6 +36,10 @@ find-links = [
     "https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html"
 ]
 
+conflicts = [
+    [ { extra = "cpu" }, { extra = "cuda" } ],
+]
+
 [tool.uv.sources]
 torch = [
     { index = "pytorch-cu121", extra = "cuda" },
