@@ -158,7 +158,7 @@ class CapCanvas(tk.Canvas):
         self.img_on_canvas = None
         self.anno_df = None
         self.current_msec = 0
-        self.is_crop = True
+        self.is_crop = False
         self.rotate_angle = 0
 
         # set click event
@@ -193,7 +193,9 @@ class CapCanvas(tk.Canvas):
     def set_area(self):
         if self.is_crop is False:
             ratio = self.frame_size[0] / self.frame_size[1]
+
             canvas_width = int(self.height * ratio)
+            canvas_height = self.height
             self.scale = canvas_width / self.frame_size[0]
             x_min = 0
             y_min = 0
@@ -211,17 +213,30 @@ class CapCanvas(tk.Canvas):
             crop_height = y_max - y_min
 
             ratio = crop_width / crop_height
-            canvas_width = int(self.height * ratio)
-            if canvas_width > 1000:
-                canvas_width = 1000
-            self.scale = canvas_width / crop_width
+            max_width = 1000
+            max_height = 1000
+            if ratio >= 1.0:
+                # 横長
+                if crop_width > max_width:
+                    self.scale = max_width / crop_width
+                else:
+                    self.scale = 1.0
+            else:
+                # 縦長
+                if crop_height > max_height:
+                    self.scale = max_height / crop_height
+                else:
+                    self.scale = 1.0
+
+            canvas_width = int(crop_width * self.scale)
+            canvas_height = int(crop_height * self.scale)
 
         self.x_min = int(x_min * self.scale)
         self.y_min = int(y_min * self.scale)
         self.x_max = int(x_max * self.scale)
         self.y_max = int(y_max * self.scale)
 
-        self.config(width=canvas_width, height=self.height)
+        self.config(width=canvas_width, height=canvas_height)
 
     def scale_trk(self):
         # x, y列の型をfloat64に明示的に変換してからスケーリング（FutureWarning対策）
