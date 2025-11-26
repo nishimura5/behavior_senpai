@@ -129,23 +129,8 @@ class App(ttk.Frame):
         else:
             self.canvas.itemconfig(self.img_on_canvas, image=self.image_tk)
 
-        if self.model_name in ["RTMW-x WholeBody133", "RTMPose-x WholeBody133"]:
-            toml_name = "coco133.toml"
-        elif self.model_name in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
-            toml_name = "coco17.toml"
-            self.face_check.config(state=tk.DISABLED)
-            self.hand_check.config(state=tk.DISABLED)
-        elif self.model_name in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
-            toml_name = "halpe26.toml"
-            self.face_check.config(state=tk.DISABLED)
-            self.hand_check.config(state=tk.DISABLED)
-        elif self.model_name in ["MediaPipe Holistic"]:
-            toml_name = "mediapipe_holistic.toml"
-            self.low_score_checkbox.config(state=tk.DISABLED)
-        else:
-            print(f"Unsupported model: {self.model_name}")
-            return
-        self.kp_loader = keypoint_toml_loader.KeypointTOMLLoader(toml_name)
+        self.kp_loader = keypoint_toml_loader.KeypointTOMLLoader()
+        self.kp_loader.open_toml_by_model_name(self.model_name)
 
         # 画像の回転状態を反映
         if hasattr(self, "image_pil") and self.img_on_canvas is not None:

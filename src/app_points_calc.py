@@ -5,7 +5,7 @@ from tkinter import ttk
 
 import pandas as pd
 
-from behavior_senpai import file_inout, hdf_df, keypoints_proc
+from behavior_senpai import file_inout, hdf_df, keypoints_proc, keypoint_toml_loader
 from gui_parts import IntEntry, TempFile, ToolTip
 from gui_points_calc import Tree
 from line_plotter import LinePlotter
@@ -86,6 +86,10 @@ class App(ttk.Frame):
         # Update GUI
         self.tree.set_members(self.tar_df.index.get_level_values(1).unique().tolist())
         self.tree.set_df(self.tar_df)
+
+        # load keypoint_toml
+        self.kp_loader = keypoint_toml_loader.KeypointTOMLLoader()
+        self.kp_loader.open_toml_by_model_name(args["model_name"])
 
         # load h5 file for tree
         expected_file_name = f"{args['trk_pkl_name'].split('.')[0]}.feat"
