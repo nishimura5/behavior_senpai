@@ -16,9 +16,9 @@ def load_hdf(tar_path):
 
 video_dir = "%USERPROFILE%/Videos"
 
-filetypes = [("Track files", "*.h5")]
+filetypes = [("Feature files", "*.feat")]
 filetypes = windows_and_mac.file_types(filetypes)
-hdf_path = filedialog.askopenfilename(initialdir=video_dir, title="Select Pickle file", filetypes=filetypes)
+hdf_path = filedialog.askopenfilename(initialdir=video_dir, title="Select Feature file", filetypes=filetypes)
 if hdf_path == "":
     print("No file selected.")
     sys.exit()

@@ -137,6 +137,37 @@ class DataFrameStorage:
         called_in = os.path.basename(inspect.stack()[1].filename)
         print(f"{called_in} > {os.path.basename(os.path.basename(self.filepath))}")
 
+    def save_mixnorm_source_cols(self, source_cols: list, track_name: str):
+        with pd.HDFStore(self.filepath, mode="r") as store:
+            # validate track_name
+            correct_track_name = self.load_profile()["track_name"]
+
+        with pd.HDFStore(self.filepath, mode="a") as store:
+            if track_name != correct_track_name:
+                print(f"track_name mismatch: {track_name} != {correct_track_name}")
+                return
+
+            dst_source_cols = {
+                "name": [],
+                "member": [],
+                "col_a": [],
+                "op": [],
+                "col_b": [],
+                "normalize": [],
+            }
+            for source_col in source_cols:
+                dst_source_cols["name"].append(source_col[0])
+                dst_source_cols["member"].append(source_col[1])
+                dst_source_cols["col_a"].append(str(source_col[2]))
+                dst_source_cols["op"].append(source_col[3])
+                dst_source_cols["col_b"].append(str(source_col[4]))
+                dst_source_cols["normalize"].append(source_col[5])
+            source_cols_df = pd.DataFrame(dst_source_cols)
+            store.put("mixnorm/source_cols", source_cols_df, format="table")
+
+        called_in = os.path.basename(inspect.stack()[1].filename)
+        print(f"{called_in} > {os.path.basename(os.path.basename(self.filepath))}")
+
     def has_group(self, group_name: str) -> bool:
         """
         Check if group exists in HDF store. startswith() is used to check for subgroups.

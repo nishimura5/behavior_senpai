@@ -42,7 +42,7 @@ class KeypointTOMLLoader:
             idx_list.extend(idxs)
         return idx_list
 
-    def get_keypoint_idx_by_name(self, name):
+    def get_idx_by_name(self, name):
         tar_id = self.data.get("keypoints").get(name, None)
         if tar_id is None:
             raise ValueError(f"Keypoint name '{name}' not found in TOML.")

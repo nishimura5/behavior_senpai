@@ -1,3 +1,23 @@
+[keypoints]
+"nose" = {id=0, color=[40,40,255]}
+"left_eye"= {id=2, color=[250,70,70]}
+"right_eye"= {id=5, color=[50,250,50]}
+"left_ear"= {id=7, color=[250,70,70]}
+"right_ear"= {id=8, color=[50,250,50]}
+"left_shoulder"= {id=11, color=[250,70,70]}
+"right_shoulder"= {id=12, color=[50,250,50]}
+"left_elbow"= {id=13, color=[250,70,70]}
+"right_elbow"= {id=14, color=[50,250,50]}
+"left_wrist"= {id=15, color=[250,70,70]}
+"right_wrist"= {id=16, color=[50,250,50]}
+"left_hip"= {id=23, color=[250,70,70]}
+"right_hip"= {id=24, color=[50,250,50]}
+"left_knee"= {id=25, color=[250,70,70]}
+"right_knee"= {id=26, color=[50,250,50]}
+"left_ankle"= {id=27, color=[250,70,70]}
+"right_ankle"= {id=28, color=[50,250,50]}
+
+
 [keypoint_group]
 "head" = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 "body" = [11, 12, 23, 24]
