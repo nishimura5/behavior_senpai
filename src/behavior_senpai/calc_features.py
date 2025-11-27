@@ -90,7 +90,13 @@ class CalcFeatures:
                 kpl.get_idx_by_name("right_hip"),
                 kpl.get_idx_by_name("right_ankle"),
             ],
+            "shoulders_len": ["distance (|AB|)", self.member, kpl.get_idx_by_name("left_shoulder"), kpl.get_idx_by_name("right_shoulder"), None],
+            "left_forearm_len": ["distance (|AB|)", self.member, kpl.get_idx_by_name("left_elbow"), kpl.get_idx_by_name("left_wrist"), None],
+            "left_upper_arm_len": ["distance (|AB|)", self.member, kpl.get_idx_by_name("left_shoulder"), kpl.get_idx_by_name("left_elbow"), None],
+            "right_forearm_len": ["distance (|AB|)", self.member, kpl.get_idx_by_name("right_elbow"), kpl.get_idx_by_name("right_wrist"), None],
+            "right_upper_arm_len": ["distance (|AB|)", self.member, kpl.get_idx_by_name("right_shoulder"), kpl.get_idx_by_name("right_elbow"), None],
         }
+        self.shoulders_len_col_name = " "
 
     def set_member(self):
         if self.model_name == "MediaPipe Holistic":
@@ -120,9 +126,14 @@ class CalcFeatures:
                 feat_df = keypoints_proc.calc_angle2(member_df, point_a, point_b)
             elif calc == "angle3 (∠BAC)":
                 feat_df = keypoints_proc.calc_angle3(member_df, point_a, point_b, point_c)
+            elif calc == "distance (|AB|)":
+                feat_df = keypoints_proc.calc_norm(member_df, point_a, point_b)
 
-            col_names = feat_df.columns.tolist()[0]
-            self.source_cols_dict[key].append(col_names)
+            col_name = feat_df.columns.tolist()[0]
+            self.source_cols_dict[key].append(col_name)
+            # for normalize
+            if key == "shoulders_len":
+                self.shoulders_len_col_name = col_name
 
             member_feat_df = pd.concat([member_feat_df, feat_df], axis=1)
 
@@ -158,14 +169,29 @@ class CalcFeatures:
     def calc_mix_norm(self):
         self.source_cols_for_mixnorm = []
         for key, params in self.source_cols_dict.items():
+            if params[0] in ["angle2 (∠BAx)", "angle3 (∠BAC)"]:
+                param_a = params[-1]
+                op = " "
+                param_b = " "
+                norm = "0-180"
+            elif params[0] in ["distance (|AB|)"]:
+                param_a = params[-1]
+                op = "/"
+                param_b = self.shoulders_len_col_name
+                norm = "MinMax"
+            else:
+                param_a = params[-1]
+                op = " "
+                param_b = " "
+                norm = "No normalize"
             self.source_cols_for_mixnorm.append(
                 [
                     key,
                     self.member,
-                    params[-1],
-                    " ",
-                    " ",
-                    "No normalize",
+                    param_a,
+                    op,
+                    param_b,
+                    norm,
                 ]
             )
 

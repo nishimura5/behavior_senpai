@@ -8,6 +8,7 @@ def get_calc_codes():
         "No normalize": "non",
         "Z-score": "zscore",
         "MinMax": "minmax",
+        "0-180": "0-180",
         "Threshold75%": "thresh75",
         "Threshold50%": "thresh50",
         "Threshold25%": "thresh25",
@@ -23,6 +24,8 @@ def calc(tar_sr, calc_code):
         ret_sr = (tar_sr - tar_sr.min()) / (tar_sr.max() - tar_sr.min())
     elif calc_code == "zscore":
         ret_sr = (tar_sr - tar_sr.mean()) / tar_sr.std()
+    elif calc_code == "0-180":
+        ret_sr = tar_sr / 180
     elif calc_code == "thresh50":
         ret_sr = tar_sr > tar_sr.median()
         ret_sr = ret_sr.astype(int)
