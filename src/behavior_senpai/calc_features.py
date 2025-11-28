@@ -169,11 +169,13 @@ class CalcFeatures:
     def calc_mix_norm(self):
         self.source_cols_for_mixnorm = []
         for key, params in self.source_cols_dict.items():
+            if params[-1] == self.shoulders_len_col_name:
+                continue
             if params[0] in ["angle2 (∠BAx)", "angle3 (∠BAC)"]:
                 param_a = params[-1]
                 op = " "
                 param_b = " "
-                norm = "0-180"
+                norm = "/180"
             elif params[0] in ["distance (|AB|)"]:
                 param_a = params[-1]
                 op = "/"
