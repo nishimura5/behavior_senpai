@@ -26,64 +26,64 @@ class CalcFeatures:
         kpl.open_toml_by_model_name(self.model_name)
 
         self.source_cols_dict = {
-            "left_forearm": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("left_elbow"), kpl.get_idx_by_name("left_wrist"), None],
-            "right_forearm": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("right_elbow"), kpl.get_idx_by_name("right_wrist"), None],
-            "left_upper_arm": [
+            "left_forearm_dir": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("left_elbow"), kpl.get_idx_by_name("left_wrist"), None],
+            "right_forearm_dir": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("right_elbow"), kpl.get_idx_by_name("right_wrist"), None],
+            "left_upper_arm_dir": [
                 "angle2 (∠BAx)",
                 self.member,
                 kpl.get_idx_by_name("left_shoulder"),
                 kpl.get_idx_by_name("left_elbow"),
                 None,
             ],
-            "right_upper_arm": [
+            "right_upper_arm_dir": [
                 "angle2 (∠BAx)",
                 self.member,
                 kpl.get_idx_by_name("right_shoulder"),
                 kpl.get_idx_by_name("right_elbow"),
                 None,
             ],
-            "left_thigh": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("left_hip"), kpl.get_idx_by_name("left_knee"), None],
-            "right_thigh": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("right_hip"), kpl.get_idx_by_name("right_knee"), None],
-            "left_shin": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("left_knee"), kpl.get_idx_by_name("left_ankle"), None],
-            "right_shin": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("right_knee"), kpl.get_idx_by_name("right_ankle"), None],
-            "left_body": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("left_shoulder"), kpl.get_idx_by_name("left_hip"), None],
-            "right_body": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("right_shoulder"), kpl.get_idx_by_name("right_hip"), None],
-            "left_elbow": [
+            "left_thigh_dir": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("left_hip"), kpl.get_idx_by_name("left_knee"), None],
+            "right_thigh_dir": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("right_hip"), kpl.get_idx_by_name("right_knee"), None],
+            "left_shin_dir": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("left_knee"), kpl.get_idx_by_name("left_ankle"), None],
+            "right_shin_dir": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("right_knee"), kpl.get_idx_by_name("right_ankle"), None],
+            "left_body_dir": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("left_shoulder"), kpl.get_idx_by_name("left_hip"), None],
+            "right_body_dir": ["angle2 (∠BAx)", self.member, kpl.get_idx_by_name("right_shoulder"), kpl.get_idx_by_name("right_hip"), None],
+            "left_elbow_ang": [
                 "angle3 (∠BAC)",
                 self.member,
                 kpl.get_idx_by_name("left_elbow"),
                 kpl.get_idx_by_name("left_wrist"),
                 kpl.get_idx_by_name("left_shoulder"),
             ],
-            "right_elbow": [
+            "right_elbow_ang": [
                 "angle3 (∠BAC)",
                 self.member,
                 kpl.get_idx_by_name("right_elbow"),
                 kpl.get_idx_by_name("right_wrist"),
                 kpl.get_idx_by_name("right_shoulder"),
             ],
-            "left_shoulder": [
+            "left_shoulder_ang": [
                 "angle3 (∠BAC)",
                 self.member,
                 kpl.get_idx_by_name("left_shoulder"),
                 kpl.get_idx_by_name("left_elbow"),
                 kpl.get_idx_by_name("left_hip"),
             ],
-            "right_shoulder": [
+            "right_shoulder_ang": [
                 "angle3 (∠BAC)",
                 self.member,
                 kpl.get_idx_by_name("right_shoulder"),
                 kpl.get_idx_by_name("right_elbow"),
                 kpl.get_idx_by_name("right_hip"),
             ],
-            "left_knee": [
+            "left_knee_ang": [
                 "angle3 (∠BAC)",
                 self.member,
                 kpl.get_idx_by_name("left_knee"),
                 kpl.get_idx_by_name("left_hip"),
                 kpl.get_idx_by_name("left_ankle"),
             ],
-            "right_knee": [
+            "right_knee_ang": [
                 "angle3 (∠BAC)",
                 self.member,
                 kpl.get_idx_by_name("right_knee"),
