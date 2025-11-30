@@ -17,7 +17,7 @@ class App(tk.Toplevel):
 
         img_name = ""
         if dataset_name == "MediaPipe Holistic":
-            img_name = "facemesh"
+            img_name = "pose_mediapipe"
         elif dataset_name in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
             img_name = "body_coco"
         elif dataset_name in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
@@ -27,7 +27,7 @@ class App(tk.Toplevel):
 
         head_frame = ttk.Frame(self)
         head_frame.pack(pady=5, side=tk.TOP)
-        img_list = ["hands", "facemesh", "facemesh2", "body_coco", "body_halpe26", "body_wholebody133", "face_wholebody133"]
+        img_list = ["pose_mediapipe", "hands", "facemesh", "facemesh2", "body_coco", "body_halpe26", "body_wholebody133", "face_wholebody133"]
         self.keypoints_combo = Combobox(head_frame, label="Keypoints:", width=17, values=img_list)
         self.keypoints_combo.pack_horizontal(padx=5, anchor=tk.N)
         self.keypoints_combo.set_selected_bind(self._change_img)
