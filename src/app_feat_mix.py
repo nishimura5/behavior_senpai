@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import pandas as pd
-import tqdm
+from tqdm import tqdm
 
 from behavior_senpai import calc_features, df_attrs, feature_proc, file_inout, hdf_df
 from gui_feat_mix import Tree
@@ -257,8 +257,7 @@ class App(ttk.Frame):
             member_df = scene_filtered_df.loc[pd.IndexSlice[:, member], :].drop("timestamp", axis=1)
             member_feat_df = pd.DataFrame()
 
-            #            for i, row in enumerate(self.source_cols):
-            for i, row in tqdm.tqdm(enumerate(self.source_cols), total=row_num):
+            for i, row in tqdm(enumerate(self.source_cols), total=row_num, desc="Plotting features"):
                 feat_name, m, col_a, op, col_b, normalize = row
                 if member != str(m):
                     continue

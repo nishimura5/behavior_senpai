@@ -105,18 +105,19 @@ class LinePlotter:
 
     def set_plot_and_violin(self, plot_df, member: str, data_col_name: str, is_last: bool = False):
         self.member = member
-        # 重複インデックス削除
-        plot_df = plot_df[~plot_df.index.duplicated(keep="last")]
-        plot_df = plot_df.loc[pd.IndexSlice[:, member], :]
+        plot_df = plot_df[~plot_df.index.duplicated(keep="last")].loc[pd.IndexSlice[:, member], :]
 
         plot_df.plot(ax=self.line_ax, x="timestamp", y=data_col_name)
         self.line_ax.set_xlim(plot_df["timestamp"].min(), plot_df["timestamp"].max())
         if is_last:
             self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         else:
-            self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: ""))
+            self.line_ax.xaxis.set_major_formatter(ticker.NullFormatter())
         self.line_ax.legend(loc="upper right")
-        sns.violinplot(plot_df[data_col_name], ax=self.violin_ax)
+        data = plot_df[data_col_name].dropna()
+        if len(data) > 0:
+            sns.violinplot(plot_df[data_col_name], ax=self.violin_ax)
+            self.violin_ax.set_ylabel("")
 
     def set_plot_band(self, plot_df, member: str, time_min_msec: int, time_max_msec: int):
         self.member = member
