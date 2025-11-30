@@ -57,12 +57,12 @@ class App(ttk.Frame):
         tree_canvas_frame.pack(padx=10, pady=5, fill=tk.X, expand=False)
 
         cols = [
-            {"name": "feature name", "width": 180},
+            {"name": "feature name", "width": 160},
             {"name": "member", "width": 100},
-            {"name": "col A", "width": 150},
+            {"name": "col A", "width": 130},
             {"name": "op", "width": 30},
-            {"name": "col B", "width": 150},
-            {"name": "normalize", "width": 140},
+            {"name": "col B", "width": 130},
+            {"name": "normalize", "width": 100},
         ]
         self.tree = Tree(tree_canvas_frame, cols, height=12)
         self.tree.pack(side=tk.LEFT)
@@ -70,7 +70,7 @@ class App(ttk.Frame):
         self.tree.add_row_copy(column=1)
         self.tree.add_menu("Remove", self.tree.delete_selected)
 
-        self.canvas = tk.Canvas(tree_canvas_frame, width=600)
+        self.canvas = tk.Canvas(tree_canvas_frame, width=800)
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
         plot_outer_frame = ttk.Frame(self)

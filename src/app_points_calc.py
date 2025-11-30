@@ -17,7 +17,7 @@ class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
         master.title("Points Calculation")
-        master.geometry("1200x700")
+        master.geometry("1300x800")
         self.pack(padx=10, pady=10)
         self.bind("<Map>", lambda event: self._load(event, args))
 
@@ -60,7 +60,7 @@ class App(ttk.Frame):
         self.tree.add_row_copy(column=1)
         self.tree.add_menu("Remove", self.tree.delete_selected)
 
-        self.canvas = tk.Canvas(tree_canvas_frame, width=600)
+        self.canvas = tk.Canvas(tree_canvas_frame, width=800)
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
         plot_frame = ttk.Frame(self)
