@@ -44,7 +44,7 @@ class LinePlotter:
         self.line_ax = self.fig.add_subplot(gs[0, 0])
 
     def add_ax(self, row, col, pos):
-        gs = gridspec.GridSpec(row, col, top=0.95, width_ratios=(4, 1))
+        gs = gridspec.GridSpec(row, col, top=0.96, bottom=0.07, left=0.05, right=0.96, width_ratios=(5, 1))
         self.line_ax = self.fig.add_subplot(gs[pos, 0], sharex=self.line_ax)
         self.violin_ax = self.fig.add_subplot(gs[pos, 1])
 
