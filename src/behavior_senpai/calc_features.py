@@ -1,6 +1,7 @@
 import os
 
 import pandas as pd
+from tqdm import tqdm
 
 from behavior_senpai import hdf_df, keypoint_toml_loader, keypoints_proc
 from gui_parts import TempFile
@@ -114,7 +115,7 @@ class CalcFeatures:
         # points features
         self.source_cols_for_points = []
         remove_keys = []
-        for key, params in self.source_cols_dict.items():
+        for key, params in tqdm(self.source_cols_dict.items(), desc="Calculating features"):
             calc, member, point_a, point_b, point_c = params
 
             if int(point_a) not in kps or int(point_b) not in kps:

@@ -219,38 +219,33 @@ def calc_direction(src_df, kp0: int, kp1: int):
 
 def calc_angle2(src_df, kp0: int, kp1: int):
     """
-    Calculate the direction of kp0 -> kp1 in degrees (fast version)
+    Calculate the direction of kp0 -> kp1 in degrees
+    -180 to 180 degrees
     """
     col_name = f"deg({kp0}-{kp1})"
 
-    # x, y のみを抽出
     xy_df = src_df.loc[:, ["x", "y"]]
-
-    # 各キーポイントの座標を取得
     point0 = xy_df.xs(kp0, level="keypoint", drop_level=False)
     point1 = xy_df.xs(kp1, level="keypoint", drop_level=False)
-
-    p0 = point0.to_numpy()
-    p1 = point1.to_numpy()
-
-    vec = p1 - p0
-
-    angles_deg = np.degrees(np.arctan2(vec[:, 1], vec[:, 0]))
+    vec = point1.values - point0.values
+    angles_deg = np.arctan2(vec[:, 1], vec[:, 0]) * 57.29577951308232  # 180/π
     angle_df = pd.DataFrame({col_name: angles_deg}, index=point0.index.droplevel("keypoint"))
-
     return angle_df
 
 
 def calc_norm(src_df, kp0: int, kp1: int):
+    """
+    Calculate the norm (distance) between kp0 and kp1
+    """
     col_name = f"norm({kp0}-{kp1})"
-    point0 = src_df.loc[pd.IndexSlice[:, :, kp0], :].droplevel(2)
-    point1 = src_df.loc[pd.IndexSlice[:, :, kp1], :].droplevel(2)
-    point1_0 = point1 - point0
-    norms_sr = np.sqrt(point1_0["x"] ** 2 + point1_0["y"] ** 2)
-    norms_df = norms_sr.to_frame()
-    norms_df.columns = [col_name]
-    return norms_df
 
+    xy_df = src_df.loc[:, ["x", "y"]]
+    point0 = xy_df.xs(kp0, level="keypoint", drop_level=False)
+    point1 = xy_df.xs(kp1, level="keypoint", drop_level=False)
+    vec = point1.values - point0.values
+    norms = np.sqrt(vec[:, 0] ** 2 + vec[:, 1] ** 2)
+    norms_df = pd.DataFrame({col_name: norms}, index=point0.index.droplevel("keypoint"))
+    return norms_df
 
 def calc_plus(src_df, kp0: int, kp1: int, kp2: int):
     """
@@ -316,33 +311,24 @@ def calc_sin_cos(src_df, kp0: int, kp1: int, kp2: int):
 
 def calc_angle3(src_df, kp0: int, kp1: int, kp2: int):
     """
-    kp0 -> kp1とkp0 -> kp2の角度を計算する
+    Calculate the angle between kp0 -> kp1 and kp0 -> kp2 in degrees
+    0 to 180 degrees
     """
     col_name = f"angle({kp0}-{kp1},{kp0}-{kp2})"
 
-    # x, y のみを抽出（インデックスはそのまま）
     xy_df = src_df.loc[:, ["x", "y"]]
-
-    # 各キーポイントの座標を取得
     point0 = xy_df.xs(kp0, level="keypoint", drop_level=False)
     point1 = xy_df.xs(kp1, level="keypoint", drop_level=False)
     point2 = xy_df.xs(kp2, level="keypoint", drop_level=False)
-
-    p0 = point0.to_numpy()
-    p1 = point1.to_numpy()
-    p2 = point2.to_numpy()
-
-    vec1 = p1 - p0
-    vec2 = p2 - p0
+    p0 = point0.values
+    vec1 = point1.values - p0
+    vec2 = point2.values - p0
 
     dot_product = np.einsum("ij,ij->i", vec1, vec2)
     norm1 = np.linalg.norm(vec1, axis=1)
     norm2 = np.linalg.norm(vec2, axis=1)
-
     cos_angle = np.clip(dot_product / (norm1 * norm2), -1.0, 1.0)
-
-    angles = np.arccos(cos_angle)
-    angles = np.degrees(angles)
+    angles = np.arccos(cos_angle) * 57.29577951308232  # 180/π
     angle_df = pd.DataFrame(angles, index=point0.index.droplevel("keypoint"), columns=[col_name])
     return angle_df
 
