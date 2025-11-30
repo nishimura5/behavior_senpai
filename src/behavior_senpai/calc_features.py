@@ -96,6 +96,7 @@ class CalcFeatures:
             "left_upper_arm_len": ["distance (|AB|)", self.member, kpl.get_idx_by_name("left_shoulder"), kpl.get_idx_by_name("left_elbow"), None],
             "right_forearm_len": ["distance (|AB|)", self.member, kpl.get_idx_by_name("right_elbow"), kpl.get_idx_by_name("right_wrist"), None],
             "right_upper_arm_len": ["distance (|AB|)", self.member, kpl.get_idx_by_name("right_shoulder"), kpl.get_idx_by_name("right_elbow"), None],
+            "wrist_to_wrist_len": ["distance (|AB|)", self.member, kpl.get_idx_by_name("left_wrist"), kpl.get_idx_by_name("right_wrist"), None],
         }
         self.shoulders_len_col_name = " "
 
