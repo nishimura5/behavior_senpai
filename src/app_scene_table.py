@@ -37,7 +37,7 @@ class App(ttk.Frame):
 
         import_frame = ttk.Frame(setting_frame)
         import_frame.pack(pady=5, expand=True, anchor=tk.W)
-        import_btn = ttk.Button(import_frame, text="Select feature file", command=self.import_bool_pkl)
+        import_btn = ttk.Button(import_frame, text="Import", command=self.import_bool_pkl)
         import_btn.pack(side=tk.LEFT, padx=(0, 5))
         self.bool_col_combo = ttk.Combobox(import_frame, state="disable", width=18)
         self.bool_col_combo["values"] = ["bool_col"]
@@ -141,13 +141,17 @@ class App(ttk.Frame):
 
     def import_bool_pkl(self):
         init_dir = os.path.join(os.path.dirname(self.pkl_dir), "calc")
-        pl = file_inout.PickleLoader(init_dir)
+        pl = file_inout.PickleLoader(init_dir, filetype="both")
         pl.join_calc_case(self.calc_case)
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
             return
-        bool_pkl_path = pl.get_tar_path()
-        self._import_h5(bool_pkl_path)
+        import_path = pl.get_tar_path()
+        ext = pl.get_extension()
+        if ext == ".feat":
+            self._import_h5(import_path)
+        elif ext == ".pkl":
+            self._import_pkl(import_path)
 
     def _import_h5(self, h5_path):
         h5 = hdf_df.DataFrameStorage(h5_path)
@@ -187,6 +191,29 @@ class App(ttk.Frame):
             duration_str = time_format.msec_to_timestr_with_fff(duration)
             values = (start_str, end_str, duration_str, member, tar_col_name)
             self.tree.insert(values)
+        self._update()
+
+    def _import_pkl(self, pkl_path):
+        tar_df = file_inout.load_track_file(pkl_path)
+        if tar_df is None:
+            return
+        if "scene_table" not in tar_df.attrs.keys():
+            print("scene_table not found in the selected pkl file.")
+            return
+        scene_table = tar_df.attrs["scene_table"]
+        # attrsにdescriptionがなかったら空のリストを入れる
+        if "description" not in scene_table.keys():
+            scene_table["description"] = [""] * len(scene_table["start"])
+        if "member" not in scene_table.keys():
+            scene_table["member"] = [""] * len(scene_table["start"])
+
+        for start, end, member, description in zip(
+            scene_table["start"], scene_table["end"], scene_table["member"], scene_table["description"], strict=False
+        ):
+            duration = pd.to_timedelta(end) - pd.to_timedelta(start)
+            duration_str = time_format.timedelta_to_str(duration)
+            vals = (start, end, duration_str, member, description)
+            self.tree.insert(values=vals)
         self._update()
 
     def draw(self):

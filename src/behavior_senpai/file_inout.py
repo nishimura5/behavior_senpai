@@ -42,7 +42,9 @@ class PickleLoader:
         if filetype == "feat":
             self.filetypes = [("Feature files(HDF5)", "*.feat")]
         elif filetype == "pkl":
-            self.filetypes = [("Track files", "*.pkl;*.h5")]
+            self.filetypes = [("Track files", "*.pkl")]
+        elif filetype == "both":
+            self.filetypes = [("Feature files(HDF5)", "*.feat"), ("Track files", "*.pkl")]
         self.filetypes = windows_and_mac.file_types(self.filetypes)
 
         self.tar_path = org_path
@@ -72,6 +74,9 @@ class PickleLoader:
 
     def get_tar_parent(self):
         return os.path.basename(os.path.dirname(self.tar_path))
+
+    def get_extension(self):
+        return os.path.splitext(self.tar_path)[1]
 
     def set_tar_path(self, path):
         self.tar_path = path
