@@ -230,7 +230,7 @@ The application's settings and the path of the most recently loaded Track file a
 Please acknowledge and cite the use of this software and its authors when results are used in publications or published elsewhere.
 
 ```
-Nishimura, E. (2025). Behavior Senpai (Version 1.5) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
+Nishimura, E. (2025). Behavior Senpai (Version 1.6) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
 ```
 
 ```

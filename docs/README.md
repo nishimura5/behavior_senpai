@@ -1,4 +1,4 @@
-# Behavior Senpai v.1.5.1
+# Behavior Senpai v.1.6.0
 
 [pyproject]: https://github.com/nishimura5/behavior_senpai/blob/master/pyproject.toml
 [app_detect]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_detect.py
@@ -21,54 +21,52 @@ Behavior Senpai is distinctive in that it permits the utilization of multiple AI
 - [YOLOv8 Pose](https://github.com/ultralytics/ultralytics/issues/1915)
 - [MediaPipe Holistic](https://github.com/google/mediapipe/blob/master/docs/solutions/holistic.md)
 - [RTMPose Halpe26 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#26-keypoints)
-- [RTMPose WholeBody133 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#wholebody-2d-133-keypoints)
+- [RTMW WholeBody133 (MMPose)](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose#wholebody-2d-133-keypoints)
 
 Behavior Senpai performs pose estimation of a person in a video using an AI model selected by the user, and outputs time-series coordinate data.
 (These are variously referred to as "pose estimation", "markerless motion capture", "landmark detection", and so forth, depending on the intended purpose and application.)
 
-BehaviorSenpai can import inference results (with .h5 extension) from [DeepLabCut](https://www.mackenziemathislab.org/deeplabcut).
+Behavior Senpai can import inference results (with .h5 extension) from [DeepLabCut](https://www.mackenziemathislab.org/deeplabcut).
 
 Behavior Senpai is an open source software developed at [Faculty of Design, Kyushu University](https://www.design.kyushu-u.ac.jp/en/home/).
 
-## Requirement
-
-In order to use Behavior Senpai, you need a PC that meets the following performance requirements. The functionality has been confirmed on Windows 11 (23H2).
-
-### When using CUDA
-
- - Disk space: 12GB or more
- - RAM: 16GB or more
- - Screen resolution: 1920x1080 or higher
- - GPU: RTX3060~ (and its [drivers](https://www.nvidia.com/download/index.aspx))
-
-### Without CUDA
-
-If you do not have a CUDA-compatible GPU, only MediaPipe Holistic can be used.
-
- - Disk space: 8GB or more
- - RAM: 16GB or more
- - Screen resolution: 1920x1080 or higher
-
-## Usage
+## Install
 
 ### Download
+Download [BehaviorSenpai160.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.6.0/BehaviorSenpai160.zip)
 
-Download [BehaviorSenpai151.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.5.1/BehaviorSenpai151.zip)
+Extract the ZIP file and move the `BehaviorSenpai160` folder to your desired working directory.
 
-### Install
+### Windows
 
-Running BehaviorSenpai.exe will start the application; if you want to use CUDA, check the "Enable features using CUDA" checkbox the first time you start the application and click the "OK" button.
+1. Run `BehaviorSenpai.exe` to start the application
+2. Click the "Install" button
 
-BehaviorSenpai.exe is an application to automate the construction of the Python environment by [uv](https://docs.astral.sh/uv/) and the startup of Behavior Senpai itself.
-The initial setup by BehaviorSenpai.exe takes some time. Please wait until the terminal (black screen) closes automatically.
+**First-time setup:**
+- `uv` will be automatically installed if not present
+- (Optional) Check "Enable CUDA support" if you want to use MMPose and YOLO
+- The initial setup may take several minutes
 
-<p align="center">
- <a href="https://youtu.be/0k8GA1DscKQ">
-   <img width="30%" alt="How to install Behavior Senpai" src="https://img.youtube.com/vi/0k8GA1DscKQ/0.jpg">
- </a>
-</p>
+**Subsequent launches:**
+- Simply run `BehaviorSenpai.exe` to start the application
 
-To uninstall Behavior Senpai or replace it with the latest version, delete the entire folder containing BehaviorSenpai.exe.
+### macOS
+
+1. Install Python 3.11 from [python.org](https://www.python.org/downloads/macos/)
+2. Open Terminal and run the following commands:
+```bash
+   cd your/directory/BehaviorSenpai160
+   zsh behavior_senpai_mac.sh
+```
+
+**First-time setup:**
+- `uv` will be automatically installed if not present
+- The initial setup may take several minutes
+
+**Subsequent launches:**
+- Run the same command to start the application
+
+## Usage
 
 ## Keypoints
 
@@ -232,14 +230,14 @@ The application's settings and the path of the most recently loaded Track file a
 Please acknowledge and cite the use of this software and its authors when results are used in publications or published elsewhere.
 
 ```
-Nishimura, E. (2025). Behavior Senpai (Version 1.5) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
+Nishimura, E. (2025). Behavior Senpai (Version 1.6) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
 ```
 
 ```
 @misc{behavior-senpai-software,
   title = {Behavior Senpai},
   author = {Nishimura, Eigo},
-  year = {2024},
+  year = {2025},
   publisher = {Kyushu University},
   doi = {10.48708/7160651},
   note = {Available at: \url{https://hdl.handle.net/2324/7160651}},
@@ -247,7 +245,9 @@ Nishimura, E. (2025). Behavior Senpai (Version 1.5) [Computer software]. Kyushu 
 ```
 
 ### Related Documents
+[Nishimura, E. Feature-based behavior coding for efficient exploratory analysis using pose estimation. Behav Res 57, 167 (2025). https://doi.org/10.3758/s13428-025-02702-6](https://link.springer.com/article/10.3758/s13428-025-02702-6)
+
 [Sample Videos for Behavioral Observation Using Keypoint Detection Technology](https://hdl.handle.net/2324/7172619)
 
 [Quantitative Behavioral Observation Using Keypoint Detection Technology:
- Towards the Development of a New Behavioral Observation Method through Video Imagery](https://hdl.handle.net/2324/7170833)
+ Towards the Development of a New Behavioral Observation Method through Video Imagery (Japanese article)](https://hdl.handle.net/2324/7170833)
