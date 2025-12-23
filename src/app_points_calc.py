@@ -142,6 +142,8 @@ class App(ttk.Frame):
                     plot_df = keypoints_proc.calc_angle3(member_df, point_a, point_b, int(point_c))
                 elif code == "angle2":
                     plot_df = keypoints_proc.calc_angle2(member_df, point_a, point_b)
+                elif code == "angle2-y":
+                    plot_df = keypoints_proc.calc_angle2(member_df, point_a, point_b, xy_axis=1)
                 elif code == "component":
                     plot_df = keypoints_proc.calc_xy_component(member_df, point_a, point_b)
                 elif code == "cross":
