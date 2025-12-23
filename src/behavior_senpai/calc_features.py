@@ -126,6 +126,8 @@ class CalcFeatures:
 
             if calc == "angle2 (∠BAx)":
                 feat_df = keypoints_proc.calc_angle2(member_df, point_a, point_b)
+            elif calc == "angle2 (∠BAy)":
+                feat_df = keypoints_proc.calc_angle2(member_df, point_a, point_b, xy_axis=1)
             elif calc == "angle3 (∠BAC)":
                 feat_df = keypoints_proc.calc_angle3(member_df, point_a, point_b, point_c)
             elif calc == "distance (|AB|)":

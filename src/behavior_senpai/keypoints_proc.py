@@ -217,10 +217,11 @@ def calc_direction(src_df, kp0: int, kp1: int):
     return sin_cos_df
 
 
-def calc_angle2(src_df, kp0: int, kp1: int):
+def calc_angle2(src_df, kp0: int, kp1: int, xy_axis: int = 0):
     """
     Calculate the direction of kp0 -> kp1 in degrees
     -180 to 180 degrees
+    xy_axis: 0=x-axis, 1=y-axis
     """
     col_name = f"deg({kp0}-{kp1})"
 
@@ -228,7 +229,11 @@ def calc_angle2(src_df, kp0: int, kp1: int):
     point0 = xy_df.xs(kp0, level="keypoint", drop_level=False)
     point1 = xy_df.xs(kp1, level="keypoint", drop_level=False)
     vec = point1.values - point0.values
-    angles_deg = np.arctan2(vec[:, 1], vec[:, 0]) * 57.29577951308232  # 180/π
+    if xy_axis == 0:
+        angles_deg = np.arctan2(vec[:, 1], vec[:, 0]) * 57.29577951308232  # 180/π
+    else:
+        col_name = f"deg_y({kp0}-{kp1})"
+        angles_deg = np.arctan2(vec[:, 0], vec[:, 1]) * 57.29577951308232  # 180/π
     angle_df = pd.DataFrame({col_name: angles_deg}, index=point0.index.droplevel("keypoint"))
     return angle_df
 
