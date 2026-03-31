@@ -25,6 +25,7 @@ dependencies = [
 ]
 
 [tool.uv]
+exclude-newer = "30 days"
 extra-index-url = [
     "https://download.pytorch.org/whl/cu121"
 ]
