@@ -36,7 +36,9 @@ class LinePlotter:
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)
         toolbar = NavigationToolbar2Tk(self.canvas, master)
         toolbar.pack()
-        self.canvas.get_tk_widget().pack(expand=False)
+        canvas_widget = self.canvas.get_tk_widget()
+        canvas_widget.pack(fill="both", expand=True)
+        canvas_widget.bind("<Configure>", self._on_canvas_resize)
 
     def set_single_ax(self, bottom=0.15):
         # axesのレイアウト設定
@@ -280,3 +282,12 @@ class LinePlotter:
 
     def close(self):
         plt.close(self.fig)
+
+    def _on_canvas_resize(self, event):
+        """Resize the matplotlib figure to follow Tk canvas size changes."""
+        if event.width <= 1 or event.height <= 1:
+            return
+        # Let the TkAgg backend update its internal canvas size first.
+        self.canvas.resize(event)
+        self.fig.tight_layout()
+        self.canvas.draw_idle()

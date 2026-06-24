@@ -20,7 +20,7 @@ class App(ttk.Frame):
         super().__init__(master)
         master.title("Scene Table")
         master.geometry("1200x700")
-        self.pack(padx=10, pady=10)
+        self.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
         self.bind("<Map>", lambda event: self._load(event, args))
         self.export = export_mp4.MakeMp4()
         self.export.load(args)
@@ -31,12 +31,12 @@ class App(ttk.Frame):
         self.plot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         control_frame = ttk.Frame(self)
-        control_frame.pack(padx=10, pady=(0, 5), fill=tk.X, expand=True)
+        control_frame.pack(padx=10, pady=(0, 5), fill=tk.X, anchor=tk.N)
         setting_frame = ttk.Frame(control_frame)
         setting_frame.pack(fill=tk.X, expand=True, side=tk.LEFT)
 
         import_frame = ttk.Frame(setting_frame)
-        import_frame.pack(pady=5, expand=True, anchor=tk.W)
+        import_frame.pack(pady=5, fill=tk.X, expand=True, anchor=tk.W)
         import_btn = ttk.Button(import_frame, text="Import", command=self.import_bool_pkl)
         import_btn.pack(side=tk.LEFT, padx=(0, 5))
         self.bool_col_combo = ttk.Combobox(import_frame, state="disable", width=18)
@@ -69,7 +69,7 @@ class App(ttk.Frame):
         cancel_btn.pack()
 
         tree_canvas_frame = ttk.Frame(self)
-        tree_canvas_frame.pack(padx=5, pady=5, fill=tk.X, expand=True)
+        tree_canvas_frame.pack(padx=5, pady=5, fill=tk.BOTH, expand=True)
 
         cols = [
             {"name": "start", "width": 100},
@@ -79,7 +79,7 @@ class App(ttk.Frame):
             {"name": "description", "width": 200},
         ]
         self.tree = Tree(tree_canvas_frame, cols, height=12, right_click=True)
-        self.tree.pack(side=tk.LEFT)
+        self.tree.pack(side=tk.LEFT, fill=tk.Y)
         self.tree.add_menu("Edit", self.edit)
         self.tree.add_menu("Copy", self.copy)
         self.tree.add_menu("Remove", self.remove)
@@ -92,7 +92,7 @@ class App(ttk.Frame):
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
         plot_frame = ttk.Frame(self)
-        plot_frame.pack(pady=5)
+        plot_frame.pack(pady=5, fill=tk.BOTH, expand=True)
         self.plot.pack(plot_frame)
         self.plot.set_single_ax(bottom=0.12)
 
