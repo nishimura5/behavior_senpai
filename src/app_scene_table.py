@@ -68,8 +68,19 @@ class App(ttk.Frame):
         cancel_btn = ttk.Button(ok_frame, text="Cancel", command=self.cancel)
         cancel_btn.pack()
 
-        tree_canvas_frame = ttk.Frame(self)
-        tree_canvas_frame.pack(padx=5, pady=5, fill=tk.BOTH, expand=True)
+        content_paned = tk.PanedWindow(
+            self,
+            orient=tk.VERTICAL,
+            sashwidth=5,
+            sashrelief=tk.FLAT,
+            bd=0,
+            relief=tk.FLAT,
+            opaqueresize=True,
+        )
+        content_paned.pack(padx=5, pady=5, fill=tk.BOTH, expand=True)
+
+        tree_canvas_frame = ttk.Frame(content_paned)
+        content_paned.add(tree_canvas_frame, minsize=100, stretch="always")
 
         cols = [
             {"name": "start", "width": 100},
@@ -91,8 +102,8 @@ class App(ttk.Frame):
         self.canvas = tk.Canvas(tree_canvas_frame, width=600)
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
-        plot_frame = ttk.Frame(self)
-        plot_frame.pack(pady=5, fill=tk.BOTH, expand=True)
+        plot_frame = ttk.Frame(content_paned)
+        content_paned.add(plot_frame, minsize=100, stretch="always")
         self.plot.pack(plot_frame)
         self.plot.set_single_ax(bottom=0.12)
 
