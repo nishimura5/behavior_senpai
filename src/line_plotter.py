@@ -252,7 +252,7 @@ class LinePlotter:
             for member in self.members:
                 if (timestamp_msec, member) in self.anno_time_member_indexes:
                     tar_df = self.anno_df.loc[pd.IndexSlice[timestamp_msec, member, :], :]
-                    kps = tar_df.to_numpy()
+                    kps = tar_df.to_numpy(copy=True)
                     kps[:, :2] *= resize_ratio
                     self.anno.set_img(frame)
                     self.anno.set_pose(kps)
