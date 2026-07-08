@@ -193,12 +193,14 @@ class App(ttk.Frame):
         if selected is None or len(selected) == 0:
             return
         elif len(selected) > 1:
-            for sel in selected:
-                tar_member = str(sel[0])
-                remove_sr = self.src_df.index.get_level_values(1) == tar_member
-                self.src_df = self.src_df[~remove_sr]
-                self.update_tree()
-                print(f"removed {tar_member}")
+            tar_members = {str(sel[0]) for sel in selected if str(sel[0]) != ""}
+            if len(tar_members) == 0:
+                print("current member is empty")
+                return
+            remove_sr = self.src_df.index.get_level_values(1).isin(tar_members)
+            self.src_df = self.src_df[~remove_sr]
+            self.update_tree()
+            print(f"removed {', '.join(sorted(tar_members))}")
         else:
             current_member = str(selected[0][0])
             if current_member == "":
