@@ -97,7 +97,8 @@ class App(ttk.Frame):
             command=lambda: self.launch_window(app_points_calc.App, dialog_size="1200x800"),
             state=tk.DISABLED,
         )
-        self.multi_point_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        if temp.get_use_multiple_points():
+            self.multi_point_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         self.feat_mix_button = ttk.Button(
             buttons_frame,
             text="Mix/Norm",
@@ -118,7 +119,7 @@ class App(ttk.Frame):
         pref_list_button = ttk.Button(
             buttons_frame,
             text="Preference",
-            command=lambda: self.launch_window(pref_list.App),
+            command=self.launch_preference_window,
         )
         pref_list_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
@@ -326,6 +327,18 @@ class App(ttk.Frame):
 
         self.save_button["state"] = "normal"
         args["src_df"] = self.src_df
+
+    def launch_preference_window(self):
+        self.launch_window(pref_list.App)
+        self.update_multiple_points_button_visibility()
+
+    def update_multiple_points_button_visibility(self):
+        use_multiple_points = TempFile().get_use_multiple_points()
+        is_visible = self.multi_point_button.winfo_manager() == "pack"
+        if use_multiple_points and not is_visible:
+            self.multi_point_button.pack(side=tk.TOP, fill=tk.X, pady=4, before=self.feat_mix_button)
+        elif not use_multiple_points and is_visible:
+            self.multi_point_button.pack_forget()
 
     def launch_window(self, app, dialog_size="", edit_df=False, grab=False):
         self.calc_case_entry.save()

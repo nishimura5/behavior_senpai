@@ -21,6 +21,7 @@ class App(ttk.Frame):
         top_width, top_height = tmp.get_top_window_size()
         mp4_scale = tmp.get_mp4_setting()
         draw_mask = tmp.get_draw_mask()
+        use_multiple_points = tmp.get_use_multiple_points()
 
         pref_frame = ttk.Frame(self)
         pref_frame.pack()
@@ -28,6 +29,10 @@ class App(ttk.Frame):
         mask_chk = ttk.Checkbutton(pref_frame, text="Draw mask", variable=self.mask_chk_var)
         mask_chk.pack(side=tk.TOP, anchor=tk.W)
         self.mask_chk_var.set(draw_mask)
+        self.multiple_points_chk_var = tk.BooleanVar()
+        multiple_points_chk = ttk.Checkbutton(pref_frame, text="Use Multiple points", variable=self.multiple_points_chk_var)
+        multiple_points_chk.pack(side=tk.TOP, anchor=tk.W)
+        self.multiple_points_chk_var.set(use_multiple_points)
 
         self.top_height_entry = IntEntry(pref_frame, label="Top preview height:", default=top_height)
         self.top_height_entry.pack_vertical(pady=5, anchor=tk.W)
@@ -71,6 +76,7 @@ class App(ttk.Frame):
         data["scene_table_dpi"] = self.st_graph_dpi_entry.get()
         data["mp4_scale"] = self.mp4_scale_entry.get()
         data["draw_mask"] = self.mask_chk_var.get()
+        data["use_multiple_points"] = self.multiple_points_chk_var.get()
         tmp.save(data)
         print("saved")
 
