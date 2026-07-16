@@ -49,7 +49,7 @@ class MakeMp4:
         elif self.src_attrs["model"] in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
             anno = pose_drawer.Annotate("halpe26.toml")
             suffix = "rtm_halpe26"
-        elif self.src_attrs["model"] == "RTMPose-x WholeBody133":
+        elif self.src_attrs["model"] in ["RTMPose-x WholeBody133", "RTMW-x WholeBody133"]:
             anno = pose_drawer.Annotate("coco133.toml")
             suffix = "rtm_coco133"
         elif self.src_attrs["model"] == "DeepLabCut":

@@ -416,6 +416,7 @@ class TempFile:
             "dt_span": 10,
             "thinning": 0,
             "draw_mask": False,
+            "use_multiple_points": False,
         }
 
         file_name = "temp.pkl"
@@ -486,6 +487,9 @@ class TempFile:
 
     def get_draw_mask(self):
         return self.data["draw_mask"]
+
+    def get_use_multiple_points(self):
+        return self.data["use_multiple_points"]
 
     def _find_data_dir(self):
         if getattr(sys, "frozen", False):

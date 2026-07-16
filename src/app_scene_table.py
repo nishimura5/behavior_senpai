@@ -5,6 +5,7 @@ from tkinter import ttk
 
 import pandas as pd
 
+import export_csv
 import export_mp4
 from behavior_senpai import file_inout, hdf_df, time_format
 from gui_parts import IntEntry, TempFile
@@ -19,7 +20,7 @@ class App(ttk.Frame):
         super().__init__(master)
         master.title("Scene Table")
         master.geometry("1200x700")
-        self.pack(padx=10, pady=10)
+        self.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
         self.bind("<Map>", lambda event: self._load(event, args))
         self.export = export_mp4.MakeMp4()
         self.export.load(args)
@@ -30,13 +31,13 @@ class App(ttk.Frame):
         self.plot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         control_frame = ttk.Frame(self)
-        control_frame.pack(padx=10, pady=(0, 5), fill=tk.X, expand=True)
+        control_frame.pack(padx=10, pady=(0, 5), fill=tk.X, anchor=tk.N)
         setting_frame = ttk.Frame(control_frame)
         setting_frame.pack(fill=tk.X, expand=True, side=tk.LEFT)
 
         import_frame = ttk.Frame(setting_frame)
-        import_frame.pack(pady=5, expand=True, anchor=tk.W)
-        import_btn = ttk.Button(import_frame, text="Select feature file", command=self.import_bool_pkl)
+        import_frame.pack(pady=5, fill=tk.X, expand=True, anchor=tk.W)
+        import_btn = ttk.Button(import_frame, text="Import", command=self.import_bool_pkl)
         import_btn.pack(side=tk.LEFT, padx=(0, 5))
         self.bool_col_combo = ttk.Combobox(import_frame, state="disable", width=18)
         self.bool_col_combo["values"] = ["bool_col"]
@@ -67,8 +68,19 @@ class App(ttk.Frame):
         cancel_btn = ttk.Button(ok_frame, text="Cancel", command=self.cancel)
         cancel_btn.pack()
 
-        tree_canvas_frame = ttk.Frame(self)
-        tree_canvas_frame.pack(padx=5, pady=5, fill=tk.X, expand=True)
+        content_paned = tk.PanedWindow(
+            self,
+            orient=tk.VERTICAL,
+            sashwidth=5,
+            sashrelief=tk.FLAT,
+            bd=0,
+            relief=tk.FLAT,
+            opaqueresize=True,
+        )
+        content_paned.pack(padx=5, pady=5, fill=tk.BOTH, expand=True)
+
+        tree_canvas_frame = ttk.Frame(content_paned)
+        content_paned.add(tree_canvas_frame, minsize=100, stretch="always")
 
         cols = [
             {"name": "start", "width": 100},
@@ -78,19 +90,28 @@ class App(ttk.Frame):
             {"name": "description", "width": 200},
         ]
         self.tree = Tree(tree_canvas_frame, cols, height=12, right_click=True)
-        self.tree.pack(side=tk.LEFT)
+        self.tree.pack(side=tk.LEFT, fill=tk.Y)
         self.tree.add_menu("Edit", self.edit)
         self.tree.add_menu("Copy", self.copy)
         self.tree.add_menu("Remove", self.remove)
         self.tree.add_menu("Extract MP4", self.extract_mp4)
         self.tree.add_menu("Export MP4", self.export_mp4)
+        self.tree.add_menu("Export CSV", self.export_csv)
         self.tree.tree.bind("<Button-1>", self.left_click_tree)
+
+        interactive_widget_types = (ttk.Button, ttk.Combobox, ttk.Entry)
+        self.scene_dialog_controls = [
+            widget
+            for widget in self._walk_widgets(control_frame)
+            if isinstance(widget, interactive_widget_types)
+        ]
+        self.enabled_scene_dialog_controls = []
 
         self.canvas = tk.Canvas(tree_canvas_frame, width=600)
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
-        plot_frame = ttk.Frame(self)
-        plot_frame.pack(pady=5)
+        plot_frame = ttk.Frame(content_paned)
+        content_paned.add(plot_frame, minsize=100, stretch="always")
         self.plot.pack(plot_frame)
         self.plot.set_single_ax(bottom=0.12)
 
@@ -139,13 +160,17 @@ class App(ttk.Frame):
 
     def import_bool_pkl(self):
         init_dir = os.path.join(os.path.dirname(self.pkl_dir), "calc")
-        pl = file_inout.PickleLoader(init_dir)
+        pl = file_inout.PickleLoader(init_dir, filetype="both")
         pl.join_calc_case(self.calc_case)
         is_file_selected = pl.show_open_dialog()
         if is_file_selected is False:
             return
-        bool_pkl_path = pl.get_tar_path()
-        self._import_h5(bool_pkl_path)
+        import_path = pl.get_tar_path()
+        ext = pl.get_extension()
+        if ext == ".feat":
+            self._import_h5(import_path)
+        elif ext == ".pkl":
+            self._import_pkl(import_path)
 
     def _import_h5(self, h5_path):
         h5 = hdf_df.DataFrameStorage(h5_path)
@@ -185,6 +210,29 @@ class App(ttk.Frame):
             duration_str = time_format.msec_to_timestr_with_fff(duration)
             values = (start_str, end_str, duration_str, member, tar_col_name)
             self.tree.insert(values)
+        self._update()
+
+    def _import_pkl(self, pkl_path):
+        tar_df = file_inout.load_track_file(pkl_path)
+        if tar_df is None:
+            return
+        if "scene_table" not in tar_df.attrs.keys():
+            print("scene_table not found in the selected pkl file.")
+            return
+        scene_table = tar_df.attrs["scene_table"]
+        # attrsにdescriptionがなかったら空のリストを入れる
+        if "description" not in scene_table.keys():
+            scene_table["description"] = [""] * len(scene_table["start"])
+        if "member" not in scene_table.keys():
+            scene_table["member"] = [""] * len(scene_table["start"])
+
+        for start, end, member, description in zip(
+            scene_table["start"], scene_table["end"], scene_table["member"], scene_table["description"], strict=False
+        ):
+            duration = pd.to_timedelta(end) - pd.to_timedelta(start)
+            duration_str = time_format.timedelta_to_str(duration)
+            vals = (start, end, duration_str, member, description)
+            self.tree.insert(values=vals)
         self._update()
 
     def draw(self):
@@ -236,6 +284,9 @@ class App(ttk.Frame):
 
     def left_click_tree(self, event):
         """Handle the selection of a row in the tree."""
+        if self.tree.interaction_enabled is False:
+            return "break"
+
         row = self.tree.tree.identify_row(event.y)
         col = self.tree.tree.identify_column(event.x)
         if row == "" or col == "":
@@ -260,6 +311,15 @@ class App(ttk.Frame):
         self.export.set_time_range(start_msec, end_msec)
         self.export.export()
 
+    def export_csv(self):
+        row = self.tree.tree.selection()[0]
+        start = self.tree.get_selected_one(row)[0]
+        end = self.tree.get_selected_one(row)[1]
+        start_msec = time_format.timestr_to_msec(start)
+        end_msec = time_format.timestr_to_msec(end)
+        member = self.tree.get_selected_one(row)[3]
+        export_csv.export(start_msec, end_msec, member, self.src_df, self.pkl_dir)
+
     def extract_mp4(self):
         row = self.tree.tree.selection()[0]
         start = self.tree.get_selected_one(row)[0]
@@ -272,11 +332,11 @@ class App(ttk.Frame):
     def add(self):
         min_time = time_format.msec_to_timestr_with_fff(self.time_min)
         max_time = time_format.msec_to_timestr_with_fff(self.time_max)
-        self.tree.scene_table_add(min_time, max_time)
+        self._show_scene_dialog(lambda: self.tree.scene_table_add(min_time, max_time))
         self._update()
 
     def edit(self):
-        self.tree.scene_table_edit()
+        self._show_scene_dialog(self.tree.scene_table_edit)
         self._update()
 
     def copy(self):
@@ -290,6 +350,32 @@ class App(ttk.Frame):
     def clear(self):
         """Clear the plot."""
         self.plot.clear()
+
+    def _walk_widgets(self, parent):
+        for widget in parent.winfo_children():
+            yield widget
+            yield from self._walk_widgets(widget)
+
+    def _show_scene_dialog(self, show_dialog):
+        self._set_scene_dialog_active(True)
+        try:
+            show_dialog()
+        finally:
+            self._set_scene_dialog_active(False)
+
+    def _set_scene_dialog_active(self, active):
+        self.tree.set_interaction_enabled(not active)
+        if active:
+            self.enabled_scene_dialog_controls = [
+                widget for widget in self.scene_dialog_controls if not widget.instate(["disabled"])
+            ]
+            for widget in self.enabled_scene_dialog_controls:
+                widget.state(["disabled"])
+        else:
+            for widget in self.enabled_scene_dialog_controls:
+                if widget.winfo_exists():
+                    widget.state(["!disabled"])
+            self.enabled_scene_dialog_controls = []
 
     def _treeview_sort_column(self, tv, col):
         tar_list = [(tv.set(k, col), k) for k in tv.get_children("")]

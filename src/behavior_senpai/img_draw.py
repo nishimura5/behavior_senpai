@@ -57,3 +57,22 @@ def crop_img(src_img, x_min, y_min, x_max, y_max):
     if y_max > src_img.shape[0]:
         y_max = src_img.shape[0]
     return src_img[y_min:y_max, x_min:x_max]
+
+
+def rotate_img(src_img, angle):
+    """
+    Rotate the image by the given angle. 0, 90, 180, 270 degrees are supported.
+    :param src_img: Source image to be rotated.
+    :param angle: Angle in degrees to rotate the image.
+    :return: Rotated image.
+    """
+    if angle == 0:
+        return src_img
+    elif angle == 90:
+        return cv2.rotate(src_img, cv2.ROTATE_90_CLOCKWISE)
+    elif angle == 180:
+        return cv2.rotate(src_img, cv2.ROTATE_180)
+    elif angle == 270:
+        return cv2.rotate(src_img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    else:
+        raise ValueError("Angle must be one of: 0, 90, 180, or 270 degrees.")

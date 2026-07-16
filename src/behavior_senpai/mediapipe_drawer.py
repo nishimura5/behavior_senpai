@@ -318,7 +318,10 @@ class Annotate:
     def lines(self, kps, close):
         pts = np.array(kps, np.int32)
         pts = np.reshape(pts, (-1, 1, 2))
-        cv2.polylines(self.dst_img, [pts], close, self.line_color, 1, cv2.LINE_AA)
+        # ignore zero points
+        pts = pts[np.where((pts != [0, 0]).all(axis=2))]
+        if len(pts) >= 2:
+            cv2.polylines(self.dst_img, [pts], close, self.line_color, 1, cv2.LINE_AA)
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ import seaborn as sns
 from matplotlib import gridspec, ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-from behavior_senpai import mediapipe_drawer, pose_drawer, time_format
+from behavior_senpai import img_draw, mediapipe_drawer, pose_drawer, time_format
 
 plt.rc("svg", fonttype="none")
 plt.rc("savefig", format="svg", transparent=True)
@@ -30,12 +30,15 @@ class LinePlotter:
         self.line_ax = None
         self.img_canvas = None
         self.file_name = None
+        self.rotate_angle = 0
 
     def pack(self, master):
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)
         toolbar = NavigationToolbar2Tk(self.canvas, master)
         toolbar.pack()
-        self.canvas.get_tk_widget().pack(expand=False)
+        canvas_widget = self.canvas.get_tk_widget()
+        canvas_widget.pack(fill="both", expand=True)
+        canvas_widget.bind("<Configure>", self._on_canvas_resize)
 
     def set_single_ax(self, bottom=0.15):
         # axesのレイアウト設定
@@ -43,7 +46,7 @@ class LinePlotter:
         self.line_ax = self.fig.add_subplot(gs[0, 0])
 
     def add_ax(self, row, col, pos):
-        gs = gridspec.GridSpec(row, col, top=0.95, width_ratios=(4, 1))
+        gs = gridspec.GridSpec(row, col, top=0.96, bottom=0.07, left=0.05, right=0.96, width_ratios=(5, 1))
         self.line_ax = self.fig.add_subplot(gs[pos, 0], sharex=self.line_ax)
         self.violin_ax = self.fig.add_subplot(gs[pos, 1])
 
@@ -66,7 +69,7 @@ class LinePlotter:
         elif trk_df.attrs["model"] in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
             self.anno = pose_drawer.Annotate("halpe26.toml")
             cols_for_anno = ["x", "y", "score"]
-        elif trk_df.attrs["model"] == "RTMPose-x WholeBody133":
+        elif trk_df.attrs["model"] in ["RTMPose-x WholeBody133", "RTMW-x WholeBody133"]:
             self.anno = pose_drawer.Annotate("coco133.toml")
             cols_for_anno = ["x", "y", "score"]
         elif trk_df.attrs["model"] == "DeepLabCut":
@@ -75,6 +78,8 @@ class LinePlotter:
         self.anno_df = trk_df.reset_index().set_index(["timestamp", "member", "keypoint"]).loc[:, cols_for_anno]
         self.anno_time_member_indexes = self.anno_df.index.droplevel(2).unique()
         self.timestamps = self.anno_time_member_indexes.get_level_values("timestamp").unique().to_numpy()
+
+        self.rotate_angle = trk_df.attrs.get("rotate", 0)
         print(f"set_trk_df() (line_plotter.LinePlotter): {time.perf_counter() - start_time:.3f}sec")
 
     def set_plot(self, plot_df, member: str, data_col_names: list):
@@ -102,18 +107,19 @@ class LinePlotter:
 
     def set_plot_and_violin(self, plot_df, member: str, data_col_name: str, is_last: bool = False):
         self.member = member
-        # 重複インデックス削除
-        plot_df = plot_df[~plot_df.index.duplicated(keep="last")]
-        plot_df = plot_df.loc[pd.IndexSlice[:, member], :]
+        plot_df = plot_df[~plot_df.index.duplicated(keep="last")].loc[pd.IndexSlice[:, member], :]
 
         plot_df.plot(ax=self.line_ax, x="timestamp", y=data_col_name)
         self.line_ax.set_xlim(plot_df["timestamp"].min(), plot_df["timestamp"].max())
         if is_last:
             self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(self._format_timedelta))
         else:
-            self.line_ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: ""))
+            self.line_ax.xaxis.set_major_formatter(ticker.NullFormatter())
         self.line_ax.legend(loc="upper right")
-        sns.violinplot(plot_df[data_col_name], ax=self.violin_ax)
+        data = plot_df[data_col_name].dropna()
+        if len(data) > 0:
+            sns.violinplot(plot_df[data_col_name], ax=self.violin_ax)
+            self.violin_ax.set_ylabel("")
 
     def set_plot_band(self, plot_df, member: str, time_min_msec: int, time_max_msec: int):
         self.member = member
@@ -185,7 +191,7 @@ class LinePlotter:
         self.img_canvas = canvas
 
     def set_file_name(self, file_name):
-        """ file name for export image """
+        """file name for export image"""
         self.file_name = file_name
 
     def draw(self):
@@ -236,8 +242,11 @@ class LinePlotter:
         timestamp_msec = self.timestamps[idx]
 
         if self.draw_anno is True:
+            frame = img_draw.rotate_img(frame, self.rotate_angle)
+
             canvas_height = self.img_canvas.winfo_height()
             resize_ratio = canvas_height / frame.shape[0]
+
             frame = cv2.resize(frame, None, fx=resize_ratio, fy=resize_ratio)
 
             if len(self.members) == 0:
@@ -245,7 +254,7 @@ class LinePlotter:
             for member in self.members:
                 if (timestamp_msec, member) in self.anno_time_member_indexes:
                     tar_df = self.anno_df.loc[pd.IndexSlice[timestamp_msec, member, :], :]
-                    kps = tar_df.to_numpy()
+                    kps = tar_df.to_numpy(copy=True)
                     kps[:, :2] *= resize_ratio
                     self.anno.set_img(frame)
                     self.anno.set_pose(kps)
@@ -273,3 +282,12 @@ class LinePlotter:
 
     def close(self):
         plt.close(self.fig)
+
+    def _on_canvas_resize(self, event):
+        """Resize the matplotlib figure to follow Tk canvas size changes."""
+        if event.width <= 1 or event.height <= 1:
+            return
+        # Let the TkAgg backend update its internal canvas size first.
+        self.canvas.resize(event)
+        self.fig.tight_layout()
+        self.canvas.draw_idle()

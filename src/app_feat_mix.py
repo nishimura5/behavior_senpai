@@ -1,10 +1,11 @@
 import os
 import tkinter as tk
 from tkinter import ttk
-import tqdm
-import pandas as pd
 
-from behavior_senpai import df_attrs, feature_proc, file_inout, hdf_df
+import pandas as pd
+from tqdm import tqdm
+
+from behavior_senpai import calc_features, df_attrs, feature_proc, file_inout, hdf_df
 from gui_feat_mix import Tree
 from gui_parts import Combobox, TempFile, ToolTip
 from line_plotter import LinePlotter
@@ -15,7 +16,7 @@ class App(ttk.Frame):
         super().__init__(master)
         master.title(f"Feature mixer ({args['trk_pkl_name']})")
         master.geometry("1300x800")
-        self.pack(padx=10, pady=10)
+        self.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
         self.bind("<Map>", lambda event: self._load(event, args))
 
         temp = TempFile()
@@ -27,7 +28,7 @@ class App(ttk.Frame):
         self.name_and_code = feature_proc.get_calc_codes()
 
         load_frame = ttk.Frame(self)
-        load_frame.pack(padx=10, pady=5, anchor=tk.NW, expand=True, fill=tk.X)
+        load_frame.pack(padx=10, pady=5, anchor=tk.NW, expand=False, fill=tk.X)
         feat_btn = ttk.Button(load_frame, text="Select feature file", command=self.open_feat)
         feat_btn.pack(side=tk.LEFT)
         self.feat_path_label = ttk.Label(load_frame, text="No feature file loaded.")
@@ -37,7 +38,7 @@ class App(ttk.Frame):
         self.scene_combo.pack_horizontal(anchor=tk.E, padx=5)
 
         draw_frame = ttk.Frame(self)
-        draw_frame.pack(padx=10, pady=5, expand=True, anchor=tk.NW)
+        draw_frame.pack(padx=10, pady=5, expand=False, anchor=tk.NW)
         self.add_btn = ttk.Button(draw_frame, text="Add calc", command=self.add_row, state="disabled")
         self.add_btn.pack(padx=(0, 10), side=tk.LEFT)
 
@@ -53,15 +54,15 @@ class App(ttk.Frame):
         self.export_btn.pack(side=tk.LEFT, padx=5)
 
         tree_canvas_frame = ttk.Frame(self)
-        tree_canvas_frame.pack(padx=10, pady=5, fill=tk.X, expand=True)
+        tree_canvas_frame.pack(padx=10, pady=5, fill=tk.X, expand=False)
 
         cols = [
-            {"name": "feature name", "width": 180},
+            {"name": "feature name", "width": 160},
             {"name": "member", "width": 100},
-            {"name": "col A", "width": 150},
+            {"name": "col A", "width": 130},
             {"name": "op", "width": 30},
-            {"name": "col B", "width": 150},
-            {"name": "normalize", "width": 140},
+            {"name": "col B", "width": 130},
+            {"name": "normalize", "width": 100},
         ]
         self.tree = Tree(tree_canvas_frame, cols, height=12)
         self.tree.pack(side=tk.LEFT)
@@ -69,14 +70,39 @@ class App(ttk.Frame):
         self.tree.add_row_copy(column=1)
         self.tree.add_menu("Remove", self.tree.delete_selected)
 
-        self.canvas = tk.Canvas(tree_canvas_frame, width=600)
+        self.canvas = tk.Canvas(tree_canvas_frame, width=800)
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
-        plot_frame = ttk.Frame(self)
-        plot_frame.pack(pady=5)
-        self.lineplot.pack(plot_frame)
+        plot_outer_frame = ttk.Frame(self)
+        plot_outer_frame.pack(pady=5, fill=tk.BOTH, expand=True)
+
+        self.scroll_canvas = tk.Canvas(plot_outer_frame, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(plot_outer_frame, orient=tk.VERTICAL, command=self.scroll_canvas.yview)
+        self.scroll_canvas.configure(yscrollcommand=scrollbar.set)
+
+        self.plot_container = ttk.Frame(self.scroll_canvas)
+        self.container_id = self.scroll_canvas.create_window((0, 0), window=self.plot_container, anchor="nw")
+        self.scroll_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.lineplot.pack(self.plot_container)
 
         self.lineplot.set_img_canvas(self.canvas)
+
+        # scroll control
+        def _update_scrollregion(event=None):
+            self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
+            self.scroll_canvas.itemconfigure(self.container_id, width=self.scroll_canvas.winfo_width())
+
+        self.plot_container.bind("<Configure>", _update_scrollregion)
+        self.scroll_canvas.bind("<Configure>", _update_scrollregion)
+
+        def _on_mousewheel(event):
+            delta = -1 if event.delta > 0 else 1
+            self.scroll_canvas.yview_scroll(delta, "units")
+
+        self.scroll_canvas.bind("<Enter>", lambda e: self.scroll_canvas.bind_all("<MouseWheel>", _on_mousewheel))
+        self.scroll_canvas.bind("<Leave>", lambda e: self.scroll_canvas.unbind_all("<MouseWheel>"))
 
     def _load(self, event, args):
         src_df = args["src_df"].copy()
@@ -99,13 +125,15 @@ class App(ttk.Frame):
 
         expected_pts_file_name = f"{args['trk_pkl_name'].split('.')[0]}.feat"
         expected_pts_file_path = os.path.join(self.calc_dir, self.calc_case, expected_pts_file_name)
-        if os.path.exists(expected_pts_file_path) is True:
-            pl = file_inout.PickleLoader(self.calc_dir)
-            pl.set_tar_path(expected_pts_file_path)
-            self.load_feat(pl)
+        if os.path.exists(expected_pts_file_path) is False:
+            calc_features.execute_calc_features(args)
 
-            # load h5 file for tree
-            self._import_source_cols(expected_pts_file_path)
+        pl = file_inout.PickleLoader(self.calc_dir)
+        pl.set_tar_path(expected_pts_file_path)
+        self.load_feat(pl)
+
+        # load h5 file for tree
+        self._import_source_cols(expected_pts_file_path)
 
     def open_feat(self):
         pl = file_inout.PickleLoader(self.calc_dir)
@@ -229,8 +257,7 @@ class App(ttk.Frame):
             member_df = scene_filtered_df.loc[pd.IndexSlice[:, member], :].drop("timestamp", axis=1)
             member_feat_df = pd.DataFrame()
 
-#            for i, row in enumerate(self.source_cols):
-            for i, row in tqdm.tqdm(enumerate(self.source_cols), total=row_num):
+            for i, row in tqdm(enumerate(self.source_cols), total=row_num, desc="Plotting features"):
                 feat_name, m, col_a, op, col_b, normalize = row
                 if member != str(m):
                     continue

@@ -1,12 +1,9 @@
-import os
 import random
-import tomllib
 
 import cv2
 import numpy as np
-import torch
 
-from behavior_senpai import img_draw
+from behavior_senpai import img_draw, keypoint_toml_loader
 from gui_parts import TempFile
 
 
@@ -14,9 +11,8 @@ class Annotate:
     def __init__(self, kp_toml_name=None):
         temp = TempFile()
         self.draw_mask = temp.get_draw_mask()
-        toml_path = os.path.join(os.path.dirname(__file__), "..", "keypoint", kp_toml_name)
-        with open(toml_path, "rb") as f:
-            self.data = tomllib.load(f)
+        self.keypoint_toml_loader = keypoint_toml_loader.KeypointTOMLLoader(kp_toml_name)
+        self.data = self.keypoint_toml_loader.get_data()
 
     def set_pose(self, kps):
         self.keypoints = {}
@@ -71,14 +67,16 @@ class Annotate:
         return self.dst_img
 
     def _cvt_kp(self, kp, idx):
-        x = kp[idx][0]
-        y = kp[idx][1]
-        if isinstance(x, torch.Tensor):
-            x = x.cpu()
-            y = y.cpu()
+        x = self._to_scalar(kp[idx][0])
+        y = self._to_scalar(kp[idx][1])
         if np.isnan(x) or np.isnan(y):
             return (0, 0), 0
         return (int(kp[idx][0]), int(kp[idx][1])), kp[idx][2]
+
+    def _to_scalar(self, v):
+        if hasattr(v, "cpu"):
+            v = v.cpu()
+        return v
 
 
 def yolo_draw(src_img, result):

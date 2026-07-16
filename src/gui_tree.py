@@ -13,6 +13,7 @@ class Tree(ttk.Frame):
         super().__init__(master)
         cols = [col["name"] for col in columns]
         self.tree = ttk.Treeview(self, columns=cols, height=height, show="headings", selectmode="extended")
+        self.interaction_enabled = True
         for column in columns:
             self.tree.heading(column["name"], text=column["name"])
             self.tree.column(column["name"], width=column["width"])
@@ -84,6 +85,9 @@ class Tree(ttk.Frame):
         return [self.tree.item(item)["values"] for item in self.tree.get_children("")]
 
     def _right_click_tree(self, event):
+        if self.interaction_enabled is False:
+            return "break"
+
         selected = self.tree.selection()
         if len(selected) == 0:
             return
@@ -95,6 +99,11 @@ class Tree(ttk.Frame):
             return
         for item in selected:
             self.tree.delete(item)
+
+    def set_interaction_enabled(self, enabled):
+        self.interaction_enabled = enabled
+        state = ["!disabled"] if enabled else ["disabled"]
+        self.tree.state(state)
 
     def _rename_member(self):
         selected = self.tree.selection()
@@ -243,7 +252,9 @@ class SceneTableTreeDialog(tk.Toplevel):
         cancel_btn = ttk.Button(button_frame, text="Cancel", command=self.on_cancel)
         cancel_btn.pack(side=tk.LEFT)
 
-        self.grab_set()
+        # The parent controls are disabled while this dialog is open, but its plot
+        # intentionally remains clickable, so this dialog must not take a grab.
+        self.transient(master.winfo_toplevel())
         self.selected_member = None
         self.new_timespan = None
         self.new_description = None

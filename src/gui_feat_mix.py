@@ -124,12 +124,10 @@ class Tree(ttk.Frame):
                 values[0] = new_feature_name
             if new_col_a != " ":
                 values[2] = new_col_a
-            if new_op != " ":
-                values[3] = new_op
-            if new_col_b != " ":
-                values[4] = new_col_b
             if new_normalize != " ":
                 values[5] = new_normalize
+            values[3] = new_op
+            values[4] = new_col_b
             self.tree.item(item, values=values)
 
     def fix_feature_name(self, feature_name, selected=None):
@@ -186,7 +184,7 @@ class FeatMixTreeDialog(tk.Toplevel):
         op_list = ["/", "-", "*", "+", " "]
         self.op_combo = Combobox(calc_frame, label="op:", width=6, values=op_list)
         self.op_combo.pack_horizontal(padx=5)
-        self.op_combo.set_selected_bind(self.selected_op)
+        self.op_combo.set_selected_bind(self.on_selected_op)
         self.col_b_combo = Combobox(calc_frame, label="col B:", width=20, values=["Select column"])
         self.col_b_combo.pack_horizontal(padx=5)
 
@@ -268,7 +266,7 @@ class FeatMixTreeDialog(tk.Toplevel):
             datadir = os.path.dirname(__file__)
         return datadir
 
-    def selected_op(self, event):
+    def on_selected_op(self, event):
         op = self.op_combo.get()
         if op == " ":
             self.col_b_combo.set_values([" "])

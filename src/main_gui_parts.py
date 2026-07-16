@@ -61,16 +61,16 @@ class PklSelector(ttk.Frame):
     def rename_pkl_path_label(self, new_name):
         self.pkl_path_label["text"] = new_name
 
-    def set_prev_next(self, attr_dict):
+    def set_prev_next(self, prev, next):
         dir_path = os.path.dirname(self.trk_path)
-        if "prev" in attr_dict and attr_dict["prev"] != "" and attr_dict["prev"] is not None:
+        if prev != "" and prev is not None:
             self.prev_pkl_btn["state"] = tk.NORMAL
-            self.prev_path = os.path.join(dir_path, attr_dict["prev"])
+            self.prev_path = os.path.join(dir_path, prev)
         else:
             self.prev_path = ""
             self.prev_pkl_btn["state"] = tk.DISABLED
-        if "next" in attr_dict and attr_dict["next"] != "" and attr_dict["next"] is not None:
-            self.next_path = os.path.join(dir_path, attr_dict["next"])
+        if next != "" and next is not None:
+            self.next_path = os.path.join(dir_path, next)
             self.next_pkl_btn["state"] = tk.NORMAL
         else:
             self.next_path = ""
@@ -113,7 +113,7 @@ class VideoViewer(ttk.Frame):
         # add mouse scroll event
         self.canvas.bind("<MouseWheel>", self._on_mouse_wheel)
 
-    def set_cap(self, cap, frame_size, anno_trk=None):
+    def set_cap(self, cap, frame_size, anno_trk=None, rotate=0):
         # frame_size : [width, height]
         if anno_trk is not None:
             self.time_min = anno_trk["timestamp"].min()
@@ -123,16 +123,18 @@ class VideoViewer(ttk.Frame):
             self.time_min = 0
             self.time_max = cap.get_max_msec()
 
-        self.canvas.set_cap(cap, frame_size)
+        self.canvas.set_cap(cap, frame_size, rotate)
         self.canvas.set_area()
         self.canvas.scale_trk()
         self.slider.config(from_=self.time_min, to=self.time_max)
         self.canvas.update(self.time_min)
         self.slider.set(0)
 
-    def set_trk(self, anno_trk):
+    def set_trk(self, anno_trk, rotate=None):
         self.canvas.set_trk(anno_trk)
         self.canvas.scale_trk()
+        if rotate is not None:
+            self.canvas.rotate(rotate)
 
     def on_slider_changed(self, msec):
         msec = float(msec)
@@ -156,14 +158,16 @@ class CapCanvas(tk.Canvas):
         self.img_on_canvas = None
         self.anno_df = None
         self.current_msec = 0
-        self.is_crop = True
+        self.is_crop = False
+        self.rotate_angle = 0
 
         # set click event
         self.bind("<Button-1>", self._on_click)
 
-    def set_cap(self, cap, frame_size):
+    def set_cap(self, cap, frame_size, rotate=0):
         self.cap = cap
         self.frame_size = frame_size
+        self.rotate_angle = rotate
 
     def set_trk(self, src_df):
         if src_df.attrs["model"] in ["YOLOv8 x-pose-p6", "YOLO11 x-pose"]:
@@ -176,7 +180,7 @@ class CapCanvas(tk.Canvas):
         elif src_df.attrs["model"] in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
             self.anno = pose_drawer.Annotate("halpe26.toml")
             cols_for_anno = ["x", "y", "score"]
-        elif src_df.attrs["model"] == "RTMPose-x WholeBody133":
+        elif src_df.attrs["model"] in ["RTMPose-x WholeBody133", "RTMW-x WholeBody133"]:
             self.anno = pose_drawer.Annotate("coco133.toml")
             cols_for_anno = ["x", "y", "score"]
         elif src_df.attrs["model"] == "DeepLabCut":
@@ -189,7 +193,9 @@ class CapCanvas(tk.Canvas):
     def set_area(self):
         if self.is_crop is False:
             ratio = self.frame_size[0] / self.frame_size[1]
+
             canvas_width = int(self.height * ratio)
+            canvas_height = self.height
             self.scale = canvas_width / self.frame_size[0]
             x_min = 0
             y_min = 0
@@ -207,26 +213,47 @@ class CapCanvas(tk.Canvas):
             crop_height = y_max - y_min
 
             ratio = crop_width / crop_height
-            canvas_width = int(self.height * ratio)
-            if canvas_width > 1000:
-                canvas_width = 1000
-            self.scale = canvas_width / crop_width
+            max_width = 1000
+            max_height = 1000
+            if ratio >= 1.0:
+                # 横長
+                if crop_width > max_width:
+                    self.scale = max_width / crop_width
+                else:
+                    self.scale = 1.0
+            else:
+                # 縦長
+                if crop_height > max_height:
+                    self.scale = max_height / crop_height
+                else:
+                    self.scale = 1.0
+
+            canvas_width = int(crop_width * self.scale)
+            canvas_height = int(crop_height * self.scale)
 
         self.x_min = int(x_min * self.scale)
         self.y_min = int(y_min * self.scale)
         self.x_max = int(x_max * self.scale)
         self.y_max = int(y_max * self.scale)
 
-        self.config(width=canvas_width, height=self.height)
+        self.config(width=canvas_width, height=canvas_height)
 
     def scale_trk(self):
-        self.anno_df.loc[:, ["x", "y"]] = self.org_anno_df.loc[:, ["x", "y"]] * self.scale
+        # x, y列の型をfloat64に明示的に変換してからスケーリング（FutureWarning対策）
+        self.anno_df["x"] = self.org_anno_df["x"].astype(float) * self.scale
+        self.anno_df["y"] = self.org_anno_df["y"].astype(float) * self.scale
+
+    def rotate(self, angle):
+        self.rotate_angle = angle
 
     def update(self, msec):
         msec = self.timestamps[np.fabs(self.timestamps - msec).argsort()[:1]][0]
         ok, image_rgb = self.cap.read_at(msec, scale=self.scale, rgb=True)
         if ok is False:
             return
+
+        image_rgb = img_draw.rotate_img(image_rgb, self.rotate_angle)
+
         if self.anno_df is not None:
             tar_df = self.anno_df.loc[pd.IndexSlice[msec, :, :], :]
             members = tar_df.index.get_level_values("member").unique().tolist()

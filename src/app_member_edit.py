@@ -15,7 +15,7 @@ class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
         master.title("Member Edit")
-        self.pack(padx=10, pady=10)
+        self.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
@@ -24,7 +24,7 @@ class App(ttk.Frame):
         control_frame = ttk.Frame(self)
         control_frame.pack(fill=tk.X, pady=(0, 20))
         setting_frame = ttk.Frame(control_frame)
-        setting_frame.pack(fill=tk.X, expand=True, side=tk.LEFT)
+        setting_frame.pack(fill=tk.X, side=tk.LEFT)
 
         draw_frame = ttk.Frame(setting_frame)
         draw_frame.pack(pady=5)
@@ -47,8 +47,19 @@ class App(ttk.Frame):
         self.time_span_entry = TimeSpanEntry(rename_frame)
         self.time_span_entry.pack(side=tk.LEFT)
 
-        tree_canvas_frame = ttk.Frame(self)
-        tree_canvas_frame.pack(padx=10, pady=5, fill=tk.X, expand=True)
+        content_paned = tk.PanedWindow(
+            self,
+            orient=tk.VERTICAL,
+            sashwidth=5,
+            sashrelief=tk.FLAT,
+            bd=0,
+            relief=tk.FLAT,
+            opaqueresize=True,
+        )
+        content_paned.pack(padx=10, pady=5, fill=tk.BOTH, expand=True)
+
+        tree_canvas_frame = ttk.Frame(content_paned)
+        content_paned.add(tree_canvas_frame, minsize=100, stretch="always")
 
         cols = [
             {"name": "member", "width": 100},
@@ -58,7 +69,7 @@ class App(ttk.Frame):
             {"name": "keypoints/frame", "width": 100},
         ]
         self.tree = Tree(tree_canvas_frame, cols, height=12, right_click=True)
-        self.tree.pack(side=tk.LEFT)
+        self.tree.pack(side=tk.LEFT, fill=tk.Y)
         self.tree.add_menu("Remove", self.remove_member)
         self.tree.tree.bind("<<TreeviewSelect>>", self._select_tree_row)
 
@@ -72,8 +83,8 @@ class App(ttk.Frame):
         cancel_btn = ttk.Button(ok_frame, text="Cancel", command=self.cancel)
         cancel_btn.pack()
 
-        plot_frame = ttk.Frame(self)
-        plot_frame.pack(pady=5)
+        plot_frame = ttk.Frame(content_paned)
+        content_paned.add(plot_frame, minsize=100, stretch="always")
         self.band.pack(plot_frame)
         self.band.set_single_ax(bottom=0.1)
 
@@ -182,12 +193,14 @@ class App(ttk.Frame):
         if selected is None or len(selected) == 0:
             return
         elif len(selected) > 1:
-            for sel in selected:
-                tar_member = str(sel[0])
-                remove_sr = self.src_df.index.get_level_values(1) == tar_member
-                self.src_df = self.src_df[~remove_sr]
-                self.update_tree()
-                print(f"removed {tar_member}")
+            tar_members = {str(sel[0]) for sel in selected if str(sel[0]) != ""}
+            if len(tar_members) == 0:
+                print("current member is empty")
+                return
+            remove_sr = self.src_df.index.get_level_values(1).isin(tar_members)
+            self.src_df = self.src_df[~remove_sr]
+            self.update_tree()
+            print(f"removed {', '.join(sorted(tar_members))}")
         else:
             current_member = str(selected[0][0])
             if current_member == "":

@@ -29,6 +29,7 @@ class DimensionalReductionPlotter:
         self.picker_range = None
         self.plot_df = None
         self.timestamps = np.array([])
+        self.rotate_angle = 0
 
     def pack(self, master):
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)
@@ -52,7 +53,8 @@ class DimensionalReductionPlotter:
         elif trk_df.attrs["model"] in ["MMPose RTMPose-x", "RTMPose-x Halpe26"]:
             self.anno = pose_drawer.Annotate("halpe26.toml")
             cols_for_anno = ["x", "y", "score"]
-        elif trk_df.attrs["model"] == "RTMPose-x WholeBody133":
+        # "RTMPose-x WholeBody133" <- To maintain backward compatibility (ver 1.5)
+        elif trk_df.attrs["model"] in ["RTMPose-x WholeBody133", "RTMW-x WholeBody133"]:
             self.anno = pose_drawer.Annotate("coco133.toml")
             cols_for_anno = ["x", "y", "score"]
         elif trk_df.attrs["model"] == "DeepLabCut":
@@ -61,6 +63,8 @@ class DimensionalReductionPlotter:
         self.anno_df = trk_df.reset_index().set_index(["timestamp", "member", "keypoint"]).loc[:, cols_for_anno]
         self.anno_time_member_indexes = self.anno_df.index.droplevel(2).unique()
         print(f"set_trk_df() (dimredu_plotter.DimensionalReductionPlotter): {time.perf_counter() - start_time:.3f}sec")
+
+    #        self.rotate_angle = trk_df.attrs.get("rotate", 0)
 
     def set_init_class_names(self, class_names):
         self.init_class_names = class_names
@@ -222,6 +226,8 @@ class DimensionalReductionPlotter:
             return
 
         if self.draw_anno is True:
+            frame = img_draw.rotate_img(frame, self.rotate_angle)
+
             if (timestamp_msec, self.member) in self.anno_time_member_indexes:
                 tar_df = self.anno_df.loc[pd.IndexSlice[timestamp_msec, self.member, :], :]
                 kps = tar_df.to_numpy()

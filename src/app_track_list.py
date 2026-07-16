@@ -5,7 +5,7 @@ from tkinter import messagebox, ttk
 
 import pandas as pd
 
-from behavior_senpai import windows_and_mac
+from behavior_senpai import windows_and_mac, df_attrs
 from gui_parts import Combobox, IntEntry, StrEntry
 
 
@@ -17,7 +17,7 @@ class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
         master.title("Track List")
-        self.pack(padx=14, pady=14)
+        self.pack(padx=14, pady=14, fill=tk.BOTH, expand=True)
 
         self.folder_path = args["pkl_dir"]
 
@@ -41,7 +41,9 @@ class App(ttk.Frame):
         open_btn.pack(padx=5, side=tk.LEFT)
 
         tree_frame = ttk.Frame(self)
-        tree_frame.pack(pady=5)
+        tree_frame.pack(pady=5, fill=tk.BOTH, expand=True)
+        tree_frame.columnconfigure(0, weight=1)
+        tree_frame.rowconfigure(0, weight=1)
         cols = ("take", "part", "track", "model", "video")
         self.tree = ttk.Treeview(tree_frame, columns=cols, show="headings", selectmode="extended")
         self.tree.heading("take", text="take")
@@ -51,10 +53,15 @@ class App(ttk.Frame):
         self.tree.heading("video", text="video")
         self.tree.column("take", width=80)
         self.tree.column("part", width=40)
+        self.tree.tag_configure("duplicate", background="#ffd9d9", foreground="#8b0000")
         # 選択したtrackを取得するためのcommandを設定
         self.tree.bind("<<TreeviewSelect>>", self._on_select)
 
-        self.tree.pack()
+        y_scrollbar = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
+        self.tree.configure(yscrollcommand=y_scrollbar.set)
+
+        self.tree.grid(row=0, column=0, sticky=tk.NSEW)
+        y_scrollbar.grid(row=0, column=1, sticky=tk.NS)
 
         if self.folder_path != "":
             self._load_folder()
@@ -70,13 +77,11 @@ class App(ttk.Frame):
         for trk_path in trk_paths:
             take, prev_name, next_name = "", None, None
             tar_df = pd.read_pickle(trk_path)
-            if "take" in tar_df.attrs.keys():
-                take = tar_df.attrs["take"]
-            if "next" in tar_df.attrs.keys():
-                next_name = tar_df.attrs["next"]
-            if "prev" in tar_df.attrs.keys():
-                prev_name = tar_df.attrs["prev"]
-            attr_dict[os.path.basename(trk_path)] = {"model": tar_df.attrs["model"], "video": tar_df.attrs["video_name"]}
+            attrs = df_attrs.DfAttrs(tar_df)
+            take, prev_name, next_name = attrs.get_take_prev_next()
+            model_name, video_name = attrs.get_model_video()
+
+            attr_dict[os.path.basename(trk_path)] = {"model": model_name, "video": video_name}
             self.src_tl.append(take, prev_name, next_name, os.path.basename(trk_path))
 
         take_dict = self.src_tl.get_dict()
@@ -88,7 +93,8 @@ class App(ttk.Frame):
                 attr = attr_dict[file_name]
                 if isinstance(attr["video"], list):
                     attr["video"] = attr["video"][0]
-                self.tree.insert("", "end", values=(take, part_num, file_name, attr["model"], attr["video"]))
+                tags = ("duplicate",) if self.src_tl.is_duplicate(file_name) else ()
+                self.tree.insert("", "end", values=(take, part_num, file_name, attr["model"], attr["video"]), tags=tags)
 
     def _on_select(self, event):
         selected_items = self.tree.selection()
@@ -215,6 +221,7 @@ class App(ttk.Frame):
 class TrackList:
     def __init__(self):
         self.track_dict = {}
+        self._item_index = {}
 
     def set_take_part_name_list(self, src_list):
         """
@@ -223,6 +230,7 @@ class TrackList:
         まずtakeで仕分けてからpartがkeyの辞書を作ってset_dict()
         """
         self.track_dict = {}
+        self._item_index = {}
         new_dict = {}
         for row in src_list:
             take = row["take"]
@@ -237,6 +245,8 @@ class TrackList:
         for take, part_dict in new_dict.items():
             self.track_dict[take] = LinkList()
             self.track_dict[take].set_dict(part_dict)
+            for item in self.track_dict[take].link_list:
+                self._item_index.setdefault(item.name, (take, item))
 
     def append(self, take, prev_name, next_name, name):
         """
@@ -248,6 +258,7 @@ class TrackList:
         if take not in self.track_dict.keys():
             self.track_dict[take] = LinkList()
         self.track_dict[take].append_link_item(item)
+        self._item_index.setdefault(item.name, (take, item))
 
     def get_dict(self):
         dst_dict = {}
@@ -270,11 +281,11 @@ class TrackList:
         """
         item_nameからtakeを検索して返す
         """
-        for take, links in self.track_dict.items():
-            for item in links.link_list:
-                if item.name == item_name:
-                    return take, item
-        return None, None
+        return self._item_index.get(item_name, (None, None))
+
+    def is_duplicate(self, item_name):
+        _take, item = self.find_by_item_name(item_name)
+        return item is not None and item.is_duplicate
 
 
 class LinkList:
@@ -284,41 +295,69 @@ class LinkList:
 
     def __init__(self):
         self.link_list = []
+        self._items_by_name = {}
+        self._items_by_prev = {}
+        self._items_by_next = {}
 
     def append_link_item(self, src_item):
-        ret = False
-        # 重複データがあったら追加しない
-        for item in self.link_list:
-            if (src_item.prev is not None) and (src_item.prev == item.prev):
-                print("duplicate prev")
-                return ret
-            if (src_item.next is not None) and (src_item.next == item.next):
-                print("duplicate next")
-                return ret
-            if src_item.name == item.name:
-                print("duplicate name")
-                return ret
-        ret = True
+        # 重複データも一覧表示できるように、印を付けて追加する。
+        if src_item.prev is not None and src_item.prev in self._items_by_prev:
+            print("duplicate prev")
+            src_item.is_duplicate = True
+            self._items_by_prev[src_item.prev].is_duplicate = True
+        if src_item.next is not None and src_item.next in self._items_by_next:
+            print("duplicate next")
+            src_item.is_duplicate = True
+            self._items_by_next[src_item.next].is_duplicate = True
+        if src_item.name in self._items_by_name:
+            print("duplicate name")
+            src_item.is_duplicate = True
+            self._items_by_name[src_item.name].is_duplicate = True
+
         self.link_list.append(src_item)
-        return ret
+        self._index_item(src_item)
 
     def sort_links(self):
-        # prevがNoneのものを先頭に持ってくる
-        for i, item in enumerate(self.link_list):
+        children_by_prev = {}
+        for item in self.link_list:
+            if item.prev is not None:
+                children_by_prev.setdefault(item.prev, item)
+
+        sorted_items = []
+        visited = set()
+
+        def append_chain(head):
+            item = head
+            while item is not None and id(item) not in visited:
+                sorted_items.append(item)
+                visited.add(id(item))
+                item = children_by_prev.get(item.name)
+
+        for item in self.link_list:
             if item.prev is None:
-                self.link_list.insert(0, self.link_list.pop(i))
-        for i, item in enumerate(self.link_list):
-            for j, item2 in enumerate(self.link_list):
-                if item.name == item2.prev:
-                    self.link_list.insert(i + 1, self.link_list.pop(j))
-                    break
+                append_chain(item)
+
+        # 壊れたリンクや循環があっても、元の項目を失わない。
+        for item in self.link_list:
+            append_chain(item)
+
+        self.link_list = sorted_items
 
     def append(self, src_item):
         item = LinkItem(src_item)
         if len(self.link_list) > 0:
             item.prev = self.link_list[-1].name
             self.link_list[-1].next = item.name
+            self._items_by_next[item.name] = self.link_list[-1]
         self.link_list.append(item)
+        self._index_item(item)
+
+    def _index_item(self, item):
+        self._items_by_name.setdefault(item.name, item)
+        if item.prev is not None:
+            self._items_by_prev.setdefault(item.prev, item)
+        if item.next is not None:
+            self._items_by_next.setdefault(item.next, item)
 
     def set_dict(self, src_dict):
         """
@@ -343,6 +382,7 @@ class LinkItem:
         self.name = item
         self.next = None
         self.prev = None
+        self.is_duplicate = False
 
 
 class FpsDialog(tk.Toplevel):

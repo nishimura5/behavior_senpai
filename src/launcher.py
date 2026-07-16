@@ -62,7 +62,7 @@ class App(ttk.Frame):
         self.member_edit_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         self.area_filter_button = ttk.Button(
             buttons_frame,
-            text="Area",
+            text="Remove",
             command=lambda: self.launch_window(app_area_filter.App, edit_df=True, grab=True),
             state=tk.DISABLED,
         )
@@ -97,7 +97,8 @@ class App(ttk.Frame):
             command=lambda: self.launch_window(app_points_calc.App, dialog_size="1200x800"),
             state=tk.DISABLED,
         )
-        self.multi_point_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        if temp.get_use_multiple_points():
+            self.multi_point_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         self.feat_mix_button = ttk.Button(
             buttons_frame,
             text="Mix/Norm",
@@ -118,7 +119,7 @@ class App(ttk.Frame):
         pref_list_button = ttk.Button(
             buttons_frame,
             text="Preference",
-            command=lambda: self.launch_window(pref_list.App),
+            command=self.launch_preference_window,
         )
         pref_list_button.pack(side=tk.TOP, fill=tk.X, pady=4)
 
@@ -193,6 +194,7 @@ class App(ttk.Frame):
         self.src_df = None
         self.time_span = None
         self.calc_case = self.calc_case_entry.get()
+        self.rotate_angle = 0
 
     def load(self, event=None):
         pkl_path = self.pkl_selector.get_trk_path()
@@ -225,25 +227,29 @@ class App(ttk.Frame):
         self.src_df = load_df
         self.src_df = keypoints_proc.zero_point_to_nan(self.src_df)
         self.src_df = self.src_df[~self.src_df.index.duplicated(keep="first")]
+
         src_attrs = df_attrs.DfAttrs(self.src_df)
+        self.rotate_angle, frame_size = src_attrs.get_rotate_size()
+
         self.pkl_dir = os.path.dirname(self.pkl_path)
-        self.vcap.set_frame_size(src_attrs.attrs["frame_size"])
-        if isinstance(src_attrs.attrs["video_name"], list):
-            video_list = [os.path.abspath(os.path.join(self.pkl_dir, os.pardir, video)) for video in src_attrs.attrs["video_name"]]
+        self.vcap.set_frame_size(frame_size)
+        video_names = src_attrs.get_video_name()
+
+        if isinstance(video_names, list):
+            video_list = [os.path.abspath(os.path.join(self.pkl_dir, os.pardir, video)) for video in video_names]
             self.cap = vcap.MultiVcap(self.vcap)
             self.cap.open_files(video_list)
         else:
-            self.vcap.open_file(os.path.join(self.pkl_dir, os.pardir, src_attrs.attrs["video_name"]))
+            self.vcap.open_file(os.path.join(self.pkl_dir, os.pardir, video_names))
             self.cap = self.vcap
 
-        # UIの更新
         self.time_span = (
             self.src_df["timestamp"].min(),
             self.src_df["timestamp"].max(),
         )
-        self.pkl_selector.set_prev_next(src_attrs.attrs)
-
-        self.vw.set_cap(self.cap, src_attrs.attrs["frame_size"], anno_trk=self.src_df)
+        _, prev_name, next_name = src_attrs.get_take_prev_next()
+        self.pkl_selector.set_prev_next(prev_name, next_name)
+        self.vw.set_cap(self.cap, frame_size, anno_trk=self.src_df, rotate=self.rotate_angle)
         self.update_attrs()
 
     def update_attrs(self):
@@ -322,6 +328,18 @@ class App(ttk.Frame):
         self.save_button["state"] = "normal"
         args["src_df"] = self.src_df
 
+    def launch_preference_window(self):
+        self.launch_window(pref_list.App)
+        self.update_multiple_points_button_visibility()
+
+    def update_multiple_points_button_visibility(self):
+        use_multiple_points = TempFile().get_use_multiple_points()
+        is_visible = self.multi_point_button.winfo_manager() == "pack"
+        if use_multiple_points and not is_visible:
+            self.multi_point_button.pack(side=tk.TOP, fill=tk.X, pady=4, before=self.feat_mix_button)
+        elif not use_multiple_points and is_visible:
+            self.multi_point_button.pack_forget()
+
     def launch_window(self, app, dialog_size="", edit_df=False, grab=False):
         self.calc_case_entry.save()
         window_pos = self.master.geometry().split("+")[1:]
@@ -369,7 +387,9 @@ class App(ttk.Frame):
             self.src_df.attrs["proc_history"].append(self.a.history)
 
         self.update_attrs()
-        self.vw.set_trk(self.src_df)
+        self.rotate_angle = self.src_df.attrs.get("rotate", 0)
+        print(f"rotate = {self.rotate_angle}")
+        self.vw.set_trk(self.src_df, rotate=self.rotate_angle)
 
         self.save_button["state"] = "normal"
         args["src_df"] = self.src_df

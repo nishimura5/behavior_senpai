@@ -17,7 +17,7 @@ class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
         master.title("Points Calculation")
-        master.geometry("1200x700")
+        master.geometry("1300x800")
         self.pack(padx=10, pady=10)
         self.bind("<Map>", lambda event: self._load(event, args))
 
@@ -60,7 +60,7 @@ class App(ttk.Frame):
         self.tree.add_row_copy(column=1)
         self.tree.add_menu("Remove", self.tree.delete_selected)
 
-        self.canvas = tk.Canvas(tree_canvas_frame, width=600)
+        self.canvas = tk.Canvas(tree_canvas_frame, width=800)
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
         plot_frame = ttk.Frame(self)
@@ -84,7 +84,7 @@ class App(ttk.Frame):
         self.src_attrs = src_df.attrs
 
         # Update GUI
-        self.tree.set_members(self.tar_df.index.levels[1].unique().tolist())
+        self.tree.set_members(self.tar_df.index.get_level_values(1).unique().tolist())
         self.tree.set_df(self.tar_df)
 
         # load h5 file for tree
@@ -112,7 +112,8 @@ class App(ttk.Frame):
             hdf = hdf_df.DataFrameStorage(h5_path)
             source_cols = hdf.load_points_source_cols()
             for row in source_cols:
-                row[1] = self.tree.get_members()[0]
+                if row[1] not in self.tree.get_members():
+                    row[1] = self.tree.get_members()[0]
                 self.tree.insert(row)
 
     def draw(self):
@@ -141,6 +142,8 @@ class App(ttk.Frame):
                     plot_df = keypoints_proc.calc_angle3(member_df, point_a, point_b, int(point_c))
                 elif code == "angle2":
                     plot_df = keypoints_proc.calc_angle2(member_df, point_a, point_b)
+                elif code == "angle2-y":
+                    plot_df = keypoints_proc.calc_angle2(member_df, point_a, point_b, xy_axis=1)
                 elif code == "component":
                     plot_df = keypoints_proc.calc_xy_component(member_df, point_a, point_b)
                 elif code == "cross":
