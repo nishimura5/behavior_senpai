@@ -99,6 +99,14 @@ class App(ttk.Frame):
         self.tree.add_menu("Export CSV", self.export_csv)
         self.tree.tree.bind("<Button-1>", self.left_click_tree)
 
+        interactive_widget_types = (ttk.Button, ttk.Combobox, ttk.Entry)
+        self.scene_dialog_controls = [
+            widget
+            for widget in self._walk_widgets(control_frame)
+            if isinstance(widget, interactive_widget_types)
+        ]
+        self.enabled_scene_dialog_controls = []
+
         self.canvas = tk.Canvas(tree_canvas_frame, width=600)
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
@@ -276,6 +284,9 @@ class App(ttk.Frame):
 
     def left_click_tree(self, event):
         """Handle the selection of a row in the tree."""
+        if self.tree.interaction_enabled is False:
+            return "break"
+
         row = self.tree.tree.identify_row(event.y)
         col = self.tree.tree.identify_column(event.x)
         if row == "" or col == "":
@@ -321,11 +332,11 @@ class App(ttk.Frame):
     def add(self):
         min_time = time_format.msec_to_timestr_with_fff(self.time_min)
         max_time = time_format.msec_to_timestr_with_fff(self.time_max)
-        self.tree.scene_table_add(min_time, max_time)
+        self._show_scene_dialog(lambda: self.tree.scene_table_add(min_time, max_time))
         self._update()
 
     def edit(self):
-        self.tree.scene_table_edit()
+        self._show_scene_dialog(self.tree.scene_table_edit)
         self._update()
 
     def copy(self):
@@ -339,6 +350,32 @@ class App(ttk.Frame):
     def clear(self):
         """Clear the plot."""
         self.plot.clear()
+
+    def _walk_widgets(self, parent):
+        for widget in parent.winfo_children():
+            yield widget
+            yield from self._walk_widgets(widget)
+
+    def _show_scene_dialog(self, show_dialog):
+        self._set_scene_dialog_active(True)
+        try:
+            show_dialog()
+        finally:
+            self._set_scene_dialog_active(False)
+
+    def _set_scene_dialog_active(self, active):
+        self.tree.set_interaction_enabled(not active)
+        if active:
+            self.enabled_scene_dialog_controls = [
+                widget for widget in self.scene_dialog_controls if not widget.instate(["disabled"])
+            ]
+            for widget in self.enabled_scene_dialog_controls:
+                widget.state(["disabled"])
+        else:
+            for widget in self.enabled_scene_dialog_controls:
+                if widget.winfo_exists():
+                    widget.state(["!disabled"])
+            self.enabled_scene_dialog_controls = []
 
     def _treeview_sort_column(self, tv, col):
         tar_list = [(tv.set(k, col), k) for k in tv.get_children("")]
