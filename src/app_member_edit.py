@@ -207,9 +207,13 @@ class App(ttk.Frame):
                 print("current member is empty")
                 return
             start_time, end_time = self.time_span_entry.get_start_end()
-            between_sr = self.src_df["timestamp"].between(start_time - 1, end_time + 1)
             tar_member_sr = self.src_df.index.get_level_values(1) == current_member
-            remove_sr = between_sr & tar_member_sr
+            member_frames = self.src_df.index.get_level_values(0)[tar_member_sr].nunique()
+            if start_time == end_time and member_frames == 1:
+                remove_sr = tar_member_sr
+            else:
+                between_sr = self.src_df["timestamp"].between(start_time - 1, end_time + 1)
+                remove_sr = between_sr & tar_member_sr
             self.src_df = self.src_df[~remove_sr]
             self.update_tree()
             print(f"removed {current_member}")
