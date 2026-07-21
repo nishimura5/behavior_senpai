@@ -88,47 +88,50 @@ class Tree(ttk.Frame):
         new_op = dialog.selected_op
         new_col_b = dialog.selected_col_b
         new_normalize = dialog.selected_normalize
+        new_plot_range = dialog.selected_plot_range
 
         if new_member is None:
             return
-        values = [new_feature_name, new_member, new_col_a, new_op, new_col_b, new_normalize]
+        values = [new_feature_name, new_member, new_col_a, new_op, new_col_b, new_normalize, new_plot_range]
         self.tree.insert("", tk.END, values=values)
 
     def edit_calc(self):
         selected = self.tree.selection()
         if len(selected) == 0:
             return
+        is_multiple = len(selected) > 1
         dialog = FeatMixTreeDialog(self, self.member_list, contain_blank=True)
         dialog.set_df(self.tar_df)
-        if len(selected) == 1:
+        if not is_multiple:
             dialog.set_default(*self.tree.item(selected[0])["values"])
         self.wait_window(dialog)
-        new_feature_name = dialog.selected_feature_name
-        selected_feature_name = self.tree.item(selected[0])["values"][0]
-        new_feature_name = self.fix_feature_name(new_feature_name, selected_feature_name)
-
-        new_member = dialog.selected_member
-        new_col_a = dialog.selected_col_a
-        new_op = dialog.selected_op
-        new_col_b = dialog.selected_col_b
-        new_normalize = dialog.selected_normalize
-
-        if new_member is None:
+        if dialog.selected_member is None:
             return
-        values = [new_feature_name, new_member, new_col_a, new_op, new_col_b, new_normalize]
+
+        edited_values = [
+            dialog.selected_feature_name,
+            dialog.selected_member,
+            dialog.selected_col_a,
+            dialog.selected_op,
+            dialog.selected_col_b,
+            dialog.selected_normalize,
+            dialog.selected_plot_range,
+        ]
+        if not is_multiple or edited_values[0].strip() != "":
+            selected_feature_name = self.tree.item(selected[0])["values"][0]
+            edited_values[0] = self.fix_feature_name(edited_values[0], selected_feature_name)
+
         for item in selected:
-            values = self.tree.item(item)["values"]
-            if new_member != "":
-                values[1] = new_member
-            if new_feature_name != "":
-                values[0] = new_feature_name
-            if new_col_a != " ":
-                values[2] = new_col_a
-            if new_normalize != " ":
-                values[5] = new_normalize
-            values[3] = new_op
-            values[4] = new_col_b
+            if is_multiple:
+                values = self.tree.item(item)["values"]
+                values = self._merge_nonblank_values(values, edited_values)
+            else:
+                values = edited_values
             self.tree.item(item, values=values)
+
+    @staticmethod
+    def _merge_nonblank_values(values, edited_values):
+        return [edited if edited.strip() != "" else current for current, edited in zip(values, edited_values)]
 
     def fix_feature_name(self, feature_name, selected=None):
         if feature_name == "":
@@ -162,6 +165,7 @@ class Tree(ttk.Frame):
 class FeatMixTreeDialog(tk.Toplevel):
     def __init__(self, master, member_list, contain_blank=False, default_feature_name=""):
         super().__init__(master)
+        self.contain_blank = contain_blank
         self.focus_set()
         self.title("Feature mixer")
         self.resizable(0, 0)
@@ -194,6 +198,8 @@ class FeatMixTreeDialog(tk.Toplevel):
         self.normalize_list = list(self.name_and_code.keys())
         self.normalize_combo = Combobox(norm_frame, label="Normalize:", values=self.normalize_list, width=25)
         self.normalize_combo.pack_horizontal(padx=5)
+        self.plot_range_entry = StrEntry(norm_frame, label="Plot range:", width=15, allow_blank=True)
+        self.plot_range_entry.pack_horizontal(padx=5)
 
         button_frame = ttk.Frame(self)
         button_frame.pack(side=tk.TOP, pady=(10, 20))
@@ -209,12 +215,24 @@ class FeatMixTreeDialog(tk.Toplevel):
         self.selected_op = None
         self.selected_col_b = None
         self.selected_normalize = None
+        self.selected_plot_range = None
 
     def set_df(self, df):
         self.tar_df = df
         self.member_combo.set_df(df)
         self.member_combo.set()
         self._set_col_combos(self.member_combo.get())
+        if self.contain_blank:
+            self._clear_values()
+
+    def _clear_values(self):
+        self.feature_name_entry.update("")
+        self.member_combo.set("")
+        self.col_a_combo.set("")
+        self.op_combo.set("")
+        self.col_b_combo.set("")
+        self.normalize_combo.set("")
+        self.plot_range_entry.update("")
 
     def on_select_member(self, event):
         selected_col_a = self.col_a_combo.get()
@@ -235,13 +253,14 @@ class FeatMixTreeDialog(tk.Toplevel):
         self.op_combo.set(" ")
         self.col_b_combo.set(" ")
 
-    def set_default(self, feature_name, member, col_a, op_b, col_b, normalize):
+    def set_default(self, feature_name, member, col_a, op_b, col_b, normalize, plot_range):
         self.feature_name_entry.update(feature_name)
         self.member_combo.set(member)
         self.col_a_combo.set(col_a)
         self.op_combo.set(op_b)
         self.col_b_combo.set(col_b)
         self.normalize_combo.set(normalize)
+        self.plot_range_entry.update(plot_range)
 
     def on_ok(self):
         self.selected_feature_name = self.feature_name_entry.get()
@@ -250,6 +269,7 @@ class FeatMixTreeDialog(tk.Toplevel):
         self.selected_op = self.op_combo.get()
         self.selected_col_b = self.col_b_combo.get()
         self.selected_normalize = self.normalize_combo.get()
+        self.selected_plot_range = self.plot_range_entry.get()
         self.destroy()
 
     def on_cancel(self):

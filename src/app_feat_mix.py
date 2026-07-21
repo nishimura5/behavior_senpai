@@ -63,6 +63,7 @@ class App(ttk.Frame):
             {"name": "op", "width": 30},
             {"name": "col B", "width": 130},
             {"name": "normalize", "width": 100},
+            {"name": "plot range", "width": 100},
         ]
         self.tree = Tree(tree_canvas_frame, cols, height=12)
         self.tree.pack(side=tk.LEFT)
@@ -188,7 +189,7 @@ class App(ttk.Frame):
                 tree_op,
                 tree_col_b,
                 tree_normalize,
-            ) = tar
+            ) = tar[:6]
             # skip if exactly same row
             if tree_feat_name == feat_name and tree_col_a == col_a and tree_op == op and tree_col_b == col_b and tree_normalize == normalize:
                 return
@@ -201,7 +202,7 @@ class App(ttk.Frame):
                 self.tree.tree.delete(self.tree.tree.get_children("")[i])
                 break
 
-        values = (feat_name, member, col_a, op, col_b, normalize)
+        values = (feat_name, member, col_a, op, col_b, normalize, "")
         self.tree.insert(values)
 
     def import_feat(self):
@@ -232,6 +233,7 @@ class App(ttk.Frame):
                 if row[1] not in self.tree.get_members():
                     print(f"Member not found: {row[1]} in {self.tree.get_members()}")
                     row[1] = self.tree.get_members()[0]
+                row.append("")
                 self.tree.insert(row)
 
     def draw(self):
@@ -258,7 +260,7 @@ class App(ttk.Frame):
             member_feat_df = pd.DataFrame()
 
             for i, row in tqdm(enumerate(self.source_cols), total=row_num, desc="Plotting features"):
-                feat_name, m, col_a, op, col_b, normalize = row
+                feat_name, m, col_a, op, col_b, normalize, plot_range = row
                 if member != str(m):
                     continue
                 normalize = self.name_and_code[normalize]
@@ -275,6 +277,9 @@ class App(ttk.Frame):
                     self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name, is_last=True)
                 else:
                     self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name)
+                y_range = self._parse_plot_range(plot_range)
+                if y_range is not None:
+                    self.lineplot.line_ax.set_ylim(*y_range)
             # concat bottom
             self.feat_df = pd.concat([self.feat_df, member_feat_df], axis=0)
 
@@ -284,6 +289,18 @@ class App(ttk.Frame):
         self.lineplot.draw()
         self.lineplot.set_members_to_draw(members)
         self.export_btn["state"] = "normal"
+
+    @staticmethod
+    def _parse_plot_range(plot_range):
+        plot_range = str(plot_range).strip()
+        if plot_range == "":
+            return None
+        try:
+            y_min, y_max = plot_range.split("-")
+            return float(y_min), float(y_max)
+        except ValueError:
+            print(f"Invalid plot range: {plot_range}. Use a value such as 0-1 or 10.0-30.0.")
+            return None
 
     def export(self):
         """Export the calculated data to a file."""
@@ -296,7 +313,8 @@ class App(ttk.Frame):
         export_df.attrs = self.src_attrs.attrs
         dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".feat")
         h5 = hdf_df.DataFrameStorage(dst_path)
-        h5.save_mixnorm_df(export_df, self.track_name, self.source_cols)
+        source_cols_for_export = [row[:6] for row in self.source_cols]
+        h5.save_mixnorm_df(export_df, self.track_name, source_cols_for_export)
 
     def close(self):
         self.lineplot.close()
