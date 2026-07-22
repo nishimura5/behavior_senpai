@@ -98,6 +98,17 @@ class CalcFeatures:
             "right_upper_arm_len": ["distance (|AB|)", self.member, kpl.get_idx_by_name("right_shoulder"), kpl.get_idx_by_name("right_elbow"), None],
             "wrist_to_wrist_len": ["distance (|AB|)", self.member, kpl.get_idx_by_name("left_wrist"), kpl.get_idx_by_name("right_wrist"), None],
         }
+
+        keypoints = kpl.get_data().get("keypoints", {})
+        if "mouth_lower" in keypoints and "mouth_upper" in keypoints:
+            self.source_cols_dict["mouth_open"] = [
+                "distance (|AB|)",
+                self.member,
+                kpl.get_idx_by_name("mouth_lower"),
+                kpl.get_idx_by_name("mouth_upper"),
+                None,
+            ]
+
         self.shoulders_len_col_name = " "
 
     def set_member(self):
@@ -180,6 +191,11 @@ class CalcFeatures:
                 op = " "
                 param_b = " "
                 norm = "/180"
+            elif params[0] in ["distance (|AB|)"] and params[-2] is None:
+                param_a = params[-1]
+                op = " "
+                param_b = " "
+                norm = "No normalize"
             elif params[0] in ["distance (|AB|)"]:
                 param_a = params[-1]
                 op = "/"

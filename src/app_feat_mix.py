@@ -126,6 +126,7 @@ class App(ttk.Frame):
 
         expected_pts_file_name = f"{args['trk_pkl_name'].split('.')[0]}.feat"
         expected_pts_file_path = os.path.join(self.calc_dir, self.calc_case, expected_pts_file_name)
+        print(f"Expected feature file path: {expected_pts_file_path}")
         if os.path.exists(expected_pts_file_path) is False:
             calc_features.execute_calc_features(args)
 
@@ -154,6 +155,9 @@ class App(ttk.Frame):
 
     def load_feat(self, pl: file_inout.PickleLoader):
         self.feat_path = pl.get_tar_path()
+        if os.path.exists(self.feat_path) is False:
+            print(f"Feature file not found: {self.feat_path}")
+            return
         h5 = hdf_df.DataFrameStorage(self.feat_path)
         tar_df = h5.load_points_df()
         feat_path = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
