@@ -45,6 +45,8 @@ class App(ttk.Frame):
         self.score_threshold_var = tk.DoubleVar()
         threshold_entry = ttk.Entry(low_score_frame, textvariable=self.score_threshold_var, width=10)
         threshold_entry.pack(side=tk.LEFT)
+        self.score_stats_label = ttk.Label(low_score_frame, text="")
+        self.score_stats_label.pack(side=tk.LEFT, padx=(10, 0))
 
         # keypoint groups
         keypoint_group_frame = ttk.Frame(param_frame)
@@ -109,6 +111,7 @@ class App(ttk.Frame):
 
     def _load(self, args):
         self.src_df = args["src_df"].copy()
+        self._update_score_stats()
         self.cap = args["cap"]
         current_position = args["current_position"]
         src_attrs = df_attrs.DfAttrs(self.src_df)
@@ -195,8 +198,24 @@ class App(ttk.Frame):
         if self.area_var.get():
             self.calc_in_out()
 
+        self._update_score_stats()
         self.draw_convex_hull()
         self.ok_btn.config(state=tk.NORMAL)
+
+    def _update_score_stats(self):
+        """Display score statistics for keypoints that have not been removed."""
+        score_col = next((col for col in ("score", "conf") if col in self.src_df.columns), None)
+        if score_col is None:
+            self.score_stats_label.config(text="")
+            return
+
+        valid_points = self.src_df["x"].notna() & self.src_df["y"].notna()
+        scores = pd.to_numeric(self.src_df.loc[valid_points, score_col], errors="coerce").dropna()
+        if scores.empty:
+            stats_text = f"{score_col}  min: -  max: -  mean: -"
+        else:
+            stats_text = f"{score_col}  min: {scores.min():.3f}  max: {scores.max():.3f}  mean: {scores.mean():.3f}"
+        self.score_stats_label.config(text=stats_text)
 
     def calc_in_out(self):
         poly_points = [p["point"] for p in self.anchor_points]

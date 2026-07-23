@@ -66,6 +66,7 @@ class App(ttk.Frame):
             {"name": "start", "width": 100},
             {"name": "end", "width": 100},
             {"name": "duration", "width": 100},
+            {"name": "mean score", "width": 100},
             {"name": "keypoints/frame", "width": 100},
         ]
         self.tree = Tree(tree_canvas_frame, cols, height=12, right_click=True)
@@ -142,14 +143,21 @@ class App(ttk.Frame):
         self.tree.clear()
         members = self.src_df.index.get_level_values(1).unique()
         tree_df = self.src_df
+        score_col = next((col for col in ("score", "conf") if col in tree_df.columns), None)
 
         for member in members:
-            sliced_df = tree_df.loc[pd.IndexSlice[:, member, :], :]
+            member_df = tree_df.loc[pd.IndexSlice[:, member, :], :]
+            sliced_df = member_df
             sliced_df = sliced_df.loc[~(sliced_df["x"].isna()) & (~sliced_df["y"].isna())]
             if len(sliced_df.index.get_level_values(0).unique()) == 0:
                 print(f"member {member} has no data")
                 continue
             kpf = len(sliced_df) / len(sliced_df.index.get_level_values(0).unique())
+            mean_score = ""
+            if score_col is not None:
+                score = member_df[score_col].mean()
+                if pd.notna(score):
+                    mean_score = f"{score:.2f}"
             head_timestamp = time_format.msec_to_timestr_with_fff(sliced_df.head(1)["timestamp"].values[0])
             tail_timestamp = time_format.msec_to_timestr_with_fff(sliced_df.tail(1)["timestamp"].values[0])
             duration = sliced_df.tail(1)["timestamp"].values[0] - sliced_df.head(1)["timestamp"].values[0]
@@ -159,6 +167,7 @@ class App(ttk.Frame):
                 head_timestamp,
                 tail_timestamp,
                 duration_str,
+                mean_score,
                 f"{kpf:.2f}",
             ]
             self.tree.insert(values)
