@@ -53,11 +53,11 @@
 "nose_2"={id=51, color=[40,40,200]}
 "nose_3"={id=52, color=[40,40,200]}
 "nose_4"={id=53, color=[40,40,200]}
-"nose_5"={id=54, color=[40,40,200]}
+"nose_right"={id=54, color=[60,60,220]}
 "nose_6"={id=55, color=[40,40,200]}
 "nose_7"={id=56, color=[40,40,200]}
 "nose_8"={id=57, color=[40,40,200]}
-"nose_9"={id=58, color=[40,40,200]}
+"nose_left"={id=58, color=[60,60,220]}
 "right_eye_1"={id=59, color=[50,250,50]}
 "right_eye_2"={id=60, color=[50,250,50]}
 "right_eye_3"={id=61, color=[50,250,50]}

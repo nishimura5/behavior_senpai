@@ -98,6 +98,7 @@ class CalcFeatures:
             "right_upper_arm_len": ["distance (|AB|)", self.member, kpl.get_idx_by_name("right_shoulder"), kpl.get_idx_by_name("right_elbow"), None],
             "wrist_to_wrist_len": ["distance (|AB|)", self.member, kpl.get_idx_by_name("left_wrist"), kpl.get_idx_by_name("right_wrist"), None],
         }
+        self.shoulders_len_col_name = " "
 
         keypoints = kpl.get_data().get("keypoints", {})
         if "mouth_lower" in keypoints and "mouth_upper" in keypoints:
@@ -108,8 +109,15 @@ class CalcFeatures:
                 kpl.get_idx_by_name("mouth_upper"),
                 None,
             ]
+            self.source_cols_dict["nose_width"] = [
+                "distance (|AB|)",
+                self.member,
+                kpl.get_idx_by_name("nose_left"),
+                kpl.get_idx_by_name("nose_right"),
+                None,
+            ]
+            self.nose_width_col_name = " "
 
-        self.shoulders_len_col_name = " "
 
     def set_member(self):
         if self.model_name == "MediaPipe Holistic":
@@ -149,6 +157,8 @@ class CalcFeatures:
             # for normalize
             if key == "shoulders_len":
                 self.shoulders_len_col_name = col_name
+            elif key == "nose_width":
+                self.nose_width_col_name = col_name
 
             member_feat_df = pd.concat([member_feat_df, feat_df], axis=1)
 
