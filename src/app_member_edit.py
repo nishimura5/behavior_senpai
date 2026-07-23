@@ -90,6 +90,9 @@ class App(ttk.Frame):
 
         self.band.set_img_canvas(self.canvas)
 
+        master.bind("<Left>", self._on_arrow_key)
+        master.bind("<Right>", self._on_arrow_key)
+
         self.dst_df = None
         self.history = "member_edit"
         self._load(args)
@@ -253,6 +256,20 @@ class App(ttk.Frame):
         start_msec = time_format.timestr_to_msec(cols[1])
         end_msec = time_format.timestr_to_msec(cols[2])
         self.time_span_entry.update_entry(start_msec, end_msec)
+
+    def _on_arrow_key(self, event):
+        """Move the displayed video position one second backward or forward."""
+        offset_msec = {"Left": -1000, "Right": 1000}.get(event.keysym)
+        if offset_msec is None:
+            return
+
+        current_msec = self.band.get_current_timestamp()
+        if current_msec is None:
+            current_msec = self.time_min
+        current_msec = max(self.time_min, min(current_msec, self.time_max))
+        target_msec = max(self.time_min, min(current_msec + offset_msec, self.time_max))
+        self.band.jump_to(target_msec)
+        return "break"
 
     def _validate(self, text):
         return text.replace(".", "").isdigit() or text == ""

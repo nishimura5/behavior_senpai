@@ -217,6 +217,15 @@ class LinePlotter:
         event = type("event", (object,), {"button": 1, "xdata": timestamp_msec})
         self._click_graph(event)
 
+    def get_current_timestamp(self):
+        """Return the timestamp indicated by the graph's vertical line."""
+        if not hasattr(self, "vline"):
+            return None
+        xdata = self.vline.get_xdata()
+        if len(xdata) == 0:
+            return None
+        return float(xdata[0])
+
     def _click_graph(self, event):
         if event.button == 1:
             x = event.xdata
