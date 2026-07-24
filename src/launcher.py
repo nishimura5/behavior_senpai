@@ -47,7 +47,7 @@ class App(ttk.Frame):
         self.tl_button = ttk.Button(
             buttons_frame,
             text="Track list",
-            command=lambda: self.launch_window(app_track_list.App, grab=True),
+            command=lambda: self.launch_window(app_track_list.App, grab=True, reload_pkl=True),
             state=tk.DISABLED,
         )
         self.tl_button.pack(side=tk.TOP, fill=tk.X, pady=4)
@@ -340,7 +340,7 @@ class App(ttk.Frame):
         elif not use_multiple_points and is_visible:
             self.multi_point_button.pack_forget()
 
-    def launch_window(self, app, dialog_size="", edit_df=False, grab=False):
+    def launch_window(self, app, dialog_size="", edit_df=False, grab=False, reload_pkl=False):
         self.calc_case_entry.save()
         window_pos = self.master.geometry().split("+")[1:]
         dlg_modal = tk.Toplevel(self)
@@ -369,6 +369,9 @@ class App(ttk.Frame):
         cv2.destroyAllWindows()
 
         self.vw.canvas.anno.reload_temp_file()
+
+        if reload_pkl is True:
+            self.load()
 
         if edit_df is False:
             return
