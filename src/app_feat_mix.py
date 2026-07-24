@@ -5,6 +5,7 @@ from tkinter import ttk
 import pandas as pd
 from tqdm import tqdm
 
+import export_csv
 from behavior_senpai import calc_features, df_attrs, feature_proc, file_inout, hdf_df
 from gui_feat_mix import Tree
 from gui_parts import Combobox, TempFile, ToolTip
@@ -70,6 +71,7 @@ class App(ttk.Frame):
         self.tree.add_menu("Edit", self.tree.edit_calc)
         self.tree.add_row_copy(column=1)
         self.tree.add_menu("Remove", self.tree.delete_selected)
+        self.tree.add_menu("Export CSV", self.export_csv)
 
         self.canvas = tk.Canvas(tree_canvas_frame, width=800)
         self.canvas.pack(fill=tk.BOTH, expand=True)
@@ -305,6 +307,67 @@ class App(ttk.Frame):
         except ValueError:
             print(f"Invalid plot range: {plot_range}. Use a value such as 0-1 or 10.0-30.0.")
             return None
+
+    def export_csv(self):
+        """Export the features represented by the selected tree rows."""
+        selected = self.tree.selection()
+        if len(selected) == 0 or self.tar_df is None:
+            return
+
+        selected_rows = [self.tree.tree.item(item)["values"] for item in selected]
+        scene_name = self.scene_combo.get()
+        scenes = self.src_attrs.get_scenes(scene_name)
+        out_df = self._make_csv_dataframe(selected_rows, scenes)
+        if out_df.empty:
+            print("No data to export.")
+            return
+
+        file_name = self._make_csv_file_name(selected_rows, scene_name)
+        export_csv.save_dataframe(out_df, self.pkl_dir, file_name, index=False)
+
+    def _make_csv_dataframe(self, selected_rows, scenes):
+        """Calculate selected features and return flat CSV columns."""
+        if scenes is None:
+            scene_df = self.tar_df
+        else:
+            condition = pd.Series(False, index=self.tar_df.index)
+            for start_msec, end_msec in scenes:
+                condition |= self.tar_df["timestamp"].between(start_msec, end_msec)
+            scene_df = self.tar_df.loc[condition]
+
+        feature_series = []
+        for feature_name, member, col_a, op, col_b, normalize, _plot_range in selected_rows:
+            member_condition = scene_df.index.get_level_values(1).astype(str) == str(member)
+            member_df = scene_df.loc[member_condition]
+            if member_df.empty:
+                continue
+
+            calc_df = member_df.drop(columns="timestamp")
+            new_sr = feature_proc.arithmetic_operations(calc_df, op, col_a, col_b)
+            new_sr = feature_proc.calc(new_sr, self.name_and_code[normalize])
+            feature_series.append(new_sr.rename(str(feature_name)))
+
+        if len(feature_series) == 0:
+            feature_names = [str(row[0]) for row in selected_rows]
+            return pd.DataFrame(columns=["frame", "member", "timestamp", *feature_names])
+
+        data_df = pd.concat(feature_series, axis=1).sort_index()
+        timestamp_sr = scene_df["timestamp"].reindex(data_df.index)
+
+        out_df = data_df.copy()
+        out_df.insert(0, "timestamp", timestamp_sr.to_numpy())
+        out_df.insert(0, "member", data_df.index.get_level_values(1).to_numpy())
+        out_df.insert(0, "frame", data_df.index.get_level_values(0).to_numpy())
+        return out_df.reset_index(drop=True)
+
+    def _make_csv_file_name(self, selected_rows, scene_name):
+        feature_label = str(selected_rows[0][0]) if len(selected_rows) == 1 else f"selected_{len(selected_rows)}_features"
+        parts = [os.path.splitext(os.path.basename(self.feat_path))[0], feature_label]
+        if scene_name != "":
+            parts.append(scene_name)
+        unsafe_chars = '<>:"/\\|?*'
+        safe_name = "_".join(parts).translate(str.maketrans({char: "_" for char in unsafe_chars}))
+        return f"export_{safe_name}.csv"
 
     def export(self):
         """Export the calculated data to a file."""
