@@ -11,6 +11,7 @@ import app_detect
 import app_dimredu
 import app_dlc_to_trk
 import app_feat_mix
+import app_feature_copy
 import app_keypoint_samples
 import app_member_edit
 import app_points_calc
@@ -106,6 +107,13 @@ class App(ttk.Frame):
             state=tk.DISABLED,
         )
         self.feat_mix_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        self.feature_copy_button = ttk.Button(
+            buttons_frame,
+            text="Feature copy",
+            command=lambda: self.launch_window(app_feature_copy.App, dialog_size="900x600"),
+            state=tk.DISABLED,
+        )
+        self.feature_copy_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         self.dimredu_button = ttk.Button(
             buttons_frame,
             text="Dim-reduction",
@@ -221,6 +229,7 @@ class App(ttk.Frame):
         self.k2f_button.config(state="normal")
         self.multi_point_button.config(state="normal")
         self.feat_mix_button.config(state="normal")
+        self.feature_copy_button.config(state="normal")
         self.dimredu_button.config(state="normal")
 
         self.pkl_path = pkl_path
@@ -359,6 +368,7 @@ class App(ttk.Frame):
             "time_span_msec": self.time_span,
             "cap": self.cap,
             "pkl_dir": self.pkl_dir,
+            "calc_case": self.calc_case_entry.get(),
             "current_position": current_position,
         }
         self.a = app(dlg_modal, args)

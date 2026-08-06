@@ -19,8 +19,11 @@ class CalcFeatures:
 
         self.track_name = args["trk_pkl_name"]
         self.src_attrs = src_df.attrs
-        temp = TempFile()
-        self.calc_case = temp.data["calc_case"]
+        self.member_from_args = args.get("member")
+        if "calc_case" in args:
+            self.calc_case = args["calc_case"]
+        else:
+            self.calc_case = TempFile().data["calc_case"]
 
     def load_keypoint_toml(self):
         kpl = keypoint_toml_loader.KeypointTOMLLoader()
@@ -120,7 +123,12 @@ class CalcFeatures:
 
 
     def set_member(self):
-        if self.model_name == "MediaPipe Holistic":
+        if self.member_from_args is not None:
+            self.member = str(self.member_from_args)
+            members = self.tar_df.index.get_level_values(1).unique().astype(str).tolist()
+            if self.member not in members:
+                raise ValueError(f"Member not found: {self.member}")
+        elif self.model_name == "MediaPipe Holistic":
             self.member = "pose"
         else:
             members = self.tar_df.index.get_level_values(1).unique().tolist()

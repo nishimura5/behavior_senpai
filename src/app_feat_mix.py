@@ -1,4 +1,6 @@
+import json
 import os
+import sys
 import tkinter as tk
 from tkinter import ttk
 
@@ -8,7 +10,7 @@ from tqdm import tqdm
 import export_csv
 from behavior_senpai import calc_features, df_attrs, feature_proc, file_inout, hdf_df
 from gui_feat_mix import Tree
-from gui_parts import Combobox, TempFile, ToolTip
+from gui_parts import Combobox, TempFile
 from line_plotter import LinePlotter
 
 
@@ -22,7 +24,7 @@ class App(ttk.Frame):
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
-        self.calc_case = temp.data["calc_case"]
+        self.calc_case = args["calc_case"]
         self.tar_df = None
         self.lineplot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
@@ -41,13 +43,7 @@ class App(ttk.Frame):
         draw_frame = ttk.Frame(self)
         draw_frame.pack(padx=10, pady=5, expand=False, anchor=tk.NW)
         self.add_btn = ttk.Button(draw_frame, text="Add calc", command=self.add_row, state="disabled")
-        self.add_btn.pack(padx=(0, 10), side=tk.LEFT)
-
-        self.import_btn = ttk.Button(draw_frame, text="Import", command=self.import_feat, state="disabled")
-
-        self.import_btn.pack(padx=(0, 60), side=tk.LEFT)
-        description = "Import another feature file and add calc."
-        ToolTip(self.import_btn, description)
+        self.add_btn.pack(padx=(0, 70), side=tk.LEFT)
 
         self.draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw, state="disabled")
         self.draw_btn.pack(side=tk.LEFT)
@@ -124,6 +120,9 @@ class App(ttk.Frame):
         self.src_attrs.load_scene_table()
         menu = self.src_attrs.get_scene_descriptions(add_blank=True)
         self.scene_combo.set_values(menu)
+        saved_scene = self._load_feat_copy_scene(args["trk_pkl_name"])
+        if saved_scene in menu:
+            self.scene_combo.set(saved_scene)
         self.tree.set_members(src_df.index.levels[1].unique().tolist())
 
         expected_pts_file_name = f"{args['trk_pkl_name'].split('.')[0]}.feat"
@@ -136,8 +135,26 @@ class App(ttk.Frame):
         pl.set_tar_path(expected_pts_file_path)
         self.load_feat(pl)
 
-        # load h5 file for tree
-        self._import_source_cols(expected_pts_file_path)
+        # Load the current feature definitions into the tree.
+        self._load_source_cols(expected_pts_file_path)
+
+    def _load_feat_copy_scene(self, pkl_name):
+        feat_copy_name = "feat_copy" if sys.platform.startswith("win32") else ".feat_copy"
+        feat_copy_path = os.path.join(self.calc_dir, self.calc_case, feat_copy_name)
+        if not os.path.isfile(feat_copy_path):
+            return ""
+        try:
+            with open(feat_copy_path, encoding="utf-8") as file:
+                saved_values = json.load(file)
+        except (OSError, json.JSONDecodeError) as error:
+            print(f"Could not load {feat_copy_path}: {error}")
+            return ""
+
+        pkl_values = saved_values.get(pkl_name, {}) if isinstance(saved_values, dict) else {}
+        if not isinstance(pkl_values, dict):
+            return ""
+        scene = pkl_values.get("scene", "")
+        return "" if scene is None else str(scene)
 
     def open_feat(self):
         pl = file_inout.PickleLoader(self.calc_dir)
@@ -172,7 +189,6 @@ class App(ttk.Frame):
         self.tree.set_df(self.tar_df)
         self.add_btn["state"] = "normal"
         self.draw_btn["state"] = "normal"
-        self.import_btn["state"] = "normal"
 
     def add_row(self):
         self.tree.add_calc()
@@ -211,19 +227,7 @@ class App(ttk.Frame):
         values = (feat_name, member, col_a, op, col_b, normalize, "")
         self.tree.insert(values)
 
-    def import_feat(self):
-        """Open a file dialog to select a feature file.
-        Import the contents of the attrs.
-        """
-        pl = file_inout.PickleLoader(self.calc_dir)
-        pl.join_calc_case(self.calc_case)
-        is_file_selected = pl.show_open_dialog()
-        if is_file_selected is False:
-            return
-        h5_path = pl.get_tar_path()
-        self._import_source_cols(h5_path)
-
-    def _import_source_cols(self, h5_path):
+    def _load_source_cols(self, h5_path):
         if os.path.exists(h5_path) is True:
             hdf = hdf_df.DataFrameStorage(h5_path)
             source_cols = hdf.load_mixnorm_source_cols()
