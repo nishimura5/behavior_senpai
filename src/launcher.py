@@ -325,7 +325,10 @@ class App(ttk.Frame):
 
         self.update_attrs()
 
-        self.save_button["state"] = "normal"
+        if self.a.overwrite_on_close:
+            self.overwrite()
+        else:
+            self.save_button["state"] = "normal"
         args["src_df"] = self.src_df
 
     def launch_preference_window(self):

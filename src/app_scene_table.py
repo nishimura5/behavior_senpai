@@ -121,6 +121,7 @@ class App(ttk.Frame):
 
         # app_scene_table is not appended to proc_history
         self.history = None
+        self.overwrite_on_close = False
 
     def _load(self, event, args):
         self.src_df = args["src_df"]
@@ -277,6 +278,7 @@ class App(ttk.Frame):
 
     def on_ok(self):
         """Perform the action when the 'OK' button is clicked."""
+        self.overwrite_on_close = True
         self.master.destroy()
 
     def cancel(self):
