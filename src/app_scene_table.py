@@ -97,7 +97,6 @@ class App(ttk.Frame):
         self.tree.add_menu("Extract MP4", self.extract_mp4)
         self.tree.add_menu("Export MP4", self.export_mp4)
         self.tree.add_menu("Export CSV", self.export_csv)
-        self.tree.tree.bind("<Button-1>", self.left_click_tree)
 
         interactive_widget_types = (ttk.Button, ttk.Combobox, ttk.Entry)
         self.scene_dialog_controls = [
@@ -284,26 +283,6 @@ class App(ttk.Frame):
         """Cancel the operation and destroy the window."""
         self.scene_table = None
         self.master.destroy()
-
-    def left_click_tree(self, event):
-        """Handle the selection of a row in the tree."""
-        if self.tree.interaction_enabled is False:
-            return "break"
-
-        row = self.tree.tree.identify_row(event.y)
-        col = self.tree.tree.identify_column(event.x)
-        if row == "" or col == "":
-            return
-
-        start = self.tree.get_selected_one(row)[0]
-        end = self.tree.get_selected_one(row)[1]
-        start_msec = time_format.timestr_to_msec(start)
-        end_msec = time_format.timestr_to_msec(end)
-
-        if col == "#2":
-            self.plot.jump_to(end_msec)
-        else:
-            self.plot.jump_to(start_msec)
 
     def _on_arrow_key(self, event):
         """Move the displayed video position one second backward or forward."""
