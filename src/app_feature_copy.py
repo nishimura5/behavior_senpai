@@ -8,6 +8,7 @@ from tkinter import filedialog, messagebox, ttk
 import pandas as pd
 
 import export_mp4
+from app_track_list import TrackList
 from behavior_senpai import calc_features, df_attrs, feature_proc, hdf_df, vcap, windows_and_mac
 
 
@@ -52,14 +53,18 @@ class App(ttk.Frame):
         tree_frame.columnconfigure(0, weight=1)
         tree_frame.rowconfigure(0, weight=1)
 
-        columns = ("pkl_name", "take", "scene")
+        columns = ("pkl_name", "take", "part", "scene", "member")
         self.tree = ttk.Treeview(tree_frame, columns=columns, show="headings", selectmode="extended")
         self.tree.heading("pkl_name", text="pkl_name", command=lambda: self._sort_tree("pkl_name"))
         self.tree.heading("take", text="take", command=lambda: self._sort_tree("take"))
-        self.tree.heading("scene", text="scene")
+        self.tree.heading("part", text="part", command=lambda: self._sort_tree("part"))
+        self.tree.heading("scene", text="target scene")
+        self.tree.heading("member", text="member")
         self.tree.column("pkl_name", width=320, minwidth=160)
         self.tree.column("take", width=140, minwidth=80)
+        self.tree.column("part", width=60, minwidth=40)
         self.tree.column("scene", width=180, minwidth=100)
+        self.tree.column("member", width=100, minwidth=60)
 
         y_scrollbar = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
         x_scrollbar = ttk.Scrollbar(tree_frame, orient=tk.HORIZONTAL, command=self.tree.xview)
@@ -78,16 +83,40 @@ class App(ttk.Frame):
         self._load_folder()
 
     def _load_folder(self):
-        for pkl_name in self._get_pkl_names():
+        for item in self.tree.get_children(""):
+            self.tree.delete(item)
+        self.options_by_item = {}
+
+        metadata_by_name = {}
+        track_list = TrackList()
+        pkl_names = self._get_pkl_names()
+        for pkl_name in pkl_names:
             metadata = self._get_metadata(os.path.join(self.pkl_dir, pkl_name))
+            metadata_by_name[pkl_name] = metadata
+            track_list.append(metadata["take"], metadata["prev"], metadata["next"], pkl_name)
+
+        parts_by_name = {}
+        for take, links in track_list.get_dict().items():
+            for part, pkl_name in links.items():
+                parts_by_name[pkl_name] = "" if take == "" else part
+
+        for pkl_name in pkl_names:
+            metadata = metadata_by_name[pkl_name]
             saved_values = self.saved_values.get(pkl_name, {})
             if not isinstance(saved_values, dict):
                 saved_values = {}
             saved_scene = saved_values.get("scene", "")
             scene = "" if saved_scene is None else str(saved_scene)
-            item = self.tree.insert("", tk.END, values=(pkl_name, metadata["take"], scene))
+            members_by_scene = metadata["members_by_scene"]
+            member = ", ".join(members_by_scene.get(scene, []))
+            item = self.tree.insert(
+                "",
+                tk.END,
+                values=(pkl_name, metadata["take"], parts_by_name.get(pkl_name, ""), scene, member),
+            )
             self.options_by_item[item] = {
                 "scenes": metadata["scenes"],
+                "members_by_scene": members_by_scene,
             }
 
     def _get_pkl_names(self):
@@ -122,7 +151,7 @@ class App(ttk.Frame):
     def _save_feat_copy(self):
         saved_values = {"master_feature_path": self.master_feature_path}
         for item in self.tree.get_children(""):
-            pkl_name, _take, scene = self.tree.item(item)["values"]
+            pkl_name, _take, _part, scene, _member = self.tree.item(item)["values"]
             saved_values[str(pkl_name)] = {
                 "scene": str(scene),
             }
@@ -142,6 +171,7 @@ class App(ttk.Frame):
             finally:
                 if os.path.exists(self.feat_copy_path):
                     self._set_feat_copy_hidden_on_windows(True)
+        self.saved_values = saved_values
 
     def _select_master_feature_file(self):
         filetypes = windows_and_mac.file_types([("Feature files", "*.feat")])
@@ -178,7 +208,7 @@ class App(ttk.Frame):
 
         targets = []
         for item in self.tree.get_children(""):
-            pkl_name, _take, scene = self.tree.item(item)["values"]
+            pkl_name, _take, _part, scene, _member = self.tree.item(item)["values"]
             if str(scene) != "":
                 targets.append((str(pkl_name), str(scene)))
         if len(targets) == 0:
@@ -244,15 +274,7 @@ class App(ttk.Frame):
         if not isinstance(scene_table, dict):
             raise ValueError("scene_table is not available.")
 
-        descriptions = cls._as_list(scene_table.get("description", []))
-        members = cls._as_list(scene_table.get("member", []))
-        scene_members = []
-        for index, description in enumerate(descriptions):
-            if str(description) != scene or index >= len(members):
-                continue
-            member = str(members[index])
-            if member != "" and member not in scene_members:
-                scene_members.append(member)
+        scene_members = cls._get_members_by_scene(scene_table).get(scene, [])
         if len(scene_members) == 0:
             raise ValueError(f"No member is assigned to scene: {scene}")
         if len(scene_members) > 1:
@@ -329,7 +351,7 @@ class App(ttk.Frame):
 
     @classmethod
     def _get_metadata(cls, pkl_path):
-        metadata = {"take": "", "scenes": []}
+        metadata = {"take": "", "prev": None, "next": None, "scenes": [], "members_by_scene": {}}
         try:
             src_df = pd.read_pickle(pkl_path)
         except Exception as error:
@@ -337,12 +359,33 @@ class App(ttk.Frame):
             return metadata
 
         attrs = getattr(src_df, "attrs", {})
-        metadata["take"] = attrs.get("take", "")
+        take = attrs.get("take", "")
+        metadata["take"] = "" if take is None else str(take)
+        metadata["prev"] = attrs.get("prev")
+        metadata["next"] = attrs.get("next")
 
         scene_table = attrs.get("scene_table", {})
         if isinstance(scene_table, dict):
             metadata["scenes"] = cls._unique_strings(scene_table.get("description", []))
+            metadata["members_by_scene"] = cls._get_members_by_scene(scene_table)
         return metadata
+
+    @classmethod
+    def _get_members_by_scene(cls, scene_table):
+        descriptions = cls._as_list(scene_table.get("description", []))
+        members = cls._as_list(scene_table.get("member", []))
+        members_by_scene = {}
+        for index, description in enumerate(descriptions):
+            if description is None or index >= len(members) or members[index] is None:
+                continue
+            scene = str(description)
+            member = str(members[index])
+            if scene == "" or member == "":
+                continue
+            scene_members = members_by_scene.setdefault(scene, [])
+            if member not in scene_members:
+                scene_members.append(member)
+        return members_by_scene
 
     @staticmethod
     def _as_list(values):
@@ -386,8 +429,13 @@ class App(ttk.Frame):
 
         scene_values = self._get_common_scenes(selected)
         scene = self.tree.set(selected[0], "scene") if len(selected) == 1 else ""
+        takes = [self.tree.set(item, "take") for item in selected]
+        take = takes[0] if all(value == takes[0] for value in takes[1:]) else ""
         dialog = RowEditDialog(
             self,
+            take=take,
+            part=self.tree.set(selected[0], "part"),
+            part_enabled=len(selected) == 1,
             scene_values=scene_values,
             scene=scene,
         )
@@ -395,20 +443,106 @@ class App(ttk.Frame):
         if dialog.result is None:
             return
 
-        scene = dialog.result
+        take = dialog.result["take"]
+        part = dialog.result["part"]
+        scene = dialog.result["scene"]
         previous_values = {item: list(self.tree.item(item)["values"]) for item in selected}
-        changed_items = [item for item in selected if scene != self.tree.set(item, "scene")]
-        if len(changed_items) == 0:
+        track_changed = any(
+            take != self.tree.set(item, "take") or (part is not None and part != self.tree.set(item, "part")) for item in selected
+        )
+        scene_changed = any(scene != self.tree.set(item, "scene") for item in selected)
+        if not track_changed and not scene_changed:
             return
 
-        for item in changed_items:
+        for item in selected:
+            self.tree.set(item, "take", take)
+            if part is not None:
+                self.tree.set(item, "part", part)
             self.tree.set(item, "scene", scene)
+            self.tree.set(item, "member", self._get_member_display(item, scene))
+
+        if track_changed:
+            try:
+                self._overwrite_track_attrs()
+            except Exception as error:
+                for item, values in previous_values.items():
+                    self.tree.item(item, values=values)
+                messagebox.showerror("Feature copy", f"Could not update track attrs.\n{error}", parent=self)
+                return
+
+        save_error = None
         try:
-            self._save_feat_copy()
+            if scene_changed:
+                self._save_feat_copy()
         except OSError as error:
+            save_error = error
             for item, values in previous_values.items():
-                self.tree.item(item, values=values)
-            messagebox.showerror("Feature copy", f"Could not save feat_copy.\n{error}", parent=self)
+                self.tree.set(item, "scene", values[3])
+                self.tree.set(item, "member", values[4])
+
+        if track_changed:
+            self._load_folder()
+        if save_error is not None:
+            messagebox.showerror("Feature copy", f"Could not save feat_copy.\n{save_error}", parent=self)
+
+    def _overwrite_track_attrs(self):
+        rows = []
+        used_parts = set()
+        for item in self.tree.get_children(""):
+            take = self.tree.set(item, "take")
+            part = self.tree.set(item, "part")
+            pkl_name = self.tree.set(item, "pkl_name")
+            if take != "":
+                if part == "":
+                    raise ValueError(f"Part is not selected: {pkl_name}")
+                take_part = (take, part)
+                if take_part in used_parts:
+                    raise ValueError(f"Duplicate part '{part}' in take '{take}'.")
+                used_parts.add(take_part)
+            rows.append({"take": take, "part": part, "name": pkl_name})
+
+        track_list = TrackList()
+        track_list.set_take_part_name_list([row for row in rows if row["take"] != ""])
+        desired_attrs = {row["name"]: ("", None, None) for row in rows if row["take"] == ""}
+        for take, links in track_list.track_dict.items():
+            for link in links.link_list:
+                desired_attrs[link.name] = (take, link.prev, link.next)
+
+        pending_writes = []
+        for pkl_name, (take, prev_name, next_name) in desired_attrs.items():
+            pkl_path = os.path.join(self.pkl_dir, pkl_name)
+            src_df = pd.read_pickle(pkl_path)
+            attrs = getattr(src_df, "attrs", {})
+            if (attrs.get("take", ""), attrs.get("prev"), attrs.get("next")) == (take, prev_name, next_name):
+                continue
+            pending_writes.append((pkl_path, src_df, dict(attrs), take, prev_name, next_name))
+
+        completed_writes = []
+        try:
+            for pkl_path, src_df, original_attrs, take, prev_name, next_name in pending_writes:
+                src_df.attrs["take"] = take
+                src_df.attrs["prev"] = prev_name
+                src_df.attrs["next"] = next_name
+                self._write_pickle(src_df, pkl_path)
+                completed_writes.append((pkl_path, src_df, original_attrs))
+        except Exception:
+            for pkl_path, src_df, original_attrs in reversed(completed_writes):
+                try:
+                    src_df.attrs = original_attrs
+                    self._write_pickle(src_df, pkl_path)
+                except Exception as rollback_error:
+                    print(f"Could not roll back {pkl_path}: {rollback_error}")
+            raise
+
+    @staticmethod
+    def _write_pickle(src_df, pkl_path):
+        temp_path = f"{pkl_path}.tmp"
+        try:
+            src_df.to_pickle(temp_path)
+            os.replace(temp_path, pkl_path)
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
 
     def _export_selected_mp4(self):
         item = self.tree.focus()
@@ -487,12 +621,16 @@ class App(ttk.Frame):
             return []
         return [scene for scene in scene_lists[0] if all(scene in scenes for scenes in scene_lists[1:])]
 
+    def _get_member_display(self, item, scene):
+        members_by_scene = self.options_by_item[item]["members_by_scene"]
+        return ", ".join(members_by_scene.get(scene, []))
+
     def close(self):
         self.video_cap.release()
 
 
 class RowEditDialog(tk.Toplevel):
-    def __init__(self, master, scene_values, scene=""):
+    def __init__(self, master, scene_values, take="", part="", scene="", part_enabled=True):
         super().__init__(master)
         self.title("Edit")
         self.resizable(False, False)
@@ -501,10 +639,25 @@ class RowEditDialog(tk.Toplevel):
         edit_frame = ttk.Frame(self)
         edit_frame.pack(padx=20, pady=(20, 10))
 
+        take_label = ttk.Label(edit_frame, text="Take:")
+        take_label.grid(row=0, column=0, padx=(0, 8), pady=5, sticky=tk.E)
+        self.take_entry = ttk.Entry(edit_frame, width=27)
+        self.take_entry.grid(row=0, column=1, pady=5)
+        self.take_entry.insert(0, take)
+
+        part_label = ttk.Label(edit_frame, text="Part:")
+        part_label.grid(row=1, column=0, padx=(0, 8), pady=5, sticky=tk.E)
+        part_state = "readonly" if part_enabled else tk.DISABLED
+        self.part_combo = ttk.Combobox(edit_frame, state=part_state, width=24)
+        self.part_combo.grid(row=1, column=1, pady=5)
+        self.part_combo["values"] = [str(value) for value in range(1, 10)]
+        self.part_combo.set(part)
+        self.part_enabled = part_enabled
+
         scene_label = ttk.Label(edit_frame, text="Scene:")
-        scene_label.grid(row=0, column=0, padx=(0, 8), pady=5, sticky=tk.E)
+        scene_label.grid(row=2, column=0, padx=(0, 8), pady=5, sticky=tk.E)
         self.scene_combo = ttk.Combobox(edit_frame, state="readonly", width=24)
-        self.scene_combo.grid(row=0, column=1, pady=5)
+        self.scene_combo.grid(row=2, column=1, pady=5)
         self.scene_combo["values"] = [""] + scene_values
         self.scene_combo.set(scene)
 
@@ -521,7 +674,11 @@ class RowEditDialog(tk.Toplevel):
         self.focus_set()
 
     def _ok(self):
-        self.result = self.scene_combo.get()
+        self.result = {
+            "take": self.take_entry.get(),
+            "part": self.part_combo.get() if self.part_enabled else None,
+            "scene": self.scene_combo.get(),
+        }
         self.destroy()
 
     def _cancel(self):

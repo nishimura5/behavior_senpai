@@ -110,7 +110,7 @@ class App(ttk.Frame):
         self.feature_copy_button = ttk.Button(
             buttons_frame,
             text="Feature copy",
-            command=lambda: self.launch_window(app_feature_copy.App, dialog_size="900x600"),
+            command=lambda: self.launch_window(app_feature_copy.App, dialog_size="900x600", reload_pkl=True),
             state=tk.DISABLED,
         )
         self.feature_copy_button.pack(side=tk.TOP, fill=tk.X, pady=4)
