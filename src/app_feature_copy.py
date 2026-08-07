@@ -7,7 +7,8 @@ from tkinter import filedialog, messagebox, ttk
 
 import pandas as pd
 
-from behavior_senpai import calc_features, df_attrs, feature_proc, hdf_df, windows_and_mac
+import export_mp4
+from behavior_senpai import calc_features, df_attrs, feature_proc, hdf_df, vcap, windows_and_mac
 
 
 class App(ttk.Frame):
@@ -25,6 +26,7 @@ class App(ttk.Frame):
         saved_master_feature_path = self.saved_values.get("master_feature_path", "")
         self.master_feature_path = saved_master_feature_path if isinstance(saved_master_feature_path, str) else ""
         self.options_by_item = {}
+        self.video_cap = vcap.VideoCap()
 
         master_feature_frame = ttk.Frame(self)
         master_feature_frame.pack(fill=tk.X, pady=(0, 10))
@@ -69,6 +71,7 @@ class App(ttk.Frame):
 
         self.context_menu = tk.Menu(self, tearoff=False)
         self.context_menu.add_command(label="Edit", command=self._edit_selected)
+        self.context_menu.add_command(label="Export MP4", command=self._export_selected_mp4)
         right_click = "<Button-2>" if sys.platform.startswith("darwin") else "<Button-3>"
         self.tree.bind(right_click, self._show_context_menu)
 
@@ -407,6 +410,77 @@ class App(ttk.Frame):
                 self.tree.item(item, values=values)
             messagebox.showerror("Feature copy", f"Could not save feat_copy.\n{error}", parent=self)
 
+    def _export_selected_mp4(self):
+        item = self.tree.focus()
+        if item == "":
+            selected = self.tree.selection()
+            if len(selected) == 0:
+                return
+            item = selected[0]
+
+        pkl_name = str(self.tree.set(item, "pkl_name"))
+        scene = str(self.tree.set(item, "scene"))
+        if scene == "":
+            messagebox.showinfo("Export MP4", "No scene is selected for this row.", parent=self)
+            return
+
+        pkl_path = os.path.join(self.pkl_dir, pkl_name)
+        exporter = None
+        try:
+            src_df = pd.read_pickle(pkl_path)
+            scene_ranges = self._get_scene_ranges(src_df, scene)
+            cap = self._open_video(src_df, pkl_path)
+
+            exporter = export_mp4.MakeMp4()
+            exporter.load(
+                {
+                    "src_df": src_df,
+                    "cap": cap,
+                    "pkl_dir": self.pkl_dir,
+                    "trk_pkl_name": pkl_name,
+                }
+            )
+            exporter.set_time_ranges(scene_ranges)
+            exporter.export()
+        except Exception as error:
+            print(f"MP4 export failed: {pkl_name}: {error}")
+            messagebox.showerror("Export MP4", f"Could not export MP4.\n{error}", parent=self)
+        finally:
+            if exporter is not None:
+                exporter.out.release()
+
+    def _open_video(self, src_df, pkl_path):
+        attrs = getattr(src_df, "attrs", {})
+        video_names = self._as_list(attrs.get("video_name"))
+        if len(video_names) == 0:
+            raise ValueError("video_name is not available in pkl attrs.")
+
+        video_dir = os.path.abspath(os.path.join(os.path.dirname(pkl_path), os.pardir))
+        video_paths = []
+        for video_name in video_names:
+            video_path = os.fspath(video_name)
+            if not os.path.isabs(video_path):
+                video_path = os.path.join(video_dir, video_path)
+            video_path = os.path.normpath(video_path)
+            if not os.path.isfile(video_path):
+                raise FileNotFoundError(f"Video file not found: {video_path}")
+            video_paths.append(video_path)
+
+        frame_size = attrs.get("frame_size")
+        if frame_size is None or len(frame_size) != 2:
+            raise ValueError("frame_size is not available in pkl attrs.")
+
+        self.video_cap.set_frame_size(frame_size)
+        if len(video_paths) == 1:
+            self.video_cap.open_file(video_paths[0])
+            cap = self.video_cap
+        else:
+            cap = vcap.MultiVcap(self.video_cap)
+            cap.open_files(video_paths)
+        if cap.isOpened() is not True:
+            raise OSError(f"Could not open video: {video_paths[0]}")
+        return cap
+
     def _get_common_scenes(self, selected):
         scene_lists = [self.options_by_item[item]["scenes"] for item in selected]
         if len(scene_lists) == 0:
@@ -414,7 +488,7 @@ class App(ttk.Frame):
         return [scene for scene in scene_lists[0] if all(scene in scenes for scenes in scene_lists[1:])]
 
     def close(self):
-        pass
+        self.video_cap.release()
 
 
 class RowEditDialog(tk.Toplevel):
