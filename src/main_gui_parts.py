@@ -58,6 +58,10 @@ class PklSelector(ttk.Frame):
             self.trk_path = ""
             self.pkl_path_label["text"] = "No track file loaded"
 
+    def set_trk_path(self, trk_path):
+        self.trk_path = trk_path
+        self._load_pkl()
+
     def rename_pkl_path_label(self, new_name):
         self.pkl_path_label["text"] = new_name
 

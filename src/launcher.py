@@ -383,7 +383,11 @@ class App(ttk.Frame):
 
         self.vw.canvas.anno.reload_temp_file()
 
-        if reload_pkl is True:
+        jump_to_pkl_path = getattr(self.a, "jump_to_pkl_path", "")
+        if jump_to_pkl_path:
+            self.pkl_selector.set_trk_path(jump_to_pkl_path)
+            self.load()
+        elif reload_pkl is True:
             self.load()
 
         if edit_df is False:

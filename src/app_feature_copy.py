@@ -27,6 +27,7 @@ class App(ttk.Frame):
         self.saved_values = self._load_feat_copy()
         saved_master_feature_path = self.saved_values.get("master_feature_path", "")
         self.master_feature_path = saved_master_feature_path if isinstance(saved_master_feature_path, str) else ""
+        self.jump_to_pkl_path = ""
         self.options_by_item = {}
         self.video_cap = vcap.VideoCap()
 
@@ -78,6 +79,8 @@ class App(ttk.Frame):
         x_scrollbar.grid(row=1, column=0, sticky=tk.EW)
 
         self.context_menu = tk.Menu(self, tearoff=False)
+        self.context_menu.add_command(label="Jump to this pkl", command=self._jump_to_selected_pkl)
+        self.context_menu.add_separator()
         self.context_menu.add_command(label="Target scene", command=self._edit_selected)
         self.context_menu.add_command(label="Take and Part", command=self._edit_take_and_part)
         self.context_menu.add_command(label="Export MP4", command=self._export_selected_mp4)
@@ -94,10 +97,17 @@ class App(ttk.Frame):
         metadata_by_name = {}
         track_list = TrackList()
         pkl_names = self._get_pkl_names()
-        for pkl_name in pkl_names:
-            metadata = self._get_metadata(os.path.join(self.pkl_dir, pkl_name))
-            metadata_by_name[pkl_name] = metadata
-            track_list.append(metadata["take"], metadata["prev"], metadata["next"], pkl_name)
+        pkl_count = len(pkl_names)
+        progress_dialog = PklLoadProgressDialog(self, pkl_count) if pkl_count > 0 else None
+        try:
+            for loaded_count, pkl_name in enumerate(pkl_names, start=1):
+                metadata = self._get_metadata(os.path.join(self.pkl_dir, pkl_name))
+                metadata_by_name[pkl_name] = metadata
+                track_list.append(metadata["take"], metadata["prev"], metadata["next"], pkl_name)
+                progress_dialog.set_progress(loaded_count, pkl_name)
+        finally:
+            if progress_dialog is not None:
+                progress_dialog.close()
 
         parts_by_name = {}
         for take, links in track_list.get_dict().items():
@@ -492,6 +502,24 @@ class App(ttk.Frame):
                 self.tree.set(item, "member", values[4])
             messagebox.showerror("Feature copy", f"Could not save feat_copy.\n{error}", parent=self)
 
+    def _jump_to_selected_pkl(self):
+        item = self.tree.focus()
+        if item == "":
+            return
+
+        pkl_name = str(self.tree.set(item, "pkl_name"))
+        pkl_path = os.path.normpath(os.path.join(self.pkl_dir, pkl_name))
+        if not os.path.isfile(pkl_path):
+            messagebox.showerror("Jump to this pkl", f"Track file not found.\n{pkl_path}", parent=self)
+            return
+
+        self.jump_to_pkl_path = pkl_path
+        self.after_idle(self._close_for_jump)
+
+    def _close_for_jump(self):
+        self.close()
+        self.winfo_toplevel().destroy()
+
     def _edit_take_and_part(self):
         selected = self.tree.selection()
         if len(selected) == 0:
@@ -675,6 +703,47 @@ class App(ttk.Frame):
 
     def close(self):
         self.video_cap.release()
+
+
+class PklLoadProgressDialog(tk.Toplevel):
+    def __init__(self, master, pkl_count):
+        parent = master.winfo_toplevel()
+        super().__init__(parent)
+        self.withdraw()
+        self.title("Loading pkl files")
+        self.resizable(False, False)
+        self.transient(parent)
+        self.protocol("WM_DELETE_WINDOW", lambda: None)
+
+        self.progress_label = ttk.Label(self, text=f"Loading pkl files... 0 / {pkl_count}")
+        self.progress_label.pack(fill=tk.X, padx=20, pady=(16, 0))
+        self.file_name_label = ttk.Label(self, text="", anchor=tk.W)
+        self.file_name_label.pack(fill=tk.X, padx=20, pady=(4, 0))
+        self.progress = ttk.Progressbar(self, mode="determinate", maximum=pkl_count)
+        self.progress.pack(fill=tk.X, padx=20, pady=(8, 16))
+
+        parent.update_idletasks()
+        dialog_width = 380
+        dialog_height = 100
+        x = parent.winfo_rootx() + max((parent.winfo_width() - dialog_width) // 2, 0)
+        y = parent.winfo_rooty() + max((parent.winfo_height() - dialog_height) // 2, 0)
+        self.geometry(f"{dialog_width}x{dialog_height}+{x}+{y}")
+        self.deiconify()
+        self.wait_visibility()
+        self.grab_set()
+        self.update()
+
+    def set_progress(self, loaded_count, pkl_name):
+        maximum = int(self.progress["maximum"])
+        self.progress["value"] = loaded_count
+        self.progress_label["text"] = f"Loading pkl files... {loaded_count} / {maximum}"
+        self.file_name_label["text"] = pkl_name
+        self.update()
+
+    def close(self):
+        if self.grab_current() == self:
+            self.grab_release()
+        self.destroy()
 
 
 class RowEditDialog(tk.Toplevel):
