@@ -1,6 +1,6 @@
 import operator
 import tkinter as tk
-from tkinter import ttk
+from tkinter import messagebox, ttk
 
 import cv2
 import numpy as np
@@ -9,6 +9,35 @@ from PIL import Image, ImageTk
 
 from behavior_senpai import df_attrs, keypoint_toml_loader, keypoints_proc
 from gui_parts import Combobox, TempFile
+
+
+def thin_by_timestamp(src_df, target_fps):
+    """Keep the first timestamp in each 1000/fps ms bin for all keypoints.
+
+    Bins start at the first timestamp. Preserve index, values and attrs.
+    Skip rates within 1% of the observed rate, and requests for higher rates.
+    """
+    target_fps = float(target_fps)
+    if not np.isfinite(target_fps) or target_fps <= 0:
+        raise ValueError("Target FPS must be a finite number greater than zero.")
+    if src_df.empty:
+        return src_df
+    timestamps = src_df["timestamp"].to_numpy(dtype=float)
+    if not np.isfinite(timestamps).all():
+        raise ValueError("Timestamps must be finite numbers in milliseconds.")
+    times = np.unique(timestamps)
+    if len(times) < 2:
+        return src_df
+    source_fps = 1000.0 / np.median(np.diff(times))
+    if target_fps >= source_fps * 0.99:
+        return src_df
+
+    # Fixed bins avoid accumulating timing error at fractional source rates.
+    bins = np.floor((times - times[0]) / (1000.0 / target_fps) + 1e-9)
+    keep = np.r_[True, bins[1:] != bins[:-1]]
+    result = src_df.loc[np.isin(timestamps, times[keep])].copy()
+    result.attrs = src_df.attrs.copy()
+    return result
 
 
 class App(ttk.Frame):
@@ -69,6 +98,22 @@ class App(ttk.Frame):
         leg_check.pack(side=tk.LEFT, padx=(10, 0))
         self.hand_check = ttk.Checkbutton(keypoint_group_frame, text="Hands", variable=self.hand_check_var)
         self.hand_check.pack(side=tk.LEFT, padx=(10, 0))
+
+        # timestamp-based thinning
+        thinning_frame = ttk.Frame(param_frame)
+        thinning_frame.pack(side=tk.TOP, anchor=tk.W, pady=(0, 5))
+        self.thinning_var = tk.BooleanVar(value=False)
+        self.target_fps_var = tk.StringVar(value="15")
+        thinning_check = ttk.Checkbutton(
+            thinning_frame, text="Thin frames", variable=self.thinning_var,
+            command=self._update_thinning_state,
+        )
+        thinning_check.pack(side=tk.LEFT)
+        ttk.Label(thinning_frame, text="Target FPS:").pack(side=tk.LEFT, padx=(10, 0))
+        self.target_fps_entry = ttk.Entry(
+            thinning_frame, textvariable=self.target_fps_var, width=10, state=tk.DISABLED,
+        )
+        self.target_fps_entry.pack(side=tk.LEFT)
 
         # area
         area_frame = ttk.Frame(param_frame)
@@ -176,7 +221,19 @@ class App(ttk.Frame):
             y = point["point"][1]
             point["id"] = self.canvas.create_rectangle(x - 2, y - 2, x + 2, y + 2, fill="white")
 
+    def _update_thinning_state(self):
+        self.target_fps_entry.config(state=tk.NORMAL if self.thinning_var.get() else tk.DISABLED)
+
     def exec_remove(self):
+        # Validate before applying any of the selected filters.
+        thinned_df = self.src_df
+        if self.thinning_var.get():
+            try:
+                thinned_df = thin_by_timestamp(self.src_df, self.target_fps_var.get())
+            except (ValueError, TypeError, KeyError) as exc:
+                messagebox.showerror("Invalid thinning settings", str(exc), parent=self)
+                return
+        self.src_df = thinned_df
         keypoint_groups = []
         if self.head_check_var.get():
             keypoint_groups.append("head")
