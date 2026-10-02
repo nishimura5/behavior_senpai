@@ -10,7 +10,7 @@ import pandas as pd
 
 import export_mp4
 from app_track_list import TrackList
-from behavior_senpai import calc_features, df_attrs, feature_proc, hdf_df, vcap, windows_and_mac
+from behavior_senpai import calc_features, df_attrs, feature_proc, hdf_df, keypoints_proc, vcap, windows_and_mac
 
 
 class App(ttk.Frame):
@@ -231,6 +231,7 @@ class App(ttk.Frame):
 
         master_hdf = hdf_df.DataFrameStorage(self.master_feature_path)
         source_cols = master_hdf.load_mixnorm_source_cols()
+        points_source_cols = master_hdf.load_points_source_cols()
         if len(source_cols) == 0:
             messagebox.showerror("Feature copy", "No Mix/Norm definitions found in the selected feature file.", parent=self)
             return
@@ -250,7 +251,7 @@ class App(ttk.Frame):
         try:
             for pkl_name, scene in targets:
                 try:
-                    self._create_feature_file(pkl_name, scene, source_cols)
+                    self._create_feature_file(pkl_name, scene, source_cols, points_source_cols)
                     completed.append(pkl_name)
                 except Exception as error:
                     print(f"Feature copy failed: {pkl_name}: {error}")
@@ -261,14 +262,14 @@ class App(ttk.Frame):
         if len(failed) == 0:
             messagebox.showinfo("Feature copy", f"Created {len(completed)} feature files.", parent=self)
         else:
-            failed_names = "\n".join(name for name, _error in failed)
+            failed_names = "\n".join(f"{name}: {error}" for name, error in failed)
             messagebox.showwarning(
                 "Feature copy",
                 f"Created: {len(completed)}\nFailed: {len(failed)}\n\n{failed_names}",
                 parent=self,
             )
 
-    def _create_feature_file(self, pkl_name, scene, source_cols):
+    def _create_feature_file(self, pkl_name, scene, source_cols, points_source_cols=None):
         pkl_path = os.path.join(self.pkl_dir, pkl_name)
         src_df = pd.read_pickle(pkl_path)
         member = self._get_scene_member(src_df, scene)
@@ -280,22 +281,67 @@ class App(ttk.Frame):
             "calc_case": self.calc_case,
             "member": member,
         }
-        calc_features.execute_calc_features(calc_args)
-
         feat_name = os.path.splitext(pkl_name)[0] + ".feat"
         feat_path = os.path.join(self.feat_dir, feat_name)
-        if not os.path.isfile(feat_path):
-            raise FileNotFoundError(f"Feature file was not created: {feat_path}")
-
         target_hdf = hdf_df.DataFrameStorage(feat_path)
-        points_df = target_hdf.load_points_df()
+        if points_source_cols:
+            points_df, target_points_source_cols = self._calculate_points(src_df, member, points_source_cols)
+        else:
+            # Older templates without Points definitions retain the default calculation.
+            calc_features.execute_calc_features(calc_args)
+            if not os.path.isfile(feat_path):
+                raise FileNotFoundError(f"Feature file was not created: {feat_path}")
+            points_df = target_hdf.load_points_df()
         if points_df is None:
             raise ValueError(f"No points data: {feat_path}")
 
         scene_ranges = self._get_scene_ranges(src_df, scene)
         mixnorm_df, target_source_cols = self._calculate_mixnorm(points_df, member, scene_ranges, source_cols)
+        if points_source_cols:
+            points_df.attrs = src_df.attrs
+            target_hdf.save_points_df(points_df, pkl_name, target_points_source_cols)
         mixnorm_df.attrs = src_df.attrs
         target_hdf.save_mixnorm_df(mixnorm_df, pkl_name, target_source_cols)
+
+    @staticmethod
+    def _calculate_points(src_df, member, source_cols):
+        track_df = src_df[~src_df.index.duplicated(keep="last")].copy()
+        idx = track_df.index
+        track_df.index = idx.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(int)])
+        member_df = track_df.loc[track_df.index.get_level_values(1) == str(member)]
+        if member_df.empty:
+            raise ValueError(f"Member not found in track file: {member}")
+        calc_df = member_df.drop(columns="timestamp")
+        operations = {
+            "distance (|AB|)": (keypoints_proc.calc_norm, 2),
+            "sin,cos (∠BAC)": (keypoints_proc.calc_sin_cos, 3),
+            "angle3 (∠BAC)": (keypoints_proc.calc_angle3, 3),
+            "angle2 (∠BAx)": (keypoints_proc.calc_angle2, 2),
+            "angle2 (∠BAy)": (lambda df, a, b: keypoints_proc.calc_angle2(df, a, b, xy_axis=1), 2),
+            "direction (∠BAx)": (keypoints_proc.calc_direction, 2),
+            "xy_component (AB_x, AB_y)": (keypoints_proc.calc_xy_component, 2),
+            "cross_product (AB×AC)": (keypoints_proc.calc_cross_product, 3),
+            "dot_product (AB・AC)": (keypoints_proc.calc_dot_product, 3),
+            "plus (AB+AC)": (keypoints_proc.calc_plus, 3),
+            "norms (|AB||AC|)": (keypoints_proc.calc_norms, 3),
+        }
+        feature_dfs = []
+        target_source_cols = []
+        for code, _source_member, point_a, point_b, point_c in source_cols:
+            if code not in operations:
+                raise ValueError(f"Unsupported Points calculation: {code}")
+            operation, point_count = operations[code]
+            points = [int(point) for point in [point_a, point_b, point_c][:point_count]]
+            missing = set(points) - set(calc_df.index.get_level_values(2))
+            if missing:
+                raise ValueError(f"Keypoints not found for {code}: {sorted(missing)}")
+            feature_dfs.append(operation(calc_df, *points))
+            target_source_cols.append([code, str(member), point_a, point_b, point_c])
+        points_df = pd.concat(feature_dfs, axis=1).sort_index()
+        points_df = points_df.loc[:, ~points_df.columns.duplicated(keep="last")]
+        timestamp = member_df["timestamp"].groupby(level=[0, 1]).first()
+        points_df["timestamp"] = timestamp.reindex(points_df.index)
+        return points_df, target_source_cols
 
     @classmethod
     def _get_scene_member(cls, src_df, scene):
@@ -340,11 +386,9 @@ class App(ttk.Frame):
         for source_col in source_cols:
             feature_name, _source_member, col_a, op, col_b, normalize = source_col
             if col_a not in calc_df.columns and col_a != " ":
-                print(f"Column not found: {col_a}")
-                continue
+                raise ValueError(f"Column not found for {feature_name}: {col_a}")
             if col_b not in calc_df.columns and col_b != " ":
-                print(f"Column not found: {col_b}")
-                continue
+                raise ValueError(f"Column not found for {feature_name}: {col_b}")
             normalize_code = name_and_code.get(normalize, normalize)
             new_sr = feature_proc.arithmetic_operations(calc_df, op, col_a, col_b)
             new_sr = feature_proc.calc(new_sr, normalize_code)

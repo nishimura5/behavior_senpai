@@ -276,6 +276,14 @@ One calculation definition can generate more than one column in `/points/df`; fo
 
 Current `normalize` values are `No normalize`, `Z-score`, `MinMax`, `/180`, `Threshold75%`, `Threshold50%`, `Threshold25%`, `Bandpassfilter`, `Highpassfilter`, and `Lowpassfilter`.
 
+#### Feature copy
+
+`app_feature_copy.py` uses a selected `.feat` file as a calculation template for Track files with a target scene selected. Each target scene must have exactly one assigned member.
+
+The tool reads both `/points/source_cols` and `/mixnorm/source_cols`. It recalculates the Points definitions, including calculations added manually in Points Calculation, from each target Track's coordinates. It then applies the Feature Mixer definitions using that scene's member and time ranges. Points are saved for the full Track; Mix/Norm inputs outside the scene ranges are masked, while timestamps are retained. Saved definitions use the target member. Source feature values are not copied.
+
+Templates without Points definitions use the default Points calculations. Missing keypoints or Feature Mixer input columns cause the target to fail with an error message rather than silently omitting features. When Points definitions are present, both calculations finish before the target file is written.
+
 #### Dimensional-reduction data and metadata
 
 `/dimredu/df` has the common `(frame, member)` index and the following columns. The UMAP coordinates used by the GUI are not saved.
