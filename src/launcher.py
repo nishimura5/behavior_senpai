@@ -374,7 +374,7 @@ class App(ttk.Frame):
         self.a = app(dlg_modal, args)
         dlg_modal.protocol(
             "WM_DELETE_WINDOW",
-            lambda: [dlg_modal.destroy(), cv2.destroyAllWindows(), self.a.close()],
+            lambda window_app=self.a: [dlg_modal.destroy(), cv2.destroyAllWindows(), window_app.close()],
         )
         self.wait_window(dlg_modal)
 
