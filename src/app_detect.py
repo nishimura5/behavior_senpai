@@ -52,28 +52,17 @@ class App(ttk.Frame):
                 "MediaPipe Holistic",
                 "RTMPose-x Halpe26",
                 "RTMW-x WholeBody133",
-                "RTMPose-m Hand5",
             ]
         elif mmpose_ok:
             combo_list = [
                 "MediaPipe Holistic",
                 "RTMPose-x Halpe26",
                 "RTMW-x WholeBody133",
-                "RTMPose-m Hand5",
             ]
         else:
             combo_list = ["MediaPipe Holistic"]
         self.engine_combo = Combobox(bat_mode_frame, "Engine:", values=combo_list, width=24)
         self.engine_combo.pack_horizontal(padx=(10, 0))
-        self.engine_combo.set_selected_bind(self._on_engine_changed)
-
-        hand_options_frame = ttk.Frame(self)
-        hand_options_frame.pack(anchor=tk.W, pady=(8, 0))
-        self.hand_bbox_combo = Combobox(
-            hand_options_frame, "Hand detection threshold:", values=[0.5, 0.3, 0.2, 0.15, 0.1, 0.05], width=5
-        )
-        self.hand_bbox_combo.pack_horizontal()
-        self._on_engine_changed()
 
         top_btn_frame = ttk.Frame(self)
         top_btn_frame.pack(pady=14)
@@ -156,14 +145,7 @@ class App(ttk.Frame):
         model_name = self.engine_combo.get()
         use_roi = self.roi_chk.get()
         add_suffix = self.add_suffix_chk.get()
-        options = {}
-        if model_name == "RTMPose-m Hand5":
-            options["hand_bbox_threshold"] = float(self.hand_bbox_combo.get())
-        self.trk_path = detector_proc.exec(self.rcap, model_name, video_path, use_roi, add_suffix, **options)
-
-    def _on_engine_changed(self, *args):
-        state = "readonly" if self.engine_combo.get() == "RTMPose-m Hand5" else tk.DISABLED
-        self.hand_bbox_combo.set_state(state)
+        self.trk_path = detector_proc.exec(self.rcap, model_name, video_path, use_roi, add_suffix)
 
     def _on_bat_mode_changed(self, *args):
         if self.bat_chk.get() is True:
