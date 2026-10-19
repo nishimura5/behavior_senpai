@@ -16,6 +16,7 @@ class KeypointTOMLLoader:
             "RTMPose-x Halpe26": "halpe26.toml",
             "RTMPose-x WholeBody133": "coco133.toml",
             "RTMW-x WholeBody133": "coco133.toml",
+            "RTMPose-m Hand5": "hand.toml",
         }
         kp_toml_name = model_to_toml.get(model_name, None)
         if kp_toml_name is None:
