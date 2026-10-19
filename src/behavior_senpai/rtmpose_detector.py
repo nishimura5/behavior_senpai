@@ -21,6 +21,7 @@ class QDTrackDetector:
         self.det_cat_id = 0
 
     def detect(self, image, frame_id, video_len):
+        """Return aligned boxes and track IDs from a BGR video frame."""
         scope = self.track_model.cfg.get("default_scope", "mmdet")
         if scope is not None:
             init_default_scope(scope)

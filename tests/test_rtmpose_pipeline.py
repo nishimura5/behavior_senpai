@@ -76,7 +76,8 @@ class PosePipelineTests(unittest.TestCase):
         self.assertIsInstance(result, pd.DataFrame)
         np.testing.assert_allclose(result.to_numpy(), [[10, 20, 1, .9, 125], [0, 0, 0, .2, 125]])
         image = self.detector.detect.call_args.args[0]
-        np.testing.assert_array_equal(image[0, 0], [30, 20, 10])
+        np.testing.assert_array_equal(image[0, 0], [10, 20, 30])
+        self.assertIs(image, self.cap.read.return_value[1])
         self.assertIs(self.estimator.estimate.call_args.args[0], image)
         self.assertEqual(self.detector.detect.call_args.kwargs, {"frame_id": 0, "video_len": 1})
 
@@ -153,8 +154,10 @@ class PosePipelineTests(unittest.TestCase):
                 self.assertEqual(estimator.estimate("image", []), [])
                 apis.inference_topdown.assert_not_called()
                 boxes = np.array([[1, 2, 3, 4]])
-                self.assertIs(estimator.estimate("image", boxes), apis.inference_topdown.return_value)
-                apis.inference_topdown.assert_called_once_with(estimator.model, "image", boxes)
+                image = np.array([[[10, 20, 30]]], dtype=np.uint8)
+                self.assertIs(estimator.estimate(image, boxes), apis.inference_topdown.return_value)
+                apis.inference_topdown.assert_called_once_with(estimator.model, image, boxes)
+                self.assertIs(apis.inference_topdown.call_args.args[1], image)
                 apis.inference_topdown.reset_mock()
         with self.assertRaises(ValueError):
             module.RTMPoseEstimator("unknown")

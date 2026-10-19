@@ -12,7 +12,8 @@ class PoseVideoProcessor:
 
     The detector returns aligned (bboxes, track_ids) from detect(image,
     frame_id, video_len). The estimator returns one pose sample per bbox
-    from estimate(image, bboxes), in the same order.
+    from estimate(image, bboxes), in the same order. Both receive BGR images
+    directly from the video capture; model preprocessors handle color conversion.
     """
 
     def __init__(self, bbox_detector, pose_estimator, show=True):
@@ -44,10 +45,8 @@ class PoseVideoProcessor:
             if ret is False:
                 print("Failed to read frame.")
                 continue
-            rgb_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
             bboxes, track_ids = self.bbox_detector.detect(
-                rgb_img, frame_id=self.frame_id, video_len=self.total_frame_num
+                frame, frame_id=self.frame_id, video_len=self.total_frame_num
             )
             self.frame_id += 1
 
@@ -56,7 +55,7 @@ class PoseVideoProcessor:
                 continue
 
             # keypoint検出
-            results = self.pose_estimator.estimate(rgb_img, bboxes)
+            results = self.pose_estimator.estimate(frame, bboxes)
             data_samples = merge_data_samples(results)
             timestamp = self.cap.get(cv2.CAP_PROP_POS_MSEC)
 
