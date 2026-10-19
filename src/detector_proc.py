@@ -18,7 +18,7 @@ if is_module_available("ultralytics"):
 else:
     YOLOV8_AVAILABLE = False
 if is_module_available("mmpose"):
-    from behavior_senpai import rtmpose_detector
+    from behavior_senpai import rtmpose_detector, rtmpose_hand_detector
 
     MMPOSE_AVAILABLE = True
 else:
@@ -29,7 +29,7 @@ def check_gpu():
     return YOLOV8_AVAILABLE, MMPOSE_AVAILABLE
 
 
-def exec(rcap, model_name, video_path, use_roi=False, add_suffix=False):
+def exec(rcap, model_name, video_path, use_roi=False, add_suffix=False, hand_bbox_threshold=0.5):
     # 動画の読み込み
     rcap.open_file(video_path)
 
@@ -59,6 +59,9 @@ def exec(rcap, model_name, video_path, use_roi=False, add_suffix=False):
     elif model_name == "RTMW-x WholeBody133":
         model = rtmpose_detector.RTMPoseDetector(model_name)
         suffix = "rtmw_coco133"
+    elif model_name == "RTMPose-m Hand5":
+        model = rtmpose_hand_detector.RTMPoseHandDetector(bbox_threshold=hand_bbox_threshold)
+        suffix = "rtm_hand5"
     if add_suffix is True:
         dst_file_name = f"{file_name}_{suffix}.pkl"
     else:
@@ -71,6 +74,8 @@ def exec(rcap, model_name, video_path, use_roi=False, add_suffix=False):
 
     # attrsを埋め込み
     result_df.attrs["model"] = model_name
+    if model_name == "RTMPose-m Hand5":
+        result_df.attrs["bbox_threshold"] = hand_bbox_threshold
     result_df.attrs["frame_size"] = (rcap.width, rcap.height)
     result_df.attrs["video_name"] = os.path.basename(video_path)
     result_df.attrs["roi_left_top"] = rcap.get_left_top()

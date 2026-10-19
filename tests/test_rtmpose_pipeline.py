@@ -112,6 +112,32 @@ class PosePipelineTests(unittest.TestCase):
         self.registry.VISUALIZERS.build.return_value.add_datasample.assert_called_once()
         self.assertTrue(processor.get_result().empty)
 
+    def test_empty_detections_still_show_video_and_allow_exit(self):
+        self.detector.detect.return_value = (np.empty((0, 4)), np.array([]))
+        self.cap.get.side_effect = lambda prop: {
+            cv2.CAP_PROP_FRAME_COUNT: 3,
+            cv2.CAP_PROP_FRAME_WIDTH: 640,
+            cv2.CAP_PROP_FRAME_HEIGHT: 480,
+            cv2.CAP_PROP_POS_MSEC: 125.,
+        }[prop]
+        processor = self.processor(show=True)
+        frame = self.cap.read.return_value[1]
+        with patch.object(self.processor_module.cv2, "imshow") as imshow, \
+                patch.object(self.processor_module.cv2, "waitKey", return_value=ord("x")) as wait_key, \
+                patch.object(self.processor_module.cv2, "destroyAllWindows"), \
+                patch.object(self.processor_module.vcap, "resize_frame", return_value=(1, frame)), \
+                patch.object(self.processor_module.img_draw, "put_frame_pos"), \
+                patch.object(self.processor_module.img_draw, "put_message") as put_message:
+            processor.detect()
+        imshow.assert_called_once_with("dst", frame)
+        wait_key.assert_called_once_with(1)
+        self.cap.read.assert_called_once()
+        self.estimator.estimate.assert_not_called()
+        self.structures.merge_data_samples.assert_not_called()
+        self.registry.VISUALIZERS.build.return_value.add_datasample.assert_not_called()
+        self.assertTrue(processor.get_result().empty)
+        self.assertTrue(any(call.args[1] == "No detections" for call in put_message.call_args_list))
+
     def test_qdtrack_filters_boxes_and_ids_together(self):
         apis = MagicMock()
         module = load_module("rtmpose_detector", {

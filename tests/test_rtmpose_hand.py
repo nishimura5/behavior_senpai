@@ -111,6 +111,13 @@ class HandPipelineTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.estimator_module.RTMPoseEstimator("hand", device="cpu")
 
+    def test_hand_threshold_can_include_low_confidence_boxes(self):
+        detector = self.module.RTMHandDetector(device="cpu", bbox_threshold=0.1)
+        self.detection([[0, 0, 10, 10], [20, 0, 30, 10]], scores=[0.2, 0.09])
+        boxes, ids = detector.detect(np.zeros((2, 2, 3), dtype=np.uint8), 0, 1)
+        np.testing.assert_array_equal(boxes, [[0, 0, 10, 10]])
+        np.testing.assert_array_equal(ids, [0])
+
     def test_hand_video_produces_21_rows_with_roi_and_hand_id(self):
         # Exercise the real processor and hand wrappers with inference APIs replaced.
         fixture = pipeline_tests.PosePipelineTests()

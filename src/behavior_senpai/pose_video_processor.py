@@ -37,6 +37,8 @@ class PoseVideoProcessor:
     def detect(self, roi=False):
         # データの初期化
         data_dict = {"frame": [], "member": [], "keypoint": [], "x": [], "y": [], "visible": [], "score": [], "timestamp": []}
+        frames_read = 0
+        frames_with_detections = 0
         for i in range(self.total_frame_num):
             if roi is True:
                 ret, frame = self.cap.get_roi_frame()
@@ -45,26 +47,30 @@ class PoseVideoProcessor:
             if ret is False:
                 print("Failed to read frame.")
                 continue
+            frames_read += 1
             bboxes, track_ids = self.bbox_detector.detect(
                 frame, frame_id=self.frame_id, video_len=self.total_frame_num
             )
             self.frame_id += 1
 
             # 何もなければ次のフレームへ
-            if len(bboxes) == 0:
-                continue
-
             # keypoint検出
-            results = self.pose_estimator.estimate(frame, bboxes)
-            data_samples = merge_data_samples(results)
+            results = []
+            if len(bboxes) > 0:
+                frames_with_detections += 1
+                results = self.pose_estimator.estimate(frame, bboxes)
             timestamp = self.cap.get(cv2.CAP_PROP_POS_MSEC)
 
             # 検出結果を描画、xキーで途中終了
             if self.show is True:
-                frame = self._draw(frame, data_samples)
+                if results:
+                    frame = self._draw(frame, merge_data_samples(results))
+                frame = self._draw_bboxes(frame, bboxes, track_ids)
                 _, frame = vcap.resize_frame(frame)
                 img_draw.put_frame_pos(frame, i, self.total_frame_num)
                 img_draw.put_message(frame, "'x' key to exit.", font_size=1.5, y=55)
+                if len(bboxes) == 0:
+                    img_draw.put_message(frame, "No detections", font_size=1.5, y=80)
                 cv2.imshow("dst", frame)
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord("x"):
@@ -99,9 +105,29 @@ class PoseVideoProcessor:
         # keypointはここではintで保持する、indexでソートしたくなるかもしれないので
         self.dst_df = pd.DataFrame(data_dict).set_index(["frame", "member", "keypoint"])
         cv2.destroyAllWindows()
+        print(
+            f"Processed {frames_read}/{self.total_frame_num} frames; "
+            f"frames with detections: {frames_with_detections}; keypoint rows: {len(self.dst_df)}"
+        )
+        if frames_read == 0:
+            print("No video frames were read. Check the video file and frame count.")
+        elif frames_with_detections == 0:
+            print("No bounding boxes were detected. Keypoint estimation was skipped. Check the target size and ROI.")
 
     def get_result(self):
         return self.dst_df
+
+    def _draw_bboxes(self, frame, bboxes, track_ids):
+        frame = frame.copy()
+        color = (0, 255, 0)
+        for bbox, track_id in zip(bboxes, track_ids):
+            x1, y1, x2, y2 = map(int, bbox)
+            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+            cv2.putText(
+                frame, f"ID: {track_id}", (max(0, x1), max(15, y1 - 5)),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2, cv2.LINE_AA,
+            )
+        return frame
 
     def _draw(self, anno_img, data_samples):
         self.visualizer.add_datasample(
