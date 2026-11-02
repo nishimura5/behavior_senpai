@@ -12,6 +12,7 @@ import pandas as pd
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from app_feature_copy import App
 from behavior_senpai.hdf_df import DataFrameStorage
+from behavior_senpai import feature_proc
 
 
 class FeatureCopyAtomicTests(unittest.TestCase):
@@ -45,6 +46,52 @@ class FeatureCopyAtomicTests(unittest.TestCase):
 
     def assert_clean(self):
         self.assertEqual(list(Path(self.app.feat_dir).glob(".feature-copy-*")), [])
+
+    def test_filter_failure_preserves_existing_bytes_or_no_new_file_in_both_paths(self):
+        mix = [["filtered", "old", "norm(5-6)", " ", " ", "Bandpassfilter"]]
+        points, _ = App._calculate_points(self.track, "7", self.points)
+        for definitions in [[], self.points]:
+            for existing in [False, True]:
+                with self.subTest(points=bool(definitions), existing=existing):
+                    if self.path.exists():
+                        self.path.unlink()
+                    if existing:
+                        DataFrameStorage(str(self.path)).save_points_df(points, "target.pkl", self.points)
+                    before = self.path.read_bytes() if existing else None
+                    with self.assertRaisesRegex(feature_proc.FilterInputError, "Too few samples"):
+                        self.app._create_feature_file("target.pkl", "test", mix, definitions)
+                    if existing:
+                        self.assertEqual(self.path.read_bytes(), before)
+                    else:
+                        self.assertFalse(self.path.exists())
+                    self.assert_clean()
+
+    def test_filtered_feature_copy_reopens_correct_signal_in_both_paths(self):
+        from test_feature_filter_timeaxis import amplitudes, signal_frame
+        signal = signal_frame(15)
+        timestamps = signal["timestamp"].to_numpy()
+        index = pd.MultiIndex.from_product([range(len(signal)), [7], range(17)], names=["frame", "member", "keypoint"])
+        track = pd.DataFrame({"x": np.tile(np.arange(17, dtype=float) + 1, len(signal)),
+                              "y": 1., "timestamp": np.repeat(timestamps, 17)}, index=index)
+        track.loc[pd.IndexSlice[:, 7, 5], "x"] = 0.
+        track.loc[pd.IndexSlice[:, 7, 6], "x"] = 10. + signal["wave"].to_numpy()
+        track.attrs = {"model": "YOLO11 x-pose", "scene_table": {
+            "description": ["test"], "member": [7], "start": ["00:00:00.000"], "end": ["00:01:59.999"],
+        }}
+        track.to_pickle(os.path.join(self.app.pkl_dir, "target.pkl"))
+        mix = [["filtered", "old", "norm(5-6)", " ", " ", "Bandpassfilter"]]
+        for definitions in [[], self.points]:
+            with self.subTest(points=bool(definitions)):
+                self.app._create_feature_file("target.pkl", "test", mix, definitions)
+                storage = DataFrameStorage(str(self.path))
+                result = storage.load_mixnorm_df()
+                gains = amplitudes(result["filtered"], result["timestamp"].to_numpy() / 1000., [.7, 4.])
+                self.assertAlmostEqual(gains[0], 1., delta=.025)
+                self.assertLess(gains[1], .025)
+                self.assertEqual(result["timestamp"].tolist(), timestamps.tolist())
+                self.assertEqual(storage.load_profile()["track_name"], "target.pkl")
+                self.assertEqual(storage.load_mixnorm_source_cols(), [["filtered", "7", "norm(5-6)", " ", " ", "Bandpassfilter"]])
+                self.assert_clean()
 
     def test_success_both_paths_reopen_data_definitions_profile_and_preserved_groups(self):
         for definitions in [[], self.points]:

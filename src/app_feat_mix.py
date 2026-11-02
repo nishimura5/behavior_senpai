@@ -2,7 +2,7 @@ import json
 import os
 import sys
 import tkinter as tk
-from tkinter import ttk
+from tkinter import messagebox, ttk
 
 import pandas as pd
 from tqdm import tqdm
@@ -247,6 +247,16 @@ class App(ttk.Frame):
                 self.tree.insert(row)
 
     def draw(self):
+        self.export_btn["state"] = "disabled"
+        try:
+            self._draw()
+        except feature_proc.FilterInputError as error:
+            # Never allow Save to publish partial results or stale results from an earlier draw.
+            self.feat_df = pd.DataFrame()
+            self.lineplot.clear_fig()
+            messagebox.showerror("Mix/Norm", str(error), parent=self)
+
+    def _draw(self):
         self.lineplot.clear_fig()
         self.feat_df = pd.DataFrame()
         self.source_cols = self.tree.get_all()
@@ -275,7 +285,12 @@ class App(ttk.Frame):
                     continue
                 normalize = self.name_and_code[normalize]
                 new_sr = feature_proc.arithmetic_operations(member_df, op, col_a, col_b)
-                new_sr = feature_proc.calc(new_sr, normalize)
+                try:
+                    new_sr = feature_proc.calc(
+                        new_sr, normalize, timestamps=self.tar_df["timestamp"].reindex(new_sr.index), scene_ranges=scenes,
+                    )
+                except feature_proc.FilterInputError as error:
+                    raise feature_proc.FilterInputError(f"Feature '{feat_name}', member '{member}': {error}") from error
 
                 # concat right
                 member_feat_df = pd.concat([member_feat_df, new_sr.to_frame(feat_name)], axis=1)
@@ -321,7 +336,11 @@ class App(ttk.Frame):
         selected_rows = [self.tree.tree.item(item)["values"] for item in selected]
         scene_name = self.scene_combo.get()
         scenes = self.src_attrs.get_scenes(scene_name)
-        out_df = self._make_csv_dataframe(selected_rows, scenes)
+        try:
+            out_df = self._make_csv_dataframe(selected_rows, scenes)
+        except feature_proc.FilterInputError as error:
+            messagebox.showerror("Export CSV", str(error), parent=self)
+            return
         if out_df.empty:
             print("No data to export.")
             return
@@ -348,7 +367,12 @@ class App(ttk.Frame):
 
             calc_df = member_df.drop(columns="timestamp")
             new_sr = feature_proc.arithmetic_operations(calc_df, op, col_a, col_b)
-            new_sr = feature_proc.calc(new_sr, self.name_and_code[normalize])
+            try:
+                new_sr = feature_proc.calc(
+                    new_sr, self.name_and_code[normalize], timestamps=member_df["timestamp"], scene_ranges=scenes,
+                )
+            except feature_proc.FilterInputError as error:
+                raise feature_proc.FilterInputError(f"Feature '{feature_name}', member '{member}': {error}") from error
             feature_series.append(new_sr.rename(str(feature_name)))
 
         if len(feature_series) == 0:

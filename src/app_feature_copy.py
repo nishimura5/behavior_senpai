@@ -393,7 +393,10 @@ class App(ttk.Frame):
                 raise ValueError(f"Column not found for {feature_name}: {col_b}")
             normalize_code = name_and_code.get(normalize, normalize)
             new_sr = feature_proc.arithmetic_operations(calc_df, op, col_a, col_b)
-            new_sr = feature_proc.calc(new_sr, normalize_code)
+            try:
+                new_sr = feature_proc.calc(new_sr, normalize_code, timestamps=timestamp, scene_ranges=scene_ranges)
+            except feature_proc.FilterInputError as error:
+                raise feature_proc.FilterInputError(f"Feature '{feature_name}', member '{member}': {error}") from error
             feature_series.append(new_sr.rename(str(feature_name)))
             target_source_cols.append([feature_name, str(member), col_a, op, col_b, normalize])
 

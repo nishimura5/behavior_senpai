@@ -14,7 +14,7 @@ from gui_parts import Combobox, TempFile
 def thin_by_timestamp(src_df, target_fps):
     """Keep the first timestamp in each 1000/fps ms bin for all keypoints.
 
-    Bins start at the first timestamp. Preserve index, values and attrs.
+    Bins start at each member's first timestamp. Preserve index, values and attrs.
     Skip rates within 1% of the observed rate, and requests for higher rates.
     """
     target_fps = float(target_fps)
@@ -25,17 +25,27 @@ def thin_by_timestamp(src_df, target_fps):
     timestamps = src_df["timestamp"].to_numpy(dtype=float)
     if not np.isfinite(timestamps).all():
         raise ValueError("Timestamps must be finite numbers in milliseconds.")
-    times = np.unique(timestamps)
-    if len(times) < 2:
+    if isinstance(src_df.index, pd.MultiIndex):
+        member_level = "member" if "member" in src_df.index.names else 1
+        groups = src_df.groupby(level=member_level, sort=False, dropna=False).indices.values()
+    else:
+        groups = [np.arange(len(src_df))]
+    keep_rows = np.ones(len(src_df), dtype=bool)
+    for positions in groups:
+        member_times = timestamps[positions]
+        times = np.unique(member_times)
+        if len(times) < 2:
+            continue
+        source_fps = 1000.0 / np.median(np.diff(times))
+        if target_fps >= source_fps * 0.99:
+            continue
+        # Fixed bins avoid accumulating timing error at fractional source rates.
+        bins = np.floor((times - times[0]) / (1000.0 / target_fps) + 1e-9)
+        keep = np.r_[True, bins[1:] != bins[:-1]]
+        keep_rows[positions] = np.isin(member_times, times[keep])
+    if keep_rows.all():
         return src_df
-    source_fps = 1000.0 / np.median(np.diff(times))
-    if target_fps >= source_fps * 0.99:
-        return src_df
-
-    # Fixed bins avoid accumulating timing error at fractional source rates.
-    bins = np.floor((times - times[0]) / (1000.0 / target_fps) + 1e-9)
-    keep = np.r_[True, bins[1:] != bins[:-1]]
-    result = src_df.loc[np.isin(timestamps, times[keep])].copy()
+    result = src_df.loc[keep_rows].copy()
     result.attrs = src_df.attrs.copy()
     return result
 
