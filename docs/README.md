@@ -1,7 +1,6 @@
-# Behavior Senpai 1.7.0 — release candidate (dev170)
+# Behavior Senpai 1.7.0
 
-This source tree targets 1.7.0. It is under release review; no 1.7.0 installer or ZIP is published yet.
-See the [draft release notes](release_notes_1.7.0.md) and [release verification record](release_verification_1.7.0.md).
+Download [BehaviorSenpai170.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.7.0/BehaviorSenpai170.zip) or see the [1.7.0 release notes](https://github.com/nishimura5/behavior_senpai/releases/tag/v1.7.0).
 
 [pyproject]: https://github.com/nishimura5/behavior_senpai/blob/master/pyproject.toml
 [app_detect]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_detect.py
@@ -36,12 +35,28 @@ Behavior Senpai is an open source software developed at [Faculty of Design, Kyus
 ## Install
 
 ### Download
-The previous stable release is **1.6.0**: [BehaviorSenpai160.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.6.0/BehaviorSenpai160.zip).
-This download contains 1.6.0, not the changes in this 1.7.0 candidate. Future 1.7.0 downloads will be announced on the [Releases page](https://github.com/nishimura5/behavior_senpai/releases).
 
-Extract the ZIP file and move the `BehaviorSenpai160` folder to your desired working directory.
+Download **[BehaviorSenpai170.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.7.0/BehaviorSenpai170.zip)** from the [Releases page](https://github.com/nishimura5/behavior_senpai/releases).
 
-### Run this 1.7.0 candidate from source
+Extract all files into a folder such as `BehaviorSenpai170` in your desired working directory. The ZIP contains the application files directly, without a top-level folder. Keep `BehaviorSenpaiWin.exe`, `src`, `mm_config`, `pyproject.toml`, and `README.md` together.
+
+### Windows
+
+1. Install **.NET 10 Desktop Runtime (x64)** from the [Microsoft download page](https://dotnet.microsoft.com/en-us/download/dotnet/10.0). Choose **.NET Desktop Runtime** for **Windows x64**.
+2. Open the extracted folder and run `BehaviorSenpaiWin.exe`.
+3. Follow the first-time setup dialog to install the Python dependencies. Enable CUDA support if you want to use MMPose and YOLO.
+
+The launcher is published as a single EXE. Its application DLL is included, but the .NET runtime and Python source files are not bundled into the EXE. The .NET SDK is not required to run the application.
+
+**First-time setup:**
+
+- `uv` will be automatically installed if not present.
+- The launcher selects Python 3.11 and creates a local `.venv` environment.
+- Dependency installation requires an internet connection and may take several minutes.
+
+**Subsequent launches:** Run `BehaviorSenpaiWin.exe` from the extracted folder.
+
+### Run from source
 
 Use Python 3.11 and `uv`, from the repository directory:
 
@@ -51,28 +66,14 @@ uv run python -X utf8 src/launcher.py
 ```
 
 For optional CUDA dependencies, use `uv sync --extra cuda` before starting the application.
-The project pins `ttkthemes==3.2.2`; the build metadata problem reported for 3.3.0 in [Issue #1](https://github.com/nishimura5/behavior_senpai/issues/1) must not be inferred from the issue's open status alone.
-Model weights, CUDA drivers and the packaged Windows installation workflow require separate validation; see the verification record above.
+The project pins `ttkthemes==3.2.2`. CUDA support also requires a compatible NVIDIA GPU and driver.
 
-### Windows packaged release (1.6.0)
-
-1. Run `BehaviorSenpai.exe` to start the application
-2. Click the "Install" button
-
-**First-time setup:**
-- `uv` will be automatically installed if not present
-- (Optional) Check "Enable CUDA support" if you want to use MMPose and YOLO
-- The initial setup may take several minutes
-
-**Subsequent launches:**
-- Simply run `BehaviorSenpai.exe` to start the application
-
-### macOS packaged release (1.6.0)
+### macOS
 
 1. Install Python 3.11 from [python.org](https://www.python.org/downloads/macos/)
 2. Open Terminal and run the following commands:
 ```bash
-   cd your/directory/BehaviorSenpai160
+   cd your/directory/BehaviorSenpai170
    zsh behavior_senpai_mac.sh
 ```
 
@@ -82,6 +83,22 @@ Model weights, CUDA drivers and the packaged Windows installation workflow requi
 
 **Subsequent launches:**
 - Run the same command to start the application
+
+## What's new in 1.7.0
+
+- Added Feature Copy to reuse Points and Mix/Norm definitions across tracks, edit scenes, and export scene videos.
+- Added timestamp-based frame thinning and score statistics.
+- Added CSV export for selected Mix/Norm features and configurable plot ranges.
+- Moved UMAP computation to a separate process to keep the interface responsive.
+- Improved Member and Scene Table editing, video navigation, and WholeBody133 keypoint definitions.
+- Added unsaved-change prompts and safer track and feature-file updates.
+- Updated frequency filters to use actual timestamps instead of a fixed 60 Hz sampling rate.
+- Fixed negative plot-range handling, MP4 export error reporting, and console encoding issues.
+- Updated the Windows launcher to .NET 10 LTS.
+
+## Known issues
+
+An access violation (`0xC0000005`) during VideoCapture cleanup was reproduced in a fresh Windows CPU environment and remains unresolved. See the [release verification record](release_verification_1.7.0.md) for the tested environments and reproduction details. CUDA installation, model inference, macOS, and packaged application setup still require additional validation.
 
 ## Usage
 
@@ -387,7 +404,7 @@ The application's settings and the path of the most recently loaded Track file a
 
 Please acknowledge and cite the use of this software and its authors when results are used in publications or published elsewhere.
 
-The published reference below describes version 1.6. The 1.7.0 release and its citation metadata have not yet been published.
+The published reference below describes version 1.6. When citing version 1.7.0, also specify the version used and link to the [1.7.0 release](https://github.com/nishimura5/behavior_senpai/releases/tag/v1.7.0).
 
 ```
 Nishimura, E. (2025). Behavior Senpai (Version 1.6) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651
