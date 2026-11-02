@@ -78,7 +78,7 @@ class LauncherDataProtectionTests(unittest.TestCase):
     def close_dialog(self, action=None):
         def close():
             dialog = getattr(self.app, "a", None)
-            if dialog is None or not dialog.master.winfo_exists():
+            if dialog is None or not dialog.master.winfo_exists() or not dialog.winfo_ismapped():
                 self.root.after(50, close)
                 return
             try:
@@ -303,6 +303,136 @@ class LauncherDataProtectionTests(unittest.TestCase):
 
     def test_failed_export_restores_video_and_position_with_one_capture(self):
         self._check_export_restores_shared_capture(fail=True)
+
+    def _check_scene_save_failure(self, count):
+        def edit(dialog):
+            rows = dialog.tree.get_children()[:count]
+            for i, row in enumerate(rows):
+                dialog.tree.set(row, "part", str(i + 3))
+                dialog.tree.set(row, "scene", f"old scene {i}")
+                dialog.tree.set(row, "member", f"old member {i}")
+                dialog.options_by_item[row] = {"scenes": ["new"], "members_by_scene": {"new": [str(i + 10)]}}
+            dialog.tree.selection_set(rows)
+            before = {row: dialog.tree.set(row) for row in rows}
+            dialog._save_feat_copy()
+            saved = Path(dialog.feat_copy_path).read_bytes()
+
+            def choose():
+                child = next(w for w in dialog.winfo_children() if isinstance(w, app_feature_copy.RowEditDialog))
+                child.scene_combo.set("new")
+                child._ok()
+            self.root.after(50, choose)
+            with patch.object(dialog, "_save_feat_copy", side_effect=OSError("disk full")), \
+                 patch("app_feature_copy.messagebox.showerror") as error:
+                dialog._edit_selected()
+                error.assert_called_once()
+            self.assertEqual({row: dialog.tree.set(row) for row in rows}, before)
+            self.assertEqual(Path(dialog.feat_copy_path).read_bytes(), saved)
+        self.close_dialog(edit)
+        self.app.launch_window(app_feature_copy.App, reload_pkl=True)
+
+    def test_scene_save_failure_restores_single_row(self):
+        self._check_scene_save_failure(1)
+
+    def test_scene_save_failure_restores_each_selected_row(self):
+        self._check_scene_save_failure(2)
+
+    def test_release_edit_points_mix_csv_save_reload_smoke(self):
+        import app_area_filter
+        import app_feat_mix
+        import app_member_edit
+        import app_points_calc
+        import app_scene_table
+        import app_smoothing
+
+        count = 240
+        video = Path(self.temp.name) / "smoke.avi"
+        writer = cv2.VideoWriter(str(video), cv2.VideoWriter_fourcc(*"MJPG"), 60, (64, 64))
+        self.assertTrue(writer.isOpened())
+        for i in range(count):
+            writer.write(np.full((64, 64, 3), i % 180, dtype=np.uint8))
+        writer.release()
+        index = pd.MultiIndex.from_product([range(count), ["7"], range(17)], names=["frame", "member", "keypoint"])
+        times = np.arange(count) / 60
+        track = pd.DataFrame({"x": np.tile(np.arange(17) + 1., count) + np.repeat(np.sin(times * 7), 17),
+                              "y": np.tile(np.arange(17) + 1., count), "conf": 1.,
+                              "timestamp": np.repeat(times * 1000., 17)}, index=index)
+        track.loc[pd.IndexSlice[:, "7", 0], "conf"] = .01
+        track.attrs = copy.deepcopy(self.track.attrs)
+        track.attrs["video_name"] = video.name
+        track.to_pickle(self.path)
+        self.app.load(check_unsaved=False)
+        self.app.vw.slider.set(100.)
+        self.app.vw.on_slider_changed(100.)
+        self.assertIsNotNone(self.app.vw.canvas.img_on_canvas)
+
+        def remove(dialog):
+            dialog.thinning_var.set(True)
+            dialog.target_fps_var.set("15")
+            dialog.low_score_var.set(True)
+            dialog.score_threshold_var.set(.5)
+            dialog.exec_remove()
+            dialog.on_ok()
+        self.close_dialog(remove)
+        self.app.launch_window(app_area_filter.App, edit_df=True, grab=True)
+        self.assertEqual(self.app.src_df.index.get_level_values("frame").nunique(), 60)
+        self.assertTrue(self.app.src_df.loc[pd.IndexSlice[:, "7", 0], "x"].isna().all())
+
+        def smooth(dialog):
+            dialog.member_keypoints_combos.set("7", "5")
+            dialog.smoothing_type_combo.set("moving average")
+            dialog.window_size_entry.set(3)
+            dialog.calc()
+            dialog.on_ok()
+        self.close_dialog(smooth)
+        self.app.launch_window(app_smoothing.App, edit_df=True, grab=True)
+        self.assertIn("smoothing", self.app.src_df.attrs["proc_history"])
+
+        def rename(dialog):
+            dialog.tar_member_label_var.set("7")
+            dialog.new_member_name_entry.update("8")
+            dialog.rename_member()
+            dialog.on_ok()
+        self.close_dialog(rename)
+        self.app.launch_window(app_member_edit.App, edit_df=True, grab=True)
+        self.assertEqual(self.app.src_df.index.get_level_values("member").unique().tolist(), ["8"])
+
+        def scene(dialog):
+            dialog.tree.insert(("00:00:00.000", "00:00:03.900", "00:00:03.900", "8", "test"))
+            dialog._update()
+            dialog.on_ok()
+        self.close_dialog(scene)
+        with patch("launcher.messagebox.showinfo"):
+            self.app.launch_scene_table_window(app_scene_table.App)
+        self.assertEqual(self.app.src_df.attrs["scene_table"]["description"], ["test"])
+
+        def points(dialog):
+            dialog.tree.insert(["distance (|AB|)", "8", "5", "6", "None"])
+            dialog.draw()
+            dialog.export()
+        self.close_dialog(points)
+        self.app.launch_window(app_points_calc.App)
+        feat_path = Path(self.temp.name) / "calc" / self.app.calc_case_entry.get() / "target.feat"
+        self.assertIn("norm(5-6)", DataFrameStorage(str(feat_path)).load_points_df())
+
+        def mix(dialog):
+            dialog.tree.insert(["distance", "8", "norm(5-6)", " ", " ", "No normalize", "0-5"])
+            dialog.draw()
+            dialog.export()
+            dialog.tree.tree.selection_set(dialog.tree.tree.get_children())
+            with patch("export_csv.messagebox.showinfo"):
+                dialog.export_csv()
+        self.close_dialog(mix)
+        self.app.launch_window(app_feat_mix.App)
+        result = DataFrameStorage(str(feat_path)).load_mixnorm_df()
+        self.assertIn("distance", result)
+        self.assertTrue(list((Path(self.temp.name) / "csv").glob("*.csv")))
+        current = copy.deepcopy(self.app.src_df)
+        with patch("launcher.messagebox.showinfo"):
+            self.assertTrue(self.app.overwrite())
+        self.assertTrue(self.app.load())
+        self.assertTrue(self.app._tracks_equal(self.app.src_df, current))
+        self.assertEqual(self.capture_count, 1)
 
 
 class IsolatedLauncherCase(unittest.TestCase):

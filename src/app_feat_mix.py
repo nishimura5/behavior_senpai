@@ -250,7 +250,7 @@ class App(ttk.Frame):
         self.export_btn["state"] = "disabled"
         try:
             self._draw()
-        except feature_proc.FilterInputError as error:
+        except ValueError as error:
             # Never allow Save to publish partial results or stale results from an earlier draw.
             self.feat_df = pd.DataFrame()
             self.lineplot.clear_fig()
@@ -317,15 +317,7 @@ class App(ttk.Frame):
 
     @staticmethod
     def _parse_plot_range(plot_range):
-        plot_range = str(plot_range).strip()
-        if plot_range == "":
-            return None
-        try:
-            y_min, y_max = plot_range.split("-")
-            return float(y_min), float(y_max)
-        except ValueError:
-            print(f"Invalid plot range: {plot_range}. Use a value such as 0-1 or 10.0-30.0.")
-            return None
+        return feature_proc.parse_plot_range(plot_range)
 
     def export_csv(self):
         """Export the features represented by the selected tree rows."""

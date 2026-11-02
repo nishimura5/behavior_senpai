@@ -51,7 +51,10 @@ class UmapJob:
             self._log.close()
             log = self._log_path.read_text(encoding="utf-8", errors="replace")
             if log:
-                print(log, end="" if log.endswith("\n") else "\n")
+                # Windows consoles may be cp932 even though the worker always writes UTF-8.
+                encoding = getattr(sys.stdout, "encoding", None)
+                display_log = log.encode(encoding, errors="backslashreplace").decode(encoding) if encoding else log
+                print(display_log, end="" if log.endswith("\n") else "\n")
             if code != 0:
                 raise UmapProcessError(f"UMAP process exited with code {code}.\n\n{log[-4000:]}")
             import pandas as pd

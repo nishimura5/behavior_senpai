@@ -1,4 +1,7 @@
-# Behavior Senpai v.1.6.0
+# Behavior Senpai 1.7.0 — release candidate (dev170)
+
+This source tree targets 1.7.0. It is under release review; no 1.7.0 installer or ZIP is published yet.
+See the [draft release notes](docs/release_notes_1.7.0.md) and [release verification record](docs/release_verification_1.7.0.md).
 
 [pyproject]: https://github.com/nishimura5/behavior_senpai/blob/master/pyproject.toml
 [app_detect]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_detect.py
@@ -33,11 +36,25 @@ Behavior Senpai is an open source software developed at [Faculty of Design, Kyus
 ## Install
 
 ### Download
-Download [BehaviorSenpai160.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.6.0/BehaviorSenpai160.zip)
+The previous stable release is **1.6.0**: [BehaviorSenpai160.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.6.0/BehaviorSenpai160.zip).
+This download contains 1.6.0, not the changes in this 1.7.0 candidate. Future 1.7.0 downloads will be announced on the [Releases page](https://github.com/nishimura5/behavior_senpai/releases).
 
 Extract the ZIP file and move the `BehaviorSenpai160` folder to your desired working directory.
 
-### Windows
+### Run this 1.7.0 candidate from source
+
+Use Python 3.11 and `uv`, from the repository directory:
+
+```powershell
+uv sync
+uv run python -X utf8 src/launcher.py
+```
+
+For optional CUDA dependencies, use `uv sync --extra cuda` before starting the application.
+The project pins `ttkthemes==3.2.2`; the build metadata problem reported for 3.3.0 in [Issue #1](https://github.com/nishimura5/behavior_senpai/issues/1) must not be inferred from the issue's open status alone.
+Model weights, CUDA drivers and the packaged Windows installation workflow require separate validation; see the verification record above.
+
+### Windows packaged release (1.6.0)
 
 1. Run `BehaviorSenpai.exe` to start the application
 2. Click the "Install" button
@@ -50,7 +67,7 @@ Extract the ZIP file and move the `BehaviorSenpai160` folder to your desired wor
 **Subsequent launches:**
 - Simply run `BehaviorSenpai.exe` to start the application
 
-### macOS
+### macOS packaged release (1.6.0)
 
 1. Install Python 3.11 from [python.org](https://www.python.org/downloads/macos/)
 2. Open Terminal and run the following commands:
@@ -369,6 +386,8 @@ The application's settings and the path of the most recently loaded Track file a
 ## Citation
 
 Please acknowledge and cite the use of this software and its authors when results are used in publications or published elsewhere.
+
+The published reference below describes version 1.6. The 1.7.0 release and its citation metadata have not yet been published.
 
 ```
 Nishimura, E. (2025). Behavior Senpai (Version 1.6) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651

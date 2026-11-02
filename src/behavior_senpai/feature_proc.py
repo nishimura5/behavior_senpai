@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pandas as pd
 from scipy.signal import butter, sosfiltfilt
@@ -5,6 +7,23 @@ from scipy.signal import butter, sosfiltfilt
 
 class FilterInputError(ValueError):
     """An input cannot safely be treated as a uniformly sampled single-member signal."""
+
+
+def parse_plot_range(value):
+    """Return finite increasing bounds, or None for the automatic (blank) range."""
+    value = str(value).strip()
+    if not value:
+        return None
+    number = r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?"
+    match = re.fullmatch(rf"({number})\s*-\s*({number})", value)
+    if match:
+        low, high = map(float, match.groups())
+        if np.isfinite([low, high]).all() and low < high:
+            return low, high
+    raise ValueError(
+        f"Invalid plot range: {value!r}. Use two finite numbers with lower < upper, "
+        "for example 0-1, -1-1, -180-180 or -10--2; leave blank for automatic range."
+    )
 
 
 def get_calc_codes():

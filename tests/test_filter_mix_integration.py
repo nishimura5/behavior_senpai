@@ -91,6 +91,19 @@ class MixFilterIntegrationTests(unittest.TestCase):
             expected = expected.dropna().droplevel("member")
             np.testing.assert_allclose(exported[f"filtered_{member}"], expected)
 
+    def test_negative_plot_bounds_are_applied_and_invalid_bounds_disable_save(self):
+        self.app.tree.clear()
+        self.app.tree.insert(["filtered", "a", "wave", " ", " ", "Bandpassfilter", "-1-1"])
+        self.app.draw()
+        self.assertEqual(tuple(self.app.lineplot.line_ax.get_ylim()), (-1., 1.))
+        self.app.tree.clear()
+        self.app.tree.insert(["filtered", "a", "wave", " ", " ", "Bandpassfilter", "2-1"])
+        with patch("app_feat_mix.messagebox.showerror") as error:
+            self.app.draw()
+            error.assert_called_once()
+        self.assertEqual(str(self.app.export_btn["state"]), "disabled")
+        self.assertTrue(self.app.feat_df.empty)
+
     def test_filter_error_disables_save_and_preserves_feat_and_csv(self):
         self.app.draw()
         self.app.export()

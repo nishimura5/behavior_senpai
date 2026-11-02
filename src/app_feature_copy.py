@@ -535,7 +535,7 @@ class App(ttk.Frame):
             return
 
         scene = dialog.result
-        previous_values = {item: list(self.tree.item(item)["values"]) for item in selected}
+        previous_values = {item: {column: self.tree.set(item, column) for column in ("scene", "member")} for item in selected}
         if all(scene == self.tree.set(item, "scene") for item in selected):
             return
 
@@ -547,8 +547,8 @@ class App(ttk.Frame):
             self._save_feat_copy()
         except OSError as error:
             for item, values in previous_values.items():
-                self.tree.set(item, "scene", values[3])
-                self.tree.set(item, "member", values[4])
+                for column, value in values.items():
+                    self.tree.set(item, column, value)
             messagebox.showerror("Feature copy", f"Could not save feat_copy.\n{error}", parent=self)
 
     def _jump_to_selected_pkl(self):

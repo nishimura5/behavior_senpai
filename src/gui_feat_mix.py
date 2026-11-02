@@ -1,7 +1,7 @@
 import os
 import sys
 import tkinter as tk
-from tkinter import ttk
+from tkinter import messagebox, ttk
 
 import pandas as pd
 
@@ -200,6 +200,7 @@ class FeatMixTreeDialog(tk.Toplevel):
         self.normalize_combo.pack_horizontal(padx=5)
         self.plot_range_entry = StrEntry(norm_frame, label="Plot range:", width=15, allow_blank=True)
         self.plot_range_entry.pack_horizontal(padx=5)
+        ttk.Label(norm_frame, text="e.g. 0-1, -1-1, -10--2; blank = auto").pack(side=tk.LEFT, padx=5)
 
         button_frame = ttk.Frame(self)
         button_frame.pack(side=tk.TOP, pady=(10, 20))
@@ -263,6 +264,12 @@ class FeatMixTreeDialog(tk.Toplevel):
         self.plot_range_entry.update(plot_range)
 
     def on_ok(self):
+        try:
+            feature_proc.parse_plot_range(self.plot_range_entry.get())
+        except ValueError as error:
+            messagebox.showerror("Plot range", str(error), parent=self)
+            self.plot_range_entry.entry.focus_set()
+            return
         self.selected_feature_name = self.feature_name_entry.get()
         self.selected_member = self.member_combo.get()
         self.selected_col_a = self.col_a_combo.get()
