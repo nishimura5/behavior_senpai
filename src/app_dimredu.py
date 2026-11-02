@@ -1,10 +1,11 @@
 import os
 import tkinter as tk
-from tkinter import ttk
+from tkinter import messagebox, ttk
 
 import pandas as pd
 
 from behavior_senpai import file_inout, hdf_df, keypoints_proc
+from behavior_senpai.umap_process import UmapJob
 from dimredu_plotter import DimensionalReductionPlotter
 from gui_parts import Combobox, IntEntry, MemberKeypointComboboxes, StrEntry, TempFile
 
@@ -12,6 +13,10 @@ from gui_parts import Combobox, IntEntry, MemberKeypointComboboxes, StrEntry, Te
 class App(ttk.Frame):
     def __init__(self, master, args):
         super().__init__(master)
+        self._umap_job = None
+        self._umap_after = None
+        self._busy_widgets = []
+        self.bind("<Destroy>", self._on_destroy, add="+")
         master.title(f"Dimension Reduction ({args['trk_pkl_name']})")
         self.pack(padx=10, pady=10)
         self.bind("<Map>", lambda event: self._load(event, args))
@@ -22,6 +27,7 @@ class App(ttk.Frame):
         self.drp = DimensionalReductionPlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
         left_frame = ttk.Frame(self)
+        self._controls_frame = left_frame
         left_frame.pack(side=tk.LEFT, anchor=tk.NW, padx=(0, 10), fill=tk.Y, expand=True)
 
         load_frame = ttk.Frame(left_frame)
@@ -175,6 +181,8 @@ class App(ttk.Frame):
         self.repeat_draw_button["state"] = tk.NORMAL
 
     def repeat_draw(self):
+        if self._umap_job is not None:
+            return
         pl = file_inout.PickleLoader(self.calc_dir)
         pl.join_calc_case(self.calc_case)
         is_file_selected = pl.show_open_dialog()
@@ -183,6 +191,10 @@ class App(ttk.Frame):
         h5 = hdf_df.DataFrameStorage(pl.get_tar_path())
         cluster_df = h5.load_dimredu_df()
         source_cols, params, features = h5.load_dimredu_source_cols_and_params_and_features()
+        required = {"thinning", "n_neighbors", "min_dist", "random"}
+        if cluster_df is None or "class" not in cluster_df or not required.issubset(params):
+            messagebox.showerror("Repeat draw", "This file has no complete saved dimension reduction result. Use Draw and Save first.", parent=self)
+            return
         self.drp.set_cluster_names(features)
 
         # update listbox
@@ -205,6 +217,8 @@ class App(ttk.Frame):
         self._draw(cluster_df["class"])
 
     def _draw(self, class_sr=None):
+        if self._umap_job is not None:
+            return
         current_member, current_keypoint = self.member_keypoints_combos.get_selected()
         if class_sr is not None and current_member not in class_sr.index.levels[1]:
             return
@@ -247,7 +261,51 @@ class App(ttk.Frame):
             seed = None
         else:
             seed = 42
-        reduced_df = keypoints_proc.umap(plot_df, tar_cols=cols, n_components=2, n_neighbors=int(n_neighbors), min_dist=float(min_dist), seed=seed)
+        try:
+            self._umap_job = UmapJob(
+                plot_df, tar_cols=cols, n_components=2, n_neighbors=int(n_neighbors), min_dist=float(min_dist), seed=seed
+            )
+        except Exception as exc:
+            messagebox.showerror("UMAP calculation failed", str(exc), parent=self)
+            return
+        self._set_umap_busy(True)
+        self._umap_after = self.after(100, lambda: self._poll_umap(current_member, class_sr))
+
+    def _set_umap_busy(self, busy):
+        if busy:
+            def disable(widget):
+                try:
+                    state = widget.cget("state")
+                    widget.configure(state=tk.DISABLED)
+                    self._busy_widgets.append((widget, state))
+                except tk.TclError:
+                    pass
+                for child in widget.winfo_children():
+                    disable(child)
+
+            disable(self._controls_frame)
+            self.draw_button.configure(text="Calculating...")
+        else:
+            for widget, state in self._busy_widgets:
+                widget.configure(state=state)
+            self._busy_widgets.clear()
+            self.draw_button.configure(text="Draw")
+
+    def _poll_umap(self, current_member, class_sr):
+        self._umap_after = None
+        try:
+            reduced_df = self._umap_job.poll()
+        except Exception as exc:
+            self._umap_job.close()
+            self._umap_job = None
+            self._set_umap_busy(False)
+            messagebox.showerror("UMAP calculation failed", str(exc), parent=self)
+            return
+        if reduced_df is None:
+            self._umap_after = self.after(100, lambda: self._poll_umap(current_member, class_sr))
+            return
+        self._umap_job = None
+        self._set_umap_busy(False)
 
         if self.drp.plot_df is not None and self.drp.plot_df.index.levels[1][0] == current_member:
             class_sr = self.drp.plot_df["class"]
@@ -319,4 +377,17 @@ class App(ttk.Frame):
             self.column_listbox.insert(tk.END, name)
 
     def close(self):
+        self._stop_umap()
         self.drp.close()
+
+    def _stop_umap(self):
+        if self._umap_after is not None:
+            self.after_cancel(self._umap_after)
+            self._umap_after = None
+        if self._umap_job is not None:
+            self._umap_job.close()
+            self._umap_job = None
+
+    def _on_destroy(self, event):
+        if event.widget is self:
+            self._stop_umap()

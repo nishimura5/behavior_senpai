@@ -97,7 +97,6 @@ class App(ttk.Frame):
         self.tree.add_menu("Extract MP4", self.extract_mp4)
         self.tree.add_menu("Export MP4", self.export_mp4)
         self.tree.add_menu("Export CSV", self.export_csv)
-        self.tree.tree.bind("<Button-1>", self.left_click_tree)
 
         interactive_widget_types = (ttk.Button, ttk.Combobox, ttk.Entry)
         self.scene_dialog_controls = [
@@ -117,8 +116,12 @@ class App(ttk.Frame):
 
         self.plot.set_img_canvas(self.canvas)
 
+        master.bind("<Left>", self._on_arrow_key)
+        master.bind("<Right>", self._on_arrow_key)
+
         # app_scene_table is not appended to proc_history
         self.history = None
+        self.overwrite_on_close = False
 
     def _load(self, event, args):
         self.src_df = args["src_df"]
@@ -275,6 +278,7 @@ class App(ttk.Frame):
 
     def on_ok(self):
         """Perform the action when the 'OK' button is clicked."""
+        self.overwrite_on_close = True
         self.master.destroy()
 
     def cancel(self):
@@ -282,25 +286,19 @@ class App(ttk.Frame):
         self.scene_table = None
         self.master.destroy()
 
-    def left_click_tree(self, event):
-        """Handle the selection of a row in the tree."""
-        if self.tree.interaction_enabled is False:
-            return "break"
-
-        row = self.tree.tree.identify_row(event.y)
-        col = self.tree.tree.identify_column(event.x)
-        if row == "" or col == "":
+    def _on_arrow_key(self, event):
+        """Move the displayed video position one second backward or forward."""
+        offset_msec = {"Left": -1000, "Right": 1000}.get(event.keysym)
+        if offset_msec is None or not hasattr(self, "time_min"):
             return
 
-        start = self.tree.get_selected_one(row)[0]
-        end = self.tree.get_selected_one(row)[1]
-        start_msec = time_format.timestr_to_msec(start)
-        end_msec = time_format.timestr_to_msec(end)
-
-        if col == "#2":
-            self.plot.jump_to(end_msec)
-        else:
-            self.plot.jump_to(start_msec)
+        current_msec = self.plot.get_current_timestamp()
+        if current_msec is None:
+            current_msec = self.time_min
+        current_msec = max(self.time_min, min(current_msec, self.time_max))
+        target_msec = max(self.time_min, min(current_msec + offset_msec, self.time_max))
+        self.plot.jump_to(target_msec)
+        return "break"
 
     def export_mp4(self):
         row = self.tree.tree.selection()[0]

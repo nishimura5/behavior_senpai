@@ -1,5 +1,7 @@
 import inspect
 import os
+import shutil
+import tempfile
 from tkinter import filedialog
 
 import pandas as pd
@@ -98,11 +100,17 @@ def overwrite_track_file(tar_path, tar_df, not_found_ok=False):
         return
     backup_dir = os.path.join(os.path.dirname(tar_path), "backup")
     os.makedirs(backup_dir, exist_ok=True)
-    # 古いファイルをbackupに移動
+    # Serialize before replacing anything so a failed save remains retryable.
     backup_path = os.path.join(backup_dir, os.path.basename(tar_path))
-    # バックアップ先にファイルがあったら上書きする
-    os.replace(tar_path, backup_path)
-    tar_df.to_pickle(tar_path)
+    fd, temp_path = tempfile.mkstemp(prefix=".track-save-", suffix=".pkl", dir=os.path.dirname(os.path.abspath(tar_path)))
+    os.close(fd)
+    try:
+        tar_df.to_pickle(temp_path)
+        shutil.copyfile(tar_path, backup_path)
+        os.replace(temp_path, tar_path)
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
     pkl_name = os.path.basename(tar_path)
     return pkl_name
 

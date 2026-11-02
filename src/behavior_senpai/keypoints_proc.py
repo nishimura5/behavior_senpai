@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import pairwise_distances
-from umap import UMAP
 
 
 def has_keypoint(src_df):
@@ -112,6 +111,8 @@ def pca(src_df, tar_cols: list):
 
 
 def umap(src_df, tar_cols: list, n_components: int = 1, n_neighbors: int = 15, min_dist: float = 0.1, seed: int = None):
+    from umap import UMAP
+
     start_time = time.perf_counter()
     if seed is not None:
         n_jobs = 1

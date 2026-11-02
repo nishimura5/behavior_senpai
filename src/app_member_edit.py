@@ -66,6 +66,7 @@ class App(ttk.Frame):
             {"name": "start", "width": 100},
             {"name": "end", "width": 100},
             {"name": "duration", "width": 100},
+            {"name": "mean score", "width": 100},
             {"name": "keypoints/frame", "width": 100},
         ]
         self.tree = Tree(tree_canvas_frame, cols, height=12, right_click=True)
@@ -89,6 +90,9 @@ class App(ttk.Frame):
         self.band.set_single_ax(bottom=0.1)
 
         self.band.set_img_canvas(self.canvas)
+
+        master.bind("<Left>", self._on_arrow_key)
+        master.bind("<Right>", self._on_arrow_key)
 
         self.dst_df = None
         self.history = "member_edit"
@@ -139,14 +143,21 @@ class App(ttk.Frame):
         self.tree.clear()
         members = self.src_df.index.get_level_values(1).unique()
         tree_df = self.src_df
+        score_col = next((col for col in ("score", "conf") if col in tree_df.columns), None)
 
         for member in members:
-            sliced_df = tree_df.loc[pd.IndexSlice[:, member, :], :]
+            member_df = tree_df.loc[pd.IndexSlice[:, member, :], :]
+            sliced_df = member_df
             sliced_df = sliced_df.loc[~(sliced_df["x"].isna()) & (~sliced_df["y"].isna())]
             if len(sliced_df.index.get_level_values(0).unique()) == 0:
                 print(f"member {member} has no data")
                 continue
             kpf = len(sliced_df) / len(sliced_df.index.get_level_values(0).unique())
+            mean_score = ""
+            if score_col is not None:
+                score = member_df[score_col].mean()
+                if pd.notna(score):
+                    mean_score = f"{score:.2f}"
             head_timestamp = time_format.msec_to_timestr_with_fff(sliced_df.head(1)["timestamp"].values[0])
             tail_timestamp = time_format.msec_to_timestr_with_fff(sliced_df.tail(1)["timestamp"].values[0])
             duration = sliced_df.tail(1)["timestamp"].values[0] - sliced_df.head(1)["timestamp"].values[0]
@@ -156,6 +167,7 @@ class App(ttk.Frame):
                 head_timestamp,
                 tail_timestamp,
                 duration_str,
+                mean_score,
                 f"{kpf:.2f}",
             ]
             self.tree.insert(values)
@@ -207,9 +219,13 @@ class App(ttk.Frame):
                 print("current member is empty")
                 return
             start_time, end_time = self.time_span_entry.get_start_end()
-            between_sr = self.src_df["timestamp"].between(start_time - 1, end_time + 1)
             tar_member_sr = self.src_df.index.get_level_values(1) == current_member
-            remove_sr = between_sr & tar_member_sr
+            member_frames = self.src_df.index.get_level_values(0)[tar_member_sr].nunique()
+            if start_time == end_time and member_frames == 1:
+                remove_sr = tar_member_sr
+            else:
+                between_sr = self.src_df["timestamp"].between(start_time - 1, end_time + 1)
+                remove_sr = between_sr & tar_member_sr
             self.src_df = self.src_df[~remove_sr]
             self.update_tree()
             print(f"removed {current_member}")
@@ -249,6 +265,20 @@ class App(ttk.Frame):
         start_msec = time_format.timestr_to_msec(cols[1])
         end_msec = time_format.timestr_to_msec(cols[2])
         self.time_span_entry.update_entry(start_msec, end_msec)
+
+    def _on_arrow_key(self, event):
+        """Move the displayed video position one second backward or forward."""
+        offset_msec = {"Left": -1000, "Right": 1000}.get(event.keysym)
+        if offset_msec is None:
+            return
+
+        current_msec = self.band.get_current_timestamp()
+        if current_msec is None:
+            current_msec = self.time_min
+        current_msec = max(self.time_min, min(current_msec, self.time_max))
+        target_msec = max(self.time_min, min(current_msec + offset_msec, self.time_max))
+        self.band.jump_to(target_msec)
+        return "break"
 
     def _validate(self, text):
         return text.replace(".", "").isdigit() or text == ""

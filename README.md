@@ -1,4 +1,7 @@
-# Behavior Senpai v.1.6.0
+# Behavior Senpai 1.7.0 — release candidate (dev170)
+
+This source tree targets 1.7.0. It is under release review; no 1.7.0 installer or ZIP is published yet.
+See the [draft release notes](docs/release_notes_1.7.0.md) and [release verification record](docs/release_verification_1.7.0.md).
 
 [pyproject]: https://github.com/nishimura5/behavior_senpai/blob/master/pyproject.toml
 [app_detect]: https://github.com/nishimura5/behavior_senpai/blob/master/src/app_detect.py
@@ -33,11 +36,25 @@ Behavior Senpai is an open source software developed at [Faculty of Design, Kyus
 ## Install
 
 ### Download
-Download [BehaviorSenpai160.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.6.0/BehaviorSenpai160.zip)
+The previous stable release is **1.6.0**: [BehaviorSenpai160.zip](https://github.com/nishimura5/behavior_senpai/releases/download/v1.6.0/BehaviorSenpai160.zip).
+This download contains 1.6.0, not the changes in this 1.7.0 candidate. Future 1.7.0 downloads will be announced on the [Releases page](https://github.com/nishimura5/behavior_senpai/releases).
 
 Extract the ZIP file and move the `BehaviorSenpai160` folder to your desired working directory.
 
-### Windows
+### Run this 1.7.0 candidate from source
+
+Use Python 3.11 and `uv`, from the repository directory:
+
+```powershell
+uv sync
+uv run python -X utf8 src/launcher.py
+```
+
+For optional CUDA dependencies, use `uv sync --extra cuda` before starting the application.
+The project pins `ttkthemes==3.2.2`; the build metadata problem reported for 3.3.0 in [Issue #1](https://github.com/nishimura5/behavior_senpai/issues/1) must not be inferred from the issue's open status alone.
+Model weights, CUDA drivers and the packaged Windows installation workflow require separate validation; see the verification record above.
+
+### Windows packaged release (1.6.0)
 
 1. Run `BehaviorSenpai.exe` to start the application
 2. Click the "Install" button
@@ -50,7 +67,7 @@ Extract the ZIP file and move the `BehaviorSenpai160` folder to your desired wor
 **Subsequent launches:**
 - Simply run `BehaviorSenpai.exe` to start the application
 
-### macOS
+### macOS packaged release (1.6.0)
 
 1. Install Python 3.11 from [python.org](https://www.python.org/downloads/macos/)
 2. Open Terminal and run the following commands:
@@ -169,8 +186,59 @@ An illustrative example of a DataFrame stored in the Track file is presented bel
 
 ### Feature file
 
-BehaviorSenpai saves calculated features based on Track file data to Feature files. Feature files are created in HDF5 format with the .feat extension.
-Feature files store data calculated by [app_points_calc.py][app_points_calc], [app_trajplot.py][app_trajplot], and [app_feat_mix.py][app_feat_mix] in the format shown in the table below:
+Behavior Senpai saves features calculated from Track file data in an HDF5 container with the custom `.feat` extension. A Feature file is written with `pandas.HDFStore` (PyTables) in `table` format. The extension is different from `.h5`, but the file itself is a standard HDF5 file containing Pandas objects.
+
+A single Feature file can contain results from several tools. Saving a result replaces the corresponding HDF5 key while preserving the other keys in the file.
+
+#### HDF5 key layout
+
+```text
+/
+|-- profile
+|-- points/
+|   |-- df
+|   `-- source_cols
+|-- traj/
+|   `-- df
+|-- mixnorm/
+|   |-- df
+|   `-- source_cols
+`-- dimredu/
+    |-- df
+    |-- source_cols
+    |-- params
+    `-- features
+```
+
+The keys present depend on which tools have been saved. Consumers should inspect the available keys instead of assuming that every key exists.
+
+| HDF5 key | Created by | Contents |
+| -------- | ---------- | -------- |
+| `/profile` | [app_points_calc.py][app_points_calc] or [app_trajplot.py][app_trajplot] | Source Track file identity. |
+| `/points/df` | [app_points_calc.py][app_points_calc] | Features calculated from two or three keypoints. |
+| `/points/source_cols` | [app_points_calc.py][app_points_calc] | Definitions used to calculate `/points/df`. |
+| `/traj/df` | [app_trajplot.py][app_trajplot] | Coordinates and speed for the selected keypoints. |
+| `/mixnorm/df` | [app_feat_mix.py][app_feat_mix] | Features produced by arithmetic operations and normalization. |
+| `/mixnorm/source_cols` | [app_feat_mix.py][app_feat_mix] | Definitions used to calculate `/mixnorm/df`. This key can exist before `/mixnorm/df` is saved. |
+| `/dimredu/df` | [app_dimredu.py][app_dimredu] | Manually assigned class IDs and class membership flags. |
+| `/dimredu/source_cols` | [app_dimredu.py][app_dimredu] | Feature columns selected as input for dimensional reduction. |
+| `/dimredu/params` | [app_dimredu.py][app_dimredu] | Dimensional-reduction parameters. |
+| `/dimredu/features` | [app_dimredu.py][app_dimredu] | Ordered class names. |
+
+#### Common time-series schema
+
+The `df` keys use a two-level Pandas MultiIndex named `frame` and `member`.
+
+| Field | Description |
+| ----- | ----------- |
+| `frame` (index level 0) | Zero-based frame number in the source video. |
+| `member` (index level 1) | Tracked member ID. Behavior Senpai writes current Feature files with string member IDs. |
+| `timestamp` | Position in the source video, in milliseconds. |
+| Other columns | Tool-dependent feature values. Missing or incalculable values are stored as `NaN`. |
+
+`/points/df`, `/traj/df`, and `/mixnorm/df` normally contain one row for each available `(frame, member)` pair. `/dimredu/df` contains only the member and frames used for dimensional reduction and may therefore be thinned.
+
+An example of `/points/df` or `/mixnorm/df` is shown below:
 
 |       |        | feat_1   | feat_2   | timestamp |
 | ----- | ------ | -------- | -------- | --------- |
@@ -185,7 +253,65 @@ Feature files store data calculated by [app_points_calc.py][app_points_calc], [a
 | 3     | 2      | 0.052715 | 0.055282 | 50.050000 |
 |       | ...    | ...      | ...      | ...       |
 
-Additionally, data calculated by [app_dimredu.py][app_dimredu] is stored in the format shown in the table below. All these data are handled as Pandas DataFrames, with time-series data in 2-level-multi-index format, with the indices designated as "frame" and "member", respectively, and the columns including a "timestamp".
+#### Profile schema
+
+`/profile` is a two-column DataFrame containing file-level properties.
+
+| Column | Description |
+| ------ | ----------- |
+| `key` | Property name. Currently `track_name`. |
+| `value` | Property value. For `track_name`, this is the source Track filename including its `.pkl` extension. |
+
+The `track_name` value is also used to prevent results from a different Track file from being written to `/mixnorm`.
+
+#### Point-calculation metadata
+
+`/points/source_cols` contains one row per calculation definition.
+
+| Column | Description |
+| ------ | ----------- |
+| `code` | Calculation type selected in the Points Calculation tool, such as distance, angle, or vector operation. |
+| `member` | Member to which the calculation applies. |
+| `point_a` | Keypoint ID for point A, stored as a string. |
+| `point_b` | Keypoint ID for point B, stored as a string. |
+| `point_c` | Keypoint ID for point C, stored as a string. It is empty or the string `None` when the calculation uses only two points. |
+
+One calculation definition can generate more than one column in `/points/df`; for example, a direction calculation generates sine and cosine columns.
+
+#### Feature Mixer metadata
+
+`/mixnorm/source_cols` contains one row per mixed or normalized output feature.
+
+| Column | Description |
+| ------ | ----------- |
+| `name` | Output column name in `/mixnorm/df`. |
+| `member` | Member to which the calculation applies. |
+| `col_a` | First input column name. |
+| `op` | Arithmetic operator: `+`, `-`, `*`, `/`, or a single space when no second operand is used. |
+| `col_b` | Second input column name, or a single space when unused. |
+| `normalize` | Normalization or filter selected in the GUI. |
+
+Current `normalize` values are `No normalize`, `Z-score`, `MinMax`, `/180`, `Threshold75%`, `Threshold50%`, `Threshold25%`, `Bandpassfilter`, `Highpassfilter`, and `Lowpassfilter`.
+
+#### Feature copy
+
+`app_feature_copy.py` uses a selected `.feat` file as a calculation template for Track files with a target scene selected. Each target scene must have exactly one assigned member.
+
+The tool reads both `/points/source_cols` and `/mixnorm/source_cols`. It recalculates the Points definitions, including calculations added manually in Points Calculation, from each target Track's coordinates. It then applies the Feature Mixer definitions using that scene's member and time ranges. Points are saved for the full Track; Mix/Norm inputs outside the scene ranges are masked, while timestamps are retained. Saved definitions use the target member. Source feature values are not copied.
+
+Templates without Points definitions use the default Points calculations. Missing keypoints or Feature Mixer input columns cause the target to fail with an error message rather than silently omitting features. When Points definitions are present, both calculations finish before the target file is written.
+
+#### Dimensional-reduction data and metadata
+
+`/dimredu/df` has the common `(frame, member)` index and the following columns. The UMAP coordinates used by the GUI are not saved.
+
+| Column | Description |
+| ------ | ----------- |
+| `class` | Zero-based numeric class ID. Frames without a UMAP result can contain `NaN`. |
+| `<class name>` | Boolean membership flag. A column is created for each class that is assigned to at least one frame. |
+| `timestamp` | Position in the source video, in milliseconds. |
+
+For example:
 
 |       |        | class | cat_1 | cat_2 | timestamp |
 | ----- | ------ | ----- | ----- | ----- | --------- |
@@ -199,6 +325,38 @@ Additionally, data calculated by [app_dimredu.py][app_dimredu] is stored in the 
 | 3     | 1      | 0.0   | True  | False | 50.050000 |
 | 3     | 2      | 1.0   | False | True  | 50.050000 |
 |       | ...    | ...   | ...   | ...   | ...       |
+
+The related metadata keys have these schemas:
+
+| HDF5 key | Columns | Description |
+| -------- | ------- | ----------- |
+| `/dimredu/source_cols` | `code` | Input feature column names. |
+| `/dimredu/params` | `key`, `value` | `n_neighbors`, `min_dist`, `random`, and `thinning`. All values are stored as strings; `random` contains the seed mode (`random` or `fixed`). |
+| `/dimredu/features` | `feat` | Ordered class names. The row number is the class ID used in `/dimredu/df`. |
+
+#### Reading a Feature file
+
+The following example reads the physical datasets directly. The leading slash in a key is optional when passing it to Pandas, but it is included here to match `HDFStore.keys()`.
+
+```python
+import pandas as pd
+
+feature_path = "calc/case1/ABC_cond1.feat"
+
+with pd.HDFStore(feature_path, mode="r") as store:
+    print(store.keys())
+
+    profile_df = store["/profile"]
+    profile = dict(zip(profile_df["key"], profile_df["value"]))
+
+    points_df = store["/points/df"] if "/points/df" in store else None
+    mixnorm_df = store["/mixnorm/df"] if "/mixnorm/df" in store else None
+    dimredu_df = store["/dimredu/df"] if "/dimredu/df" in store else None
+```
+
+Behavior Senpai's `DataFrameStorage.load_points_df()` presents a combined view: when both `/points/df` and `/traj/df` exist, it removes `timestamp` from the trajectory table and joins the two tables by `(frame, member)`. `load_mixnorm_df()` returns `/mixnorm/df` when it exists and otherwise falls back to that combined points/trajectory view.
+
+Feature files currently do not store a schema-version field or the source Track DataFrame's `attrs`. External tools should use `/profile` for the source filename, tolerate absent optional keys, and inspect column names and data types when reading files produced by different Behavior Senpai versions.
 
 ### Security considerations
 
@@ -228,6 +386,8 @@ The application's settings and the path of the most recently loaded Track file a
 ## Citation
 
 Please acknowledge and cite the use of this software and its authors when results are used in publications or published elsewhere.
+
+The published reference below describes version 1.6. The 1.7.0 release and its citation metadata have not yet been published.
 
 ```
 Nishimura, E. (2025). Behavior Senpai (Version 1.6) [Computer software]. Kyushu University, https://doi.org/10.48708/7160651

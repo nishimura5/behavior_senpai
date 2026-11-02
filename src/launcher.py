@@ -1,8 +1,12 @@
+import copy
+import hashlib
 import os
 import tkinter as tk
 from tkinter import messagebox, ttk
 
 import cv2
+import numpy as np
+import pandas as pd
 import ttkthemes
 
 import app_area_filter
@@ -11,6 +15,7 @@ import app_detect
 import app_dimredu
 import app_dlc_to_trk
 import app_feat_mix
+import app_feature_copy
 import app_keypoint_samples
 import app_member_edit
 import app_points_calc
@@ -47,7 +52,7 @@ class App(ttk.Frame):
         self.tl_button = ttk.Button(
             buttons_frame,
             text="Track list",
-            command=lambda: self.launch_window(app_track_list.App, grab=True),
+            command=lambda: self.launch_window(app_track_list.App, grab=True, reload_pkl=True),
             state=tk.DISABLED,
         )
         self.tl_button.pack(side=tk.TOP, fill=tk.X, pady=4)
@@ -106,6 +111,13 @@ class App(ttk.Frame):
             state=tk.DISABLED,
         )
         self.feat_mix_button.pack(side=tk.TOP, fill=tk.X, pady=4)
+        self.feature_copy_button = ttk.Button(
+            buttons_frame,
+            text="Feature copy",
+            command=lambda: self.launch_window(app_feature_copy.App, dialog_size="900x600", reload_pkl=True),
+            state=tk.DISABLED,
+        )
+        self.feature_copy_button.pack(side=tk.TOP, fill=tk.X, pady=4)
         self.dimredu_button = ttk.Button(
             buttons_frame,
             text="Dim-reduction",
@@ -192,11 +204,72 @@ class App(ttk.Frame):
         self.pkl_path = ""
         self.pkl_dir = None
         self.src_df = None
+        self._saved_df = None
         self.time_span = None
         self.calc_case = self.calc_case_entry.get()
         self.rotate_angle = 0
 
-    def load(self, event=None):
+    @staticmethod
+    def _values_equal(left, right):
+        if left is right:
+            return True
+        if type(left) is not type(right):
+            return False
+        if isinstance(left, dict):
+            return left.keys() == right.keys() and all(App._values_equal(left[k], right[k]) for k in left)
+        if isinstance(left, (list, tuple)):
+            return len(left) == len(right) and all(App._values_equal(a, b) for a, b in zip(left, right))
+        if isinstance(left, (pd.DataFrame, pd.Series, pd.Index)):
+            return left.equals(right)
+        if isinstance(left, np.ndarray):
+            return left.shape == right.shape and left.dtype == right.dtype and App._values_equal(left.tolist(), right.tolist())
+        return bool(left == right) or (bool(pd.isna(left)) and bool(pd.isna(right)))
+
+    @staticmethod
+    def _tracks_equal(left, right):
+        return left.equals(right) and App._values_equal(left.attrs, right.attrs)
+
+    def has_unsaved_changes(self):
+        return self.src_df is not None and (
+            self._saved_df is None or not self._tracks_equal(self.src_df, self._saved_df)
+        )
+
+    def _remember_saved_track(self):
+        self._saved_df = copy.deepcopy(self.src_df)
+        self._saved_df.attrs = copy.deepcopy(self.src_df.attrs)
+        self.save_button["state"] = tk.DISABLED
+
+    def _resolve_unsaved_changes(self, reload_on_discard=False):
+        if not self.has_unsaved_changes():
+            return True
+        answer = messagebox.askyesnocancel(
+            "Unsaved Track edits",
+            "Save Track edits before continuing?\nYes: Save\nNo: Discard\nCancel: Keep editing",
+            parent=self,
+        )
+        if answer is None:
+            return False
+        if answer:
+            return self.overwrite()
+        if reload_on_discard:
+            return self.load(check_unsaved=False)
+        return True
+
+    @staticmethod
+    def _track_digest(path):
+        try:
+            with open(path, "rb") as file:
+                return hashlib.file_digest(file, "sha256").digest()
+        except FileNotFoundError:
+            return None
+
+    def load(self, event=None, check_unsaved=True):
+        # Mapping child dialogs must never reload the current Track.
+        if event is not None and (event.widget is not self or self.src_df is not None):
+            return False
+        if check_unsaved and not self._resolve_unsaved_changes():
+            self.pkl_selector.set_trk_path(self.pkl_path)
+            return False
         pkl_path = self.pkl_selector.get_trk_path()
         print(f"Loading {pkl_path}")
         # check if deeplabcut file (ext = .h5)
@@ -210,8 +283,8 @@ class App(ttk.Frame):
 
         load_df = file_inout.load_track_file(pkl_path)
         if load_df is None:
-            self.pkl_selector.rename_pkl_path_label(self.pkl_path)
-            return
+            self.pkl_selector.set_trk_path(self.pkl_path)
+            return False
         # enable buttons
         self.tl_button.config(state="normal")
         self.member_edit_button.config(state="normal")
@@ -221,27 +294,20 @@ class App(ttk.Frame):
         self.k2f_button.config(state="normal")
         self.multi_point_button.config(state="normal")
         self.feat_mix_button.config(state="normal")
+        self.feature_copy_button.config(state="normal")
         self.dimredu_button.config(state="normal")
 
         self.pkl_path = pkl_path
         self.src_df = load_df
         self.src_df = keypoints_proc.zero_point_to_nan(self.src_df)
         self.src_df = self.src_df[~self.src_df.index.duplicated(keep="first")]
+        self._remember_saved_track()
 
         src_attrs = df_attrs.DfAttrs(self.src_df)
         self.rotate_angle, frame_size = src_attrs.get_rotate_size()
 
         self.pkl_dir = os.path.dirname(self.pkl_path)
-        self.vcap.set_frame_size(frame_size)
-        video_names = src_attrs.get_video_name()
-
-        if isinstance(video_names, list):
-            video_list = [os.path.abspath(os.path.join(self.pkl_dir, os.pardir, video)) for video in video_names]
-            self.cap = vcap.MultiVcap(self.vcap)
-            self.cap.open_files(video_list)
-        else:
-            self.vcap.open_file(os.path.join(self.pkl_dir, os.pardir, video_names))
-            self.cap = self.vcap
+        self._open_track_video()
 
         self.time_span = (
             self.src_df["timestamp"].min(),
@@ -251,6 +317,28 @@ class App(ttk.Frame):
         self.pkl_selector.set_prev_next(prev_name, next_name)
         self.vw.set_cap(self.cap, frame_size, anno_trk=self.src_df, rotate=self.rotate_angle)
         self.update_attrs()
+        return True
+
+    def _open_track_video(self):
+        attrs = df_attrs.DfAttrs(self.src_df)
+        _, frame_size = attrs.get_rotate_size()
+        self.vcap.set_frame_size(frame_size)
+        video_names = attrs.get_video_name()
+        if isinstance(video_names, list):
+            video_list = [os.path.abspath(os.path.join(self.pkl_dir, os.pardir, video)) for video in video_names]
+            self.cap = vcap.MultiVcap(self.vcap)
+            self.cap.open_files(video_list)
+        else:
+            self.vcap.open_file(os.path.join(self.pkl_dir, os.pardir, video_names))
+            self.cap = self.vcap
+
+    def _restore_track_video(self, position):
+        """Restore the borrowed capture without reloading or replacing edited Track data."""
+        self._open_track_video()
+        _, frame_size = df_attrs.DfAttrs(self.src_df).get_rotate_size()
+        self.vw.set_cap(self.cap, frame_size, anno_trk=self.src_df, rotate=self.rotate_angle)
+        self.vw.slider.set(position)
+        self.vw.on_slider_changed(position)
 
     def update_attrs(self):
         src_attrs = self.src_df.attrs
@@ -325,7 +413,10 @@ class App(ttk.Frame):
 
         self.update_attrs()
 
-        self.save_button["state"] = "normal"
+        if self.a.overwrite_on_close:
+            self.overwrite()
+        else:
+            self.save_button["state"] = "normal"
         args["src_df"] = self.src_df
 
     def launch_preference_window(self):
@@ -340,13 +431,17 @@ class App(ttk.Frame):
         elif not use_multiple_points and is_visible:
             self.multi_point_button.pack_forget()
 
-    def launch_window(self, app, dialog_size="", edit_df=False, grab=False):
+    def launch_window(self, app, dialog_size="", edit_df=False, grab=False, reload_pkl=False):
+        # These dialogs read/write Tracks on disk. Resolve edits before they see stale data.
+        if reload_pkl and not self._resolve_unsaved_changes(reload_on_discard=True):
+            return
+        track_digest = self._track_digest(self.pkl_path) if reload_pkl else None
         self.calc_case_entry.save()
         window_pos = self.master.geometry().split("+")[1:]
         dlg_modal = tk.Toplevel(self)
         dlg_modal.geometry(dialog_size + f"+{window_pos[0]}+{window_pos[1]}")
         dlg_modal.focus_set()
-        if grab is True:
+        if grab or reload_pkl:
             dlg_modal.grab_set()
         dlg_modal.transient(self.master)
         current_position = self.vw.get_current_position()
@@ -356,12 +451,18 @@ class App(ttk.Frame):
             "time_span_msec": self.time_span,
             "cap": self.cap,
             "pkl_dir": self.pkl_dir,
+            "calc_case": self.calc_case_entry.get(),
             "current_position": current_position,
+            "video_cap": self.vcap,
+            "restore_video": lambda: self._restore_track_video(current_position),
         }
         self.a = app(dlg_modal, args)
+        # Feature copy's loading progress dialog temporarily owns the grab.
+        if grab or reload_pkl:
+            dlg_modal.grab_set()
         dlg_modal.protocol(
             "WM_DELETE_WINDOW",
-            lambda: [dlg_modal.destroy(), cv2.destroyAllWindows(), self.a.close()],
+            lambda window_app=self.a: [dlg_modal.destroy(), cv2.destroyAllWindows(), window_app.close()],
         )
         self.wait_window(dlg_modal)
 
@@ -370,13 +471,20 @@ class App(ttk.Frame):
 
         self.vw.canvas.anno.reload_temp_file()
 
+        jump_to_pkl_path = getattr(self.a, "jump_to_pkl_path", "")
+        if jump_to_pkl_path:
+            self.pkl_selector.set_trk_path(jump_to_pkl_path)
+            self.load()
+        elif reload_pkl and track_digest != self._track_digest(self.pkl_path):
+            self.load()
+
         if edit_df is False:
             return
         if hasattr(self.a, "dst_df") is False:
             return
         if self.a.dst_df is None:
             return
-        if self.src_df.equals(self.a.dst_df) is True and self.src_df.attrs == self.a.dst_df.attrs:
+        if self._tracks_equal(self.src_df, self.a.dst_df):
             return
 
         print("DataFrame Updated")
@@ -415,9 +523,16 @@ class App(ttk.Frame):
         self.wait_window(kp_sample_dialog)
 
     def overwrite(self):
-        pkl_name = file_inout.overwrite_track_file(self.pkl_path, self.src_df)
+        try:
+            pkl_name = file_inout.overwrite_track_file(self.pkl_path, self.src_df)
+            if not pkl_name:
+                raise OSError(f"Track could not be saved: {self.pkl_path}")
+        except Exception as error:
+            messagebox.showerror("Overwrite", f"Could not save Track.\n{error}", parent=self)
+            return False
+        self._remember_saved_track()
         messagebox.showinfo("Overwrite", f"Overwritten.\nfile name: {pkl_name}")
-        self.save_button["state"] = tk.DISABLED
+        return True
 
 
 def quit(root):

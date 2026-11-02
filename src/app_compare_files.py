@@ -337,16 +337,16 @@ class App(ttk.Frame):
         feat_list = [f for f, _ in tree_list]
         member_list = [str(m) for m in member_list]
         member_list.sort()
-        # combination of member and feature
-        tree_list = [(m, f) for m in member_list for f in feat_list]
         for file_path in self.tar_pkl_list:
             h5 = hdf_df.DataFrameStorage(file_path)
             src_df = h5.load_points_df()
             if h5.has_group("mixnorm"):
                 mixnorm_df = h5.load_mixnorm_df()
                 # concat horizontally
-                mixnorm_df = mixnorm_df.drop(columns="timestamp")
+                mixnorm_df = mixnorm_df.drop(columns="timestamp", errors="ignore")
                 src_df = pd.concat([src_df, mixnorm_df], axis=1)
+            # Prefer later (mix-normalized) values when feature names overlap.
+            src_df = src_df.loc[:, ~src_df.columns.duplicated(keep="last")]
             idx = src_df.index
             src_df.index = src_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str)])
             profile_dict = h5.load_profile()
@@ -365,8 +365,9 @@ class App(ttk.Frame):
             # filter by member_list and features
             valid_members = scene_filtered_df.index.get_level_values("member").unique().tolist()
             valid_features = scene_filtered_df.columns.tolist()
-            valid_tree_list = [(m, f) for m, f in tree_list if m in valid_members and f in valid_features]
-            extracted_df = scene_filtered_df.loc[pd.IndexSlice[:, [m for m, f in valid_tree_list]], [f for m, f in valid_tree_list]]
+            selected_members = [m for m in member_list if m in valid_members]
+            selected_features = [f for f in feat_list if f in valid_features]
+            extracted_df = scene_filtered_df.loc[pd.IndexSlice[:, selected_members], selected_features]
             if extracted_df.empty:
                 continue
 

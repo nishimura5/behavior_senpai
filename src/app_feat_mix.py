@@ -1,13 +1,16 @@
+import json
 import os
+import sys
 import tkinter as tk
-from tkinter import ttk
+from tkinter import messagebox, ttk
 
 import pandas as pd
 from tqdm import tqdm
 
+import export_csv
 from behavior_senpai import calc_features, df_attrs, feature_proc, file_inout, hdf_df
 from gui_feat_mix import Tree
-from gui_parts import Combobox, TempFile, ToolTip
+from gui_parts import Combobox, TempFile
 from line_plotter import LinePlotter
 
 
@@ -21,7 +24,7 @@ class App(ttk.Frame):
 
         temp = TempFile()
         width, height, dpi = temp.get_window_size()
-        self.calc_case = temp.data["calc_case"]
+        self.calc_case = args["calc_case"]
         self.tar_df = None
         self.lineplot = LinePlotter(fig_size=(width / dpi, height / dpi), dpi=dpi)
 
@@ -40,13 +43,7 @@ class App(ttk.Frame):
         draw_frame = ttk.Frame(self)
         draw_frame.pack(padx=10, pady=5, expand=False, anchor=tk.NW)
         self.add_btn = ttk.Button(draw_frame, text="Add calc", command=self.add_row, state="disabled")
-        self.add_btn.pack(padx=(0, 10), side=tk.LEFT)
-
-        self.import_btn = ttk.Button(draw_frame, text="Import", command=self.import_feat, state="disabled")
-
-        self.import_btn.pack(padx=(0, 60), side=tk.LEFT)
-        description = "Import another feature file and add calc."
-        ToolTip(self.import_btn, description)
+        self.add_btn.pack(padx=(0, 70), side=tk.LEFT)
 
         self.draw_btn = ttk.Button(draw_frame, text="Draw", command=self.draw, state="disabled")
         self.draw_btn.pack(side=tk.LEFT)
@@ -63,12 +60,14 @@ class App(ttk.Frame):
             {"name": "op", "width": 30},
             {"name": "col B", "width": 130},
             {"name": "normalize", "width": 100},
+            {"name": "plot range", "width": 100},
         ]
         self.tree = Tree(tree_canvas_frame, cols, height=12)
         self.tree.pack(side=tk.LEFT)
         self.tree.add_menu("Edit", self.tree.edit_calc)
         self.tree.add_row_copy(column=1)
         self.tree.add_menu("Remove", self.tree.delete_selected)
+        self.tree.add_menu("Export CSV", self.export_csv)
 
         self.canvas = tk.Canvas(tree_canvas_frame, width=800)
         self.canvas.pack(fill=tk.BOTH, expand=True)
@@ -121,10 +120,14 @@ class App(ttk.Frame):
         self.src_attrs.load_scene_table()
         menu = self.src_attrs.get_scene_descriptions(add_blank=True)
         self.scene_combo.set_values(menu)
+        saved_scene = self._load_feat_copy_scene(args["trk_pkl_name"])
+        if saved_scene in menu:
+            self.scene_combo.set(saved_scene)
         self.tree.set_members(src_df.index.levels[1].unique().tolist())
 
         expected_pts_file_name = f"{args['trk_pkl_name'].split('.')[0]}.feat"
         expected_pts_file_path = os.path.join(self.calc_dir, self.calc_case, expected_pts_file_name)
+        print(f"Expected feature file path: {expected_pts_file_path}")
         if os.path.exists(expected_pts_file_path) is False:
             calc_features.execute_calc_features(args)
 
@@ -132,8 +135,26 @@ class App(ttk.Frame):
         pl.set_tar_path(expected_pts_file_path)
         self.load_feat(pl)
 
-        # load h5 file for tree
-        self._import_source_cols(expected_pts_file_path)
+        # Load the current feature definitions into the tree.
+        self._load_source_cols(expected_pts_file_path)
+
+    def _load_feat_copy_scene(self, pkl_name):
+        feat_copy_name = "feat_copy" if sys.platform.startswith("win32") else ".feat_copy"
+        feat_copy_path = os.path.join(self.calc_dir, self.calc_case, feat_copy_name)
+        if not os.path.isfile(feat_copy_path):
+            return ""
+        try:
+            with open(feat_copy_path, encoding="utf-8") as file:
+                saved_values = json.load(file)
+        except (OSError, json.JSONDecodeError) as error:
+            print(f"Could not load {feat_copy_path}: {error}")
+            return ""
+
+        pkl_values = saved_values.get(pkl_name, {}) if isinstance(saved_values, dict) else {}
+        if not isinstance(pkl_values, dict):
+            return ""
+        scene = pkl_values.get("scene", "")
+        return "" if scene is None else str(scene)
 
     def open_feat(self):
         pl = file_inout.PickleLoader(self.calc_dir)
@@ -153,6 +174,9 @@ class App(ttk.Frame):
 
     def load_feat(self, pl: file_inout.PickleLoader):
         self.feat_path = pl.get_tar_path()
+        if os.path.exists(self.feat_path) is False:
+            print(f"Feature file not found: {self.feat_path}")
+            return
         h5 = hdf_df.DataFrameStorage(self.feat_path)
         tar_df = h5.load_points_df()
         feat_path = self.feat_path.replace(os.path.dirname(self.pkl_dir), "..")
@@ -165,7 +189,6 @@ class App(ttk.Frame):
         self.tree.set_df(self.tar_df)
         self.add_btn["state"] = "normal"
         self.draw_btn["state"] = "normal"
-        self.import_btn["state"] = "normal"
 
     def add_row(self):
         self.tree.add_calc()
@@ -188,7 +211,7 @@ class App(ttk.Frame):
                 tree_op,
                 tree_col_b,
                 tree_normalize,
-            ) = tar
+            ) = tar[:6]
             # skip if exactly same row
             if tree_feat_name == feat_name and tree_col_a == col_a and tree_op == op and tree_col_b == col_b and tree_normalize == normalize:
                 return
@@ -201,22 +224,10 @@ class App(ttk.Frame):
                 self.tree.tree.delete(self.tree.tree.get_children("")[i])
                 break
 
-        values = (feat_name, member, col_a, op, col_b, normalize)
+        values = (feat_name, member, col_a, op, col_b, normalize, "")
         self.tree.insert(values)
 
-    def import_feat(self):
-        """Open a file dialog to select a feature file.
-        Import the contents of the attrs.
-        """
-        pl = file_inout.PickleLoader(self.calc_dir)
-        pl.join_calc_case(self.calc_case)
-        is_file_selected = pl.show_open_dialog()
-        if is_file_selected is False:
-            return
-        h5_path = pl.get_tar_path()
-        self._import_source_cols(h5_path)
-
-    def _import_source_cols(self, h5_path):
+    def _load_source_cols(self, h5_path):
         if os.path.exists(h5_path) is True:
             hdf = hdf_df.DataFrameStorage(h5_path)
             source_cols = hdf.load_mixnorm_source_cols()
@@ -232,9 +243,20 @@ class App(ttk.Frame):
                 if row[1] not in self.tree.get_members():
                     print(f"Member not found: {row[1]} in {self.tree.get_members()}")
                     row[1] = self.tree.get_members()[0]
+                row.append("")
                 self.tree.insert(row)
 
     def draw(self):
+        self.export_btn["state"] = "disabled"
+        try:
+            self._draw()
+        except ValueError as error:
+            # Never allow Save to publish partial results or stale results from an earlier draw.
+            self.feat_df = pd.DataFrame()
+            self.lineplot.clear_fig()
+            messagebox.showerror("Mix/Norm", str(error), parent=self)
+
+    def _draw(self):
         self.lineplot.clear_fig()
         self.feat_df = pd.DataFrame()
         self.source_cols = self.tree.get_all()
@@ -258,12 +280,17 @@ class App(ttk.Frame):
             member_feat_df = pd.DataFrame()
 
             for i, row in tqdm(enumerate(self.source_cols), total=row_num, desc="Plotting features"):
-                feat_name, m, col_a, op, col_b, normalize = row
+                feat_name, m, col_a, op, col_b, normalize, plot_range = row
                 if member != str(m):
                     continue
                 normalize = self.name_and_code[normalize]
                 new_sr = feature_proc.arithmetic_operations(member_df, op, col_a, col_b)
-                new_sr = feature_proc.calc(new_sr, normalize)
+                try:
+                    new_sr = feature_proc.calc(
+                        new_sr, normalize, timestamps=self.tar_df["timestamp"].reindex(new_sr.index), scene_ranges=scenes,
+                    )
+                except feature_proc.FilterInputError as error:
+                    raise feature_proc.FilterInputError(f"Feature '{feat_name}', member '{member}': {error}") from error
 
                 # concat right
                 member_feat_df = pd.concat([member_feat_df, new_sr.to_frame(feat_name)], axis=1)
@@ -275,6 +302,9 @@ class App(ttk.Frame):
                     self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name, is_last=True)
                 else:
                     self.lineplot.set_plot_and_violin(plot_df, member=member, data_col_name=feat_name)
+                y_range = self._parse_plot_range(plot_range)
+                if y_range is not None:
+                    self.lineplot.line_ax.set_ylim(*y_range)
             # concat bottom
             self.feat_df = pd.concat([self.feat_df, member_feat_df], axis=0)
 
@@ -284,6 +314,80 @@ class App(ttk.Frame):
         self.lineplot.draw()
         self.lineplot.set_members_to_draw(members)
         self.export_btn["state"] = "normal"
+
+    @staticmethod
+    def _parse_plot_range(plot_range):
+        return feature_proc.parse_plot_range(plot_range)
+
+    def export_csv(self):
+        """Export the features represented by the selected tree rows."""
+        selected = self.tree.selection()
+        if len(selected) == 0 or self.tar_df is None:
+            return
+
+        selected_rows = [self.tree.tree.item(item)["values"] for item in selected]
+        scene_name = self.scene_combo.get()
+        scenes = self.src_attrs.get_scenes(scene_name)
+        try:
+            out_df = self._make_csv_dataframe(selected_rows, scenes)
+        except feature_proc.FilterInputError as error:
+            messagebox.showerror("Export CSV", str(error), parent=self)
+            return
+        if out_df.empty:
+            print("No data to export.")
+            return
+
+        file_name = self._make_csv_file_name(selected_rows, scene_name)
+        export_csv.save_dataframe(out_df, self.pkl_dir, file_name, index=False)
+
+    def _make_csv_dataframe(self, selected_rows, scenes):
+        """Calculate selected features and return flat CSV columns."""
+        if scenes is None:
+            scene_df = self.tar_df
+        else:
+            condition = pd.Series(False, index=self.tar_df.index)
+            for start_msec, end_msec in scenes:
+                condition |= self.tar_df["timestamp"].between(start_msec, end_msec)
+            scene_df = self.tar_df.loc[condition]
+
+        feature_series = []
+        for feature_name, member, col_a, op, col_b, normalize, _plot_range in selected_rows:
+            member_condition = scene_df.index.get_level_values(1).astype(str) == str(member)
+            member_df = scene_df.loc[member_condition]
+            if member_df.empty:
+                continue
+
+            calc_df = member_df.drop(columns="timestamp")
+            new_sr = feature_proc.arithmetic_operations(calc_df, op, col_a, col_b)
+            try:
+                new_sr = feature_proc.calc(
+                    new_sr, self.name_and_code[normalize], timestamps=member_df["timestamp"], scene_ranges=scenes,
+                )
+            except feature_proc.FilterInputError as error:
+                raise feature_proc.FilterInputError(f"Feature '{feature_name}', member '{member}': {error}") from error
+            feature_series.append(new_sr.rename(str(feature_name)))
+
+        if len(feature_series) == 0:
+            feature_names = [str(row[0]) for row in selected_rows]
+            return pd.DataFrame(columns=["frame", "member", "timestamp", *feature_names])
+
+        data_df = pd.concat(feature_series, axis=1).sort_index()
+        timestamp_sr = scene_df["timestamp"].reindex(data_df.index)
+
+        out_df = data_df.copy()
+        out_df.insert(0, "timestamp", timestamp_sr.to_numpy())
+        out_df.insert(0, "member", data_df.index.get_level_values(1).to_numpy())
+        out_df.insert(0, "frame", data_df.index.get_level_values(0).to_numpy())
+        return out_df.reset_index(drop=True)
+
+    def _make_csv_file_name(self, selected_rows, scene_name):
+        feature_label = str(selected_rows[0][0]) if len(selected_rows) == 1 else f"selected_{len(selected_rows)}_features"
+        parts = [os.path.splitext(os.path.basename(self.feat_path))[0], feature_label]
+        if scene_name != "":
+            parts.append(scene_name)
+        unsafe_chars = '<>:"/\\|?*'
+        safe_name = "_".join(parts).translate(str.maketrans({char: "_" for char in unsafe_chars}))
+        return f"export_{safe_name}.csv"
 
     def export(self):
         """Export the calculated data to a file."""
@@ -296,7 +400,8 @@ class App(ttk.Frame):
         export_df.attrs = self.src_attrs.attrs
         dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".feat")
         h5 = hdf_df.DataFrameStorage(dst_path)
-        h5.save_mixnorm_df(export_df, self.track_name, self.source_cols)
+        source_cols_for_export = [row[:6] for row in self.source_cols]
+        h5.save_mixnorm_df(export_df, self.track_name, source_cols_for_export)
 
     def close(self):
         self.lineplot.close()

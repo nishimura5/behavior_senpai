@@ -11,6 +11,7 @@ from gui_parts import TempFile
 class MakeMp4:
     def __init__(self):
         self.out = cv2.VideoWriter()
+        self.time_ranges = None
 
     def load(self, args):
         self.src_df = args["src_df"]
@@ -18,12 +19,23 @@ class MakeMp4:
         self.src_attrs = self.src_df.attrs
         self.time_min = None
         self.time_max = None
+        self.time_ranges = None
         self.pkl_dir = args["pkl_dir"]
         self.track_name = args["trk_pkl_name"]
 
     def set_time_range(self, time_min, time_max):
         self.time_min = time_min
         self.time_max = time_max
+        self.time_ranges = [(time_min, time_max)]
+
+    def set_time_ranges(self, time_ranges):
+        self.time_ranges = list(time_ranges)
+        if len(self.time_ranges) == 0:
+            self.time_min = None
+            self.time_max = None
+            return
+        self.time_min = self.time_ranges[0][0]
+        self.time_max = self.time_ranges[-1][1]
 
     def export(self):
         tar_df = self.src_df
@@ -32,7 +44,6 @@ class MakeMp4:
 
         if self.cap.isOpened() is True:
             fps = self.cap.get(cv2.CAP_PROP_FPS)
-            self.cap.set_frame_pos(self.time_min)
         else:
             fps = 29.97
 
@@ -62,34 +73,48 @@ class MakeMp4:
         fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
         size = self.src_attrs["frame_size"]
         size = (int(size[0] * scale), int(size[1] * scale))
-        self.out.open(out_file_path, fourcc, fps, size, params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
+        if not self.out.open(out_file_path, fourcc, fps, size, params=[cv2.VIDEOWRITER_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY]):
+            raise OSError(f"Could not open MP4 output: {out_file_path}")
 
         out_df = tar_df
-        if self.time_min is None or self.time_max is None:
-            min_frame_num = out_df.index.unique(level="frame").min()
-            max_frame_num = out_df.index.unique(level="frame").max() + 1
-        else:
-            min_frame_num = out_df[out_df["timestamp"] >= self.time_min].index.unique(level="frame").min()
-            max_frame_num = out_df[out_df["timestamp"] <= self.time_max].index.unique(level="frame").max() + 1
-
         out_indexes = out_df.sort_index().index
         frames = out_indexes.get_level_values("frame").unique()
-        for i in range(min_frame_num, max_frame_num):
-            frame = self.cap.read_anyway()
-            frame = cv2.resize(frame, size, interpolation=cv2.INTER_AREA)
-            anno.set_img(frame)
-            if i in frames:
-                frame_df = out_df.loc[pd.IndexSlice[i, :, :], :]
-                indexes = frame_df.sort_index().index
-                for member in indexes.get_level_values("member").unique():
-                    dst_img = self._draw(out_df, i, member, indexes, anno, scale)
+        time_ranges = self.time_ranges
+        if time_ranges is None:
+            time_ranges = [(self.time_min, self.time_max)]
+        stop_export = False
+        for time_min, time_max in time_ranges:
+            if time_min is None or time_max is None:
+                min_frame_num = out_df.index.unique(level="frame").min()
+                max_frame_num = out_df.index.unique(level="frame").max() + 1
             else:
-                dst_img = frame
-            cv2.imshow("dst", dst_img)
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord("x"):
+                range_df = out_df[out_df["timestamp"].between(time_min, time_max)]
+                if range_df.empty:
+                    continue
+                min_frame_num = range_df.index.unique(level="frame").min()
+                max_frame_num = range_df.index.unique(level="frame").max() + 1
+                if self.cap.isOpened() is True:
+                    self.cap.set_frame_pos(time_min)
+
+            for i in range(min_frame_num, max_frame_num):
+                frame = self.cap.read_anyway()
+                frame = cv2.resize(frame, size, interpolation=cv2.INTER_AREA)
+                anno.set_img(frame)
+                if i in frames:
+                    frame_df = out_df.loc[pd.IndexSlice[i, :, :], :]
+                    indexes = frame_df.sort_index().index
+                    for member in indexes.get_level_values("member").unique():
+                        dst_img = self._draw(out_df, i, member, indexes, anno, scale)
+                else:
+                    dst_img = frame
+                cv2.imshow("dst", dst_img)
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord("x"):
+                    stop_export = True
+                    break
+                self.out.write(dst_img)
+            if stop_export:
                 break
-            self.out.write(dst_img)
         cv2.destroyAllWindows()
         self.out.release()
         mp4_name = os.path.basename(out_file_path)

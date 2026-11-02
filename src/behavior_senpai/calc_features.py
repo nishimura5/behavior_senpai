@@ -18,9 +18,13 @@ class CalcFeatures:
         self.tar_df.index = self.tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(int)])
 
         self.track_name = args["trk_pkl_name"]
+        self.output_path = args.get("output_path")
         self.src_attrs = src_df.attrs
-        temp = TempFile()
-        self.calc_case = temp.data["calc_case"]
+        self.member_from_args = args.get("member")
+        if "calc_case" in args:
+            self.calc_case = args["calc_case"]
+        else:
+            self.calc_case = TempFile().data["calc_case"]
 
     def load_keypoint_toml(self):
         kpl = keypoint_toml_loader.KeypointTOMLLoader()
@@ -100,8 +104,32 @@ class CalcFeatures:
         }
         self.shoulders_len_col_name = " "
 
+        keypoints = kpl.get_data().get("keypoints", {})
+        if "mouth_lower" in keypoints and "mouth_upper" in keypoints:
+            self.source_cols_dict["mouth_open"] = [
+                "distance (|AB|)",
+                self.member,
+                kpl.get_idx_by_name("mouth_lower"),
+                kpl.get_idx_by_name("mouth_upper"),
+                None,
+            ]
+            self.source_cols_dict["nose_width"] = [
+                "distance (|AB|)",
+                self.member,
+                kpl.get_idx_by_name("nose_left"),
+                kpl.get_idx_by_name("nose_right"),
+                None,
+            ]
+            self.nose_width_col_name = " "
+
+
     def set_member(self):
-        if self.model_name == "MediaPipe Holistic":
+        if self.member_from_args is not None:
+            self.member = str(self.member_from_args)
+            members = self.tar_df.index.get_level_values(1).unique().astype(str).tolist()
+            if self.member not in members:
+                raise ValueError(f"Member not found: {self.member}")
+        elif self.model_name == "MediaPipe Holistic":
             self.member = "pose"
         else:
             members = self.tar_df.index.get_level_values(1).unique().tolist()
@@ -138,6 +166,8 @@ class CalcFeatures:
             # for normalize
             if key == "shoulders_len":
                 self.shoulders_len_col_name = col_name
+            elif key == "nose_width":
+                self.nose_width_col_name = col_name
 
             member_feat_df = pd.concat([member_feat_df, feat_df], axis=1)
 
@@ -149,6 +179,8 @@ class CalcFeatures:
 
     def export_points(self):
         if len(self.feat_df) == 0:
+            if self.output_path:
+                raise ValueError("No data to export.")
             print("No data to export.")
             return
         self.feat_df = self.feat_df.sort_index()
@@ -163,7 +195,7 @@ class CalcFeatures:
         export_df.attrs = self.src_attrs
 
         file_name = os.path.splitext(self.track_name)[0]
-        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".feat")
+        dst_path = self.output_path or os.path.join(self.calc_dir, self.calc_case, file_name + ".feat")
         h5 = hdf_df.DataFrameStorage(dst_path)
         h5.save_points_df(export_df, self.track_name, self.source_cols_for_points)
 
@@ -180,6 +212,11 @@ class CalcFeatures:
                 op = " "
                 param_b = " "
                 norm = "/180"
+            elif params[0] in ["distance (|AB|)"] and params[-2] is None:
+                param_a = params[-1]
+                op = " "
+                param_b = " "
+                norm = "No normalize"
             elif params[0] in ["distance (|AB|)"]:
                 param_a = params[-1]
                 op = "/"
