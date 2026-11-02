@@ -126,7 +126,7 @@ class FeatureCopyTests(unittest.TestCase):
             def calculate_defaults(args):
                 self.assertEqual(args["member"], "7")
                 points, definitions = App._calculate_points(args["src_df"], args["member"], self.points_definitions)
-                storage.save_points_df(points, args["trk_pkl_name"], definitions)
+                DataFrameStorage(args["output_path"]).save_points_df(points, args["trk_pkl_name"], definitions)
 
             with patch("app_feature_copy.calc_features.execute_calc_features", side_effect=calculate_defaults) as default_calc:
                 app._create_feature_file("target.pkl", "test", self.mix_definitions, [])

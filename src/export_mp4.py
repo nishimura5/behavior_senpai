@@ -73,7 +73,8 @@ class MakeMp4:
         fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
         size = self.src_attrs["frame_size"]
         size = (int(size[0] * scale), int(size[1] * scale))
-        self.out.open(out_file_path, fourcc, fps, size, params=[cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY])
+        if not self.out.open(out_file_path, fourcc, fps, size, params=[cv2.VIDEOWRITER_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY]):
+            raise OSError(f"Could not open MP4 output: {out_file_path}")
 
         out_df = tar_df
         out_indexes = out_df.sort_index().index

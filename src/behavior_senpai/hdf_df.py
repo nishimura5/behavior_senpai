@@ -1,5 +1,8 @@
 import inspect
 import os
+import shutil
+import tempfile
+from contextlib import contextmanager
 
 import pandas as pd
 
@@ -27,6 +30,22 @@ class DataFrameStorage:
             filepath: Path to HDF file
         """
         self.filepath = filepath
+
+    @contextmanager
+    def staged_update(self):
+        """Preserve other groups and publish only a fully closed, successful update."""
+        directory = os.path.dirname(os.path.abspath(self.filepath))
+        os.makedirs(directory, exist_ok=True)
+        fd, temp_path = tempfile.mkstemp(prefix=".feature-copy-", suffix=".feat", dir=directory)
+        os.close(fd)
+        try:
+            if os.path.exists(self.filepath):
+                shutil.copyfile(self.filepath, temp_path)
+            yield DataFrameStorage(temp_path)
+            os.replace(temp_path, self.filepath)
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
 
     def save_dimredu_df(self, df: pd.DataFrame, source_cols: list, params_dict: dict, cluster_names: list):
         """
@@ -111,8 +130,7 @@ class DataFrameStorage:
 
         with pd.HDFStore(self.filepath, mode="a") as store:
             if track_name != correct_track_name:
-                print(f"track_name mismatch: {track_name} != {correct_track_name}")
-                return
+                raise ValueError(f"track_name mismatch: {track_name} != {correct_track_name}")
 
             store.put("mixnorm/df", src_df, format="table")
 

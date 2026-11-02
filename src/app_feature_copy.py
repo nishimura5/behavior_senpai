@@ -29,7 +29,9 @@ class App(ttk.Frame):
         self.master_feature_path = saved_master_feature_path if isinstance(saved_master_feature_path, str) else ""
         self.jump_to_pkl_path = ""
         self.options_by_item = {}
-        self.video_cap = vcap.VideoCap()
+        # Only the launcher creates VideoCapture: constructing a second one can crash OpenCV.
+        self.video_cap = args["video_cap"]
+        self.restore_video = args["restore_video"]
 
         master_feature_frame = ttk.Frame(self)
         master_feature_frame.pack(fill=tk.X, pady=(0, 10))
@@ -284,24 +286,24 @@ class App(ttk.Frame):
         feat_name = os.path.splitext(pkl_name)[0] + ".feat"
         feat_path = os.path.join(self.feat_dir, feat_name)
         target_hdf = hdf_df.DataFrameStorage(feat_path)
-        if points_source_cols:
-            points_df, target_points_source_cols = self._calculate_points(src_df, member, points_source_cols)
-        else:
-            # Older templates without Points definitions retain the default calculation.
-            calc_features.execute_calc_features(calc_args)
-            if not os.path.isfile(feat_path):
-                raise FileNotFoundError(f"Feature file was not created: {feat_path}")
-            points_df = target_hdf.load_points_df()
-        if points_df is None:
-            raise ValueError(f"No points data: {feat_path}")
+        with target_hdf.staged_update() as staged:
+            if points_source_cols:
+                points_df, target_points_source_cols = self._calculate_points(src_df, member, points_source_cols)
+            else:
+                # Defaults write exclusively to the staged file, including their definitions.
+                calc_args["output_path"] = staged.filepath
+                calc_features.execute_calc_features(calc_args)
+                points_df = staged.load_points_df()
+            if points_df is None or points_df.empty:
+                raise ValueError(f"No points data: {feat_path}")
 
-        scene_ranges = self._get_scene_ranges(src_df, scene)
-        mixnorm_df, target_source_cols = self._calculate_mixnorm(points_df, member, scene_ranges, source_cols)
-        if points_source_cols:
-            points_df.attrs = src_df.attrs
-            target_hdf.save_points_df(points_df, pkl_name, target_points_source_cols)
-        mixnorm_df.attrs = src_df.attrs
-        target_hdf.save_mixnorm_df(mixnorm_df, pkl_name, target_source_cols)
+            scene_ranges = self._get_scene_ranges(src_df, scene)
+            mixnorm_df, target_source_cols = self._calculate_mixnorm(points_df, member, scene_ranges, source_cols)
+            if points_source_cols:
+                points_df.attrs = src_df.attrs
+                staged.save_points_df(points_df, pkl_name, target_points_source_cols)
+            mixnorm_df.attrs = src_df.attrs
+            staged.save_mixnorm_df(mixnorm_df, pkl_name, target_source_cols)
 
     @staticmethod
     def _calculate_points(src_df, member, source_cols):
@@ -700,8 +702,11 @@ class App(ttk.Frame):
             print(f"MP4 export failed: {pkl_name}: {error}")
             messagebox.showerror("Export MP4", f"Could not export MP4.\n{error}", parent=self)
         finally:
-            if exporter is not None:
-                exporter.out.release()
+            try:
+                if exporter is not None:
+                    exporter.out.release()
+            finally:
+                self.restore_video()
 
     def _open_video(self, src_df, pkl_path):
         attrs = getattr(src_df, "attrs", {})
@@ -746,7 +751,8 @@ class App(ttk.Frame):
         return ", ".join(members_by_scene.get(scene, []))
 
     def close(self):
-        self.video_cap.release()
+        # The launcher owns this capture, and continues using it after this dialog closes.
+        pass
 
 
 class PklLoadProgressDialog(tk.Toplevel):

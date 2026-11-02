@@ -18,6 +18,7 @@ class CalcFeatures:
         self.tar_df.index = self.tar_df.index.set_levels([idx.levels[0], idx.levels[1].astype(str), idx.levels[2].astype(int)])
 
         self.track_name = args["trk_pkl_name"]
+        self.output_path = args.get("output_path")
         self.src_attrs = src_df.attrs
         self.member_from_args = args.get("member")
         if "calc_case" in args:
@@ -178,6 +179,8 @@ class CalcFeatures:
 
     def export_points(self):
         if len(self.feat_df) == 0:
+            if self.output_path:
+                raise ValueError("No data to export.")
             print("No data to export.")
             return
         self.feat_df = self.feat_df.sort_index()
@@ -192,7 +195,7 @@ class CalcFeatures:
         export_df.attrs = self.src_attrs
 
         file_name = os.path.splitext(self.track_name)[0]
-        dst_path = os.path.join(self.calc_dir, self.calc_case, file_name + ".feat")
+        dst_path = self.output_path or os.path.join(self.calc_dir, self.calc_case, file_name + ".feat")
         h5 = hdf_df.DataFrameStorage(dst_path)
         h5.save_points_df(export_df, self.track_name, self.source_cols_for_points)
 
